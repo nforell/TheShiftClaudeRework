@@ -1,0 +1,708 @@
+<title>Shift Character Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --bg:#E3EAE7;--surface:#F7F9F8;--surface2:#ECF1EF;--ink:#142B28;--ink2:#4A615C;--line:#C5D1CD;--accent:#1E6B63;--accent-ink:#fff;--red:#B3342B;--amber:#94600F;--amber-bg:#F7EBD2;--red-bg:#F6E0DC;
+  --wall:#DCE6E2;--floor:#B7C4BF;--panel:#EEF3F1;--frame:#F5F8F7;--headboard:#C8D6D1;--pillow:#FBFCFB;--blanket:#9EBFC7;--blanket2:#86ABB5;--sheet:#F6F8F7;--bedframe:#78878B;
+  --sky1:#F6DDBF;--sky2:#A7C7DB;--hill:#8FAE9E;--beam:rgba(255,236,205,.30);--night:0;--table:#B99E80;
+  --mon:#0E1A1D;--mon-line:#233338;--mon-ink:#E3EFEA;--mon-hr:#7BE0A4;--mon-sp:#7FC9EC;--mon-rr:#F2D27A;--mon-bad:#FF7A6E;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0C1517;--surface:#122025;--surface2:#17292F;--ink:#E0EAE6;--ink2:#9CB1AB;--line:#2A3E44;--accent:#62BFB1;--accent-ink:#06201C;--red:#F0766B;--amber:#E6AE52;--amber-bg:#33281A;--red-bg:#3A1D1B;
+  --wall:#1B2B30;--floor:#22343A;--panel:#23363C;--frame:#2B3E44;--headboard:#2A3F45;--pillow:#C6D0CE;--blanket:#3E6471;--blanket2:#33555F;--sheet:#AFBBB9;--bedframe:#4D5E63;
+  --sky1:#243557;--sky2:#0B1428;--hill:#1D3935;--beam:rgba(160,180,240,.07);--night:1;--table:#6E5C4A}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0C1517;--surface:#122025;--surface2:#17292F;--ink:#E0EAE6;--ink2:#9CB1AB;--line:#2A3E44;--accent:#62BFB1;--accent-ink:#06201C;--red:#F0766B;--amber:#E6AE52;--amber-bg:#33281A;--red-bg:#3A1D1B;
+  --wall:#1B2B30;--floor:#22343A;--panel:#23363C;--frame:#2B3E44;--headboard:#2A3F45;--pillow:#C6D0CE;--blanket:#3E6471;--blanket2:#33555F;--sheet:#AFBBB9;--bedframe:#4D5E63;
+  --sky1:#243557;--sky2:#0B1428;--hill:#1D3935;--beam:rgba(160,180,240,.07);--night:1;--table:#6E5C4A}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,3vw,28px);padding-block:22px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.4rem 1.5rem;margin-bottom:18px}
+.brand{font-family:var(--serif);font-size:1.7rem;font-weight:600;letter-spacing:-.015em;margin:0}
+.brand span{font-family:var(--sans);font-weight:400;font-size:1rem;color:var(--ink2);margin-left:.5rem}
+header.top p{margin:0;color:var(--ink2);max-width:52ch}
+
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 330px;grid-template-areas:"picker panel" "stage panel" "scenes panel" "cues panel";gap:14px 22px;align-items:start}
+.picker{grid-area:picker;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pick{display:flex;align-items:center;gap:.55rem;min-height:56px;padding:.35rem .6rem .35rem .35rem;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;text-align:left;min-width:0}
+.pick:hover{border-color:var(--ink2)}
+.pick[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pick svg{width:44px;height:44px;flex:none;border-radius:50%;background:var(--wall)}
+.pick b{display:block;font-size:.9rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick small{display:block;color:var(--ink2);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick span{min-width:0}
+
+.stage{grid-area:stage;position:relative;border-radius:14px;overflow:hidden;background:var(--wall);box-shadow:0 18px 40px -26px rgba(10,30,28,.55)}
+#scene{display:block;width:100%;height:auto}
+#patient{cursor:pointer}
+#patient:focus{outline:none}
+#patient:focus-visible .head-hit{stroke:var(--accent);stroke-width:4}
+.monitor{position:absolute;top:12px;right:12px;width:212px;background:var(--mon);color:var(--mon-ink);border-radius:10px;padding:8px 10px 9px;box-shadow:0 10px 24px -12px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+.mrow{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.mon-hr{color:var(--mon-hr)}.mon-sp{color:var(--mon-sp)}.mon-rr{color:var(--mon-rr)}
+.mbig{font-size:1.7rem;font-weight:300;line-height:1}
+.mlab{font-size:.66rem;font-weight:600;letter-spacing:.04em;opacity:.8}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px;margin-top:6px;border-top:1px solid var(--mon-line);padding-top:6px}
+.mgrid div{min-width:0}
+.mgrid b{display:block;font-size:1.02rem;font-weight:500;line-height:1.15}
+.bad{color:var(--mon-bad)!important}
+#ecg{display:block;width:100%;height:38px;margin-top:3px}
+.breathdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--mon-rr);margin-left:5px;vertical-align:1px}
+.bubble{position:absolute;left:calc(50% + 70px);top:9%;max-width:min(260px,40%);background:var(--surface);color:var(--ink);border-radius:14px;padding:.55rem .8rem;font-family:var(--serif);font-size:1rem;line-height:1.4;box-shadow:0 12px 26px -14px rgba(0,0,0,.45);animation:pop .22s ease-out}
+.bubble::before{content:"";position:absolute;left:-7px;top:18px;border:8px solid transparent;border-right-color:var(--surface);border-left:0}
+.bubble.quiet{font-style:italic;color:var(--ink2)}
+@keyframes pop{from{opacity:0;transform:translateY(4px) scale(.97)}}
+.stage-bar{position:absolute;left:12px;bottom:12px;display:flex;gap:6px}
+.chipbtn{min-height:36px;padding:.25rem .75rem;border-radius:18px;border:1px solid transparent;background:color-mix(in srgb,var(--surface) 90%,transparent);cursor:pointer;font-size:.85rem;font-weight:600;box-shadow:0 4px 12px -8px rgba(0,0,0,.4)}
+.chipbtn:hover{border-color:var(--ink2)}
+.hint{position:absolute;left:12px;top:12px;font-size:.8rem;color:var(--ink2);background:color-mix(in srgb,var(--surface) 82%,transparent);padding:.2rem .6rem;border-radius:12px}
+
+.scenes{grid-area:scenes}
+.scenes h2,.cues h2,.panel h2{font-size:.95rem;font-weight:700;margin:0 0 .45rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.scene-btn{min-height:40px;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:.9rem;text-align:left}
+.scene-btn:hover{border-color:var(--ink2)}
+.scene-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.cues{grid-area:cues;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.cues ul{list-style:none;margin:0;padding:0}
+.cues li{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.45rem 0;border-top:1px solid var(--line);font-family:var(--serif);font-size:1.03rem;line-height:1.4}
+.cues li:first-child{border-top:0}
+.cues li em{font-family:var(--sans);font-style:normal;font-size:.74rem;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:.05rem .45rem;border-radius:4px;white-space:nowrap}
+.cues li.ok em{color:var(--accent);background:var(--surface2)}
+.cues .foot{margin:.6rem 0 0;font-size:.84rem;color:var(--ink2)}
+
+.panel{grid-area:panel;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+.group{padding:.3rem 0 .7rem;border-bottom:1px solid var(--line)}
+.group:last-of-type{border-bottom:0}
+.group h3{font-size:.78rem;font-weight:700;color:var(--ink2);letter-spacing:.03em;margin:.5rem 0 .25rem}
+.sl{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:0 .6rem;margin:.35rem 0}
+.sl label{font-size:.9rem}
+.sl output{font-weight:600;font-variant-numeric:tabular-nums;font-size:.95rem}
+.sl output.abn{color:var(--red)}
+.sl input{grid-column:1/-1;width:100%;accent-color:var(--accent);height:26px;margin:0}
+.sl small{grid-column:1/-1;color:var(--ink2);font-size:.74rem;margin-top:-3px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:.3rem 0 .5rem}
+.seg button{flex:1;min-height:38px;border:0;background:none;cursor:pointer;font-size:.86rem}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tog{display:flex;align-items:center;gap:.55rem;min-height:38px;cursor:pointer;font-size:.9rem}
+.tog input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.panel .reset{margin-top:.6rem;width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);cursor:pointer;font-weight:600}
+
+.cast{margin-top:34px}
+.cast-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.3rem 1rem;margin-bottom:10px}
+.cast-head h2{font-family:var(--serif);font-size:1.35rem;font-weight:600;margin:0}
+.cast-head p{margin:0;color:var(--ink2);font-size:.92rem}
+.crew{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.mate{display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;cursor:pointer;padding:0;text-align:left}
+.mate:hover{border-color:var(--ink2)}
+.mate svg{display:block;width:100%;height:auto;background:var(--wall)}
+.mate .cap{padding:.5rem .7rem .6rem}
+.mate b{display:block;font-size:.95rem}
+.mate small{color:var(--ink2);font-size:.8rem}
+.mate q{display:block;font-family:var(--serif);font-size:.92rem;line-height:1.35;margin-top:.3rem;min-height:2.7em;color:var(--ink)}
+.mate q:empty{visibility:hidden}
+
+.notes{margin-top:34px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;border-top:1px solid var(--line);padding-top:18px}
+.notes h3{font-size:.95rem;margin:0 0 .3rem}
+.notes p{margin:0;color:var(--ink2);font-size:.9rem;max-width:44ch}
+
+@media (max-width:980px){
+  .lab{grid-template-columns:minmax(0,1fr);grid-template-areas:"picker" "stage" "scenes" "panel" "cues"}
+  .panel{position:static}
+  .notes{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .picker{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .monitor{position:static;width:auto;border-radius:0}
+  .bubble{left:50%;transform:translateX(-50%);top:auto;bottom:62px;max-width:86%}
+  .bubble::before{display:none}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.bubble{animation:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">The Shift <span>Character lab</span></h1>
+    <p>Each patient is drawn and animated from their vital signs. Change a number, or pick a moment from the shift, and watch the person change.</p>
+  </header>
+
+  <section class="lab">
+    <div class="picker" role="tablist" aria-label="Patients" id="picker"></div>
+
+    <div class="stage" id="stage">
+      <svg id="scene" viewBox="0 0 640 440" role="img" aria-labelledby="sceneLabel">
+        <title id="sceneLabel">Patient in bed</title>
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky2)"/><stop offset="1" style="stop-color:var(--sky1)"/></linearGradient>
+        </defs>
+        <rect width="640" height="440" style="fill:var(--wall)"/>
+        <rect y="372" width="640" height="68" style="fill:var(--floor)"/>
+        <polygon points="36,210 186,210 360,440 0,440" style="fill:var(--beam)"/>
+        <g>
+          <rect x="36" y="44" width="150" height="160" rx="6" fill="url(#sky)" style="stroke:var(--frame)" stroke-width="9"/>
+          <path d="M40 170 q34 -22 70 -8 q34 12 72 -10 V200 H40Z" style="fill:var(--hill)"/>
+          <circle cx="146" cy="82" r="11" fill="#F3EFD8" style="opacity:var(--night)"/>
+          <g fill="#fff" style="opacity:var(--night)"><circle cx="66" cy="70" r="1.3"/><circle cx="98" cy="96" r="1"/><circle cx="118" cy="64" r="1.2"/><circle cx="170" cy="120" r="1"/></g>
+          <path d="M111 44 V204 M36 124 H186" style="stroke:var(--frame)" stroke-width="5"/>
+        </g>
+        <rect x="206" y="56" width="228" height="34" rx="7" style="fill:var(--panel)"/>
+        <circle cx="228" cy="73" r="6.5" fill="#6FA785"/><circle cx="248" cy="73" r="6.5" style="fill:var(--frame)" stroke="#9AA9A6"/>
+        <rect x="402" y="65" width="22" height="16" rx="3" style="fill:var(--frame)" stroke="#9AA9A6"/>
+        <g id="propsBack"></g>
+        <rect x="214" y="112" width="212" height="170" rx="26" style="fill:var(--headboard)"/>
+        <ellipse cx="320" cy="238" rx="122" ry="46" style="fill:var(--pillow)"/>
+        <g id="patient" tabindex="0" role="button"></g>
+        <g id="propsFront"></g>
+        <rect x="78" y="402" width="484" height="14" rx="5" style="fill:var(--bedframe)"/>
+        <rect x="96" y="416" width="9" height="22" style="fill:var(--bedframe)"/><rect x="535" y="416" width="9" height="22" style="fill:var(--bedframe)"/>
+      </svg>
+      <div class="monitor" aria-label="Bedside monitor">
+        <div class="mrow mon-hr"><span class="mlab">HR <span id="rhythm">SR</span></span><span class="mbig" id="mHR">84</span></div>
+        <canvas id="ecg" width="400" height="76" aria-hidden="true"></canvas>
+        <div class="mgrid">
+          <div class="mon-sp"><span class="mlab">SpO₂</span><b id="mSp">95</b></div>
+          <div class="mon-rr"><span class="mlab">RR<span class="breathdot" id="bdot"></span></span><b id="mRR">16</b></div>
+          <div><span class="mlab">NIBP</span><b id="mBP">134/80</b></div>
+          <div><span class="mlab">Temp</span><b id="mT">37.3</b></div>
+          <div><span class="mlab">Glucose</span><b id="mG">118</b></div>
+          <div><span class="mlab">Pain</span><b id="mP">3</b></div>
+        </div>
+      </div>
+      <div class="hint" id="hint">Tap the patient to talk</div>
+      <div class="bubble" id="bubble" hidden aria-live="polite"></div>
+      <div class="stage-bar"><button class="chipbtn" id="pauseBtn" type="button" aria-pressed="false">Pause motion</button></div>
+    </div>
+
+    <div class="scenes">
+      <h2>Moments from the shift</h2>
+      <div class="chips" id="scenes"></div>
+    </div>
+
+    <section class="cues" aria-labelledby="cuesH">
+      <h2 id="cuesH">What you'd notice from the doorway</h2>
+      <ul id="cues" aria-live="polite"></ul>
+      <p class="foot">The breathing you see runs at the rate on the monitor. Count it for 15 seconds and multiply by four.</p>
+    </section>
+
+    <aside class="panel" aria-labelledby="panelH">
+      <h2 id="panelH">Drive the patient</h2>
+      <div class="group">
+        <h3>Vital signs</h3>
+        <div id="sliders1"></div>
+      </div>
+      <div class="group">
+        <h3>Symptoms</h3>
+        <div id="sliders2"></div>
+      </div>
+      <div class="group">
+        <h3>Mental status</h3>
+        <div class="seg" role="group" aria-label="Level of consciousness" id="alertSeg">
+          <button type="button" data-v="0">Alert</button><button type="button" data-v="1">Drowsy</button><button type="button" data-v="2">Lethargic</button>
+        </div>
+        <label class="tog" for="confused"><input type="checkbox" id="confused"> Acute confusion (delirium)</label>
+        <label class="tog" for="nausea"><input type="checkbox" id="nausea"> Nauseous</label>
+      </div>
+      <button class="reset" type="button" id="resetBtn">Back to baseline</button>
+    </aside>
+  </section>
+
+  <section class="cast" aria-labelledby="castH">
+    <div class="cast-head"><h2 id="castH">The unit</h2><p>Staff and family use the same rig. They breathe, blink and follow your cursor. Tap one.</p></div>
+    <div class="crew" id="crew"></div>
+  </section>
+
+  <section class="notes" aria-label="How this fits the game">
+    <div><h3>Driven by the simulation</h3><p>The rig reads the same numbers the shift engine already tracks. No hand-made animation per event: a falling pressure makes Mrs. Whitfield pale, mottled and hard to rouse on its own.</p></div>
+    <div><h3>Cues you have to notice</h3><p>Nothing here is labeled in the room. Tachypnea, diaphoresis, tremor, picking at sheets and tripod posture show up in the drawing, and the student has to connect them.</p></div>
+    <div><h3>Ready for an artist</h3><p>Every state here is a named input (pain, SpO₂, alertness). The same list becomes the brief for a Rive artist if the characters move to painted art later.</p></div>
+  </section>
+</div>
+
+<script>
+(function(){
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const hx=(h)=>{const n=parseInt(h.slice(1),16);return[n>>16,(n>>8)&255,n&255]};
+const toHex=(r,g,b)=>'#'+[r,g,b].map(x=>Math.round(clamp(x,0,255)).toString(16).padStart(2,'0')).join('');
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return toHex(lerp(A[0],B[0],t),lerp(A[1],B[1],t),lerp(A[2],B[2],t))};
+const shade=(a,amt)=>{const A=hx(a);return toHex(A[0]+amt,A[1]+amt,A[2]+amt)};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS='http://www.w3.org/2000/svg';
+let UID=0;
+
+/* ---------- characters ---------- */
+const CH={
+  bell:{name:'Marcus Bell',short:'Mr. Bell',room:'412',sub:'Post-op day 1',pro:['he','his'],guard:true,
+    skin:'#8C5637',shade:'#6A3E25',lip:'#5C2E22',blush:'#B9563F',iris:'#3A2618',
+    head:{w:60,h:63,jaw:.8},eye:10.2,hair:{style:'buzz',color:'#2A2220'},brow:{w:4.6,color:'#241C1A'},
+    body:{w:92,cloth:'gown'},extras:['goatee'],smile:.2},
+  okafor:{name:'Grace Okafor',short:'Mrs. Okafor',room:'414',sub:'Cellulitis, on insulin',pro:['she','her'],guard:false,
+    skin:'#5B3827',shade:'#42281B',lip:'#3D2118',blush:'#9A4838',iris:'#2B1810',
+    head:{w:53,h:64,jaw:.25},eye:10.4,hair:{style:'bun',color:'#17110E',pencil:true},brow:{w:3.2,color:'#130D0B'},
+    body:{w:72,cloth:'gown'},extras:['glasses','hoops'],glasses:'#7B3E28',smile:.1,legUp:true},
+  whitfield:{name:'Eleanor Whitfield',short:'Mrs. Whitfield',room:'416',sub:'UTI, new confusion',pro:['she','her'],guard:true,
+    skin:'#F0D2BE',shade:'#D2A48C',lip:'#B4655F',blush:'#E88A83',iris:'#5B7E9C',
+    head:{w:57,h:59,jaw:.1},eye:9.6,hair:{style:'curls',color:'#ECE8E3'},brow:{w:3,color:'#BDB6AE'},
+    body:{w:66,cloth:'gown',cardigan:'#D98F9C'},extras:['pearls','wrinkles'],smile:.35},
+  ortiz:{name:'Samuel Ortiz',short:'Mr. Ortiz',room:'418',sub:'Heart failure, EF 30%',pro:['he','his'],guard:false,
+    skin:'#B47A51',shade:'#8F5E3B',lip:'#7A3F2C',blush:'#C4674D',iris:'#3B2616',
+    head:{w:64,h:61,jaw:.5},eye:9.8,hair:{style:'balding',color:'#D9D3CB'},brow:{w:5.8,color:'#C8C0B6'},
+    body:{w:98,cloth:'gown'},extras:['mustache','cannula','wrinkles'],smile:.45},
+  nova:{name:'Nova Reyes',role:'Charge nurse',skin:'#B98A63',shade:'#976D4B',lip:'#7C4435',blush:'#C77B5E',iris:'#3D2A1C',
+    head:{w:55,h:62,jaw:.35},eye:10,hair:{style:'bun',color:'#3A2E2A',streak:true},brow:{w:3.6,color:'#2E2421'},
+    body:{w:80,cloth:'navy'},extras:['studs'],smile:.35,line:'Look at the patient before you look at the monitor.'},
+  luis:{name:'Luis',role:'CNA',skin:'#B07B52',shade:'#8C5E3B',lip:'#7A4232',blush:'#C3705A',iris:'#2E1E14',
+    head:{w:56,h:62,jaw:.6},eye:10.4,hair:{style:'swoop',color:'#1E1814'},brow:{w:4.4,color:'#1A1411'},
+    body:{w:84,cloth:'teal'},extras:[],smile:.55,line:'Want me to grab vitals on anyone?'},
+  chen:{name:'Dr. Chen',role:'Hospitalist',skin:'#ECCBAB',shade:'#CFA682',lip:'#B56A5E',blush:'#E59B87',iris:'#2C1F16',
+    head:{w:52,h:62,jaw:.3},eye:9.6,hair:{style:'long',color:'#17120F'},brow:{w:3.2,color:'#17120F'},
+    body:{w:78,cloth:'coat',steth:true},extras:['thinGlasses'],glasses:'#3A3A3E',smile:.12,line:'Give me the SBAR. What do you need from me?'},
+  omar:{name:'Omar',role:'Pharmacist',skin:'#9C6A48',shade:'#7B5134',lip:'#6A372A',blush:'#B36650',iris:'#2A1B12',
+    head:{w:58,h:63,jaw:.55},eye:9.8,hair:{style:'short',color:'#1A1410'},brow:{w:4.6,color:'#16110E'},
+    body:{w:84,cloth:'coat'},extras:['beard'],smile:.25,line:'What was the reaction, exactly? Rash, or throat closing?'},
+  rosa:{name:'Rosa Ortiz',role:'Wife, room 418',skin:'#B07B58',shade:'#8D5F40',lip:'#8A4538',blush:'#C9725B',iris:'#3B2616',
+    head:{w:56,h:60,jaw:.3},eye:9.8,hair:{style:'curlyshort',color:'#6D5B52'},brow:{w:3.4,color:'#4A3C35'},
+    body:{w:80,cloth:'blouse',cardigan:'#8A5A48'},extras:['wrinkles','gold'],smile:.5,line:'I made the caldo with less salt. Lime and cilantro instead.'},
+  dana:{name:'Dana',role:'Night RN, going home',skin:'#F0CFB6',shade:'#D4A98E',lip:'#B8675F',blush:'#EC9588',iris:'#4E7A5B',
+    head:{w:54,h:61,jaw:.3},eye:10.2,hair:{style:'ponytail',color:'#8A5A2F'},brow:{w:3.2,color:'#6F4623'},
+    body:{w:78,cloth:'navy'},extras:['freckles'],smile:.2,tired:true,line:'Report in five. Coffee first.'},
+};
+const PATIENTS=['bell','okafor','whitfield','ortiz'];
+const STAFF=['nova','luis','chen','omar','rosa','dana'];
+const BASE={rr:16,spo2:97,hr:80,sbp:124,temp:37,pain:0,glu:110,alert:0,confused:false,nausea:false};
+const SCENES={
+  bell:[
+    ['07:30, pain after report',{rr:22,spo2:94,hr:94,sbp:138,temp:37.4,pain:7}],
+    ['Comfortable after oxycodone',{rr:16,spo2:95,hr:84,sbp:134,temp:37.3,pain:3}],
+    ['Too much opioid',{rr:8,spo2:87,hr:68,sbp:116,temp:37.2,pain:1,alert:2}],
+    ['10:30, atelectasis',{rr:23,spo2:91,hr:100,sbp:138,temp:38.2,pain:6}],
+  ],
+  okafor:[
+    ['Grading lab reports',{rr:16,spo2:98,hr:82,sbp:128,temp:37.5,pain:3,glu:168}],
+    ['Nauseous after cefazolin',{rr:17,spo2:98,hr:88,sbp:126,temp:37.5,pain:3,glu:190,nausea:true}],
+    ['Glucose 55 after lispro',{rr:20,spo2:98,hr:108,sbp:132,temp:37.5,pain:3,glu:55}],
+    ['Glucose 36, untreated',{rr:20,spo2:97,hr:114,sbp:130,temp:37.5,pain:3,glu:36}],
+  ],
+  whitfield:[
+    ['07:00, "pleasantly confused"',{rr:20,spo2:95,hr:98,sbp:116,temp:37.9,pain:3,alert:1,confused:true}],
+    ['09:30, delirium and fever',{rr:23,spo2:94,hr:114,sbp:98,temp:38.7,pain:3,confused:true}],
+    ['Septic shock',{rr:28,spo2:91,hr:128,sbp:72,temp:39.3,pain:3,alert:2,confused:true}],
+    ['After fluids and antibiotics',{rr:18,spo2:96,hr:90,sbp:118,temp:37.6,pain:2}],
+  ],
+  ortiz:[
+    ['Joking with Rosa',{rr:20,spo2:95,hr:57,sbp:104,temp:36.8}],
+    ['Metoprolol given at HR 53',{rr:20,spo2:94,hr:44,sbp:86,temp:36.8}],
+    ['Flash pulmonary edema',{rr:32,spo2:86,hr:118,sbp:150,temp:36.9}],
+    ['Diuresing, feeling better',{rr:17,spo2:96,hr:60,sbp:108,temp:36.8}],
+  ],
+};
+const LINES={
+  bell:{calm:'Better. Not great, better. Don\'t tell Denise I said that.',pain:'Easy. That\'s a 7, and it\'s climbing.',dys:'Can\'t get a good breath in. Hurts to try.',drowsy:'Mm. Just resting my eyes, chief.',fever:'Is it hot in here, or is it me?',none:'Snores. Doesn\'t wake to his name.'},
+  okafor:{calm:'Twenty-eight lab reports to go. Don\'t let me fall asleep on the rubric.',nausea:'Please don\'t mention the eggs.',hypo:'I feel weird. Shaky. Is it hot in here?',confused:'Sorry, what time is it? I lost my place.',drowsy:'Mm. Five more minutes.',none:'Slurs something. Doesn\'t open her eyes.'},
+  whitfield:{calm:'Is Ruth coming today, dear? Somebody has to feed Biscuit.',confused:'I have to get home. Biscuit hasn\'t eaten since Tuesday.',fever:'Something\'s wrong, isn\'t it, dear?',drowsy:'Mm? Oh. Hello.',dys:'I can\'t seem to catch up.',none:'Her eyes flutter at your voice, then close.'},
+  ortiz:{calm:'Mija, tell Rosa to stop worrying. I\'m fine.',dizzy:'The room is swimming, mijo.',dys:'Can\'t... catch... my breath.',drowsy:'Just tired.',none:'Doesn\'t answer.'},
+};
+
+/* ---------- drawing ---------- */
+function faceD(w,h,jaw){const j=.3+.35*jaw,k=.36+.42*jaw;return `M ${-w} 0 C ${-w} ${-h*.56} ${-w*.56} ${-h} 0 ${-h} C ${w*.56} ${-h} ${w} ${-h*.56} ${w} 0 C ${w} ${h*j} ${w*k} ${h} 0 ${h} C ${-w*k} ${h} ${-w} ${h*j} ${-w} 0 Z`}
+function cap(w,h,top,line,side){return `M ${-w*1.01} ${h*side} C ${-w*1.03} ${-h*.72} ${-w*.58} ${-h*top} 0 ${-h*top} C ${w*.58} ${-h*top} ${w*1.03} ${-h*.72} ${w*1.01} ${h*side} C ${w*.9} ${-h*.3} ${w*.55} ${-h*line} 0 ${-h*line} C ${-w*.55} ${-h*line} ${-w*.9} ${-h*.3} ${-w*1.01} ${h*side} Z`}
+function hair(c){
+  const {w,h}=c.head,col=c.hair.color,dk=shade(col,-22),lt=shade(col,28);let back='',front='';
+  switch(c.hair.style){
+    case 'buzz':front=`<path d="${cap(w,h,1.03,.6,.08)}" fill="${col}" opacity=".92"/><path d="M ${-w*.55} ${-h*.62} q ${w*.55} -8 ${w*1.1} 0" stroke="${dk}" stroke-width="1.2" fill="none" opacity=".6"/>`;break;
+    case 'bun':
+      back=`<circle cx="${w*.05}" cy="${-h*1.1}" r="${h*.37}" fill="${col}"/><path d="M ${-w*.25} ${-h*1.3} q ${w*.28} ${-h*.14} ${w*.55} ${-h*.02}" stroke="${lt}" stroke-width="2" fill="none" opacity=".6"/>`;
+      if(c.hair.pencil)back=`<g><path d="M ${-w*.72} ${-h*1.4} L ${w*.5} ${-h*.86}" stroke="#E7B63B" stroke-width="6" stroke-linecap="butt"/><path d="M ${-w*.72} ${-h*1.4} l -7 -3" stroke="#E58C98" stroke-width="6"/><path d="M ${w*.5} ${-h*.86} l 7 3.2" stroke="#E9CFA4" stroke-width="5"/><path d="M ${w*.5+6} ${-h*.86+2.8} l 3 1.3" stroke="#333" stroke-width="3"/></g>`+back;
+      front=`<path d="${cap(w,h,1.06,.52,.12)}" fill="${col}"/><path d="M ${-w*.18} ${-h*1.04} C ${-w*.28} ${-h*.86} ${-w*.42} ${-h*.66} ${-w*.62} ${-h*.5}" stroke="${lt}" stroke-width="1.6" fill="none" opacity=".7"/>`;
+      if(c.hair.streak)front+=`<path d="M ${w*.08} ${-h*1.04} C ${w*.3} ${-h*.94} ${w*.5} ${-h*.72} ${w*.62} ${-h*.46}" stroke="#CFC9C3" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      break;
+    case 'curls':{
+      for(let a=195;a<=345;a+=18){const r=a*Math.PI/180;back+=`<circle cx="${Math.cos(r)*w*1.0}" cy="${Math.sin(r)*h*.94-h*.04}" r="${h*.27}" fill="${col}" stroke="${dk}" stroke-width="1.3"/>`}
+      [[-1],[1]].forEach(([s])=>{back+=`<circle cx="${s*w*1.04}" cy="${h*.04}" r="${h*.2}" fill="${col}" stroke="${dk}" stroke-width="1.3"/><circle cx="${s*w*.98}" cy="${h*.3}" r="${h*.15}" fill="${col}" stroke="${dk}" stroke-width="1.3"/>`});
+      front=`<path d="${cap(w,h,1.02,.64,-.12)}" fill="${col}"/>`;
+      for(let i=-3;i<=3;i++){front+=`<circle cx="${i*w*.22}" cy="${-h*.7+Math.abs(i)*3.5}" r="${h*.17}" fill="${col}" stroke="${dk}" stroke-width="1.2"/>`}
+      break;}
+    case 'balding':
+      front=[-1,1].map(d=>[[.9,-.34,.11],[.99,-.16,.12],[.97,.02,.1],[.84,-.46,.08]].map(([x,y,r])=>`<circle cx="${d*w*x}" cy="${h*y}" r="${h*r}" fill="${col}" stroke="${dk}" stroke-width="1"/>`).join('')).join('')+`<ellipse cx="${-w*.3}" cy="${-h*.74}" rx="13" ry="5.5" transform="rotate(-24 ${-w*.3} ${-h*.74})" fill="#fff" opacity=".28"/>`;break;
+    case 'swoop':
+      front=`<path d="${cap(w,h,1.08,.55,.06)}" fill="${col}"/><path d="M ${-w*.62} ${-h*.84} C ${-w*.3} ${-h*1.36} ${w*.62} ${-h*1.34} ${w*.8} ${-h*.72} C ${w*.45} ${-h*1.02} ${w*.02} ${-h*.98} ${-w*.62} ${-h*.84} Z" fill="${col}"/><path d="M ${-w*.2} ${-h*1.1} q ${w*.4} ${-h*.1} ${w*.7} ${h*.1}" stroke="${lt}" stroke-width="1.6" fill="none" opacity=".6"/>`;break;
+    case 'long':
+      back=`<path d="M ${-w*1.1} ${-h*.2} C ${-w*1.22} ${-h*1.22} ${w*1.22} ${-h*1.22} ${w*1.1} ${-h*.2} L ${w*1.2} ${h*1.45} L ${-w*1.2} ${h*1.45} Z" fill="${col}"/>`;
+      front=`<path d="M ${-w*1.03} ${h*.05} C ${-w*1.03} ${-h*.8} ${-w*.56} ${-h*1.06} 0 ${-h*1.06} C ${w*.56} ${-h*1.06} ${w*1.03} ${-h*.8} ${w*1.03} ${h*.05} L ${w*.86} ${h*.05} C ${w*.82} ${-h*.3} ${w*.62} ${-h*.44} ${w*.36} ${-h*.42} L ${w*.18} ${-h*.32} L ${w*.02} ${-h*.44} L ${-w*.2} ${-h*.32} L ${-w*.42} ${-h*.44} C ${-w*.7} ${-h*.42} ${-w*.84} ${-h*.3} ${-w*.86} ${h*.05} Z" fill="${col}"/>`;break;
+    case 'short':
+      front=`<path d="${cap(w,h,1.07,.58,.1)}" fill="${col}"/><path d="M ${-w*.4} ${-h*.84} q ${w*.4} ${-h*.14} ${w*.85} ${-h*.02}" stroke="${lt}" stroke-width="1.5" fill="none" opacity=".5"/>`;break;
+    case 'curlyshort':
+      for(let a=190;a<=350;a+=20){const r=a*Math.PI/180;back+=`<circle cx="${Math.cos(r)*w*1.0}" cy="${Math.sin(r)*h*.95-h*.02}" r="${h*.21}" fill="${col}"/>`}
+      front=`<path d="${cap(w,h,1.03,.6,.02)}" fill="${col}"/>`;
+      for(let i=-3;i<=3;i++)front+=`<circle cx="${i*w*.21}" cy="${-h*.66+Math.abs(i)*3}" r="${h*.14}" fill="${shade(col,8)}"/>`;
+      break;
+    case 'ponytail':
+      back=`<ellipse cx="${w*1.02}" cy="${-h*.05}" rx="${w*.25}" ry="${h*.58}" transform="rotate(-16 ${w*1.02} ${-h*.05})" fill="${col}"/><circle cx="${w*.86}" cy="${-h*.62}" r="7" fill="#7A9BC2"/>`;
+      front=`<path d="${cap(w,h,1.05,.56,.1)}" fill="${col}"/><path d="M ${w*.12} ${-h*1.04} C ${w*.02} ${-h*.86} ${-w*.22} ${-h*.66} ${-w*.52} ${-h*.56}" stroke="${lt}" stroke-width="1.8" fill="none" opacity=".6"/>`;break;
+  }
+  return {back,front};
+}
+function eyeSVG(c,uid,s){
+  const {w,h}=c.head,ex=s*w*.4,ey=h*.1,rx=c.eye,ry=rx*1.12,ir=rx*.8;
+  return `<g class="eye" transform="translate(${ex} ${ey})"><clipPath id="ec${uid}${s}"><ellipse rx="${rx}" ry="${ry}"/></clipPath>
+   <g clip-path="url(#ec${uid}${s})"><ellipse rx="${rx}" ry="${ry}" fill="#FBFAF6"/>
+    <g class="iris"><circle r="${ir}" fill="${c.iris}"/><circle r="${ir*.62}" fill="${shade(c.iris,-18)}" opacity=".5"/><circle class="pupil" r="${ir*.46}" fill="#120B08"/><circle class="hl" cx="${-ir*.36}" cy="${-ir*.4}" r="${ir*.32}" fill="#fff"/><circle class="hl2" cx="${ir*.38}" cy="${ir*.34}" r="${ir*.14}" fill="#fff" opacity=".85"/></g>
+    <rect class="lid" x="${-rx-3}" y="${-ry-3}" width="${2*rx+6}" height="0" fill="${c.skin}"/><rect class="low" x="${-rx-3}" y="${ry+3}" width="${2*rx+6}" height="0" fill="${c.skin}"/></g>
+   <path class="lash" fill="none" stroke="#1C1310" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+}
+function headSVG(c,uid){
+  const {w,h}=c.head,face=faceD(w,h,c.head.jaw),H=hair(c),ex=c.extras||[];let s=`<g class="head">`;
+  s+=H.back;
+  [-1,1].forEach(d=>{s+=`<ellipse cx="${d*w*.97}" cy="${h*.14}" rx="8.5" ry="12.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.4"/><path d="M ${d*w*1.0} ${h*.05} q ${d*4.5} 7 0 15" stroke="${c.shade}" stroke-width="1.6" fill="none"/>`;
+    if(ex.includes('hoops'))s+=`<circle cx="${d*w*.99}" cy="${h*.42}" r="6" fill="none" stroke="#D4A941" stroke-width="2"/>`;
+    if(ex.includes('gold'))s+=`<circle cx="${d*w*.99}" cy="${h*.36}" r="3.2" fill="#D4A941"/>`;
+    if(ex.includes('pearls'))s+=`<circle cx="${d*w*.99}" cy="${h*.34}" r="3.6" fill="#F7F3EA" stroke="#CFC7B8"/>`;
+    if(ex.includes('studs'))s+=`<circle cx="${d*w*.99}" cy="${h*.34}" r="2.4" fill="#9FC7D6"/>`;});
+  s+=`<clipPath id="fc${uid}"><path d="${face}"/></clipPath><path d="${face}" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.5"/>`;
+  s+=`<g clip-path="url(#fc${uid})"><ellipse cx="${w*.62}" cy="${h*.55}" rx="${w*.72}" ry="${h}" fill="${c.shade}" opacity=".24"/><ellipse class="fh" cx="0" cy="${-h*.5}" rx="${w*.75}" ry="${h*.32}" fill="#E0503F" opacity="0"/><path class="pallor" d="${face}" fill="#CDD6D3" opacity="0"/><path class="green" d="${face}" fill="#A5C58B" opacity="0"/></g>`;
+  s+=`<g class="cheeks"><ellipse cx="${-w*.6}" cy="${h*.42}" rx="${w*.2}" ry="${h*.12}" fill="${c.blush}"/><ellipse cx="${w*.6}" cy="${h*.42}" rx="${w*.2}" ry="${h*.12}" fill="${c.blush}"/></g>`;
+  if(ex.includes('freckles'))[[-.55,.28],[-.45,.36],[-.64,.36],[.55,.28],[.45,.36],[.64,.36],[-.1,.3],[.1,.3]].forEach(([x,y])=>s+=`<circle cx="${x*w}" cy="${y*h}" r="1.3" fill="${c.shade}"/>`);
+  if(ex.includes('wrinkles'))s+=`<g stroke="${c.shade}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".7"><path d="M ${-w*.35} ${-h*.5} q ${w*.35} -5 ${w*.7} 0"/><path d="M ${-w*.25} ${-h*.4} q ${w*.25} -4 ${w*.5} 0"/><path d="M ${-w*.32} ${h*.36} q -5 8 -2 16"/><path d="M ${w*.32} ${h*.36} q 5 8 2 16"/><path d="M ${-w*.66} ${h*.1} l -6 -2 M ${-w*.66} ${h*.16} l -6 1 M ${w*.66} ${h*.1} l 6 -2 M ${w*.66} ${h*.16} l 6 1"/></g>`;
+  s+=`<path d="M -1.5 ${h*.24} Q -7 ${h*.38} 0 ${h*.41} Q 5.5 ${h*.4} 5 ${h*.33}" stroke="${c.shade}" stroke-width="2.1" fill="none" stroke-linecap="round"/>`;
+  s+=`<ellipse class="cyan" cx="0" cy="${h*.6}" rx="17" ry="10" fill="#7487C0" opacity="0"/>`;
+  if(ex.includes('beard'))s+=`<path d="M ${-w*.95} 0 C ${-w*.95} ${h*.92} ${-w*.42} ${h*1.12} 0 ${h*1.12} C ${w*.42} ${h*1.12} ${w*.95} ${h*.92} ${w*.95} 0 C ${w*.82} ${h*.55} ${w*.42} ${h*.76} 0 ${h*.76} C ${-w*.42} ${h*.76} ${-w*.82} ${h*.55} ${-w*.95} 0 Z" fill="${c.hair.color}"/>`;
+  s+=`<g transform="translate(0 ${h*.6})"><path class="mouth" fill="#4A1F1E" stroke="${c.lip}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/></g>`;
+  if(ex.includes('goatee'))s+=`<path d="M -13 ${h*.5} Q 0 ${h*.43} 13 ${h*.5}" stroke="${c.hair.color}" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M -9 ${h*.78} Q 0 ${h*1.02} 9 ${h*.78} Q 0 ${h*.86} -9 ${h*.78} Z" fill="${c.hair.color}"/>`;
+  if(ex.includes('mustache'))s+=`<path d="M 0 ${h*.46} C -8 ${h*.37} -24 ${h*.4} -27 ${h*.55} C -18 ${h*.52} -9 ${h*.54} 0 ${h*.52} C 9 ${h*.54} 18 ${h*.52} 27 ${h*.55} C 24 ${h*.4} 8 ${h*.37} 0 ${h*.46} Z" fill="${c.hair.color}" stroke="${shade(c.hair.color,-30)}" stroke-width="1"/>`;
+  if(ex.includes('beard'))s+=`<path d="M 0 ${h*.47} C -7 ${h*.4} -18 ${h*.43} -20 ${h*.53} C -12 ${h*.51} -6 ${h*.52} 0 ${h*.51} C 6 ${h*.52} 12 ${h*.51} 20 ${h*.53} C 18 ${h*.43} 7 ${h*.4} 0 ${h*.47} Z" fill="${c.hair.color}"/>`;
+  s+=eyeSVG(c,uid,-1)+eyeSVG(c,uid,1);
+  [-1,1].forEach(d=>{s+=`<g class="brow" data-s="${d}"><path d="M -9.5 1.5 Q 0 -3.5 9.5 1.5" stroke="${c.brow.color}" stroke-width="${c.brow.w}" fill="none" stroke-linecap="round"/></g>`});
+  s+=H.front;
+  const gx=w*.4,gy=h*.1,gr=c.eye*1.12+4.5;
+  if(ex.includes('glasses')||ex.includes('thinGlasses')){const sw=ex.includes('glasses')?2.8:1.6;s+=`<g fill="none" stroke="${c.glasses}" stroke-width="${sw}"><circle cx="${-gx}" cy="${gy}" r="${gr}" fill="#fff" fill-opacity=".07"/><circle cx="${gx}" cy="${gy}" r="${gr}" fill="#fff" fill-opacity=".07"/><path d="M ${-gx+gr} ${gy-1} Q 0 ${gy-6} ${gx-gr} ${gy-1}"/><path d="M ${-gx-gr} ${gy-2} L ${-w*.98} ${gy-4} M ${gx+gr} ${gy-2} L ${w*.98} ${gy-4}"/></g>`}
+  if(ex.includes('cannula'))s+=`<g fill="none" stroke="#BFE2E8" stroke-width="3" stroke-linecap="round"><path d="M ${-w*.98} ${h*.2} Q ${-w*.5} ${h*.5} -6 ${h*.42}"/><path d="M ${w*.98} ${h*.2} Q ${w*.5} ${h*.5} 6 ${h*.42}"/><path d="M -6 ${h*.42} L 6 ${h*.42}" stroke-width="3.4"/></g><path d="M -3 ${h*.42} v -4 M 3 ${h*.42} v -4" stroke="#BFE2E8" stroke-width="2.2" stroke-linecap="round"/>`;
+  s+=`<ellipse class="sheen" cx="${-w*.1}" cy="${-h*.55}" rx="${w*.4}" ry="${h*.12}" fill="#fff" opacity="0"/><g class="sweat">`;
+  [[-.34,-.5],[.36,-.4],[.66,-.08]].forEach(([x,y])=>s+=`<path class="drop" data-x="${x*w}" data-y="${y*h}" d="M 0 -4.5 C 2.8 -.6 3.4 1.8 0 3.6 C -3.4 1.8 -2.8 -.6 0 -4.5 Z" fill="#D4ECF5" stroke="#86B6CC" stroke-width=".9" opacity="0"/>`);
+  s+=`</g><path class="head-hit" d="${face}" fill="none" stroke="none"/></g>`;
+  return s;
+}
+const CLOTH={gown:['#BCD3DA','#8CAEBB'],navy:['#2C4466','#1E3150'],teal:['#2E7C78','#22605D'],coat:['#F2F3EF','#CDD3CC'],blouse:['#E9D8C6','#CDB9A3']};
+function bodySVG(c,uid,mode){
+  const {w,h}=c.head,T=h*1.2,bw=c.body.w,[cl,cd]=CLOTH[c.body.cloth];let s='';
+  const torso=`M ${-bw} ${T+32} C ${-bw} ${T+6} ${-bw*.55} ${T} ${-w*.32} ${T} L ${w*.32} ${T} C ${bw*.55} ${T} ${bw} ${T+6} ${bw} ${T+32} L ${bw+4} ${T+240} L ${-bw-4} ${T+240} Z`;
+  if(c.body.cloth==='gown')s+=`<pattern id="gp${uid}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${cl}"/><path d="M8 4 l3 4 -3 4 -3 -4z" fill="${cd}" opacity=".55"/></pattern>`;
+  s+=`<path d="${torso}" fill="${c.body.cloth==='gown'?`url(#gp${uid})`:cl}" stroke="${shade(cl,-35)}" stroke-width="1.2"/>`;
+  s+=`<path d="M ${-w*.28} ${h*.55} L ${-w*.31} ${T+3} L ${w*.31} ${T+3} L ${w*.28} ${h*.55} Z" fill="${c.skin}"/><ellipse cx="0" cy="${h*.86}" rx="${w*.3}" ry="8" fill="${c.shade}" opacity=".55"/>`;
+  s+=`<g class="strain" opacity="0" stroke="${c.shade}" stroke-width="2.2" stroke-linecap="round"><path d="M ${-w*.2} ${h*.9} L ${-w*.3} ${T+2}"/><path d="M ${w*.2} ${h*.9} L ${w*.3} ${T+2}"/></g>`;
+  if(c.body.cloth==='coat'){s+=`<path d="M ${-w*.46} ${T} L 0 ${T+64} L ${w*.46} ${T} Z" fill="#A9C3D6"/><path d="M ${-w*.3} ${T} L 0 ${T+26} L ${w*.3} ${T} Z" fill="${c.skin}"/><path d="M ${-w*.46} ${T} L -3 ${T+66} L ${-w*.62} ${T+80} L ${-w*.74} ${T+8} Z" fill="${cd}"/><path d="M ${w*.46} ${T} L 3 ${T+66} L ${w*.62} ${T+80} L ${w*.74} ${T+8} Z" fill="${cd}"/><rect x="${bw*.3}" y="${T+76}" width="22" height="28" rx="3" fill="#fff" stroke="#9BB0BC"/><rect x="${bw*.3+4}" y="${T+80}" width="14" height="8" rx="1" fill="#7AA8C4"/>`}
+  else if(c.body.cloth==='navy'||c.body.cloth==='teal'){s+=`<path d="M ${-w*.34} ${T-1} L 0 ${T+32} L ${w*.34} ${T-1}" fill="${c.skin}" stroke="${cd}" stroke-width="5" stroke-linejoin="round"/><rect x="${-bw*.62}" y="${T+56}" width="30" height="24" rx="3" fill="${cd}"/><rect x="${bw*.3}" y="${T+54}" width="20" height="27" rx="3" fill="#fff"/><rect x="${bw*.3+3}" y="${T+58}" width="14" height="8" rx="1" fill="${cl}"/><path d="M ${-bw*.62+7} ${T+56} v -9" stroke="#3B3B40" stroke-width="3" stroke-linecap="round"/>`}
+  else{s+=`<path d="M ${-w*.31} ${T-1} L 0 ${T+22} L ${w*.31} ${T-1} Z" fill="${c.skin}"/><path d="M ${-w*.31} ${T} L 0 ${T+22} L ${w*.31} ${T}" stroke="${cd}" stroke-width="2.4" fill="none" stroke-linejoin="round"/>`}
+  if(c.body.steth)s+=`<g fill="none" stroke="#4A525A" stroke-width="3.4" stroke-linecap="round"><path d="M ${-w*.34} ${T+2} C ${-w*.5} ${T+62} ${-w*.1} ${T+72} ${-w*.1} ${T+104}"/><path d="M ${w*.34} ${T+2} C ${w*.52} ${T+40} ${w*.46} ${T+60} ${w*.4} ${T+74}"/></g><circle cx="${-w*.1}" cy="${T+110}" r="7" fill="#9AA3AB" stroke="#4A525A" stroke-width="2"/>`;
+  if(c.body.cardigan){const cc=c.body.cardigan;[-1,1].forEach(d=>{s+=`<path d="M ${d*bw} ${T+32} C ${d*bw} ${T+6} ${d*bw*.55} ${T} ${d*w*.34} ${T} L ${d*12} ${T+240} L ${d*(bw+4)} ${T+240} Z" fill="${cc}" stroke="${shade(cc,-30)}" stroke-width="1.2"/>`;for(let i=0;i<3;i++)s+=`<circle cx="${d*(w*.3-(w*.3-14)*((i*34+40)/240))}" cy="${T+40+i*34}" r="2.8" fill="${shade(cc,-40)}"/>`})}
+  if((c.extras||[]).includes('pearls'))s+=`<path d="M ${-w*.3} ${T+2} Q 0 ${T+26} ${w*.3} ${T+2}" stroke="#F4EFE4" stroke-width="3.6" stroke-dasharray=".1 6" stroke-linecap="round" fill="none"/>`;
+  return s;
+}
+function armSVG(c){
+  const [cl]=CLOTH[c.body.cloth];let s='';
+  [-1,1].forEach(d=>{s+=`<g class="arm" data-s="${d}"><path class="skin" fill="none" stroke="${c.skin}" stroke-width="22" stroke-linecap="round"/><path class="mot" fill="none" stroke="#86679C" stroke-width="12" stroke-dasharray="2 6" stroke-linecap="round" opacity="0"/><path class="sleeve" fill="none" stroke="${c.body.cardigan||cl}" stroke-width="30" stroke-linecap="round"/><g class="hand"><ellipse rx="13.5" ry="11.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.3"/><ellipse cx="${-d*10}" cy="-5" rx="5" ry="7.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.2"/><path d="M -6 6 v 4 M 0 7 v 4 M 6 6 v 4" stroke="${c.shade}" stroke-width="1.2" stroke-linecap="round"/></g></g>`});
+  return s;
+}
+function blanketSVG(c){
+  const {h}=c.head,B=h*1.2+100;
+  let s=`<g class="blanket"><path d="M -236 ${B+10} C -140 ${B-6} 140 ${B-6} 236 ${B+10} L 244 300 L -244 300 Z" style="fill:var(--blanket)"/>`;
+  if(c.legUp)s+=`<path d="M 70 ${B+34} C 110 ${B+6} 190 ${B+8} 226 ${B+26} L 230 ${B+60} L 72 ${B+60} Z" style="fill:var(--blanket)"/><path d="M 84 ${B+30} C 120 ${B+12} 180 ${B+14} 214 ${B+26}" style="stroke:var(--blanket2)" stroke-width="2" fill="none"/>`;
+  s+=`<path d="M -236 ${B+10} C -140 ${B-6} 140 ${B-6} 236 ${B+10}" style="stroke:var(--sheet)" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M -150 ${B+56} C -80 ${B+46} -20 ${B+62} 40 ${B+54}" style="stroke:var(--blanket2)" stroke-width="2.4" fill="none"/><path d="M 60 ${B+90} C 110 ${B+82} 160 ${B+92} 210 ${B+84}" style="stroke:var(--blanket2)" stroke-width="2.4" fill="none"/></g>`;
+  return s;
+}
+function propsFor(id){
+  const P={back:'',front:''};
+  if(id==='whitfield'){P.back=`<path d="M560 52 V400" stroke="#8F9A98" stroke-width="4.5"/><path d="M544 52 h32" stroke="#8F9A98" stroke-width="4"/><path d="M548 58 q-8 30 8 48 q14 -18 6 -48 Z" fill="#E8F2F6" stroke="#9FB6C1" stroke-width="1.5"/><rect x="545" y="160" width="32" height="44" rx="5" fill="#E4EBE9" stroke="#8A9A96"/><rect x="550" y="167" width="22" height="11" rx="2" fill="#9FE0B8"/><path d="M561 204 C 556 280 470 300 408 336" stroke="#BCD7E0" stroke-width="2.4" fill="none"/>`}
+  if(id==='ortiz'){P.back=`<rect x="372" y="62" width="16" height="36" rx="4" fill="#DCE8E5" stroke="#86A39C"/><circle cx="380" cy="74" r="3.5" fill="#2F8F6B"/><path d="M380 98 C 382 140 400 160 386 170" stroke="#BFE2E8" stroke-width="3" fill="none"/>`}
+  if(id==='bell'||id==='okafor'){const top=id==='bell'?`<rect x="552" y="248" width="24" height="44" rx="4" fill="#E6EEF1" stroke="#7EA9B8"/><circle cx="564" cy="280" r="4.5" fill="#3D86A3"/><path d="M548 246 L580 294" stroke="#C5CED1" stroke-width="1.3"/><rect x="516" y="266" width="18" height="26" rx="3" fill="#DCEAF0" stroke="#9BB6C2"/>`:`<rect x="508" y="286" width="46" height="6" rx="2" fill="#2D3438"/><rect x="512" y="283" width="38" height="3" fill="#6FA0C4"/><rect x="566" y="266" width="14" height="26" rx="3" fill="#7BB070"/><rect x="566" y="270" width="14" height="6" fill="#E8E0B8"/>`;
+    P.front=`<g><rect x="496" y="292" width="124" height="11" rx="3" style="fill:var(--table)"/><rect x="552" y="303" width="9" height="100" fill="#8A8F91"/><rect x="528" y="400" width="56" height="8" rx="3" fill="#6F7577"/>${top}</g>`}
+  return P;
+}
+
+/* ---------- instances ---------- */
+const insts=[];
+function makeInst(svgParent,c,mode,key){
+  const uid=++UID,g=svgParent;
+  let s='';
+  if(mode==='bed')s=`<g class="torso">${bodySVG(c,uid,mode)}</g>${blanketSVG(c)}<g class="arms">${armSVG(c)}</g>`;
+  else if(mode==='bust')s=`<g class="torso">${bodySVG(c,uid,mode)}</g>`;
+  // head must sit above torso but below arms: insert head after torso
+  if(mode==='bed'){s=`<g class="torso">${bodySVG(c,uid,mode)}</g><g class="headwrap">${headSVG(c,uid)}</g>${blanketSVG(c)}<g class="arms">${armSVG(c)}</g>`}
+  else if(mode==='bust'){s=`<g class="torso">${bodySVG(c,uid,mode)}</g><g class="headwrap">${headSVG(c,uid)}</g>`}
+  else s=`<g class="headwrap">${headSVG(c,uid)}</g>`;
+  g.innerHTML=s;
+  const q=(sel)=>g.querySelector(sel),qa=(sel)=>[...g.querySelectorAll(sel)];
+  const eyes=qa('.eye').map((e,i)=>({s:i?1:-1,iris:e.querySelector('.iris'),pupil:e.querySelector('.pupil'),hl:e.querySelector('.hl'),hl2:e.querySelector('.hl2'),lid:e.querySelector('.lid'),low:e.querySelector('.low'),lash:e.querySelector('.lash'),rx:c.eye,ry:c.eye*1.12}));
+  const {w,h}=c.head;
+  const inst={c,key,mode,g,uid,v:{...BASE},eyes,brows:qa('.brow'),mouth:q('.mouth'),head:q('.head'),cheeks:q('.cheeks'),fh:q('.fh'),pallor:q('.pallor'),green:q('.green'),cyan:q('.cyan'),sheen:q('.sheen'),drops:qa('.drop'),torso:q('.torso'),strain:q('.strain'),blanket:q('.blanket'),
+    arms:qa('.arm').map(a=>({s:+a.dataset.s,skin:a.querySelector('.skin'),mot:a.querySelector('.mot'),sleeve:a.querySelector('.sleeve'),hand:a.querySelector('.hand'),x:0,y:0})),
+    cur:{smile:c.smile||0,open:0,worry:0,raise:0,squint:0,eye:1,dil:0,flush:0,pallor:0,cyan:0,sweat:0,mottle:0,green:0,lean:0,droop:0,guard:0,guard2:0,pick:0,tremor:0,glassy:0,strain:0},
+    gaze:{x:0,y:0,tx:0,ty:0,next:0},blink:{next:1+Math.random()*3,start:-9,dur:.15},phase:Math.random(),poke:-9,hover:false,seed:Math.random()*10,yawn:{next:6+Math.random()*6,start:-9},
+    T:h*1.2,B:h*1.2+100,w,h};
+  inst.arms.forEach(a=>{a.x=a.s*c.body?.w*.64||0;a.y=inst.B+24});
+  insts.push(inst);
+  return inst;
+}
+function removeInst(inst){const i=insts.indexOf(inst);if(i>=0)insts.splice(i,1)}
+
+function derive(v,c){
+  const painF=clamp((v.pain-3)/6),splint=c.guard?clamp((v.pain-5)/3):0,fever=clamp((v.temp-37.7)/1.3),rigors=v.temp>=39.2?1:0;
+  const lowBP=clamp((96-v.sbp)/24),mottle=clamp((80-v.sbp)/12),cyan=clamp((92-v.spo2)/8),hypoG=clamp((72-v.glu)/28);
+  const dys=clamp(Math.max(clamp((v.rr-22)/12),cyan*.9)),lean=clamp(Math.min((v.rr-25)/6,(93-v.spo2)/5));
+  const alertEff=Math.max(v.alert,v.glu<45?2:v.glu<56?1:0,v.sbp<72?2:v.sbp<84?1:0,v.spo2<83?1:0,v.rr<10?(v.rr<8?2:1):0);
+  const confused=(v.confused||v.glu<56)&&alertEff<2,dizzy=(v.hr<52&&v.sbp<96&&alertEff<2)?1:0,nausea=v.nausea?1:0;
+  const comfort=1-clamp(painF+dys+hypoG+fever*.6+lowBP+nausea+(confused?.6:0)+dizzy+alertEff*.5);
+  return {painF,splint,fever,rigors,lowBP,mottle,cyan,hypoG,dys,lean,alertEff,confused,dizzy,nausea,comfort};
+}
+function targets(inst,d,t){
+  const c=inst.c,T={};
+  T.smile=clamp((c.smile||0)*d.comfort+d.comfort*.2-d.painF*.75-d.dys*.45-d.hypoG*.45-d.nausea*.4-d.dizzy*.3-(d.confused?.15:0),-.8,1);
+  T.open=(d.alertEff===2?.22:0)+d.painF*.1;
+  T.worry=clamp(d.painF*.9+d.hypoG*.75+(d.confused?.55:0)+d.dys*.7+d.dizzy*.6+d.nausea*.5-(d.alertEff===2?.7:0));
+  T.raise=d.confused?.25:0;
+  T.squint=clamp(d.painF*.6+Math.max(0,T.smile)*.4+d.nausea*.2);
+  T.eye=[1,.5,.1][d.alertEff]*(1-d.painF*.18)*(d.dizzy?.78:1)*(c.tired?.72:1);
+  T.dil=clamp(d.hypoG+d.dys*.3);T.flush=d.fever;T.pallor=clamp(Math.max(d.lowBP*.85,d.hypoG*.6,d.nausea*.3,d.cyan*.35));
+  T.cyan=d.cyan;T.sweat=clamp(Math.max(d.hypoG,d.dys*.75,d.rigors*.5,d.painF>.8?.4:0,d.mottle*.85,d.fever>.7?.3:0));
+  T.mottle=d.mottle;T.green=d.nausea;T.lean=d.lean;T.droop=[0,.3,1][d.alertEff];T.guard=d.splint;T.guard2=c.guard&&d.painF>.85?1:0;
+  T.pick=d.confused?1:0;T.tremor=d.hypoG>.15?d.hypoG:0;T.glassy=d.fever;T.strain=clamp(d.lean*.9+d.dys*.35);
+  return T;
+}
+let pointer={x:0,y:0,t:-99};
+addEventListener('pointermove',e=>{pointer={x:e.clientX,y:e.clientY,t:performance.now()/1000}},{passive:true});
+function breathCurve(p){return p<.42?.5-.5*Math.cos(Math.PI*p/.42):.5+.5*Math.cos(Math.PI*(p-.42)/.58)}
+function rand(a,b){return a+Math.random()*(b-a)}
+
+function step(inst,t,dt,frame){
+  const c=inst.c,v=inst.v,d=derive(v,c),T=targets(inst,d,t),cur=inst.cur,k=1-Math.exp(-dt*5);
+  // interactions
+  const pe=Math.max(0,1-(t-inst.poke)/1.6);
+  if(inst.hover){T.smile=Math.min(1,T.smile+.4);T.raise+=.35}
+  if(pe>0){if(d.alertEff<2){T.raise+=pe*.7;if(d.painF>.5){T.squint+=pe*.3;T.worry=clamp(T.worry+pe*.3)}else T.smile=Math.min(1,T.smile+pe*.35)}else T.eye+=pe*.18}
+  // yawn (tired staff)
+  let yawn=0;if(c.tired){if(t>inst.yawn.next){inst.yawn.start=t;inst.yawn.next=t+rand(8,14)}const yt=t-inst.yawn.start;if(yt>=0&&yt<2.2)yawn=Math.sin(Math.PI*yt/2.2)}
+  if(yawn){T.open+=yawn*.95;T.eye*=1-yawn;T.raise+=yawn*.5;T.smile=lerp(T.smile,0,yawn)}
+  for(const key in T)cur[key]=lerp(cur[key],T[key],k);
+  // breathing
+  const rr=Math.max(4,v.rr);inst.phase=(inst.phase+dt*rr/60)%1;const b=breathCurve(inst.phase);inst.b=b;
+  const depth=(d.alertEff===2?1.2:1)*(1-cur.guard*.55)*(v.rr>26?.8:1);
+  const calm=reduced?0:1;
+  // gaze
+  const nowP=performance.now()/1000,g=inst.gaze;
+  const attentive=d.alertEff===0&&!d.confused&&!d.dizzy;
+  if(attentive&&(nowP-pointer.t<3||inst.hover)){
+    if(frame%6===0||!inst.hc){const r=inst.head.getBoundingClientRect();inst.hc=[r.left+r.width/2,r.top+r.height/2]}
+    let dx=(pointer.x-inst.hc[0])/260,dy=(pointer.y-inst.hc[1])/260;const L=Math.hypot(dx,dy);if(L>1){dx/=L;dy/=L}g.tx=dx;g.ty=dy;
+  }else if(t>g.next){
+    if(d.confused){g.tx=rand(-1,1);g.ty=rand(-.6,.6);g.next=t+rand(.35,1)}
+    else if(d.alertEff>=1||d.dizzy){g.tx=rand(-.3,.3);g.ty=rand(.3,.8);g.next=t+rand(2,4)}
+    else{const r=Math.random();if(r<.35){g.tx=0;g.ty=0}else{g.tx=rand(-.7,.7);g.ty=rand(-.35,.35)}g.next=t+rand(1.2,3.6)}
+  }
+  if(pe>0&&d.alertEff<2){g.tx=0;g.ty=0}
+  const gk=1-Math.exp(-dt*(reduced?6:16));g.x=lerp(g.x,g.tx,gk);g.y=lerp(g.y,g.ty,gk);
+  // blink
+  const bl=inst.blink,drowsy=d.alertEff>=1||c.tired;
+  if(t>bl.next){bl.start=t;bl.dur=drowsy?.4:.15;bl.next=t+(drowsy?rand(1.4,3):d.confused?rand(1,2.5):rand(2.4,6));if(Math.random()<.14)bl.next=t+.3}
+  const bt=t-bl.start,blink=bt>=0&&bt<bl.dur?Math.sin(Math.PI*bt/bl.dur):0;
+  const openAmt=clamp(cur.eye*(1-blink));
+  // eyes
+  const maxOff=2.8+(c.eye-9.5)*.3;
+  inst.eyes.forEach(e=>{
+    const {rx,ry}=e,lidY=lerp(-ry*1.02,ry*.94,1-openAmt),lowY=ry-cur.squint*ry*.7;
+    e.lid.setAttribute('height',Math.max(0,lidY+ry+3));
+    e.low.setAttribute('y',lowY);e.low.setAttribute('height',Math.max(0,ry+3-lowY));
+    const cy=Math.max(-ry*.08,lidY),hw=lidY< -ry*.08?rx+1.2:rx*Math.sqrt(Math.max(0,1-(cy/ry)**2))+1.4;
+    const apex=lidY+(openAmt<.3?3.2*(1-openAmt/.3):0),ctrl=2*apex-cy;
+    e.lash.setAttribute('d',`M ${-hw} ${cy} Q 0 ${ctrl} ${hw} ${cy} L ${e.s*(hw+2.4)} ${cy-1.8}`);
+    e.iris.setAttribute('transform',`translate(${g.x*maxOff} ${g.y*maxOff*.8+cur.droop*1.5})`);
+    const ir=rx*.8;e.pupil.setAttribute('r',ir*.46*(1+cur.dil*.42));e.hl.setAttribute('r',ir*.32*(1+cur.glassy*.35));e.hl2.setAttribute('opacity',.85);
+  });
+  // brows
+  const ey=inst.h*.1-c.eye*1.12-8;
+  inst.brows.forEach(br=>{const s=+br.dataset.s;const ang=cur.worry*16-cur.smile*2;br.setAttribute('transform',`translate(${s*inst.w*.4-s*cur.worry*2} ${ey-cur.raise*4+cur.worry*1.5}) rotate(${s*ang})`)});
+  // mouth
+  const gasp=cur.strain>.05||v.rr>24?clamp(cur.strain*.8+(v.rr-24)/20)*(0.35+.65*b):0;
+  const chatter=v.temp>=39.2&&d.alertEff<2&&!reduced?(Math.sin(t*38)>0?.1:0):0;
+  const open=clamp(cur.open+gasp+chatter),sm=cur.smile,mw=18+Math.max(0,sm)*6+cur.guard*5+open*3;
+  const cy=-sm*4.6,up=sm*5.6-open*2,lo=sm*5.6+open*17;
+  inst.mouth.setAttribute('d',`M ${-mw/2} ${cy} Q 0 ${up} ${mw/2} ${cy} Q 0 ${lo} ${-mw/2} ${cy} Z`);
+  inst.mouth.setAttribute('stroke',mix(c.lip,'#5D6FA6',cur.cyan*.8));
+  // skin
+  inst.cheeks.setAttribute('opacity',.22+cur.flush*.5);inst.fh.setAttribute('opacity',cur.flush*.18);
+  inst.pallor.setAttribute('opacity',cur.pallor*.55);inst.green.setAttribute('opacity',cur.green*.34);inst.cyan.setAttribute('opacity',cur.cyan*.5);
+  inst.sheen.setAttribute('opacity',cur.sweat*.32);
+  inst.drops.forEach((dr,i)=>{const f=((t*.22+i*.37)%1),op=cur.sweat>.08?cur.sweat*(1-f*.7):0;dr.setAttribute('opacity',op);dr.setAttribute('transform',`translate(${dr.dataset.x} ${+dr.dataset.y+f*(reduced?0:12)})`)});
+  // body jitter
+  const shiv=v.temp>=39.2&&d.alertEff<2?calm:0,jx=shiv*Math.sin(t*47)*1.3,jy=shiv*Math.cos(t*53)*.8;
+  const trem=cur.tremor*calm;
+  // head motion
+  const idle=calm*(1-cur.droop*.6);
+  const sway=d.dizzy*calm;
+  let rot=Math.sin(t*.45+inst.seed)*1.6*idle+cur.droop*9+sway*Math.sin(t*1.25)*6+yawn*-5;
+  let hxp=Math.sin(t*.6+inst.seed)*1.2*idle+sway*Math.sin(t*1.25)*4+jx+trem*Math.sin(t*61)*.6;
+  const P=inst.B+40,riseAmt=(inst.mode==='bed'?(P-inst.T)*.032:(P-inst.T)*.018)*b*depth;
+  let hyp=-riseAmt+cur.droop*8+cur.lean*13+jy-pe*(d.alertEff<2?3:0)+yawn*-3;
+  const sc=1+cur.lean*.06;
+  inst.head.setAttribute('transform',`translate(${hxp} ${hyp}) rotate(${rot} 0 ${inst.h*.8}) scale(${sc})`);
+  if(inst.torso){const sy=1+(inst.mode==='bed'?.032:.018)*b*depth+cur.lean*.04,sx=1+.015*b*depth+cur.lean*.03;
+    inst.torso.setAttribute('transform',`translate(${jx} ${jy}) translate(0 ${P}) scale(${sx} ${sy}) translate(0 ${-P})`)}
+  if(inst.strain)inst.strain.setAttribute('opacity',cur.strain*(0.6+.4*b));
+  if(inst.blanket)inst.blanket.setAttribute('transform',`translate(0 ${-b*depth*1.4})`);
+  // arms
+  if(inst.arms.length){const bw=c.body.w,B=inst.B,T0=inst.T;
+    inst.arms.forEach(a=>{const s=a.s;let tx=s*bw*.64,ty=B+26;
+      if(s===1){tx=lerp(tx,bw*.12,cur.guard);ty=lerp(ty,B+16,cur.guard)}
+      if(s===-1){tx=lerp(tx,-bw*.2,cur.guard2);ty=lerp(ty,B+22,cur.guard2);
+        if(cur.pick>.02){tx=lerp(tx,-bw*.74+(reduced?0:Math.sin(t*3.1)*9),cur.pick);ty=lerp(ty,B+22-(reduced?0:Math.abs(Math.sin(t*6.2))*5),cur.pick)}}
+      tx=lerp(tx,s*bw*.42,cur.lean);ty=lerp(ty,B+40,cur.lean);
+      const ak=1-Math.exp(-dt*4);a.x=lerp(a.x,tx,ak);a.y=lerp(a.y,ty,ak);
+      const hxh=a.x+trem*(Math.sin(t*57+s)*1.8)+jx,hyh=a.y+trem*Math.cos(t*63+s)*1.4+jy;
+      const Sx=s*bw*.84,Sy=T0+24-riseAmt-cur.lean*7,Ex=(Sx+hxh)/2+s*24,Ey=(Sy+hyh)/2+8;
+      const tt=.38,mx1=lerp(Sx,Ex,tt),my1=lerp(Sy,Ey,tt),mx2=lerp(Ex,hxh,tt),my2=lerp(Ey,hyh,tt),px=lerp(mx1,mx2,tt),py=lerp(my1,my2,tt);
+      const dd=`M ${Sx} ${Sy} Q ${Ex} ${Ey} ${hxh} ${hyh}`;a.skin.setAttribute('d',dd);a.mot.setAttribute('d',dd);a.mot.setAttribute('opacity',cur.mottle*.75);
+      a.sleeve.setAttribute('d',`M ${Sx} ${Sy} Q ${mx1} ${my1} ${px} ${py}`);
+      a.hand.setAttribute('transform',`translate(${hxh} ${hyh})`)});
+  }
+  return d;
+}
+
+/* ---------- page wiring ---------- */
+const SLIDERS=[
+  ['rr','Respiratory rate','/min',6,40,1,v=>v<12||v>20,'Normal 12–20',1],
+  ['spo2','SpO₂','%',78,100,1,v=>v<92,'Goal 92% or higher',1],
+  ['hr','Heart rate','bpm',30,160,1,v=>v<60||v>100,'Normal 60–100',1],
+  ['sbp','Systolic BP','mmHg',60,190,1,v=>v<100||v>160,'Watch below 100',1],
+  ['temp','Temperature','°C',35.5,40.5,.1,v=>v>=38||v<36,'Fever 38.0 or higher',1],
+  ['pain','Pain','/10',0,10,1,v=>v>=7,'Patient-reported',2],
+  ['glu','Blood glucose','mg/dL',25,350,1,v=>v<70||v>250,'Low below 70',2],
+];
+const $=(id)=>document.getElementById(id);
+let cur='bell',main=null,dirty=false,sceneIdx=0,lastSig='';
+SLIDERS.forEach(([id,label,unit,min,max,st,abn,hint,grp])=>{
+  const el=document.createElement('div');el.className='sl';
+  el.innerHTML=`<label for="s-${id}">${label}</label><output id="o-${id}" for="s-${id}"></output><input type="range" id="s-${id}" min="${min}" max="${max}" step="${st}"><small>${hint}</small>`;
+  $(grp===1?'sliders1':'sliders2').appendChild(el);
+  el.querySelector('input').addEventListener('input',e=>{main.v[id]=+e.target.value;sceneIdx=-1;sync()});
+});
+$('alertSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;main.v.alert=+b.dataset.v;sceneIdx=-1;sync()});
+$('confused').addEventListener('change',e=>{main.v.confused=e.target.checked;sceneIdx=-1;sync()});
+$('nausea').addEventListener('change',e=>{main.v.nausea=e.target.checked;sceneIdx=-1;sync()});
+$('resetBtn').addEventListener('click',()=>loadScene(0));
+
+function sync(){
+  const v=main.v;
+  SLIDERS.forEach(([id,,unit,,,st,abn])=>{const inp=$('s-'+id),o=$('o-'+id);inp.value=v[id];o.textContent=(st<1?v[id].toFixed(1):v[id])+' '+unit;o.classList.toggle('abn',abn(v[id]))});
+  [...$('alertSeg').children].forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===v.alert));
+  $('confused').checked=v.confused;$('nausea').checked=v.nausea;
+  [...$('scenes').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===sceneIdx));
+  // monitor
+  const set=(id,txt,bad)=>{const e=$(id);e.textContent=txt;e.classList.toggle('bad',bad)};
+  set('mHR',v.hr,v.hr<50||v.hr>120);set('mSp',v.spo2,v.spo2<90);set('mRR',v.rr,v.rr<10||v.rr>24);set('mBP',`${v.sbp}/${Math.round(v.sbp*.6)}`,v.sbp<90);
+  set('mT',v.temp.toFixed(1),v.temp>=38.3);set('mG',v.glu,v.glu<70);set('mP',v.pain,v.pain>=7);
+  $('rhythm').textContent=main.c===CH.ortiz?'AFib':v.hr>100?'Sinus tach':v.hr<60?'Sinus brady':'SR';
+  renderCues();hideBubble();
+}
+function renderCues(){
+  const c=main.c,v=main.v,d=derive(v,c),[sub,pos]=c.pro,L=[];const cap=s=>s[0].toUpperCase()+s.slice(1);
+  if(d.alertEff===2)L.push([`Barely rousable. ${cap(pos)} eyes open only to a firm voice, then close.`,'Level of consciousness']);
+  else if(d.alertEff===1)L.push([`Drowsy. Heavy eyelids, slow blinks, ${pos} head sagging.`,'Level of consciousness']);
+  if(d.lean>.3)L.push([`Sitting forward with ${pos} shoulders up. Neck muscles working to breathe.`,'RR + SpO₂']);
+  if(v.rr>=24)L.push([`Breathing fast, mouth open on each breath. About ${v.rr} a minute.`,'Resp. rate']);
+  else if(v.rr<=10)L.push([`Slow breaths with long pauses between them.`,'Resp. rate']);
+  if(d.splint>.3)L.push([`Shallow, guarded breaths with a hand held over where it hurts.`,'Pain']);
+  else if(v.pain>=5)L.push([`Wincing, brows pinched together.`,'Pain']);
+  if(d.cyan>.25)L.push([`Dusky, bluish lips.`,'SpO₂']);
+  if(d.rigors&&d.alertEff<2)L.push([`Shaking chills, teeth chattering.`,'Temp']);else if(d.fever>.2)L.push([`Flushed cheeks and forehead, glassy eyes.`,'Temp']);
+  if(d.mottle>.2)L.push([`Mottled, purplish forearms.`,'Blood pressure']);if(d.lowBP>.3)L.push([`Pale, ashen color.`,'Blood pressure']);
+  if(d.hypoG>.15)L.push([`Sweaty, hands trembling, pupils wide.`,'Glucose']);
+  if(d.confused)L.push([`Picking at the blanket, eyes darting around the room.`,'Mental status']);
+  if(d.dizzy)L.push([`Swaying, eyes unfocused. Lightheaded.`,'HR + BP']);
+  if(d.nausea)L.push([`Greenish tinge, swallowing hard.`,'Nausea']);
+  if(!d.hypoG&&d.dys>.3&&!L.some(x=>x[0].includes('Sweat')))L.push([`Beads of sweat on ${pos} forehead.`,'Work of breathing']);
+  const ul=$('cues');
+  if(!L.length)ul.innerHTML=`<li class="ok"><span>Looks comfortable. Nothing pulls your eye.</span><em>Baseline</em></li>`;
+  else ul.innerHTML=L.map(([a,b])=>`<li><span>${a}</span><em>${b}</em></li>`).join('');
+}
+let bubbleT=0;
+function hideBubble(){$('bubble').hidden=true}
+function poke(){
+  const t=performance.now()/1000;main.poke=t;const d=derive(main.v,main.c),Ln=LINES[cur];
+  let line,quiet=false;
+  if(d.alertEff===2){line=Ln.none;quiet=true}
+  else if(d.dys>.5&&Ln.dys)line=Ln.dys;else if(d.hypoG>.15&&Ln.hypo)line=Ln.hypo;else if(d.dizzy&&Ln.dizzy)line=Ln.dizzy;
+  else if(d.confused&&Ln.confused)line=Ln.confused;else if(d.painF>.4&&Ln.pain)line=Ln.pain;else if(d.nausea&&Ln.nausea)line=Ln.nausea;
+  else if(d.fever>.4&&Ln.fever)line=Ln.fever;else if(d.alertEff===1&&Ln.drowsy)line=Ln.drowsy;else if(d.dys>.3&&Ln.dys)line=Ln.dys;else line=Ln.calm;
+  const b=$('bubble');b.textContent=quiet?line:`“${line}”`;b.className='bubble'+(quiet?' quiet':'');b.hidden=false;$('hint').hidden=true;
+  clearTimeout(bubbleT);bubbleT=setTimeout(hideBubble,4200);
+}
+$('patient').addEventListener('click',poke);
+$('patient').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();poke()}});
+
+function loadScene(i){sceneIdx=i;main.v={...BASE,...SCENES[cur][i][1]};sync()}
+function selectPatient(id){
+  cur=id;const c=CH[id];
+  if(main)removeInst(main);
+  const pg=$('patient');pg.setAttribute('transform','translate(320 150)');pg.setAttribute('aria-label',`${c.name}. Talk to ${c.pro[1]==='his'?'him':'her'}.`);
+  main=makeInst(pg,c,'bed',id);
+  const P=propsFor(id);$('propsBack').innerHTML=P.back;$('propsFront').innerHTML=P.front;
+  $('sceneLabel').textContent=`${c.name} in bed, room ${c.room}`;
+  $('scenes').innerHTML=SCENES[id].map((s,i)=>`<button type="button" class="scene-btn" data-i="${i}">${s[0]}</button>`).join('');
+  [...$('picker').children].forEach(b=>b.setAttribute('aria-selected',b.dataset.id===id));
+  loadScene(0);
+}
+$('scenes').addEventListener('click',e=>{const b=e.target.closest('button');if(b)loadScene(+b.dataset.i)});
+
+// picker with live faces
+PATIENTS.forEach(id=>{const c=CH[id],b=document.createElement('button');b.type='button';b.className='pick';b.setAttribute('role','tab');b.dataset.id=id;
+  b.innerHTML=`<svg viewBox="-78 -96 156 160" aria-hidden="true"><g></g></svg><span><b>${c.room} ${c.short}</b><small>${c.sub}</small></span>`;
+  $('picker').appendChild(b);makeInst(b.querySelector('g'),c,'icon',id);b.addEventListener('click',()=>selectPatient(id))});
+
+// crew
+STAFF.forEach(id=>{const c=CH[id],b=document.createElement('button');b.type='button';b.className='mate';
+  b.innerHTML=`<svg viewBox="-110 -112 220 232" aria-hidden="true"><rect x="-110" y="-112" width="220" height="232" style="fill:var(--wall)"/><g></g></svg><span class="cap"><b>${c.name}</b><small>${c.role}</small><q></q></span>`;
+  $('crew').appendChild(b);const inst=makeInst(b.querySelector('g'),c,'bust',id);
+  b.addEventListener('pointerenter',()=>inst.hover=true);b.addEventListener('pointerleave',()=>inst.hover=false);
+  b.addEventListener('focus',()=>inst.hover=true);b.addEventListener('blur',()=>inst.hover=false);
+  b.addEventListener('click',()=>{inst.poke=performance.now()/1000;b.querySelector('q').textContent=c.line});});
+
+// pause
+let paused=false;$('pauseBtn').addEventListener('click',e=>{paused=!paused;e.currentTarget.setAttribute('aria-pressed',paused);e.currentTarget.textContent=paused?'Resume motion':'Pause motion';if(!paused){last=performance.now()/1000;requestAnimationFrame(loop)}});
+
+// ECG
+const cv=$('ecg'),cx=cv.getContext('2d');let ex=0,ey=null,ecgT=0,monCol='#7BE0A4',colT=0;
+function ecgY(ph){const g=(x,m,s,a)=>a*Math.exp(-((x-m)**2)/(2*s*s));return g(ph,.12,.025,.12)-g(ph,.22,.008,.12)+g(ph,.24,.012,1)-g(ph,.265,.01,.28)+g(ph,.46,.045,.28)}
+function drawECG(dt,t){
+  if(t-colT>1){colT=t;monCol=getComputedStyle(document.documentElement).getPropertyValue('--mon-hr').trim()||monCol}
+  const W=cv.width,H=cv.height,v=main.v,af=main.c===CH.ortiz;ecgT+=dt;
+  const speed=W/3.2,steps=Math.max(1,Math.round(dt*speed));
+  for(let i=0;i<steps;i++){
+    const tt=ecgT-dt+dt*(i+1)/steps,per=60/Math.max(20,v.hr)*(af?1+.18*Math.sin(tt*1.7)*Math.sin(tt*.9):1);
+    const ph=(tt%per)/per;let y=ecgY(ph);if(af)y+=Math.sin(tt*37)*.03+Math.sin(tt*23)*.02;
+    const Y=H*.72-y*H*.6;
+    cx.clearRect(ex,0,14,H);cx.strokeStyle=monCol;cx.lineWidth=2.4;cx.lineJoin='round';
+    if(ey!==null&&ex>0){cx.beginPath();cx.moveTo(ex-1,ey);cx.lineTo(ex,Y);cx.stroke()}
+    ey=Y;ex+=1;if(ex>=W){ex=0;ey=null}
+  }
+}
+
+let last=performance.now()/1000,frame=0;
+function loop(){
+  if(paused)return;
+  const now=performance.now()/1000,dt=Math.min(.05,now-last);last=now;frame++;
+  insts.forEach(i=>step(i,now,dt,frame));
+  $('bdot').style.opacity=.15+.85*(main.b||0);
+  drawECG(dt,now);
+  requestAnimationFrame(loop);
+}
+selectPatient('bell');
+insts.forEach(i=>step(i,last,.016,0));
+requestAnimationFrame(loop);
+})();
+</script>
