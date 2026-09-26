@@ -11,4 +11,4 @@ html=f'''<!doctype html>
 <style>{css}</style></head>
 <body><div id="app"></div>
 <script>{js}</script></body></html>'''
-out=pathlib.Path(__file__).parent/'dist'/'the-shift.html'; out.write_text(html); print(len(html))
+out=pathlib.Path(__file__).parent/'dist'/'the-shift.html'; out.write_text(html); (out.parent/'index.html').write_text(html); print(len(html))
