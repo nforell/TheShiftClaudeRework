@@ -110,7 +110,7 @@
     if (!sweatFirst) s += sweat;
     return s + `</g>`;
   }
-  const CLOTH = { gown: ['#BCD3DA', '#8CAEBB'], navy: ['#2C4466', '#1E3150'], teal: ['#2E7C78', '#22605D'], grey: ['#6B7478', '#50585C'], blue: ['#3E6FA8', '#2F5584'], wine: ['#7A2E3E', '#5E2230'], coat: ['#F2F3EF', '#CDD3CC'], blouse: ['#E9D8C6', '#CDB9A3'], plum: ['#6D4A63', '#553A4D'] };
+  const CLOTH = { gown: ['#BCD3DA', '#8CAEBB'], navy: ['#2C4466', '#1E3150'], teal: ['#2E7C78', '#22605D'], grey: ['#6B7478', '#50585C'], blue: ['#3E6FA8', '#2F5584'], wine: ['#7A2E3E', '#5E2230'], coat: ['#F2F3EF', '#CDD3CC'], blouse: ['#E9D8C6', '#CDB9A3'], plum: ['#6D4A63', '#553A4D'], tee: ['#6F8394', '#566878'], sun: ['#E2A93E', '#BD8A2B'], hoodie: ['#34425A', '#263247'], flannel: ['#7C98B6', '#5E7A98'] };
   function bodySVG(c, uid) {
     const { w, h } = c.head, T = h * 1.2, bw = c.body.w, [cl, cd] = CLOTH[c.body.cloth] || CLOTH.gown; let s = '';
     const torso = `M ${-bw} ${T + 32} C ${-bw} ${T + 6} ${-bw * .55} ${T} ${-w * .32} ${T} L ${w * .32} ${T} C ${bw * .55} ${T} ${bw} ${T + 6} ${bw} ${T + 32} L ${bw + 4} ${T + 240} L ${-bw - 4} ${T + 240} Z`;

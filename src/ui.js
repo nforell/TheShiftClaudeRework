@@ -1,7 +1,7 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
   const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx;
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => document.querySelector(sel);
@@ -39,6 +39,9 @@
   const goneText = (P) => P.goneText || 'Transferred to ICU';
   const prov = () => staff(C().provider || 'chen');
   const cna = () => staff(C().cna || 'luis');
+  const unitS = () => esc(C().unitShort || '4 West');
+  const sysL = (id, l) => (C().sysLabels && C().sysLabels[id]) || l;
+  const legal = (d) => (d.legal ? `<span class="chip legal">${esc(d.legal)}</span>` : '');
   const fT = (t) => (typeof t === 'number' ? t.toFixed(1) : t);
   const fLab = (l) => (typeof l.val === 'number' && Number.isInteger(l.val) && /\d\.\d/.test(l.ref || '') ? l.val.toFixed(1) : l.val);
   const o2txt = (o) => (o === 'Room air' ? 'room air' : o);
@@ -85,7 +88,7 @@
   /* ------------ header ------------ */
   function header() {
     const unread = s.inbox.filter((m) => !m.read).length;
-    const loc = ui.view === 'room' ? `4 West <span aria-hidden="true">/</span> <b>Room ${s.loc} · ${esc(def(s.loc).short)}</b>` : ui.view === 'handoff' ? '4 West <span aria-hidden="true">/</span> <b>Shift report</b>' : '4 West <span aria-hidden="true">/</span> <b>Nurses\' station</b>';
+    const loc = ui.view === 'room' ? `${unitS()} <span aria-hidden="true">/</span> <b>Room ${s.loc} · ${esc(def(s.loc).short)}</b>` : ui.view === 'handoff' ? `${unitS()} <span aria-hidden="true">/</span> <b>Shift report</b>` : `${unitS()} <span aria-hidden="true">/</span> <b>Nurses' station</b>`;
     return `<header class="top">
       <button class="mark" data-act="menu" aria-label="The Shift menu">The Shift</button>
       <div class="where">${loc}</div>
@@ -131,7 +134,7 @@
       <div>
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map(rung).join('')}
-          <div class="rung locked"><b>Specialty units</b><span>Psych, ED, ICU, peds.</span><small>Coming later</small></div>
+          <div class="rung locked"><b>More specialty units</b><span>ED, ICU, peds.</span><small>Coming later</small></div>
         </div>
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}</span><span>Original clinical content for education. Not a substitute for clinical instruction.</span></div>
       </div>
@@ -148,7 +151,7 @@
         <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
         <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${d.age}${d.sex}, room ${d.room}</small></h2>
           <div class="muted">${esc(d.dx)}</div>
-          <div class="meta"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
+          <div class="meta">${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
         <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
         <div class="tabsrow" role="tablist" aria-label="Patients in report">
           ${pts.map((p, i) => `<button class="pt-tab" role="tab" data-act="h-go" data-i="${i}" aria-current="${i === ui.hIdx}">${p.room}</button>`).join('')}
@@ -190,7 +193,7 @@
           ${pts().map((d) => { const P = s.p[d.id]; const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'chart' : 'goto'}" data-pid="${d.id}">
             ${pface(d.id)}
             <div><div class="nm">${d.room} ${esc(d.name)}<small>${d.age}${d.sex}</small></div><div class="dx">${esc(d.dx)}</div>
-            <div class="facts">${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${v ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
+            <div class="facts">${legal(d)}${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${v ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
             <div class="go">${gone(P) ? '' : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
           </div>`; }).join('')}
           ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} Admission</div><div class="dx">From the ED, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
@@ -200,7 +203,7 @@
         <aside class="side">
           ${phone(8)}
           <div class="tools">
-            <button class="btn" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>Delegate to the ${esc(cna().role)}</small></button>
+            <button class="btn" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}</small></button>
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
             <button class="btn" data-act="catchup" style="grid-column:1/-1"><b>Chart and catch up</b><small>Pass 10 minutes</small></button>
             ${s.t >= C().length - 30 ? `<button class="btn btn-primary" data-act="endask" style="grid-column:1/-1"><b>Give report and end shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
@@ -238,7 +241,7 @@
   }
   function roomActions(d, P) {
     const Ax = A();
-    if (ui.dock === 'assess') return SYS.map(([id, label, c]) => `<button class="act" data-act="assess" data-sys="${id}"><span>${label}</span><span class="c">${c} min</span></button>`).join('');
+    if (ui.dock === 'assess') return SYS.map(([id, label, c]) => `<button class="act" data-act="assess" data-sys="${id}"><span>${esc(sysL(id, label))}</span><span class="c">${c} min</span></button>`).join('');
     if (ui.dock === 'care') {
       const list = (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax));
       return list.length ? list.map((x) => `<button class="act ${x.urgent || /juice|d50|brady/.test(x.id) ? 'urgent' : ''}" data-act="int" data-id="${x.id}"><span>${esc(x.label)}</span><span class="c">${x.cost} min</span></button>`).join('') : '<p class="empty">No bedside interventions available right now.</p>';
@@ -249,7 +252,7 @@
     if (ui.dock === 'talk') {
       const Ax2 = Ax;
       let h = `<button class="act" data-act="talk"><span>Talk with ${esc(d.short)}</span><span class="c">3 min</span></button>`;
-      if (d.family) h += `<button class="act" data-act="family"><span>${d.family.mode === 'phone' ? 'Call' : 'Talk with'} ${esc(d.family.name)} (${esc(d.family.rel.toLowerCase())})</span><span class="c">${d.family.cost} min</span></button>`;
+      if (d.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<button class="act" data-act="family"><span>${d.family.mode === 'phone' ? 'Call' : 'Talk with'} ${esc(d.family.name)} (${esc(d.family.rel.toLowerCase())})</span><span class="c">${d.family.cost} min</span></button>`;
       h += `<button class="act" data-act="sbar" data-pid="${d.id}"><span>Call ${esc(prov().name)} with an SBAR</span><span class="c">6 min</span></button>`;
       (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax2)).forEach((x) => { h += `<button class="act ${x.id === 'rrt' ? 'urgent' : ''}" data-act="comm" data-id="${x.id}"><span>${esc(x.label)}</span><span class="c">${x.cost} min</span></button>`; });
       h += `<button class="act" data-act="delegate"><span>Ask ${esc(cna().name)} (${esc(cna().role)})</span><span class="c">1 min</span></button>`;
@@ -273,7 +276,7 @@
       <div class="room-top ${ui.enter ? 'enter' : ''}">
         ${sceneSvg}
         <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${d.age}${d.sex}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
-          <div class="facts"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span></div></div>
+          <div class="facts">${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span></div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Hallway</button></div></div>
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
@@ -308,7 +311,7 @@
       <div class="deb-grid">
         <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
           ${d.dom.map((x) => `<div class="meter"><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
-          <p class="muted" style="font-size:.85rem">Nova hints used: ${3 - s.nova} of 3.</p>
+          <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(next.level)}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(next.level)})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
@@ -340,7 +343,7 @@
   const COACH = {
     station: [
       { sel: () => `.door[data-pid="${(s.answers.rank || [])[0]}"]`, alt: '.door[data-act="goto"]', text: 'You picked this room first. Tap the door, or a name below, to walk in. The clock only moves when you act.' },
-      { sel: '.phone', text: 'Your unit phone. Luis, the lab, pharmacy and the doctors reach you here. Some messages need an answer.' },
+      { sel: '.phone', text: () => `Your unit phone. ${cna().name}, the lab, pharmacy and the doctors reach you here. Some messages need an answer.` },
     ],
     room: [
       { sel: '.pt', text: 'Tap your patient to hear from them. Tap anything in the room to look closer. Looking is free.' },
@@ -366,7 +369,7 @@
       if (r.top < 60 || r.bottom > innerHeight - 40) { a.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }
       ring = document.createElement('div'); ring.className = 'coach-ring';
       card = document.createElement('div'); card.className = 'coach'; card.dataset.id = id; card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', 'Tip');
-      card.innerHTML = `<p>${esc(c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">Skip tips</button><button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button></div>`;
+      card.innerHTML = `<p>${esc(typeof c.step.text === 'function' ? c.step.text() : c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">Skip tips</button><button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button></div>`;
       document.body.append(ring, card);
     }
     r = a.getBoundingClientRect();
@@ -430,22 +433,25 @@
     const block = m.block ? m.block(s, P, Ax) : null;
     const done = !m.prn && (st.status === 'given' || st.status === 'held');
     const verify = st.status === 'verify';
+    const refuse = !done && !block && !verify && m.refuse ? m.refuse(s, P, Ax) : null;
     let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
       <p class="muted" style="margin:.2rem 0">Allergies: ${esc(d.allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
     if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => `<button class="btn" data-act="prep" data-p="${p}">${PREP[p][0]} <span class="muted">${PREP[p][1]} min</span></button>`).join('')}</div>`;
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
     if (block) body += `<div class="warnbox">${esc(block)}</div>`;
+    if (refuse) body += `<div class="warnbox">${esc(refuse)}</div>${m.prn ? '' : '<p class="muted" style="margin:.4rem 0 0;font-size:.88rem">You can come back and offer it again, or hold it and document the refusal.</p>'}`;
     if (verify) body += `<div class="warnbox">Pharmacy has not verified this order. It can't be dispensed yet.</div>`;
     if (done) body += `<div class="warnbox">${st.status === 'given' ? 'Given' : 'Held'} at ${E.clock(st.at)}.${st.note ? ' ' + esc(st.note) : ''}</div>`;
-    if (m.doses && !block && !verify) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
+    if (m.doses && !block && !verify && !refuse) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
     if (ui.med.holding) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Reason for holding</legend>${['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'].map((r, i) => `<label class="opt"><input type="radio" name="hr" data-act="hreason" data-v="${i}" ${ui.med.reason == i ? 'checked' : ''}><span>${r}</span></label>`).join('')}</fieldset>`;
     let foot = '';
     if (!done && !block && !verify) {
       if (ui.med.holding) foot += `<button class="btn btn-primary" data-act="med-hold" ${ui.med.reason == null ? 'disabled data-why="Choose a reason for holding first."' : ''}>Hold this dose</button>`;
       else {
         if (!m.prn) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
-        foot += `<button class="btn btn-primary" data-act="med-give" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}>Give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''} <span style="font-weight:400;opacity:.8">5 min</span></button>`;
+        if (refuse) foot += `<button class="btn btn-primary" data-act="med-declined">Offer again later <span style="font-weight:400;opacity:.8">2 min</span></button>`;
+        else foot += `<button class="btn btn-primary" data-act="med-give" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}>Give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''} <span style="font-weight:400;opacity:.8">5 min</span></button>`;
       }
     }
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
@@ -461,7 +467,7 @@
     if (ui.sbar.reply) return sheet(esc(prov().name), `<div class="reply">${face(C().provider)}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
     const items = d.sbar.items(s, P, Ax);
     const reqs0 = d.sbar.requests || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
-    const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on 4 West, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
+    const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
@@ -531,7 +537,7 @@
       <p><b>Report.</b> The outgoing nurse gives you report. Flag the lines that matter; they stay on your brain sheet all shift. Flagging everything counts against you.</p>
       <p><b>Who first.</b> After report you rank your patients. Nova tells you how her order compares, and explains why at the debrief.</p>
       <p><b>The hallway.</b> Doors with an amber light need attention. Go into a room to assess, intervene, give or hold medications, and talk with patients and families. Tap objects in the room to inspect them.</p>
-      <p><b>The phone.</b> ${esc(cna().name)} (your ${esc(cna().role)}), pharmacy, the lab, telemetry and ${esc(prov().name)} will reach you here. Some messages ask for a reply.</p>
+      <p><b>The phone.</b> ${esc(cna().name)} (your ${esc(cna().role)}), pharmacy, the lab${C().unitShort ? '' : ', telemetry'} and ${esc(prov().name)} will reach you here. Some messages ask for a reply.</p>
       <p><b>Charts.</b> Vitals, labs, orders, MAR, notes. Open them from the station or any room. They don't cost time.</p>
       <p><b>Nova.</b> Your charge nurse gives ${C().novaCredits || 3} nudges per shift. She points; she doesn't answer for you.</p>
       <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
@@ -639,7 +645,7 @@
       } else {
         const txt = d.assess[k](s, P, A());
         P.assessAt[k] = s.t; if (k === 'pain') P.k.painAt = s.t;
-        logHere(d.id, txt, 'find'); s.log[s.log.length - 1].label = SYS.find((x) => x[0] === k)[1];
+        logHere(d.id, txt, 'find'); s.log[s.log.length - 1].label = sysL(k, SYS.find((x) => x[0] === k)[1]);
       }
     };
     const cost = SYS.find((x) => x[0] === sys)[2];
@@ -697,7 +703,7 @@
     assess(el) { doAssess(el.dataset.sys); ui.caption = null; render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); spend(x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; }); ui.caption = null; stamp(x.label, x.cost); render(); },
     poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
-    clue(el) { const d = def(s.loc), P = s.p[d.id], cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
+    clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
@@ -715,10 +721,15 @@
       spend(5, (Ax) => { const t = m.give(s, P, Ax, ui.med.dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); });
       ui.ov = null; ui.med = null; stamp(`${m.name} given`, 5); if (!s.ended) render();
     },
+    'med-declined'() {
+      const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id);
+      spend(2, (Ax) => { const why = m.refuse(s, P, Ax); if (m.onRefuse) m.onRefuse(s, P, Ax); logHere(d.id, `${m.name} offered and declined. ${why || ''}`.trim(), 'act'); });
+      ui.ov = null; ui.med = null; stamp(`${m.name} declined`, 2); if (!s.ended) render();
+    },
     'med-hold'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const reasons = ['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'];
-      spend(2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
+      spend(2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax, ui.med.reason); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
       ui.ov = null; ui.med = null; stamp(`${m.name} held`, 2); if (!s.ended) render();
     },
     talk(el) { const d = def(s.loc), id = d.talk(s, s.p[d.id], A()); if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; } spend(3, () => {}); if (s.ended) return; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
@@ -791,7 +802,7 @@
      None of it says whether the choice was right: that stays in the debrief. */
   const SELECT = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag']);
-  const COMMIT = new Set(['reset-tips', 'med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
+  const COMMIT = new Set(['reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit' };           // answers that advance the scene
   const JUST = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
