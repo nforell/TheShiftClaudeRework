@@ -465,3 +465,16 @@ td.wrap{white-space:normal;min-width:220px}
   main:has(.lastfind){padding-bottom:40vh}
 }
 @media (max-width:960px){.deb-grid>section:first-child{order:2}.deb-grid{display:flex;flex-direction:column}}
+/* review pass */
+svg.scene{max-height:min(52vh,460px)}
+@media (max-width:640px){.vstrip{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}.vstrip div{padding:.5rem .45rem}.vstrip b{font-size:1rem}}
+.intro-ecg{top:auto;bottom:9%;transform:none}
+.keyline{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;padding:1.1rem 0;border-bottom:1px solid var(--line);animation:linein .5s .2s ease-out backwards}
+.kl{border-radius:10px;padding:.8rem 1rem;background:var(--surface)}
+.kl.bad{border-left:4px solid var(--red)}.kl.good{border-left:4px solid var(--good)}
+.kl .mk{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:.25rem}
+.kl b{display:block;font-size:1rem;line-height:1.35}.kl p{margin:.35rem 0 0;font-family:var(--serif);color:var(--ink-2);font-size:.96rem}
+@media (max-width:640px){.keyline{grid-template-columns:minmax(0,1fr)}}
+.msg.fresh{animation:msgin .5s ease-out}
+@keyframes msgin{from{opacity:0;transform:translateX(10px);background:color-mix(in srgb,var(--teal) 18%,transparent)}}
+.lock-l{color:var(--ink-2);font-style:italic}

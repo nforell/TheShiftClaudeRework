@@ -10,7 +10,7 @@
   const pat = {
     id: '421', room: '421', name: 'Patricia Kowalski', short: 'Mrs. Kowalski', age: 68, sex: 'F', mrn: '00377210',
     look: { skin: '#EBC6A8', shade: '#CFA184', lip: '#A45A55', blush: '#E2917F', iris: '#6C7A4E', head: { w: 57, h: 60, jaw: .35 }, eye: 9.6,
-      hair: { style: 'short', color: '#CBC5BD' }, brow: { w: 3.2, color: '#9D968E' }, body: { w: 74, cloth: 'gown' }, extras: ['cannula', 'wrinkles'], smile: .35,
+      hair: { style: 'curlyshort', color: '#9A4E2E', big: true }, brow: { w: 3.2, color: '#7A4A34' }, body: { w: 74, cloth: 'gown', cardigan: '#6E8B5E' }, extras: ['cannula', 'wrinkles', 'pearls'], smile: .35,
       lines: { calm: 'The cardinal\'s back on the ledge across the way. Third day running.', anxious: 'I feel like I\'m breathing through a coffee straw.', dys: 'Can\'t... get the air... out.', drowsy: 'Mm. So tired. Let me sleep, hon.', none: 'She doesn\'t wake to her name. Her breathing is slow and shallow.' } },
     bio: 'Retired school bus dispatcher, 45 pack-years, quit at 60. Birdwatcher; keeps binoculars on the windowsill. Lives with her sister.',
     dx: 'COPD exacerbation, day 2', reason: 'COPD exacerbation with bronchitis',
@@ -845,6 +845,7 @@
   };
 
   /* ---------- events ---------- */
+  const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'luis-hi', when: (s) => s.t >= 8, run(s, A) { A.msg({ from: 'luis', text: 'Pulling a double tonight. Coffee is my whole personality now. I\'ve got 421 to 429 with you.', replies: [{ label: 'Open tasks for Luis', act: 'delegate' }] }); } },
     { id: 'bank-1', when: (s) => s.t >= 20, run(s, A) { A.msg({ from: 'bank', pid: '425', text: 'Blood bank: first unit of packed red cells for NAKAMURA in 425 is ready for pickup.', replies: [{ label: 'Go to 425', act: 'goto', pid: '425' }] }); } },
@@ -895,6 +896,7 @@
     { id: 'dar-hypo', when: (s) => darnellBG(s, s.p['427']) < 66 && !s.p['427'].hypo, run(s, A) { const P = s.p['427']; P.hypo = true; const watched = P.bgs.some((b) => b.t > P.insAt && s.t - b.t <= 60); if (watched) { P.hypoCaught = true; A.msg({ from: 'luis', pid: '427', urgent: true, text: '427 is getting sweaty and shaky, like you said he might.', replies: [{ label: 'Go to 427', act: 'goto', pid: '427' }] }); } else { A.judge('427-hypo', 'judgment', -2, 'Mr. Brooks went hypoglycemic after IV insulin with no glucose check.', 'Insulin for hyperkalemia moves glucose into cells along with potassium. Kidney failure keeps the insulin around longer. Hourly glucose checks were in the order for this reason.', '427'); A.msg({ from: 'luis', pid: '427', urgent: true, text: '427 is sweaty and shaky. He says he feels like he\'s gonna pass out.', replies: [{ label: 'Go to 427', act: 'goto', pid: '427' }] }); } } },
     { id: 'dar-code', when: (s) => darnellK(s, s.p['427']) >= 6.9 && !recent(s, s.p['427'].caAt, 60) && !s.p['427'].icu, run(s, A) { const P = s.p['427']; P.arrhythmia = true; P.icu = true; A.judge('427-code', 'safety', -3, 'Mr. Brooks arrested from hyperkalemia.', 'A critical potassium with peaked T waves is a treat-now emergency: calcium to protect the heart, then insulin and binders. The lab call was the warning.', '427'); A.msg({ from: 'jae', pid: '427', urgent: true, text: 'CODE BLUE 427. Wide complex, now V-fib. Team is on the way.' }); } },
     { id: 'k-recheck', when: (s) => s.p['427'].insAt !== null && s.t >= s.p['427'].insAt + 120, run(s, A) { const k = darnellK(s, s.p['427']); A.addLab('427', { name: 'Potassium (2 h)', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k > 5 ? 'H' : '' }); A.msg({ from: 'lab', pid: '427', text: `427 Brooks potassium ${k} on recheck.` }); } },
+    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to handoff. Look at every patient once more with fresh eyes. Who would you worry about at 3 a.m.?' }); } },
   ];
 
@@ -920,7 +922,7 @@
       if (task.id === 'blood' && (s.p['425'].unit || s.p['425'].transAt !== null || (s.p['425'].returned && s.t < s.p['425'].rightUnitAt))) return 'Luis: "Blood bank says there\'s nothing ready for her right now."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'bg' || task.id === 'blood' || task.id === 'tray') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, task.id === 'blood' ? 'Transporting blood is commonly delegated. The verification at the bedside is still yours.' : 'Routine, predictable tasks on stable patients are what CNAs are for. It frees you to assess.');
-      return `Luis: "On it. ${task.label.toLowerCase()} for ${nm}."`;
+      return `Luis: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
       const nm = A.def(d.pid).short;
@@ -955,7 +957,7 @@
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
       if (d.arrives && !P.arrived) return;
-      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -2, `You never went into ${d.room} this shift.`, 'Report tells you about the last shift; your own assessment tells you about this one.', d.id);
+      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'Report tells you about the last shift; your own assessment tells you about this one.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && !m.conditional && m.due <= Math.min(240, s.t - 60) && st.status === 'due' && !P.icu && !P.gone) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: give, or hold with a reason and a notification.', d.id);
@@ -969,7 +971,9 @@
     if (M.arrived && M.admitted === null && !M.gone) A.judge('429-noadmit', 'assess', -1, 'Ms. Hassan\'s admission assessment wasn\'t done.', 'Admission sets the baseline and verifies allergies and home meds before anything else happens.', '429');
     const keys = []; A.c.patients.forEach((d) => (d.report || []).forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
-    if (s.brain.length) A.judge('brain', 'assess', hit / keys.length >= 0.6 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.');
+    if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
+      if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.'); }
   }
 
   /* Bedside prep shortcuts offered inside the medication review. */
@@ -982,7 +986,7 @@
     hero: { head: 'Four patients, one admission. Report at 15:00.', lede: 'An evening shift on 4 West. Blood is on its way up, a lab result is pending, and the ED is sending you a surgical patient before dinner. Watch what other people change, and read every order twice.' },
     intro: { time: '14:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['Evening shift. Four patients, and the ED is sending you a fifth.', 'Blood is on its way up. A critical lab is about to call.', 'Watch what other people change. Read every order twice.'] },
     minutes: 20,
-    reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
+    handoffBy: 'Marisol (day RN)', reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },
       luis: { name: 'Luis', role: 'CNA', look: { skin: '#B07B52', shade: '#8C5E3B', lip: '#7A4232', blush: '#C3705A', iris: '#2E1E14', head: { w: 56, h: 62, jaw: .6 }, eye: 10.4, hair: { style: 'swoop', color: '#1E1814' }, brow: { w: 4.4, color: '#1A1411' }, body: { w: 84, cloth: 'teal' }, extras: [], smile: .55, tired: true } },

@@ -476,6 +476,19 @@ td.wrap{white-space:normal;min-width:220px}
   main:has(.lastfind){padding-bottom:40vh}
 }
 @media (max-width:960px){.deb-grid>section:first-child{order:2}.deb-grid{display:flex;flex-direction:column}}
+/* review pass */
+svg.scene{max-height:min(52vh,460px)}
+@media (max-width:640px){.vstrip{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}.vstrip div{padding:.5rem .45rem}.vstrip b{font-size:1rem}}
+.intro-ecg{top:auto;bottom:9%;transform:none}
+.keyline{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;padding:1.1rem 0;border-bottom:1px solid var(--line);animation:linein .5s .2s ease-out backwards}
+.kl{border-radius:10px;padding:.8rem 1rem;background:var(--surface)}
+.kl.bad{border-left:4px solid var(--red)}.kl.good{border-left:4px solid var(--good)}
+.kl .mk{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:.25rem}
+.kl b{display:block;font-size:1rem;line-height:1.35}.kl p{margin:.35rem 0 0;font-family:var(--serif);color:var(--ink-2);font-size:.96rem}
+@media (max-width:640px){.keyline{grid-template-columns:minmax(0,1fr)}}
+.msg.fresh{animation:msgin .5s ease-out}
+@keyframes msgin{from{opacity:0;transform:translateX(10px);background:color-mix(in srgb,var(--teal) 18%,transparent)}}
+.lock-l{color:var(--ink-2);font-style:italic}
 </style></head>
 <body><div id="app"></div>
 <script>/* The Shift — simulation engine. Knows nothing about specific patients; cases plug in. */
@@ -508,7 +521,7 @@ window.Shift = window.Shift || {};
       P.labs = JSON.parse(JSON.stringify(d.labs || []));
       P.orders = JSON.parse(JSON.stringify(d.orders || []));
       P.notes = JSON.parse(JSON.stringify(d.notes || []));
-      if (d.nightVitals) P.vit.push(Object.assign({ t: -25, by: 'Dana (night RN)' }, d.nightVitals));
+      if (d.nightVitals) P.vit.push(Object.assign({ t: -25, by: c.handoffBy || 'Dana (night RN)' }, d.nightVitals));
       s.p[d.id] = P;
       (d.meds || []).forEach((m) => {
         s.meds[m.id] = { status: m.initStatus || (m.prn ? 'prn' : 'due'), at: null, pid: d.id, note: '', given: [] };
@@ -604,7 +617,7 @@ window.Shift = window.Shift || {};
     const outcomes = c.patients.map((d) => {
       const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
       // A patient nobody saw can't have a good outcome credited to the nurse.
-      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone === 'good') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
+      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone !== 'bad') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
       return o;
     });
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;
@@ -953,7 +966,7 @@ window.Shift = window.Shift || {};
       if (P.fell) return { tone: 'bad', title: 'Near-fall on his first walk', text: 'Luis lowered him to the floor when his legs gave out. No injury, but an incident report and a frightened patient.' };
       if (bellAtel(s, P)) return { tone: 'mixed', title: 'Early atelectasis', text: 'Febrile to 38.2 with SpO₂ 91% and basilar crackles. Preventable with pain control, spirometry and walking.' };
       if (P.ambulated && bellPain(s, P) <= 5) return { tone: 'good', title: 'On track for day 2', text: 'Pain controlled, walked the hall, lungs holding. The kind of day that gets people home early.' };
-      return { tone: 'mixed', title: 'Stable, but behind', text: P.ambulated ? 'He walked, but his pain is still limiting him.' : 'He never took his first walk. Every hour in bed after surgery raises clot and lung risk.' };
+      return { tone: 'mixed', title: s.t < 150 && !P.ambulated ? 'Stable, first walk still ahead' : 'Stable, but behind', text: P.ambulated ? 'He walked, but his pain is still limiting him.' : s.t < 150 ? 'He hasn\'t been up yet. His first walk is still on the list.' : 'He never took his first walk. Every hour in bed after surgery raises clot and lung risk.' };
     },
   };
 
@@ -1076,7 +1089,7 @@ window.Shift = window.Shift || {};
         },
       },
       {
-        id: '414-corr', conditional: true, name: 'Insulin lispro, correction', dose: 'Per scale', route: 'SubQ', freq: 'Before meals', due: 60,
+        id: '414-corr', conditional: true, name: 'Insulin lispro, correction', dose: 'per scale', route: 'SubQ', freq: 'Before meals', due: 60,
         checks: (s, P) => [{ label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} mg/dL at ${clock(P.bgAt)}` : 'Not checked this shift', ok: recent(s, P.bgAt, 60) }, { label: 'Scale', value: '150–199: 2 u, 200–249: 4 u, 250–299: 6 u', ok: null }],
         block(s, P) { if (P.bgAt !== null && recent(s, P.bgAt, 60) && P.lastBG < 150) return `Glucose ${P.lastBG} is below the scale. No correction insulin is due.`; if (P.corrAt !== null) return 'Given at ' + clock(P.corrAt) + '.'; return null; },
         give(s, P, A) {
@@ -1271,7 +1284,7 @@ window.Shift = window.Shift || {};
       },
       {
         id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
-        checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:30 116/68`, ok: null }]; },
+        checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:35 116/68`, ok: null }]; },
         give(s, P, A) {
           const v = A.vitals('416'); P.lisinoprilAt = s.t;
           if (v.SBP < 100) { A.judge('416-lis', 'meds', -2, `You gave lisinopril with an SBP of ${v.SBP}.`, 'The hold parameter exists for exactly this. In early sepsis an ACE inhibitor worsens hypotension and kidney perfusion.', '416'); P.sev = Math.min(100, P.sev + 10); }
@@ -1296,7 +1309,7 @@ window.Shift = window.Shift || {};
           { id: 'base', label: 'Acute confusion. Ruth says she is sharp at baseline.', key: true, need: P.baseline && P.k.confusion !== undefined, lock: 'Assess her mentation and learn her baseline' },
           { id: 'conf', label: 'Confused and inattentive, picking at sheets', key: true, need: P.k.confusion !== undefined, lock: 'Do a neuro assessment first' },
           { id: 'vit', label: `T ${v.T}, HR ${v.HR}, BP ${v.SBP}/${v.DBP}, RR ${v.RR} (at ${clock(v.t)})`, key: fresh, need: true },
-          { id: 'trend', label: `BP down from ${first.SBP}/${first.DBP} at 06:35`, key: v.SBP < first.SBP - 8, need: fresh, lock: 'Get a current set of vitals' },
+          { id: 'trend', label: v.SBP < first.SBP - 2 ? `BP down from ${first.SBP}/${first.DBP} at 06:35` : `BP ${v.SBP}/${v.DBP}, about the same as 06:35`, key: v.SBP < first.SBP - 8, need: fresh, lock: 'Get a current set of vitals' },
           { id: 'uop', label: 'Urine output about 25 mL/h, nothing since 05:00', key: true, need: P.k.uop !== undefined, lock: 'Check her output' },
           { id: 'labs', label: (() => { const w = P.labs.filter((l) => l.name === 'WBC').pop(), c = P.labs.filter((l) => l.name === 'Creatinine').pop(); return `WBC ${w.val}, creatinine ${c.val} (baseline 0.9)`; })(), key: true, need: s.t >= 180, lock: 'AM labs not back yet' },
           { id: 'lact', label: P.lactResult ? `Lactate ${P.lactResult} mmol/L` : 'Lactate', key: true, need: P.lactResult !== null, lock: 'No lactate result' },
@@ -1341,7 +1354,7 @@ window.Shift = window.Shift || {};
     status: (s, P) => P.icu ? 'gone' : P.sev >= 58 ? 'urgent' : P.sev >= 40 ? 'watch' : 'stable',
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Septic shock, transferred to ICU', text: 'Found hypotensive and hard to rouse. The cues were there at 07:00: fever, tachycardia, new confusion, low urine output and a delayed antibiotic.' };
-      if (P.bundle && P.sev < 35) return { tone: P.bundleLate ? 'mixed' : 'good', title: P.bundleLate ? 'Stabilized after a late catch' : 'Early sepsis, caught and turning', text: P.bundleLate ? 'Dr. Chen found her on rounds. She responded to fluids and antibiotics, but those hours were avoidable.' : 'BP back above 110, lactate clearing, more awake. She asked about her cat by name. Early recognition changed her trajectory.' };
+      if (P.bundle && P.sev < 35) return { tone: P.bundleLate ? 'mixed' : 'good', title: P.bundleLate ? 'Stabilized after a late catch' : 'Early sepsis, caught and turning', text: P.bundleLate ? 'Dr. Chen found her on rounds. She responded to fluids and antibiotics, but those hours were avoidable.' : `BP back above 110${P.lactResult !== null ? ', lactate clearing' : ''}, more awake. She asked about her cat by name. Early recognition changed her trajectory.` };
       if (P.bundle) return { tone: 'mixed', title: 'Sepsis being treated, not yet turning', text: 'Orders are in, but she still needs fluids, antibiotics and reassessment to stabilize.' };
       return { tone: 'bad', title: 'Unrecognized sepsis', text: 'Still febrile, tachycardic and hypotensive at handoff with no sepsis workup. The next shift inherits a patient in trouble.' };
     },
@@ -1550,6 +1563,7 @@ window.Shift = window.Shift || {};
   };
 
   /* ---------- events ---------- */
+  const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'luis-hi', when: (s) => s.t >= 12, run(s, A) { A.msg({ from: 'luis', text: 'Morning! I\'ve got 412 to 418 with you. Want me to start vitals or sugars on anyone?', replies: [{ label: 'Open tasks for Luis', act: 'delegate' }] }); } },
     { id: 'pharm', when: (s) => s.t >= 65, run(s, A) { if (s.meds['416-cef'].status !== 'verify') return; A.msg({ from: 'omar', pid: '416', text: 'Ceftriaxone for 416 is on hold. Penicillin allergy with an unknown reaction. Can you find out what happened and whether she\'s had a cephalosporin?', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
@@ -1570,6 +1584,8 @@ window.Shift = window.Shift || {};
     { id: 'ok-severe', when: (s) => s.p['414'].hypo && !s.p['414'].hypoResolved && s.p['414'].juiceAt === null && s.t - s.p['414'].hypoAt >= 25, run(s, A) { s.p['414'].hypoSevere = true; A.judge('414-untreated', 'safety', -2, 'Mrs. Okafor\'s hypoglycemia went untreated for 25 minutes.', 'Shaky, sweaty and anxious on insulin is hypoglycemia until proven otherwise. Check, treat, recheck, and don\'t let it wait behind routine tasks.', '414'); A.msg({ from: 'luis', pid: '414', urgent: true, text: '414 isn\'t making sense. She\'s slurring. I checked her sugar: 36.', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 2 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
     { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.' }); } },
+    { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
+    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Thirty minutes to handoff. Anyone you haven\'t laid eyes on in the last hour? Do that before you give report.' }); } },
   ];
 
@@ -1600,7 +1616,7 @@ window.Shift = window.Shift || {};
       if (task.id === 'walk' && pid === '418' && (ortizBrady(s, s.p['418']) || s.p['418'].fl >= 60)) { A.judge('deleg-walk418', 'deleg', -1, 'You sent an unstable Mr. Ortiz for a walk.', 'Symptomatic patients are not stable for delegated ambulation.', '418'); return 'Luis: "He can barely sit up. I\'m not walking him right now."'; }
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'bg' || task.id === 'intake') A.judge('deleg-good', 'deleg', 1, 'You delegated routine data collection to the CNA.', 'Vitals on stable patients, glucose checks and intake measurement are appropriate to delegate. It frees you to assess. You still own interpreting the results.');
-      return `Luis: "Got it. ${task.label.toLowerCase()} for ${nm}."`;
+      return `Luis: "Got it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
       const nm = A.def(d.pid).short;
@@ -1641,14 +1657,14 @@ window.Shift = window.Shift || {};
   function endChecks(s, A) {
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
-      if (P.seenAt === null && !(d.id === '416' && P.icu)) A.judge(d.id + '-unseen', 'assess', -2, `You never went into ${d.room} this shift.`, 'Every patient gets eyes on them early. Report tells you what happened overnight; your assessment tells you what\'s happening now.', d.id);
+      if (P.seenAt === null && !(d.id === '416' && P.icu)) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'Every patient gets eyes on them early. Report tells you what happened overnight; your assessment tells you what\'s happening now.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && !m.conditional && m.due <= Math.min(240, s.t - 60) && (st.status === 'due' || st.status === 'verify') && !(d.id === '416' && P.icu)) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: give it, or hold it with a documented reason and a notification.', d.id);
       });
     });
     const B = s.p['412'];
-    if (B.foleyOut === null) A.judge('412-foley-left', 'safety', -1, 'Mr. Bell\'s Foley was never removed despite an 08:00 order.', 'Catheter days drive infection risk.', '412');
+    if (B.foleyOut === null && s.t >= 120) A.judge('412-foley-left', 'safety', -1, 'Mr. Bell\'s Foley was never removed despite an 08:00 order.', 'Catheter days drive infection risk.', '412');
     if (B.oxyAt !== null && !A.hasJudg('412-reassess')) A.judge('412-noreassess', 'judgment', -1, 'You didn\'t reassess Mr. Bell\'s pain and sedation after his opioid.', 'Intervene, then evaluate. Otherwise you don\'t know whether it worked or whether he is over-sedated.', '412');
     const O = s.p['414'];
     if (O.bgAt === null && s.t >= 120) A.judge('414-nobg', 'assess', -1, 'Mrs. Okafor\'s pre-breakfast glucose was never checked.', 'Every insulin decision at breakfast starts with a point-of-care glucose. It can be delegated, but it can\'t be skipped.', '414');
@@ -1663,7 +1679,9 @@ window.Shift = window.Shift || {};
     if (R.metoHeld && !R.notifiedMeto) A.judge('418-hold-notify', 'comm', -1, 'You held Mr. Ortiz\'s metoprolol but didn\'t tell the provider.', 'A held cardiac medication changes the plan. The provider needs to know to adjust the dose.', '418');
     const keys = []; A.c.patients.forEach((d) => d.report.forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
-    if (s.brain.length) A.judge('brain', 'assess', hit / keys.length >= 0.6 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.');
+    if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
+      if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.'); }
   }
 
 
@@ -1746,7 +1764,7 @@ window.Shift = window.Shift || {};
   const pat = {
     id: '421', room: '421', name: 'Patricia Kowalski', short: 'Mrs. Kowalski', age: 68, sex: 'F', mrn: '00377210',
     look: { skin: '#EBC6A8', shade: '#CFA184', lip: '#A45A55', blush: '#E2917F', iris: '#6C7A4E', head: { w: 57, h: 60, jaw: .35 }, eye: 9.6,
-      hair: { style: 'short', color: '#CBC5BD' }, brow: { w: 3.2, color: '#9D968E' }, body: { w: 74, cloth: 'gown' }, extras: ['cannula', 'wrinkles'], smile: .35,
+      hair: { style: 'curlyshort', color: '#9A4E2E', big: true }, brow: { w: 3.2, color: '#7A4A34' }, body: { w: 74, cloth: 'gown', cardigan: '#6E8B5E' }, extras: ['cannula', 'wrinkles', 'pearls'], smile: .35,
       lines: { calm: 'The cardinal\'s back on the ledge across the way. Third day running.', anxious: 'I feel like I\'m breathing through a coffee straw.', dys: 'Can\'t... get the air... out.', drowsy: 'Mm. So tired. Let me sleep, hon.', none: 'She doesn\'t wake to her name. Her breathing is slow and shallow.' } },
     bio: 'Retired school bus dispatcher, 45 pack-years, quit at 60. Birdwatcher; keeps binoculars on the windowsill. Lives with her sister.',
     dx: 'COPD exacerbation, day 2', reason: 'COPD exacerbation with bronchitis',
@@ -2581,6 +2599,7 @@ window.Shift = window.Shift || {};
   };
 
   /* ---------- events ---------- */
+  const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'luis-hi', when: (s) => s.t >= 8, run(s, A) { A.msg({ from: 'luis', text: 'Pulling a double tonight. Coffee is my whole personality now. I\'ve got 421 to 429 with you.', replies: [{ label: 'Open tasks for Luis', act: 'delegate' }] }); } },
     { id: 'bank-1', when: (s) => s.t >= 20, run(s, A) { A.msg({ from: 'bank', pid: '425', text: 'Blood bank: first unit of packed red cells for NAKAMURA in 425 is ready for pickup.', replies: [{ label: 'Go to 425', act: 'goto', pid: '425' }] }); } },
@@ -2631,6 +2650,7 @@ window.Shift = window.Shift || {};
     { id: 'dar-hypo', when: (s) => darnellBG(s, s.p['427']) < 66 && !s.p['427'].hypo, run(s, A) { const P = s.p['427']; P.hypo = true; const watched = P.bgs.some((b) => b.t > P.insAt && s.t - b.t <= 60); if (watched) { P.hypoCaught = true; A.msg({ from: 'luis', pid: '427', urgent: true, text: '427 is getting sweaty and shaky, like you said he might.', replies: [{ label: 'Go to 427', act: 'goto', pid: '427' }] }); } else { A.judge('427-hypo', 'judgment', -2, 'Mr. Brooks went hypoglycemic after IV insulin with no glucose check.', 'Insulin for hyperkalemia moves glucose into cells along with potassium. Kidney failure keeps the insulin around longer. Hourly glucose checks were in the order for this reason.', '427'); A.msg({ from: 'luis', pid: '427', urgent: true, text: '427 is sweaty and shaky. He says he feels like he\'s gonna pass out.', replies: [{ label: 'Go to 427', act: 'goto', pid: '427' }] }); } } },
     { id: 'dar-code', when: (s) => darnellK(s, s.p['427']) >= 6.9 && !recent(s, s.p['427'].caAt, 60) && !s.p['427'].icu, run(s, A) { const P = s.p['427']; P.arrhythmia = true; P.icu = true; A.judge('427-code', 'safety', -3, 'Mr. Brooks arrested from hyperkalemia.', 'A critical potassium with peaked T waves is a treat-now emergency: calcium to protect the heart, then insulin and binders. The lab call was the warning.', '427'); A.msg({ from: 'jae', pid: '427', urgent: true, text: 'CODE BLUE 427. Wide complex, now V-fib. Team is on the way.' }); } },
     { id: 'k-recheck', when: (s) => s.p['427'].insAt !== null && s.t >= s.p['427'].insAt + 120, run(s, A) { const k = darnellK(s, s.p['427']); A.addLab('427', { name: 'Potassium (2 h)', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k > 5 ? 'H' : '' }); A.msg({ from: 'lab', pid: '427', text: `427 Brooks potassium ${k} on recheck.` }); } },
+    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to handoff. Look at every patient once more with fresh eyes. Who would you worry about at 3 a.m.?' }); } },
   ];
 
@@ -2656,7 +2676,7 @@ window.Shift = window.Shift || {};
       if (task.id === 'blood' && (s.p['425'].unit || s.p['425'].transAt !== null || (s.p['425'].returned && s.t < s.p['425'].rightUnitAt))) return 'Luis: "Blood bank says there\'s nothing ready for her right now."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'bg' || task.id === 'blood' || task.id === 'tray') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, task.id === 'blood' ? 'Transporting blood is commonly delegated. The verification at the bedside is still yours.' : 'Routine, predictable tasks on stable patients are what CNAs are for. It frees you to assess.');
-      return `Luis: "On it. ${task.label.toLowerCase()} for ${nm}."`;
+      return `Luis: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
       const nm = A.def(d.pid).short;
@@ -2691,7 +2711,7 @@ window.Shift = window.Shift || {};
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
       if (d.arrives && !P.arrived) return;
-      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -2, `You never went into ${d.room} this shift.`, 'Report tells you about the last shift; your own assessment tells you about this one.', d.id);
+      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'Report tells you about the last shift; your own assessment tells you about this one.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && !m.conditional && m.due <= Math.min(240, s.t - 60) && st.status === 'due' && !P.icu && !P.gone) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: give, or hold with a reason and a notification.', d.id);
@@ -2705,7 +2725,9 @@ window.Shift = window.Shift || {};
     if (M.arrived && M.admitted === null && !M.gone) A.judge('429-noadmit', 'assess', -1, 'Ms. Hassan\'s admission assessment wasn\'t done.', 'Admission sets the baseline and verifies allergies and home meds before anything else happens.', '429');
     const keys = []; A.c.patients.forEach((d) => (d.report || []).forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
-    if (s.brain.length) A.judge('brain', 'assess', hit / keys.length >= 0.6 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.');
+    if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
+      if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.'); }
   }
 
   /* Bedside prep shortcuts offered inside the medication review. */
@@ -2718,7 +2740,7 @@ window.Shift = window.Shift || {};
     hero: { head: 'Four patients, one admission. Report at 15:00.', lede: 'An evening shift on 4 West. Blood is on its way up, a lab result is pending, and the ED is sending you a surgical patient before dinner. Watch what other people change, and read every order twice.' },
     intro: { time: '14:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['Evening shift. Four patients, and the ED is sending you a fifth.', 'Blood is on its way up. A critical lab is about to call.', 'Watch what other people change. Read every order twice.'] },
     minutes: 20,
-    reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
+    handoffBy: 'Marisol (day RN)', reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },
       luis: { name: 'Luis', role: 'CNA', look: { skin: '#B07B52', shade: '#8C5E3B', lip: '#7A4232', blush: '#C3705A', iris: '#2E1E14', head: { w: 56, h: 62, jaw: .6 }, eye: 10.4, hair: { style: 'swoop', color: '#1E1814' }, brow: { w: 4.4, color: '#1A1411' }, body: { w: 84, cloth: 'teal' }, extras: [], smile: .55, tired: true } },
@@ -3156,7 +3178,7 @@ window.Shift = window.Shift || {};
       back += hot('monitor', 'Cardiac monitor', `<rect x="648" y="112" width="124" height="74" rx="7" fill="#0f1b1f" stroke="#2b3a3f" stroke-width="3"/>
         <polyline points="${f.teleWave === 'peaked' ? '656,152 666,152 670,144 674,160 678,152 686,152 693,122 700,152 712,152 716,144 720,160 724,152 732,152 739,122 746,152 764,152' : '656,152 670,152 674,140 678,162 682,152 706,152 710,136 714,164 718,152 740,152 746,144 750,158 754,152 764,152'}" stroke="#58d68d" stroke-width="1.8" fill="none" class="ecg"/>
         <text x="764" y="132" text-anchor="end" fill="${hr < 50 ? '#ff6b5f' : '#58d68d'}" font-size="16" font-weight="700" font-family="Public Sans, sans-serif">${hr}</text>
-        <text x="764" y="180" text-anchor="end" fill="#7fc8e8" font-size="10" font-family="Public Sans, sans-serif">SpO₂</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
+        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Public Sans, sans-serif">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Public Sans, sans-serif">SpO₂</text><text x="764" y="180" text-anchor="end" fill="#7fc8e8" font-size="13" font-weight="700" font-family="Public Sans, sans-serif">${S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
     }
     // IV pole, pump and line
     const ivOn = f.iv && f.iv !== 'lock', blood = f.iv === 'blood', bag = blood ? '#9E1B22' : '#E8F2F6', line = blood ? '#B3262D' : '#BCD7E0';
@@ -3178,7 +3200,7 @@ window.Shift = window.Shift || {};
     // bed frame and alarm
     front += `<rect x="${X - 242}" y="402" width="484" height="14" rx="5" fill="var(--scene-bedframe)"/><rect x="${X - 224}" y="416" width="9" height="22" fill="var(--scene-bedframe)"/><rect x="${X + 215}" y="416" width="9" height="22" fill="var(--scene-bedframe)"/>`;
     if (f.fallPrec) front += hot('alarm', 'Fall precautions', `<rect x="${X - 230}" y="398" width="46" height="8" rx="3" fill="#F0B64A" class="alarm-lamp"/><rect x="${X - 180}" y="420" width="140" height="10" rx="3" fill="#6B8F9A" opacity=".6"/>`);
-    else if (def.id === '416' && !f.empty) front += hot('alarm', 'Bed rails and alarm', `<rect x="${X - 262}" y="300" width="18" height="90" rx="4" fill="none" stroke="#A7B3B2" stroke-width="2" stroke-dasharray="4 4"/>`);
+    else if (def.id === '416' && !f.empty) front += hot('alarm', 'Bed rails and alarm', `<rect x="${X + 244}" y="300" width="18" height="90" rx="4" fill="none" stroke="#A7B3B2" stroke-width="2" stroke-dasharray="4 4"/>`);
     // overbed table and its contents
     let tbl = '';
     if (f.tray && f.tray !== 'none') tbl += hot('tray', 'Meal tray', `<rect x="776" y="278" width="66" height="14" rx="3" fill="#DFE4E2"/>${f.tray === 'full' || f.tray === 'untouched' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="10" ry="5" fill="#E9C77F"/>` : f.tray === 'barely' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="5" ry="3" fill="#E9C77F"/>` : f.tray === 'soup' ? `<rect x="786" y="248" width="22" height="30" rx="5" fill="#B4453B"/><rect x="786" y="244" width="22" height="6" rx="2" fill="#7C2F28"/>` : f.tray === 'renal' ? `<path d="M782 272 q14 -14 30 -4 q-14 2 -30 4Z" fill="#F2CF4A" stroke="#B8962A"/><rect x="818" y="256" width="14" height="20" rx="2" fill="#F5A031" opacity=".9"/><ellipse cx="800" cy="277" rx="12" ry="4" fill="#E9D7B0"/>` : `<rect x="784" y="262" width="14" height="16" rx="2" fill="#F2B85B" opacity=".85"/><rect x="804" y="266" width="16" height="10" rx="2" fill="#D85F60" opacity=".75"/>`}`);
@@ -3284,6 +3306,9 @@ window.Shift = window.Shift || {};
   const goneText = (P) => P.goneText || 'Transferred to ICU';
   const prov = () => staff(C().provider || 'chen');
   const cna = () => staff(C().cna || 'luis');
+  const fT = (t) => (typeof t === 'number' ? t.toFixed(1) : t);
+  const fLab = (l) => (typeof l.val === 'number' && Number.isInteger(l.val) && /\d\.\d/.test(l.ref || '') ? l.val.toFixed(1) : l.val);
+  const o2txt = (o) => (o === 'Room air' ? 'room air' : o);
   const hhmm = (c, t) => { const m = (c.start || 420) + Math.round(t); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 
   function applySettings() {
@@ -3391,7 +3416,7 @@ window.Shift = window.Shift || {};
         <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
         <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${d.age}${d.sex}, room ${d.room}</small></h2>
           <div class="muted">${esc(d.dx)}</div>
-          <div class="meta"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${nv.T}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
+          <div class="meta"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
         <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
         <div class="tabsrow" role="tablist" aria-label="Patients in report">
           ${pts.map((p, i) => `<button class="pt-tab" role="tab" data-act="h-go" data-i="${i}" aria-current="${i === ui.hIdx}">${p.room}</button>`).join('')}
@@ -3402,7 +3427,7 @@ window.Shift = window.Shift || {};
       <aside class="brain" aria-label="Your brain sheet">
         <h2>Your brain sheet${brain.length ? ` <span class="count">${brain.length}</span>` : ''}</h2><p class="hint">What you flag stays on your board all shift.</p>
         ${brain.length ? `<ul>${brain.map((b) => `<li class="tap" data-act="flag" data-k="${b.k}" role="button" tabindex="0" title="Tap to unflag"><b>${b.pid}</b>${esc(b.text)}</li>`).join('')}</ul>` : '<p class="empty" style="padding:0">Nothing flagged yet.</p>'}
-        ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn" data-act="h-done">Skip the rest of report</button></p>` : ''}
+        ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn btn-quiet" data-act="h-done">Skip to triage</button></p>` : ''}
       </aside></div></main>`;
   }
 
@@ -3454,7 +3479,7 @@ window.Shift = window.Shift || {};
 
   function msgHTML(m) {
     const w = who(m.from);
-    return `<div class="msg tap ${m.read ? '' : 'unread'} ${m.urgent ? 'urgent' : ''}" data-act="msg" data-m="${m.id}">${faceOf(m.from)}
+    return `<div class="msg tap ${m.read ? '' : 'unread'} ${m.urgent ? 'urgent' : ''} ${m.id > (ui.msgSeen || 0) ? 'fresh' : ''}" data-act="msg" data-m="${m.id}">${faceOf(m.from)}
       <div><div class="from"><b>${esc(w.name)}</b> ${esc(w.role)} <span aria-hidden="true">at</span> ${E.clock(m.t)}${m.urgent ? ' <b style="color:var(--red)">Urgent</b>' : ''}</div>
       <p class="tx">${esc(m.text)}</p>
       ${m.replies && !m.done ? `<div class="rep">${m.replies.map((r, i) => `<button class="btn" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.label)}</button>`).join('')}</div>` : ''}</div></div>`;
@@ -3471,6 +3496,7 @@ window.Shift = window.Shift || {};
   function medStatus(m) {
     const st = s.meds[m.id];
     if (m.later) return { cls: '', text: 'At ' + m.later };
+    if (m.initStatus === 'given' && st.at === null) return { cls: 'done', text: m.givenNote || 'Given' };
     if (st.status === 'given' && !m.prn) return { cls: 'done', text: 'Given ' + E.clock(st.at) };
     if (st.status === 'held') return { cls: 'done', text: 'Held ' + E.clock(st.at) };
     if (st.status === 'verify') return { cls: '', text: 'Pharmacy hold' };
@@ -3525,7 +3551,7 @@ window.Shift = window.Shift || {};
         </section>
         <section class="feedbox" aria-label="At the bedside">
           <div class="vstrip tap" aria-label="Last recorded vitals. Open the vitals flowsheet." data-act="chart" data-pid="${d.id}" data-tab="vitals" role="button" tabindex="0">
-            <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${v.T}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}"><span>SpO₂</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
+            <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${fT(v.T)}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}"><span>SpO₂</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
           </div>
           <div class="vcap">Recorded ${E.clock(v.t)} by ${esc(v.by)}${s.t - v.t > 60 ? ', <b>over an hour ago</b>' : ''}</div>
           <ul class="feed" aria-live="polite">${logs.length ? logs.map((l) => `<li class="k-${l.kind} ${l.id > ui.newLogSeen ? 'new' : ''}"><span class="tm">${E.clock(l.t)}</span><span class="tx">${l.kind === 'find' ? `<b>${esc(l.label || '')}</b>` : ''}${esc(l.text)}</span></li>`).join('') : `<li><span class="tm"></span><span class="tx muted">You're at the bedside. Start with what you see.</span></li>`}</ul>
@@ -3542,6 +3568,7 @@ window.Shift = window.Shift || {};
     return `<main><div class="deb">
       <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
+      ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, w = d.judg.filter((j) => j.delta < 0).sort((a, b) => a.delta - b.delta || hurt(a) - hurt(b) || a.t - b.t)[0], g = d.judg.filter((j) => j.delta > 0).sort((a, b) => b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p></div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
@@ -3577,7 +3604,7 @@ window.Shift = window.Shift || {};
   /* Coach tips: shown once, anchored to the thing they describe. */
   const COACH = {
     station: [
-      { sel: '.door[data-act="goto"]', text: 'Tap a door, or a name below, to walk into a room. The clock only moves when you act.' },
+      { sel: () => `.door[data-pid="${(s.answers.rank || [])[0]}"]`, alt: '.door[data-act="goto"]', text: 'You picked this room first. Tap the door, or a name below, to walk in. The clock only moves when you act.' },
       { sel: '.phone', text: 'Your unit phone. Luis, the lab, pharmacy and the doctors reach you here. Some messages need an answer.' },
     ],
     room: [
@@ -3597,7 +3624,7 @@ window.Shift = window.Shift || {};
     const c = coachFor(), id = c ? c.key + ':' + c.i : '';
     let card = document.querySelector('.coach'), ring = document.querySelector('.coach-ring');
     if (!c) { if (card) card.remove(); if (ring) ring.remove(); return; }
-    const a = document.querySelector(c.step.sel); if (!a) return;
+    const a = document.querySelector(typeof c.step.sel === 'function' ? c.step.sel() : c.step.sel) || (c.step.alt && document.querySelector(c.step.alt)); if (!a) return;
     let r = a.getBoundingClientRect(); if (!r.width) return;
     if (!card || card.dataset.id !== id) {
       if (card) card.remove(); if (ring) ring.remove();
@@ -3641,13 +3668,13 @@ window.Shift = window.Shift || {};
     if (tab === 'vitals') {
       const ab = (k, v) => ({ T: v >= 38 || v < 36, HR: v > 100 || v < 55, SBP: v < 100 || v > 160, RR: v > 22 || v < 12, SpO2: v < 92 }[k]);
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
-        ${P.vit.slice().reverse().map((v) => `<tr><td>${E.clock(v.t)}</td><td class="${ab('T', v.T) ? 'ab' : ''}">${v.T}${ab('T', v.T) ? ' ▲' : ''}</td><td class="${ab('HR', v.HR) ? 'ab' : ''}">${v.HR}${ab('HR', v.HR) ? (v.HR < 55 ? ' ▼' : ' ▲') : ''}</td><td class="${ab('SBP', v.SBP) ? 'ab' : ''}">${v.SBP}/${v.DBP}${ab('SBP', v.SBP) ? ' ▼' : ''}</td><td class="${ab('RR', v.RR) ? 'ab' : ''}">${v.RR}</td><td class="${ab('SpO2', v.SpO2) ? 'ab' : ''}">${v.SpO2}%</td><td>${esc(v.O2)}</td><td>${v.pain}</td><td>${esc(v.by)}</td></tr>`).join('')}</tbody></table></div>
+        ${P.vit.slice().reverse().map((v) => `<tr><td>${E.clock(v.t)}</td><td class="${ab('T', v.T) ? 'ab' : ''}">${fT(v.T)}${ab('T', v.T) ? ' ▲' : ''}</td><td class="${ab('HR', v.HR) ? 'ab' : ''}">${v.HR}${ab('HR', v.HR) ? (v.HR < 55 ? ' ▼' : ' ▲') : ''}</td><td class="${ab('SBP', v.SBP) ? 'ab' : ''}">${v.SBP}/${v.DBP}${ab('SBP', v.SBP) ? ' ▼' : ''}</td><td class="${ab('RR', v.RR) ? 'ab' : ''}">${v.RR}</td><td class="${ab('SpO2', v.SpO2) ? 'ab' : ''}">${v.SpO2}%</td><td>${esc(v.O2)}</td><td>${v.pain}</td><td>${esc(v.by)}</td></tr>`).join('')}</tbody></table></div>
         ${P.bgs ? `<h3 style="margin:1.2rem 0 .5rem">Point-of-care glucose</h3>${P.bgs.length ? `<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>mg/dL</th><th>By</th></tr></thead><tbody>${P.bgs.slice().reverse().map((g) => `<tr><td>${E.clock(g.t)}</td><td class="${g.val < 70 ? 'ab' : ''}">${g.val}${g.val < 70 ? ' ▼' : ''}</td><td>${esc(g.by)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No glucose checked this shift.</p>'}` : ''}
         <p class="muted" style="font-size:.85rem">▲ ▼ mark values outside the normal range. Trends only exist if someone keeps measuring.</p>`;
     }
     if (tab === 'labs') {
       P.k.labsSeen = s.t; if (pid === '418') P.kSeen = true;
-      b = `<div class="tbl-wrap"><table><thead><tr><th>Resulted</th><th>Test</th><th>Result</th><th>Flag</th><th>Reference</th></tr></thead><tbody>${P.labs.slice().sort((a, b2) => b2.t - a.t).map((l) => `<tr><td>${l.t < -1000 ? 'Prior' : E.clock(l.t)}</td><td>${esc(l.name)}</td><td class="${l.flag ? 'ab' : ''} wrap">${esc(l.val)} ${esc(l.unit)}</td><td class="flag">${l.flag === 'H' ? 'High' : l.flag === 'L' ? 'Low' : l.flag === 'A' ? 'Abnormal' : ''}</td><td class="wrap">${esc(l.ref)}</td></tr>`).join('')}</tbody></table></div>`;
+      b = `<div class="tbl-wrap"><table><thead><tr><th>Resulted</th><th>Test</th><th>Result</th><th>Flag</th><th>Reference</th></tr></thead><tbody>${P.labs.slice().sort((a, b2) => b2.t - a.t).map((l) => `<tr><td>${l.t < -1000 ? 'Prior' : E.clock(l.t)}</td><td>${esc(l.name)}</td><td class="${l.flag ? 'ab' : ''} wrap">${esc(fLab(l))} ${esc(l.unit)}</td><td class="flag">${l.flag === 'H' ? 'High' : l.flag === 'L' ? 'Low' : l.flag === 'A' ? 'Abnormal' : ''}</td><td class="wrap">${esc(l.ref)}</td></tr>`).join('')}</tbody></table></div>`;
     }
     if (tab === 'orders') b = `<ul class="list">${P.orders.slice().reverse().map((o) => `<li>${esc(o.text)}${o.isNew ? '<span class="new-tag">New ' + E.clock(o.t) + '</span>' : ''}</li>`).join('')}</ul>`;
     if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(m.dose)}${m.param ? `<br><small class="muted">${esc(m.param)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
@@ -3698,13 +3725,13 @@ window.Shift = window.Shift || {};
     const d = def(pid), P = s.p[pid], Ax = A();
     if (ui.sbar.reply) return sheet(esc(prov().name), `<div class="reply">${face(C().provider)}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
     const items = d.sbar.items(s, P, Ax);
-    const reqs = d.sbar.requests || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
+    const reqs0 = d.sbar.requests || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on 4 West, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
-        ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${esc(it.label)}${it.need ? '' : `<small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
+        ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
-        ${reqs.map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
+        ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
     return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(C().provider), wide: true });
   }
 
@@ -3720,7 +3747,7 @@ window.Shift = window.Shift || {};
   function ovNova() {
     const body = `<div class="nova-card">${face('nova')}<div>
       ${ui.nova ? `<p class="dlg-text">"${esc(ui.nova)}"</p>` : `<p class="dlg-text">"You've got ${s.nova} question${s.nova === 1 ? '' : 's'} left on me today. I won't hand you answers, but I'll point you somewhere useful."</p>`}
-      ${s.novaLog.length ? `<details><summary class="muted">Earlier from Nova</summary>${s.novaLog.map((n) => `<p class="voice muted">${E.clock(n.t)}: ${esc(n.text)}</p>`).join('')}</details>` : ''}
+      ${s.novaLog.length > (ui.nova ? 1 : 0) ? `<details><summary class="muted">Earlier from Nova</summary>${s.novaLog.slice(0, ui.nova ? -1 : undefined).map((n) => `<p class="voice muted">${E.clock(n.t)}: ${esc(n.text)}</p>`).join('')}</details>` : ''}
     </div></div>`;
     const foot = `<button class="btn" data-act="close">Close</button>${!ui.nova && s.nova > 0 ? `<button class="btn btn-primary" data-act="nova-ask">Ask for a nudge (1 of ${s.nova})</button>` : ''}`;
     return sheet('Nova Reyes, charge nurse', body, foot, { label: 'Ask Nova' });
@@ -3739,8 +3766,8 @@ window.Shift = window.Shift || {};
   function ovRank() {
     const r = ui.rank, pr = C().priority;
     const done = ui.rankDone;
-    const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? '"Here\'s how I\'d have walked it, and why."' : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
-      <ol class="rank">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; return `<li class="${done ? (right ? 'right' : 'wrong') : ''}"><span class="n">${i + 1}</span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? `<span class="chip ${right ? 'ok' : 'warn'}">${right ? 'Matches' : 'Nova: ' + (pr.correct.indexOf(pid) + 1)}</span><span class="why">${esc(pr.why[pid])}</span>` : `<span class="mv"><button class="btn" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol>`;
+    const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick. Now go prove it.' : r.filter((p, i) => pr.correct[i] === p).length >= 2 ? 'Close. I\'d have shuffled a couple. Go find out why.' : 'Not how I\'d walk it. Keep your eyes open out there.'}" <small class="muted" style="display:block;font-family:var(--sans);font-size:.8rem;margin-top:.35rem">Her reasons come at the debrief.</small>` : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
+      <ol class="rank">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; return `<li class="${done ? (right ? 'right' : 'wrong') : ''}"><span class="n">${i + 1}</span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? `<span class="chip ${right ? 'ok' : 'warn'}">${right ? 'Matches Nova' : 'Nova: #' + (pr.correct.indexOf(pid) + 1)}</span>` : `<span class="mv"><button class="btn" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -3758,12 +3785,14 @@ window.Shift = window.Shift || {};
     return sheet('Settings', `<div class="setrow"><span>Theme</span>${seg('theme', [['system', 'System'], ['light', 'Day'], ['dark', 'Night']])}</div>
       <div class="setrow"><span>Text size</span>${seg('text', [['normal', 'Standard'], ['large', 'Large']])}</div>
       <div class="setrow"><span>Motion</span>${seg('motion', [['full', 'Full'], ['reduced', 'Reduced']])}</div>
-      <div class="setrow"><span>Sound and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
+      <div class="setrow"><span>Sound and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>
+      <div class="setrow"><span>Intro and tips</span><button class="btn" data-act="reset-tips">${prof.seen && Object.keys(prof.seen).length ? 'Show them again' : 'On for your next shift'}</button></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
   }
   function ovHelp() {
     return sheet('How it plays', `<div class="help">
       <p><b>You are the nurse.</b> This shift runs ${hhmm(C(), 0)} to ${hhmm(C(), C().length)}. The clock moves only when you act: assessing, giving meds, calling, walking between rooms. Each action shows its cost.</p>
-      <p><b>Report.</b> The outgoing nurse gives you report. Tap the lines that matter to put them on your brain sheet.</p>
+      <p><b>Report.</b> The outgoing nurse gives you report. Flag the lines that matter; they stay on your brain sheet all shift. Flagging everything counts against you.</p>
+      <p><b>Who first.</b> After report you rank your patients. Nova tells you how her order compares, and explains why at the debrief.</p>
       <p><b>The hallway.</b> Doors with an amber light need attention. Go into a room to assess, intervene, give or hold medications, and talk with patients and families. Tap objects in the room to inspect them.</p>
       <p><b>The phone.</b> ${esc(cna().name)} (your ${esc(cna().role)}), pharmacy, the lab, telemetry and ${esc(prov().name)} will reach you here. Some messages ask for a reply.</p>
       <p><b>Charts.</b> Vitals, labs, orders, MAR, notes. Open them from the station or any room. They don't cost time.</p>
@@ -3776,8 +3805,8 @@ window.Shift = window.Shift || {};
   }
 
   function toasts() {
-    if (!ui.toasts.length || !s || ui.view === 'station') return '';
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (ui.ov && !m.urgent)) return ''; const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast tap ${m.urgent ? 'urgent' : ''}" role="alert" data-act="msg" data-m="${m.id}">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
+    if (!ui.toasts.length || !s) return '';
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || ((ui.ov || ui.view === 'station') && !m.urgent)) return ''; const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast tap ${m.urgent ? 'urgent' : ''}" role="alert" data-act="msg" data-m="${m.id}">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
   }
 
   /* ------------ render ------------ */
@@ -3818,7 +3847,7 @@ window.Shift = window.Shift || {};
     R.hydrate(root);
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
-    ui.enter = false; ui.adv = null;
+    ui.enter = false; ui.adv = null; if (s && ui.view === 'station') ui.msgSeen = s.seq;
     coachPlace(); debriefAnim(root);
     if (ui.stamp && !ui.stamp.shown) { ui.stamp.shown = true; const st = ui.stamp; setTimeout(() => { if (ui.stamp === st) { ui.stamp = null; const n = root.querySelector('.stamp'); if (n) { n.classList.add('out'); setTimeout(() => n.remove(), 250); } } }, 1500); }
     if (ui.justKey) { const jk = ui.justKey; ui.justKey = null; const el = [...root.querySelectorAll('[data-act]')].find((x) => keyOf(x) === jk && !x.dataset.scrim); if (el) { const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el; tgt.classList.add('just'); } }
@@ -3868,7 +3897,7 @@ window.Shift = window.Shift || {};
     const run = (k) => {
       if (k === 'vitals') {
         const v = A().recordVitals(d.id, 'You'); P.k.hrAt = s.t; P.k.hr = v.HR;
-        logHere(d.id, `T ${v.T} °C, HR ${v.HR}${v.rhythm ? ' (' + v.rhythm + ')' : ''}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}% on ${v.O2}${v.poss ? ', sedation ' + v.poss.split(',')[0] : ''}. Pain ${v.pain}/10.`, 'find');
+        logHere(d.id, `T ${fT(v.T)} °C, HR ${v.HR}${v.rhythm ? ' (' + v.rhythm + ')' : ''}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}% on ${o2txt(v.O2)}${v.poss ? ', sedation ' + v.poss.split(',')[0] : ''}. Pain ${v.pain}/10.`, 'find');
         s.log[s.log.length - 1].label = 'Vital signs';
       } else {
         const txt = d.assess[k](s, P, A());
@@ -3883,7 +3912,7 @@ window.Shift = window.Shift || {};
   function onReply(m, r) {
     const Ax = A();
     if (r.act === 'goto') return enterRoom(r.pid);
-    if (r.act === 'delegate') { ui.ov = 'deleg'; ui.delegMsg = null; }
+    if (r.act === 'delegate') { ui.ov = 'deleg'; ui.delegMsg = null; m.done = true; }
     if (r.act === 'sbar') { ui.ov = 'sbar'; ui.sbar = { pid: r.pid, picked: [], req: null, reply: null }; }
     if (r.act === 'chart') { ui.ov = 'chart'; ui.chart = { pid: r.pid, tab: r.tab || 'overview' }; }
     const rx = C().replies && C().replies[r.act];
@@ -3894,7 +3923,7 @@ window.Shift = window.Shift || {};
 
   const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(s.t - mins)} · ${mins} min` : E.clock(s.t) }; };
   const handlers = {
-    'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); render(); },
+    'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'home'; ui.ov = null; render(); },
     new() { if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
     'new-yes'() { E.store.clear(); startNew(); },
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
@@ -3988,6 +4017,7 @@ window.Shift = window.Shift || {};
     'end-yes'() { ui.ov = null; endShift(); },
     filter(el) { ui.filter = el.dataset.k; render(); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
+    'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
     'intro-tap'() { if (!ui.introAll) { ui.introAll = true; render(); } },
     'intro-go'() { markSeen('intro:' + caseId); ui.intro = null; ui.introAll = false; render(); },
@@ -4013,7 +4043,7 @@ window.Shift = window.Shift || {};
      None of it says whether the choice was right: that stays in the debrief. */
   const SELECT = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag']);
-  const COMMIT = new Set(['med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
+  const COMMIT = new Set(['reset-tips', 'med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit' };           // answers that advance the scene
   const JUST = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);

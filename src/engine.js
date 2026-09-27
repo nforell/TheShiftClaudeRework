@@ -28,7 +28,7 @@ window.Shift = window.Shift || {};
       P.labs = JSON.parse(JSON.stringify(d.labs || []));
       P.orders = JSON.parse(JSON.stringify(d.orders || []));
       P.notes = JSON.parse(JSON.stringify(d.notes || []));
-      if (d.nightVitals) P.vit.push(Object.assign({ t: -25, by: 'Dana (night RN)' }, d.nightVitals));
+      if (d.nightVitals) P.vit.push(Object.assign({ t: -25, by: c.handoffBy || 'Dana (night RN)' }, d.nightVitals));
       s.p[d.id] = P;
       (d.meds || []).forEach((m) => {
         s.meds[m.id] = { status: m.initStatus || (m.prn ? 'prn' : 'due'), at: null, pid: d.id, note: '', given: [] };
@@ -124,7 +124,7 @@ window.Shift = window.Shift || {};
     const outcomes = c.patients.map((d) => {
       const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
       // A patient nobody saw can't have a good outcome credited to the nurse.
-      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone === 'good') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
+      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone !== 'bad') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
       return o;
     });
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;

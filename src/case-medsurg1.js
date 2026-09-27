@@ -228,7 +228,7 @@
       if (P.fell) return { tone: 'bad', title: 'Near-fall on his first walk', text: 'Luis lowered him to the floor when his legs gave out. No injury, but an incident report and a frightened patient.' };
       if (bellAtel(s, P)) return { tone: 'mixed', title: 'Early atelectasis', text: 'Febrile to 38.2 with SpO₂ 91% and basilar crackles. Preventable with pain control, spirometry and walking.' };
       if (P.ambulated && bellPain(s, P) <= 5) return { tone: 'good', title: 'On track for day 2', text: 'Pain controlled, walked the hall, lungs holding. The kind of day that gets people home early.' };
-      return { tone: 'mixed', title: 'Stable, but behind', text: P.ambulated ? 'He walked, but his pain is still limiting him.' : 'He never took his first walk. Every hour in bed after surgery raises clot and lung risk.' };
+      return { tone: 'mixed', title: s.t < 150 && !P.ambulated ? 'Stable, first walk still ahead' : 'Stable, but behind', text: P.ambulated ? 'He walked, but his pain is still limiting him.' : s.t < 150 ? 'He hasn\'t been up yet. His first walk is still on the list.' : 'He never took his first walk. Every hour in bed after surgery raises clot and lung risk.' };
     },
   };
 
@@ -351,7 +351,7 @@
         },
       },
       {
-        id: '414-corr', conditional: true, name: 'Insulin lispro, correction', dose: 'Per scale', route: 'SubQ', freq: 'Before meals', due: 60,
+        id: '414-corr', conditional: true, name: 'Insulin lispro, correction', dose: 'per scale', route: 'SubQ', freq: 'Before meals', due: 60,
         checks: (s, P) => [{ label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} mg/dL at ${clock(P.bgAt)}` : 'Not checked this shift', ok: recent(s, P.bgAt, 60) }, { label: 'Scale', value: '150–199: 2 u, 200–249: 4 u, 250–299: 6 u', ok: null }],
         block(s, P) { if (P.bgAt !== null && recent(s, P.bgAt, 60) && P.lastBG < 150) return `Glucose ${P.lastBG} is below the scale. No correction insulin is due.`; if (P.corrAt !== null) return 'Given at ' + clock(P.corrAt) + '.'; return null; },
         give(s, P, A) {
@@ -546,7 +546,7 @@
       },
       {
         id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
-        checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:30 116/68`, ok: null }]; },
+        checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:35 116/68`, ok: null }]; },
         give(s, P, A) {
           const v = A.vitals('416'); P.lisinoprilAt = s.t;
           if (v.SBP < 100) { A.judge('416-lis', 'meds', -2, `You gave lisinopril with an SBP of ${v.SBP}.`, 'The hold parameter exists for exactly this. In early sepsis an ACE inhibitor worsens hypotension and kidney perfusion.', '416'); P.sev = Math.min(100, P.sev + 10); }
@@ -571,7 +571,7 @@
           { id: 'base', label: 'Acute confusion. Ruth says she is sharp at baseline.', key: true, need: P.baseline && P.k.confusion !== undefined, lock: 'Assess her mentation and learn her baseline' },
           { id: 'conf', label: 'Confused and inattentive, picking at sheets', key: true, need: P.k.confusion !== undefined, lock: 'Do a neuro assessment first' },
           { id: 'vit', label: `T ${v.T}, HR ${v.HR}, BP ${v.SBP}/${v.DBP}, RR ${v.RR} (at ${clock(v.t)})`, key: fresh, need: true },
-          { id: 'trend', label: `BP down from ${first.SBP}/${first.DBP} at 06:35`, key: v.SBP < first.SBP - 8, need: fresh, lock: 'Get a current set of vitals' },
+          { id: 'trend', label: v.SBP < first.SBP - 2 ? `BP down from ${first.SBP}/${first.DBP} at 06:35` : `BP ${v.SBP}/${v.DBP}, about the same as 06:35`, key: v.SBP < first.SBP - 8, need: fresh, lock: 'Get a current set of vitals' },
           { id: 'uop', label: 'Urine output about 25 mL/h, nothing since 05:00', key: true, need: P.k.uop !== undefined, lock: 'Check her output' },
           { id: 'labs', label: (() => { const w = P.labs.filter((l) => l.name === 'WBC').pop(), c = P.labs.filter((l) => l.name === 'Creatinine').pop(); return `WBC ${w.val}, creatinine ${c.val} (baseline 0.9)`; })(), key: true, need: s.t >= 180, lock: 'AM labs not back yet' },
           { id: 'lact', label: P.lactResult ? `Lactate ${P.lactResult} mmol/L` : 'Lactate', key: true, need: P.lactResult !== null, lock: 'No lactate result' },
@@ -616,7 +616,7 @@
     status: (s, P) => P.icu ? 'gone' : P.sev >= 58 ? 'urgent' : P.sev >= 40 ? 'watch' : 'stable',
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Septic shock, transferred to ICU', text: 'Found hypotensive and hard to rouse. The cues were there at 07:00: fever, tachycardia, new confusion, low urine output and a delayed antibiotic.' };
-      if (P.bundle && P.sev < 35) return { tone: P.bundleLate ? 'mixed' : 'good', title: P.bundleLate ? 'Stabilized after a late catch' : 'Early sepsis, caught and turning', text: P.bundleLate ? 'Dr. Chen found her on rounds. She responded to fluids and antibiotics, but those hours were avoidable.' : 'BP back above 110, lactate clearing, more awake. She asked about her cat by name. Early recognition changed her trajectory.' };
+      if (P.bundle && P.sev < 35) return { tone: P.bundleLate ? 'mixed' : 'good', title: P.bundleLate ? 'Stabilized after a late catch' : 'Early sepsis, caught and turning', text: P.bundleLate ? 'Dr. Chen found her on rounds. She responded to fluids and antibiotics, but those hours were avoidable.' : `BP back above 110${P.lactResult !== null ? ', lactate clearing' : ''}, more awake. She asked about her cat by name. Early recognition changed her trajectory.` };
       if (P.bundle) return { tone: 'mixed', title: 'Sepsis being treated, not yet turning', text: 'Orders are in, but she still needs fluids, antibiotics and reassessment to stabilize.' };
       return { tone: 'bad', title: 'Unrecognized sepsis', text: 'Still febrile, tachycardic and hypotensive at handoff with no sepsis workup. The next shift inherits a patient in trouble.' };
     },
@@ -825,6 +825,7 @@
   };
 
   /* ---------- events ---------- */
+  const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'luis-hi', when: (s) => s.t >= 12, run(s, A) { A.msg({ from: 'luis', text: 'Morning! I\'ve got 412 to 418 with you. Want me to start vitals or sugars on anyone?', replies: [{ label: 'Open tasks for Luis', act: 'delegate' }] }); } },
     { id: 'pharm', when: (s) => s.t >= 65, run(s, A) { if (s.meds['416-cef'].status !== 'verify') return; A.msg({ from: 'omar', pid: '416', text: 'Ceftriaxone for 416 is on hold. Penicillin allergy with an unknown reaction. Can you find out what happened and whether she\'s had a cephalosporin?', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
@@ -845,6 +846,8 @@
     { id: 'ok-severe', when: (s) => s.p['414'].hypo && !s.p['414'].hypoResolved && s.p['414'].juiceAt === null && s.t - s.p['414'].hypoAt >= 25, run(s, A) { s.p['414'].hypoSevere = true; A.judge('414-untreated', 'safety', -2, 'Mrs. Okafor\'s hypoglycemia went untreated for 25 minutes.', 'Shaky, sweaty and anxious on insulin is hypoglycemia until proven otherwise. Check, treat, recheck, and don\'t let it wait behind routine tasks.', '414'); A.msg({ from: 'luis', pid: '414', urgent: true, text: '414 isn\'t making sense. She\'s slurring. I checked her sugar: 36.', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 2 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
     { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.' }); } },
+    { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
+    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Thirty minutes to handoff. Anyone you haven\'t laid eyes on in the last hour? Do that before you give report.' }); } },
   ];
 
@@ -875,7 +878,7 @@
       if (task.id === 'walk' && pid === '418' && (ortizBrady(s, s.p['418']) || s.p['418'].fl >= 60)) { A.judge('deleg-walk418', 'deleg', -1, 'You sent an unstable Mr. Ortiz for a walk.', 'Symptomatic patients are not stable for delegated ambulation.', '418'); return 'Luis: "He can barely sit up. I\'m not walking him right now."'; }
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'bg' || task.id === 'intake') A.judge('deleg-good', 'deleg', 1, 'You delegated routine data collection to the CNA.', 'Vitals on stable patients, glucose checks and intake measurement are appropriate to delegate. It frees you to assess. You still own interpreting the results.');
-      return `Luis: "Got it. ${task.label.toLowerCase()} for ${nm}."`;
+      return `Luis: "Got it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
       const nm = A.def(d.pid).short;
@@ -916,14 +919,14 @@
   function endChecks(s, A) {
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
-      if (P.seenAt === null && !(d.id === '416' && P.icu)) A.judge(d.id + '-unseen', 'assess', -2, `You never went into ${d.room} this shift.`, 'Every patient gets eyes on them early. Report tells you what happened overnight; your assessment tells you what\'s happening now.', d.id);
+      if (P.seenAt === null && !(d.id === '416' && P.icu)) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'Every patient gets eyes on them early. Report tells you what happened overnight; your assessment tells you what\'s happening now.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && !m.conditional && m.due <= Math.min(240, s.t - 60) && (st.status === 'due' || st.status === 'verify') && !(d.id === '416' && P.icu)) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: give it, or hold it with a documented reason and a notification.', d.id);
       });
     });
     const B = s.p['412'];
-    if (B.foleyOut === null) A.judge('412-foley-left', 'safety', -1, 'Mr. Bell\'s Foley was never removed despite an 08:00 order.', 'Catheter days drive infection risk.', '412');
+    if (B.foleyOut === null && s.t >= 120) A.judge('412-foley-left', 'safety', -1, 'Mr. Bell\'s Foley was never removed despite an 08:00 order.', 'Catheter days drive infection risk.', '412');
     if (B.oxyAt !== null && !A.hasJudg('412-reassess')) A.judge('412-noreassess', 'judgment', -1, 'You didn\'t reassess Mr. Bell\'s pain and sedation after his opioid.', 'Intervene, then evaluate. Otherwise you don\'t know whether it worked or whether he is over-sedated.', '412');
     const O = s.p['414'];
     if (O.bgAt === null && s.t >= 120) A.judge('414-nobg', 'assess', -1, 'Mrs. Okafor\'s pre-breakfast glucose was never checked.', 'Every insulin decision at breakfast starts with a point-of-care glucose. It can be delegated, but it can\'t be skipped.', '414');
@@ -938,7 +941,9 @@
     if (R.metoHeld && !R.notifiedMeto) A.judge('418-hold-notify', 'comm', -1, 'You held Mr. Ortiz\'s metoprolol but didn\'t tell the provider.', 'A held cardiac medication changes the plan. The provider needs to know to adjust the dose.', '418');
     const keys = []; A.c.patients.forEach((d) => d.report.forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
-    if (s.brain.length) A.judge('brain', 'assess', hit / keys.length >= 0.6 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.');
+    if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
+      if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.'); }
   }
 
 
