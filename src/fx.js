@@ -10,7 +10,7 @@
     try {
       if (!ctx) {
         const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { on = false; return null; }
-        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.7;
+        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.42;
         const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
       }
       if (ctx.state === 'suspended') ctx.resume();
@@ -51,14 +51,14 @@
   const thock = (g) => tone(165, 0, .075, { to: 85, glide: .05, gain: g || .24, type: 'sine' });
   const SOUNDS = {
     // Plain buttons, tabs, navigation: a crisp switch with body.
-    tap() { thock(.2); click(0, { f: 2300, q: .9, gain: .3 }); tone(2900, 0, .018, { gain: .035, type: 'square', lp: 5200 }); },
+    tap() { thock(.1); click(0, { f: 2600, q: 1.1, gain: .16 }); },
     // Choosing an answer or toggling an option: switch plus a round, upward pop.
-    select() { thock(.2); click(0, { f: 3000, gain: .26 }); tone(560, .005, .14, { to: 980, glide: .045, gain: .2, type: 'triangle', lp: 2800 }); },
+    select() { thock(.1); click(0, { f: 3000, gain: .16 }); tone(560, .005, .13, { to: 940, glide: .045, gain: .13, type: 'triangle', lp: 2800 }); },
     // Unchecking: the same pop, falling.
-    deselect() { thock(.14); click(0, { f: 2200, gain: .2 }); tone(780, 0, .1, { to: 460, glide: .05, gain: .12, type: 'triangle', lp: 2200 }); },
+    deselect() { thock(.08); click(0, { f: 2200, gain: .13 }); tone(780, 0, .1, { to: 460, glide: .05, gain: .12, type: 'triangle', lp: 2200 }); },
     // Committing (give, hold, call, delegate, lock in): a heavy press and a bright two-note confirm.
     commit() {
-      thock(.3); click(0, { f: 2600, gain: .3 });
+      thock(.16); click(0, { f: 2600, gain: .18 });
       tone(659.3, .01, .32, { gain: .15, type: 'triangle', lp: 3200 });
       tone(987.8, .085, .5, { gain: .14, type: 'sine' });
       tone(1975.5, .085, .25, { gain: .03, type: 'sine' });
@@ -76,7 +76,7 @@
     miss() { tone(392, 0, .22, { gain: .08, type: 'triangle', lp: 1600 }); tone(329.6, .11, .3, { gain: .07, type: 'triangle', lp: 1400 }); },
     open() { tone(420, 0, .12, { to: 620, glide: .08, gain: .05, type: 'sine' }); },
   };
-  const BUZZ = { tap: 6, select: 10, deselect: 6, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+  const BUZZ = { select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
 
   let last = 0;
   function play(name) {

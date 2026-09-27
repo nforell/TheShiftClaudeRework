@@ -121,7 +121,12 @@ window.Shift = window.Shift || {};
     });
     const scored = dom.filter((d) => d.score !== null);
     const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
-    const outcomes = c.patients.map((d) => Object.assign({ id: d.id }, d.outcome(s, s.p[d.id], A)));
+    const outcomes = c.patients.map((d) => {
+      const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
+      // A patient nobody saw can't have a good outcome credited to the nurse.
+      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone === 'good') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
+      return o;
+    });
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;
     let rating = overall >= 85 ? 'Charge-nurse material' : overall >= 72 ? 'Safe, solid shift' : overall >= 58 ? 'Getting there' : 'Rough shift';
     if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';

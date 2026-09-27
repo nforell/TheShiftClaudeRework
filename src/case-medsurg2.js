@@ -117,7 +117,7 @@
         give: () => 'Azithromycin infusing over 60 minutes.',
       },
       {
-        id: '421-loraz', name: 'Lorazepam', dose: '0.5 mg', route: 'PO', freq: 'Every 6 h as needed, anxiety', prn: true, hold: 'Hold for sedation or RR < 12',
+        id: '421-loraz', name: 'Lorazepam', dose: '0.5 mg', route: 'PO', freq: 'Every 6 h as needed, anxiety', prn: true, param: 'Hold for sedation or RR < 12',
         block: (s, P) => (P.lorazAt !== null && s.t - P.lorazAt < 360) ? 'Given at ' + clock(P.lorazAt) + '.' : null,
         checks: (s, P, A) => { const v = A.lastVitals('421'); return [{ label: 'RR and sedation', value: recent(s, v.t, 30) ? `RR ${v.RR} at ${clock(v.t)}` : 'Not checked in the last 30 min', ok: recent(s, v.t, 30) ? v.RR >= 12 : false }, { label: 'Tried first', value: P.coachAt !== null ? 'Pursed-lip breathing at ' + clock(P.coachAt) : 'Nothing yet', ok: P.coachAt !== null }, { label: 'Risk', value: 'CO₂ retainer. Benzodiazepines depress the drive to breathe.', ok: null }]; },
         give(s, P, A) {
@@ -980,6 +980,8 @@
     id: 'medsurg-4w-2', title: 'Second wind', unit: '4 West, Medical-Surgical', level: 'Beginner', start: 15 * 60, length: 300, novaCredits: 3,
     card: 'Evening on 4 West. Four patients and an admission from the ED.',
     hero: { head: 'Four patients, one admission. Report at 15:00.', lede: 'An evening shift on 4 West. Blood is on its way up, a lab result is pending, and the ED is sending you a surgical patient before dinner. Watch what other people change, and read every order twice.' },
+    intro: { time: '14:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['Evening shift. Four patients, and the ED is sending you a fifth.', 'Blood is on its way up. A critical lab is about to call.', 'Watch what other people change. Read every order twice.'] },
+    minutes: 20,
     reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },

@@ -1,7 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Shift — 4 West Med-Surg</title>
+<title>The Shift — a nursing shift simulator</title>
+<meta name="description" content="Work a real med-surg shift. Take report, walk the hall, and decide who needs you first. Your patients get better or worse based on what you notice.">
+<meta name="theme-color" content="#1E6B63">
+<meta property="og:title" content="The Shift — a nursing shift simulator">
+<meta property="og:description" content="Four patients. One is quietly getting worse. Will you notice in time?">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E6B63'/%3E%3Cpath d='M8 36h12l5-12 8 22 6-14 4 4h13' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@200;300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>:root{--bg:#E4EBE8;--surface:#F7F9F8;--surface-2:#EDF2F0;--ink:#152E2B;--ink-2:#4B625D;--line:#C6D2CE;--teal:#1E6B63;--teal-ink:#fff;--amber:#A96C0E;--amber-bg:#FBEFD6;--red:#B3342B;--red-bg:#F8E1DE;--good:#2B7249;--good-bg:#E0F0E6;
@@ -371,20 +376,20 @@ td.wrap{white-space:normal;min-width:220px}
 :root[data-motion="reduced"] .stamp .tick path{stroke-dashoffset:0}
 @media (max-width:640px){.dock-tabs button{padding:.5em .55em}}
 
-/* ---------- punch: every tap flashes and ripples ---------- */
-.zap{position:fixed;z-index:70;pointer-events:none;overflow:hidden;box-shadow:0 0 0 2px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 40%,transparent);background:color-mix(in srgb,var(--teal) 10%,transparent);animation:zapring .5s cubic-bezier(.2,.8,.3,1) forwards}
-.zap i{position:absolute;border-radius:50%;background:color-mix(in srgb,var(--teal) 30%,transparent);transform:translate(-50%,-50%) scale(0);animation:ripple .5s cubic-bezier(.2,.8,.3,1) forwards}
-.zap.strong{box-shadow:0 0 0 3px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 50%,transparent)}
-.zap.strong i{background:color-mix(in srgb,var(--teal) 42%,transparent)}
-.zap.big{box-shadow:none;background:none}
-.zap.no{box-shadow:0 0 0 2px var(--amber);background:color-mix(in srgb,var(--amber) 12%,transparent);animation:zapno .45s ease-out forwards}
-.zap.no i{background:color-mix(in srgb,var(--amber) 22%,transparent)}
-@keyframes zapring{0%{opacity:1}60%{opacity:1;box-shadow:0 0 0 2px var(--teal),0 0 0 7px color-mix(in srgb,var(--teal) 0%,transparent)}100%{opacity:0;box-shadow:0 0 0 2px var(--teal),0 0 0 10px color-mix(in srgb,var(--teal) 0%,transparent)}}
+/* ---------- punch: every tap answers, quietly ---------- */
+.zap{position:fixed;z-index:70;pointer-events:none;overflow:hidden;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--teal) 70%,transparent);background:color-mix(in srgb,var(--teal) 5%,transparent);animation:zapring .36s ease-out forwards}
+.zap i{position:absolute;border-radius:50%;background:color-mix(in srgb,var(--teal) 14%,transparent);transform:translate(-50%,-50%) scale(0);animation:ripple .42s cubic-bezier(.2,.8,.3,1) forwards}
+.zap.strong{box-shadow:0 0 0 2px color-mix(in srgb,var(--teal) 80%,transparent)}
+.zap.strong i{background:color-mix(in srgb,var(--teal) 20%,transparent)}
+.zap.big{box-shadow:none;background:none}.zap.big i{background:color-mix(in srgb,#fff 18%,transparent)}
+.zap.no{box-shadow:0 0 0 1.5px var(--amber);background:color-mix(in srgb,var(--amber) 7%,transparent);animation:zapno .36s ease-out forwards}
+.zap.no i{display:none}
+@keyframes zapring{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
 @keyframes ripple{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
-@keyframes zapno{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}100%{opacity:0}}
-.hint{position:fixed;z-index:75;max-width:min(320px,calc(100vw - 16px));padding:.45rem .75rem;border-radius:8px;background:var(--ink);color:var(--bg);font-size:.85rem;font-weight:600;line-height:1.35;box-shadow:0 12px 28px -12px rgba(0,0,0,.5);pointer-events:none;animation:rise .18s ease-out}
-.hint.no{background:var(--amber-bg);color:var(--ink);border:1px solid var(--amber)}
-.hint.out{opacity:0;transition:opacity .22s}
+@keyframes zapno{0%,100%{transform:none}25%{transform:translateX(-3px)}50%{transform:translateX(2.5px)}75%{transform:translateX(-1.5px)}100%{opacity:0}}
+.pop-tip{position:fixed;z-index:75;max-width:min(320px,calc(100vw - 16px));padding:.45rem .75rem;border-radius:8px;background:var(--ink);color:var(--bg);font-size:.85rem;font-weight:600;line-height:1.35;box-shadow:0 12px 28px -12px rgba(0,0,0,.5);pointer-events:none;animation:rise .18s ease-out}
+.pop-tip.no{background:var(--amber-bg);color:var(--ink);border:1px solid var(--amber)}
+.pop-tip.out{opacity:0;transition:opacity .22s}
 /* things you can tap look tappable */
 .tap{cursor:pointer}
 .pt-row.tap:hover,.due li.tap:hover,.brain li.tap:hover,.msg.tap:hover{background:color-mix(in srgb,var(--teal) 6%,transparent)}
@@ -398,9 +403,79 @@ td.wrap{white-space:normal;min-width:220px}
 .btn.off,.act.off{opacity:.45;cursor:not-allowed}
 .btn.off:hover{border-color:var(--line)}
 .opt input.off{cursor:not-allowed}
-.btn:active:not(.off),.act:active:not(.off),.choice:active,.opt:active,.line:active,.rung:active,.dock-tabs button:active,.chart-tabs button:active,.seg button:active,.pt-tab:active,.icon-btn:active{transform:scale(.955)}
+.btn:active:not(.off),.act:active:not(.off),.choice:active,.opt:active,.line:active,.rung:active,.dock-tabs button:active,.chart-tabs button:active,.seg button:active,.pt-tab:active,.icon-btn:active{transform:scale(.97)}
 .clue:active,.door:active,.pt:active{filter:brightness(1.12)}
 .dock-tabs button.just,.chart-tabs button.just,.pt-tab.just{animation:just .3s ease-out}
+
+/* ---------- launch polish ---------- */
+/* views ease in instead of snapping */
+.view-in{animation:viewin .26s cubic-bezier(.2,.7,.2,1)}
+@keyframes viewin{from{opacity:0;transform:translateY(6px)}}
+/* report chips wrap on phones instead of running off the edge */
+.report-head .meta .chip{white-space:normal}
+@media (max-width:640px){
+  .tabsrow .sp{flex-basis:100%;height:0}
+  .tabsrow .btn-primary{flex:1}
+  .rank li .chip{grid-column:3;justify-self:start}
+  .toasts{top:calc(60px + env(safe-area-inset-top,0px));bottom:auto}
+  .toast{grid-template-columns:28px minmax(0,1fr) auto;padding:.45rem .55rem;gap:.45rem}
+  .toast .portrait{width:28px;height:28px}
+  .toast p{font-size:.82rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .toast .btn{min-height:32px;padding:.15em .55em;font-size:.78rem}
+}
+/* home */
+.eyebrow{margin:0 0 .4rem;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.home-meta{margin:.8rem 0 0;font-size:.85rem;color:var(--ink-2)}
+.btn-go{min-height:52px;padding:.65em 1.4em;font-size:1.02rem;box-shadow:0 10px 24px -12px color-mix(in srgb,var(--teal) 80%,transparent)}
+.btn-go span{display:inline-block;transition:transform .2s}.btn-go:hover span{transform:translateX(3px)}
+/* report: lines arrive like someone talking, flags are obvious */
+.lines.fresh li{animation:linein .34s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i) * 90ms)}
+@keyframes linein{from{opacity:0;transform:translateY(6px)}}
+.line{display:flex;gap:.6rem;align-items:flex-start}
+.flag-ic{flex:none;width:18px;height:18px;margin-top:.28em;border-radius:50%;border:1.5px dashed var(--line);transition:all .15s}
+.line:hover .flag-ic{border-color:var(--amber)}
+.line[aria-pressed="true"] .flag-ic{border:0;background:var(--amber) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 20V5h10l-2.5 3.5L17 12H7' fill='white'/%3E%3C/svg%3E") center/70% no-repeat;animation:checkin .24s cubic-bezier(.3,1.6,.5,1)}
+.line[aria-pressed="true"]::after{content:none}
+.flag-cue{color:var(--amber)}
+.brain h2 .count{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .35em;border-radius:1em;background:var(--amber);color:#fff;font-size:.72rem;vertical-align:middle;animation:checkin .24s cubic-bezier(.3,1.6,.5,1)}
+/* cold open */
+.intro{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 40%,#12272a 0%,#081113 70%);color:#E1EBE7;cursor:pointer;animation:fade .4s;padding:1.5rem}
+.intro-body{max-width:34rem;width:100%}
+.intro-time{margin:0;font-size:clamp(3.4rem,12vw,6.5rem);font-weight:200;letter-spacing:-.05em;line-height:1;animation:linein .7s ease-out backwards}
+.intro-place{margin:.3rem 0 1.6rem;font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5DBBAE;animation:linein .7s .3s ease-out backwards}
+.intro-beat{margin:0 0 .9rem;font-family:var(--serif);font-size:clamp(1.15rem,3.6vw,1.45rem);line-height:1.45;animation:linein .8s ease-out backwards;animation-delay:var(--d)}
+.intro-beat:last-of-type{color:#F0C77A}
+.intro-cta{margin-top:1.2rem;animation:linein .6s ease-out backwards;animation-delay:var(--d);background:#5DBBAE;border-color:#5DBBAE;color:#08201d}
+.intro.all .intro-beat,.intro.all .intro-cta,.intro.all .intro-time,.intro.all .intro-place{animation:none}
+.intro-skip{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;background:transparent;border:1px solid rgba(255,255,255,.25);color:#9DB2AC;border-radius:6px;padding:.4em .9em;cursor:pointer;min-height:40px}
+.intro-ecg{position:absolute;left:0;right:0;top:50%;width:100%;height:120px;transform:translateY(-50%);opacity:.18;pointer-events:none}
+.intro-ecg path{fill:none;stroke:#5DBBAE;stroke-width:2.5;stroke-dasharray:1400;stroke-dashoffset:1400;animation:ecgdraw 3.2s linear infinite}
+@keyframes ecgdraw{to{stroke-dashoffset:-1400}}
+/* coach tips */
+.coach{position:fixed;z-index:80;width:min(330px,calc(100vw - 20px));background:var(--ink);color:var(--bg);border-radius:12px;padding:.85rem .95rem .7rem;box-shadow:0 20px 44px -16px rgba(0,0,0,.6);animation:rise .22s ease-out}
+.coach p{margin:0 0 .6rem;font-size:.93rem;line-height:1.45}
+.coach-f{display:flex;align-items:center;gap:.4rem}.coach-f .dots{flex:1}
+.coach .dots i{border-color:var(--bg);width:7px;height:7px}.coach .dots i.on{background:var(--bg)}
+.coach .btn{min-height:36px;padding:.25em .8em;font-size:.86rem}
+.coach .btn-quiet{color:inherit;opacity:.75}.coach .btn-quiet:hover{background:rgba(255,255,255,.1)}
+.coach .btn-primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.coach-ring{position:fixed;z-index:79;pointer-events:none;border-radius:12px;box-shadow:0 0 0 2px var(--teal),0 0 0 9999px rgba(8,20,18,.28);animation:coachpulse 1.8s ease-in-out infinite}
+@keyframes coachpulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--teal) 55%,transparent),0 0 0 9999px rgba(8,20,18,.28)}}
+/* debrief */
+.deb-score .num{display:block}
+.meter .bar i{transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.out{animation:linein .5s ease-out backwards}.out:nth-child(2){animation-delay:.12s}.out:nth-child(3){animation-delay:.24s}.out:nth-child(4){animation-delay:.36s}.out:nth-child(5){animation-delay:.48s}
+.deb-hero h1{animation:linein .6s ease-out backwards}
+/* phones: the newest finding pins to the bottom so a tap always shows its result */
+.lastfind{display:none}
+@media (max-width:960px){
+  .lastfind{display:grid;grid-template-columns:3rem minmax(0,1fr) 1.2rem;gap:.5rem;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:44;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:10px;padding:.65rem .75rem;box-shadow:0 18px 40px -14px rgba(0,0,0,.45);font-family:var(--serif);font-size:.98rem;line-height:1.45;max-height:42vh;overflow:auto;animation:rise .22s ease-out;cursor:pointer}
+  .lastfind .tm{font-family:var(--sans);font-size:.78rem;color:var(--ink-2);padding-top:.15em}
+  .lastfind b{display:block;font-family:var(--sans);font-size:.76rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .lastfind .lf-x{font-family:var(--sans);color:var(--ink-2);font-size:.9rem}
+  main:has(.lastfind){padding-bottom:40vh}
+}
+@media (max-width:960px){.deb-grid>section:first-child{order:2}.deb-grid{display:flex;flex-direction:column}}
 </style></head>
 <body><div id="app"></div>
 <script>/* The Shift — simulation engine. Knows nothing about specific patients; cases plug in. */
@@ -526,7 +601,12 @@ window.Shift = window.Shift || {};
     });
     const scored = dom.filter((d) => d.score !== null);
     const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
-    const outcomes = c.patients.map((d) => Object.assign({ id: d.id }, d.outcome(s, s.p[d.id], A)));
+    const outcomes = c.patients.map((d) => {
+      const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
+      // A patient nobody saw can't have a good outcome credited to the nurse.
+      if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone === 'good') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
+      return o;
+    });
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;
     let rating = overall >= 85 ? 'Charge-nurse material' : overall >= 72 ? 'Safe, solid shift' : overall >= 58 ? 'Getting there' : 'Rough shift';
     if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';
@@ -562,7 +642,7 @@ window.Shift = window.Shift || {};
     try {
       if (!ctx) {
         const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { on = false; return null; }
-        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.7;
+        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.42;
         const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
       }
       if (ctx.state === 'suspended') ctx.resume();
@@ -603,14 +683,14 @@ window.Shift = window.Shift || {};
   const thock = (g) => tone(165, 0, .075, { to: 85, glide: .05, gain: g || .24, type: 'sine' });
   const SOUNDS = {
     // Plain buttons, tabs, navigation: a crisp switch with body.
-    tap() { thock(.2); click(0, { f: 2300, q: .9, gain: .3 }); tone(2900, 0, .018, { gain: .035, type: 'square', lp: 5200 }); },
+    tap() { thock(.1); click(0, { f: 2600, q: 1.1, gain: .16 }); },
     // Choosing an answer or toggling an option: switch plus a round, upward pop.
-    select() { thock(.2); click(0, { f: 3000, gain: .26 }); tone(560, .005, .14, { to: 980, glide: .045, gain: .2, type: 'triangle', lp: 2800 }); },
+    select() { thock(.1); click(0, { f: 3000, gain: .16 }); tone(560, .005, .13, { to: 940, glide: .045, gain: .13, type: 'triangle', lp: 2800 }); },
     // Unchecking: the same pop, falling.
-    deselect() { thock(.14); click(0, { f: 2200, gain: .2 }); tone(780, 0, .1, { to: 460, glide: .05, gain: .12, type: 'triangle', lp: 2200 }); },
+    deselect() { thock(.08); click(0, { f: 2200, gain: .13 }); tone(780, 0, .1, { to: 460, glide: .05, gain: .12, type: 'triangle', lp: 2200 }); },
     // Committing (give, hold, call, delegate, lock in): a heavy press and a bright two-note confirm.
     commit() {
-      thock(.3); click(0, { f: 2600, gain: .3 });
+      thock(.16); click(0, { f: 2600, gain: .18 });
       tone(659.3, .01, .32, { gain: .15, type: 'triangle', lp: 3200 });
       tone(987.8, .085, .5, { gain: .14, type: 'sine' });
       tone(1975.5, .085, .25, { gain: .03, type: 'sine' });
@@ -628,7 +708,7 @@ window.Shift = window.Shift || {};
     miss() { tone(392, 0, .22, { gain: .08, type: 'triangle', lp: 1600 }); tone(329.6, .11, .3, { gain: .07, type: 'triangle', lp: 1400 }); },
     open() { tone(420, 0, .12, { to: 620, glide: .08, gain: .05, type: 'sine' }); },
   };
-  const BUZZ = { tap: 6, select: 10, deselect: 6, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+  const BUZZ = { select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
 
   let last = 0;
   function play(name) {
@@ -823,7 +903,7 @@ window.Shift = window.Shift || {};
         hold(s, P, A) { A.judge('412-enox-hold', 'meds', -1, 'You held Mr. Bell\'s enoxaparin without a clinical reason.', 'After abdominal surgery, in a recent smoker with limited mobility, VTE prophylaxis matters. Platelets were normal and there was no bleeding.', '412'); return 'Held.'; },
       },
       {
-        id: '412-aml', name: 'Amlodipine', dose: '5 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '412-aml', name: 'Amlodipine', dose: '5 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('412'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }]; },
         give: () => 'Given.',
         hold(s, P, A) { A.judge('412-aml-hold', 'meds', -1, 'You held Mr. Bell\'s amlodipine with a BP well above the hold parameter.', 'His SBP ran in the 130s. The order holds only for SBP under 100.', '412'); return 'Held.'; },
@@ -1006,7 +1086,7 @@ window.Shift = window.Shift || {};
         },
       },
       {
-        id: '414-prand', name: 'Insulin lispro, mealtime', dose: '6 units', route: 'SubQ', freq: 'With meals', due: 75, hold: 'Hold if intake < 50%, then notify provider',
+        id: '414-prand', name: 'Insulin lispro, mealtime', dose: '6 units', route: 'SubQ', freq: 'With meals', due: 75, param: 'Hold if intake < 50%, then notify provider',
         checks: (s, P) => [{ label: 'Breakfast intake', value: P.intakeKnown ? 'About 20%' : 'Not checked', ok: P.intakeKnown ? false : null }, { label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 90) }],
         give(s, P, A) {
           if (!P.intakeKnown) A.judge('414-prand-blind', 'meds', -2, 'You gave Mrs. Okafor her mealtime insulin without checking how much she ate.', 'Mealtime (prandial) insulin covers the carbohydrate a patient actually eats. The order made it conditional on at least 50% intake. She ate about 20% because of nausea.', '414');
@@ -1190,7 +1270,7 @@ window.Shift = window.Shift || {};
         },
       },
       {
-        id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:30 116/68`, ok: null }]; },
         give(s, P, A) {
           const v = A.vitals('416'); P.lisinoprilAt = s.t;
@@ -1334,7 +1414,7 @@ window.Shift = window.Shift || {};
     family: { name: 'Rosa', rel: 'Wife', mode: 'bedside', cost: 3, dialog: (s, P) => P.educated ? 'rosa_after' : 'rosa_talk' },
     meds: [
       {
-        id: '418-meto', name: 'Metoprolol succinate', dose: '50 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold for HR < 55 or SBP < 90',
+        id: '418-meto', name: 'Metoprolol succinate', dose: '50 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold for HR < 55 or SBP < 90',
         checks: (s, P) => [{ label: 'Apical pulse', value: recent(s, P.k.hrAt, 30) ? `${P.k.hr} at ${clock(P.k.hrAt)}` : 'Not counted in the last 30 min', ok: recent(s, P.k.hrAt, 30) ? P.k.hr >= 55 : false }],
         give(s, P, A) {
           const v = A.vitals('418'); P.metoAt = s.t; P.metoHR = v.HR;
@@ -1350,7 +1430,7 @@ window.Shift = window.Shift || {};
         },
       },
       {
-        id: '418-los', name: 'Losartan', dose: '25 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '418-los', name: 'Losartan', dose: '25 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('418'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }]; },
         give(s, P, A) { const v = A.vitals('418'); P.losAt = s.t; if (v.SBP < 100) A.judge('418-los', 'meds', -2, `You gave losartan with an SBP of ${v.SBP}.`, 'Hold parameters exist because layering vasodilators on a soft pressure causes symptomatic hypotension.', '418'); return 'Losartan 25 mg given.'; },
         hold(s, P, A) { const v = A.vitals('418'); A.judge('418-los-hold', 'meds', v.SBP < 100 ? 1 : 0, v.SBP < 100 ? 'You held losartan for SBP under 100.' : 'You held losartan with an SBP above the parameter.', v.SBP < 100 ? 'Parameter met, dose held.' : 'His SBP was just above 100. Holding is defensible with a borderline pressure, but tell the provider.', '418'); return 'Held.'; },
@@ -1595,6 +1675,8 @@ window.Shift = window.Shift || {};
     id: 'medsurg-4w-1', title: 'First light', unit: '4 West, Medical-Surgical', level: 'Orientation', start: 7 * 60, length: 300, novaCredits: 3,
     card: 'Morning on 4 West. Four patients, one quietly getting worse.',
     hero: { head: 'You have four patients. Report starts now.', lede: 'A medical-surgical morning on 4 West. Take report, walk the hall, decide who needs you first. Your patients will get better or worse depending on what you notice.' },
+    intro: { time: '06:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['You\'re the day nurse. Four patients are yours until noon.', 'Dana worked all night. She\'s tired, and report will be quick.', 'One of your patients is getting sicker. Nobody has noticed yet.'] },
+    minutes: 15,
     reportBy: 'dana', reportRole: 'night shift', provider: 'chen', cna: 'luis',
     /* Extra lines for the station's due list that aren't medications. */
     dueExtras(s) {
@@ -1771,7 +1853,7 @@ window.Shift = window.Shift || {};
         give: () => 'Azithromycin infusing over 60 minutes.',
       },
       {
-        id: '421-loraz', name: 'Lorazepam', dose: '0.5 mg', route: 'PO', freq: 'Every 6 h as needed, anxiety', prn: true, hold: 'Hold for sedation or RR < 12',
+        id: '421-loraz', name: 'Lorazepam', dose: '0.5 mg', route: 'PO', freq: 'Every 6 h as needed, anxiety', prn: true, param: 'Hold for sedation or RR < 12',
         block: (s, P) => (P.lorazAt !== null && s.t - P.lorazAt < 360) ? 'Given at ' + clock(P.lorazAt) + '.' : null,
         checks: (s, P, A) => { const v = A.lastVitals('421'); return [{ label: 'RR and sedation', value: recent(s, v.t, 30) ? `RR ${v.RR} at ${clock(v.t)}` : 'Not checked in the last 30 min', ok: recent(s, v.t, 30) ? v.RR >= 12 : false }, { label: 'Tried first', value: P.coachAt !== null ? 'Pursed-lip breathing at ' + clock(P.coachAt) : 'Nothing yet', ok: P.coachAt !== null }, { label: 'Risk', value: 'CO₂ retainer. Benzodiazepines depress the drive to breathe.', ok: null }]; },
         give(s, P, A) {
@@ -2634,6 +2716,8 @@ window.Shift = window.Shift || {};
     id: 'medsurg-4w-2', title: 'Second wind', unit: '4 West, Medical-Surgical', level: 'Beginner', start: 15 * 60, length: 300, novaCredits: 3,
     card: 'Evening on 4 West. Four patients and an admission from the ED.',
     hero: { head: 'Four patients, one admission. Report at 15:00.', lede: 'An evening shift on 4 West. Blood is on its way up, a lab result is pending, and the ED is sending you a surgical patient before dinner. Watch what other people change, and read every order twice.' },
+    intro: { time: '14:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['Evening shift. Four patients, and the ED is sending you a fifth.', 'Blood is on its way up. A critical lab is about to call.', 'Watch what other people change. Read every order twice.'] },
+    minutes: 20,
     reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },
@@ -3211,7 +3295,7 @@ window.Shift = window.Shift || {};
 
   /* ------------ game flow ------------ */
   function save() { if (s && !s.ended) E.store.save(s); }
-  function startNew() { s = E.newGame(caseId); ui.view = 'handoff'; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
+  function startNew() { s = E.newGame(caseId); ui.view = 'handoff'; ui.hFresh = true; ui.intro = C().intro && !seen('intro:' + caseId) ? 0 : null; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
   function resume() { const g = E.store.load(); if (!g) return startNew(); s = g; caseId = g.caseId; E.useCase(caseId); ui.view = s.view || 'station'; ui.ov = null; render(true); }
   function goView(v) { ui.view = v; s.view = v; ui.caption = null; save(); render(true); }
 
@@ -3231,13 +3315,13 @@ window.Shift = window.Shift || {};
     if (s.ended) return endShift();
     save();
   }
-  function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = s.seq; }
+  function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = s.seq; if (kind !== 'clue') ui.lastFind = s.seq; }
 
   function endShift() {
     E.finish(s); const d = E.debrief(s);
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
     prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
-    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; render(true);
+    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; render(true);
   }
 
   /* ------------ header ------------ */
@@ -3271,12 +3355,14 @@ window.Shift = window.Shift || {};
       <span style="display:flex;gap:.3rem"><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button></span></div>
       <section class="home-hero">
         <div>
+          <p class="eyebrow">A nursing shift simulator</p>
           <p class="big-clock" aria-label="${start}">${start.slice(0, 2)}<span>:</span>${start.slice(3)}</p>
           <h1>${esc(c.hero.head)}</h1>
           <p class="lede">${esc(c.hero.lede)}</p>
           <div class="cta">
-            ${saved ? `<button class="btn btn-primary" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button><button class="btn" data-act="new">Start this shift instead</button>` : `<button class="btn btn-primary" data-act="new">Start shift</button>`}
+            ${saved ? `<button class="btn btn-primary" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button><button class="btn" data-act="new">Start this shift instead</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
+          <p class="home-meta">${c.patients.length} patients · about ${c.minutes || 15} minutes · saves as you go</p>
         </div>
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
@@ -3302,11 +3388,11 @@ window.Shift = window.Shift || {};
     const brain = s.brain.map((k) => { const [pid, i] = k.split(':'); return { k, pid, text: def(pid).report[+i].text }; });
     return `<main><div class="handoff">
       <section class="report" aria-labelledby="rh">
-        <div class="dana">${face(C().reportBy)}<span>${esc(rb.name)}, ${esc(C().reportRole)}, is giving you report. Tap the lines worth remembering.</span></div>
+        <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
         <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${d.age}${d.sex}, room ${d.room}</small></h2>
           <div class="muted">${esc(d.dx)}</div>
           <div class="meta"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${nv.T}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
-        <ul class="lines">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
+        <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
         <div class="tabsrow" role="tablist" aria-label="Patients in report">
           ${pts.map((p, i) => `<button class="pt-tab" role="tab" data-act="h-go" data-i="${i}" aria-current="${i === ui.hIdx}">${p.room}</button>`).join('')}
           <span class="sp"></span>
@@ -3314,7 +3400,7 @@ window.Shift = window.Shift || {};
         </div>
       </section>
       <aside class="brain" aria-label="Your brain sheet">
-        <h2>Your brain sheet</h2><p class="hint">What you flag here stays on your board all shift.</p>
+        <h2>Your brain sheet${brain.length ? ` <span class="count">${brain.length}</span>` : ''}</h2><p class="hint">What you flag stays on your board all shift.</p>
         ${brain.length ? `<ul>${brain.map((b) => `<li class="tap" data-act="flag" data-k="${b.k}" role="button" tabindex="0" title="Tap to unflag"><b>${b.pid}</b>${esc(b.text)}</li>`).join('')}</ul>` : '<p class="empty" style="padding:0">Nothing flagged yet.</p>'}
         ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn" data-act="h-done">Skip the rest of report</button></p>` : ''}
       </aside></div></main>`;
@@ -3431,6 +3517,7 @@ window.Shift = window.Shift || {};
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Hallway</button></div></div>
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
+      ${(() => { const l = ui.lastFind && s.log.find((x) => x.id === ui.lastFind && x.pid === d.id); return l ? `<div class="lastfind" data-act="lastfind-x" role="status" aria-live="polite" data-k="${l.id}"><span class="tm">${E.clock(l.t)}</span><div>${l.label ? `<b>${esc(l.label)}</b>` : ''}${esc(l.text)}</div><span class="lf-x" aria-hidden="true">✕</span></div>` : ''; })()}
       <div class="room-grid">
         <section class="dock" aria-label="Actions">
           <div class="dock-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="dock" data-id="${id}" aria-selected="${ui.dock === id}">${l}</button>`).join('')}</div>
@@ -3449,22 +3536,93 @@ window.Shift = window.Shift || {};
   /* ------------ debrief ------------ */
   function vDebrief() {
     const d = E.debrief(s);
+    const prior = prof.runs.filter((r) => r.caseId === s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
+    const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
-      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">Here is what happened to your patients, and the decisions that shaped it.</p></div>
-      <div class="deb-score">${d.overall}<small>Overall, out of 100</small></div></section>
+      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
+      <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p></div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
           ${d.dom.map((x) => `<div class="meter"><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${3 - s.nova} of 3.</p>
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem"><button class="btn btn-primary" data-act="new">Play the shift again</button><button class="btn" data-act="home">Home</button></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(next.level)}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(next.level)})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
           <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
         </section>
       </div></div></main>`;
+  }
+
+  /* ------------ first-run: seen flags ------------ */
+  function seen(k) { return !!(prof.seen && prof.seen[k]); }
+  function markSeen(k) { prof.seen = prof.seen || {}; prof.seen[k] = 1; E.store.saveProfile(prof); }
+
+  /* Cold open: a few beats that set the stakes before report. Tap to hurry it; it plays once per shift. */
+  function ovIntro() {
+    const c = C(), I = c.intro;
+    return `<div class="intro ${ui.introAll ? 'all' : ''}" data-act="intro-tap" role="dialog" aria-modal="true" aria-label="${esc(c.title)}">
+      <button class="intro-skip" data-act="intro-go">Skip</button>
+      <svg class="intro-ecg" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 H420 l18 -6 12 6 h30 l10 -48 14 86 12 -52 10 14 h60 l22 -10 18 10 H1200"/></svg>
+      <div class="intro-body">
+        <p class="intro-time">${esc(I.time)}</p>
+        <p class="intro-place">${esc(I.place)}</p>
+        ${I.beats.map((b, i) => `<p class="intro-beat" style="--d:${1.1 + i * 1.5}s">${esc(b)}</p>`).join('')}
+        <button class="btn btn-primary btn-go intro-cta" data-act="intro-go" style="--d:${1.1 + I.beats.length * 1.5}s">${esc(I.cta || 'Take report')} <span aria-hidden="true">→</span></button>
+      </div></div>`;
+  }
+
+  /* Coach tips: shown once, anchored to the thing they describe. */
+  const COACH = {
+    station: [
+      { sel: '.door[data-act="goto"]', text: 'Tap a door, or a name below, to walk into a room. The clock only moves when you act.' },
+      { sel: '.phone', text: 'Your unit phone. Luis, the lab, pharmacy and the doctors reach you here. Some messages need an answer.' },
+    ],
+    room: [
+      { sel: '.pt', text: 'Tap your patient to hear from them. Tap anything in the room to look closer. Looking is free.' },
+      { sel: '.dock-tabs', text: 'Assess, treat, give meds, talk and call. Every action shows what it costs in minutes.' },
+      { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives three nudges a shift. She points; she won\'t answer for you.' },
+    ],
+  };
+  function coachFor() {
+    if (!s || s.ended || ui.ov || (ui.intro !== null && ui.intro !== undefined)) return null;
+    const key = ui.view === 'station' ? 'station' : ui.view === 'room' ? 'room' : null;
+    if (!key || seen('coach:' + key)) return null;
+    ui.coachStep = ui.coachStep || {}; const i = ui.coachStep[key] || 0; const step = COACH[key][i];
+    return step ? { key, i, step, n: COACH[key].length } : null;
+  }
+  function coachPlace() {
+    const c = coachFor(), id = c ? c.key + ':' + c.i : '';
+    let card = document.querySelector('.coach'), ring = document.querySelector('.coach-ring');
+    if (!c) { if (card) card.remove(); if (ring) ring.remove(); return; }
+    const a = document.querySelector(c.step.sel); if (!a) return;
+    let r = a.getBoundingClientRect(); if (!r.width) return;
+    if (!card || card.dataset.id !== id) {
+      if (card) card.remove(); if (ring) ring.remove();
+      if (r.top < 60 || r.bottom > innerHeight - 40) { a.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }
+      ring = document.createElement('div'); ring.className = 'coach-ring';
+      card = document.createElement('div'); card.className = 'coach'; card.dataset.id = id; card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', 'Tip');
+      card.innerHTML = `<p>${esc(c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">Skip tips</button><button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button></div>`;
+      document.body.append(ring, card);
+    }
+    r = a.getBoundingClientRect();
+    Object.assign(ring.style, { left: r.left - 6 + 'px', top: r.top - 6 + 'px', width: r.width + 12 + 'px', height: r.height + 12 + 'px' });
+    const w = card.offsetWidth, h = card.offsetHeight, below = r.bottom + h + 20 < innerHeight;
+    card.style.left = Math.max(10, Math.min(innerWidth - w - 10, r.left + r.width / 2 - w / 2)) + 'px';
+    card.style.top = (below ? r.bottom + 14 : Math.max(10, r.top - h - 14)) + 'px';
+  }
+  addEventListener('resize', () => coachPlace()); addEventListener('scroll', () => { if (document.querySelector('.coach')) coachPlace(); }, { passive: true });
+
+  /* Debrief pays off: score counts up, meters fill, outcomes land one by one. */
+  function debriefAnim(root) {
+    if (ui.view !== 'debrief' || ui.debDone) return; ui.debDone = true;
+    const n = root.querySelector('.deb-score .num'); if (!n) return;
+    const to = +n.dataset.to, t0 = performance.now(), dur = reduced() ? 1 : 1100;
+    root.querySelectorAll('.meter .bar i').forEach((b) => { const w = b.style.width; b.style.width = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; })); });
+    const tick = (now) => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); n.textContent = Math.round(to * e); if (p < 1) requestAnimationFrame(tick); else FX.play(to >= 72 ? 'right' : 'commit'); };
+    requestAnimationFrame(tick);
   }
 
   /* ------------ overlays ------------ */
@@ -3492,7 +3650,7 @@ window.Shift = window.Shift || {};
       b = `<div class="tbl-wrap"><table><thead><tr><th>Resulted</th><th>Test</th><th>Result</th><th>Flag</th><th>Reference</th></tr></thead><tbody>${P.labs.slice().sort((a, b2) => b2.t - a.t).map((l) => `<tr><td>${l.t < -1000 ? 'Prior' : E.clock(l.t)}</td><td>${esc(l.name)}</td><td class="${l.flag ? 'ab' : ''} wrap">${esc(l.val)} ${esc(l.unit)}</td><td class="flag">${l.flag === 'H' ? 'High' : l.flag === 'L' ? 'Low' : l.flag === 'A' ? 'Abnormal' : ''}</td><td class="wrap">${esc(l.ref)}</td></tr>`).join('')}</tbody></table></div>`;
     }
     if (tab === 'orders') b = `<ul class="list">${P.orders.slice().reverse().map((o) => `<li>${esc(o.text)}${o.isNew ? '<span class="new-tag">New ' + E.clock(o.t) + '</span>' : ''}</li>`).join('')}</ul>`;
-    if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(m.dose)}${m.hold ? `<br><small class="muted">${esc(m.hold)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
+    if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(m.dose)}${m.param ? `<br><small class="muted">${esc(m.param)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${n.t < -600 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
     return `<div class="scrim" data-act="close" data-scrim="1" style="padding:0;justify-content:flex-end"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Chart for ${esc(d.name)}">
@@ -3510,7 +3668,7 @@ window.Shift = window.Shift || {};
     const block = m.block ? m.block(s, P, Ax) : null;
     const done = !m.prn && (st.status === 'given' || st.status === 'held');
     const verify = st.status === 'verify';
-    let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.hold ? `<br><b>${esc(m.hold)}</b>` : ''}</div>
+    let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
       <p class="muted" style="margin:.2rem 0">Allergies: ${esc(d.allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
     if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => `<button class="btn" data-act="prep" data-p="${p}">${PREP[p][0]} <span class="muted">${PREP[p][1]} min</span></button>`).join('')}</div>`;
@@ -3651,13 +3809,17 @@ window.Shift = window.Shift || {};
     else if (ov === 'settings') h += ovSettings();
     else if (ov === 'help') h += ovHelp();
     else if (ov === 'confirm') h += ovConfirm();
+    if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     root.innerHTML = h;
+    if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
+    ui.hFresh = false;
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
     ui.enter = false; ui.adv = null;
+    coachPlace(); debriefAnim(root);
     if (ui.stamp && !ui.stamp.shown) { ui.stamp.shown = true; const st = ui.stamp; setTimeout(() => { if (ui.stamp === st) { ui.stamp = null; const n = root.querySelector('.stamp'); if (n) { n.classList.add('out'); setTimeout(() => n.remove(), 250); } } }, 1500); }
     if (ui.justKey) { const jk = ui.justKey; ui.justKey = null; const el = [...root.querySelectorAll('[data-act]')].find((x) => keyOf(x) === jk && !x.dataset.scrim); if (el) { const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el; tgt.classList.add('just'); } }
     if (scrollTop) window.scrollTo(0, 0); else window.scrollTo(0, y);
@@ -3685,7 +3847,7 @@ window.Shift = window.Shift || {};
     spend(move, () => {});
     if (s.ended) return;
     s.loc = pid; s.lastRoom = pid; s.p[pid].seenAt = s.t; s.p[pid].callLight = false;
-    ui.view = 'room'; s.view = 'room'; ui.ov = null; ui.enter = true; ui.caption = null; ui.chart = null;
+    ui.view = 'room'; s.view = 'room'; ui.ov = null; ui.enter = true; ui.caption = null; ui.chart = null; ui.lastFind = null;
     s.inbox.forEach((m) => { if (m.pid === pid) m.read = true; });
     save(); render(true);
   }
@@ -3741,7 +3903,7 @@ window.Shift = window.Shift || {};
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
     close() { if (ui.ov === 'dialog') { ui.dlg = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
-    'h-go'(el) { ui.hIdx = +el.dataset.i; render(true); },
+    'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
     'h-done'() { ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
     rk(el) { const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank; [r[i], r[j]] = [r[j], r[i]]; render(); },
     'rank-submit'() {
@@ -3779,7 +3941,7 @@ window.Shift = window.Shift || {};
     'med-hold'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const reasons = ['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'];
-      spend(2, (Ax) => { let t; if (m.hold) t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
+      spend(2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
       ui.ov = null; ui.med = null; stamp(`${m.name} held`, 2); if (!s.ended) render();
     },
     talk(el) { const d = def(s.loc), id = d.talk(s, s.p[d.id], A()); if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; } spend(3, () => {}); if (s.ended) return; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
@@ -3825,6 +3987,12 @@ window.Shift = window.Shift || {};
     endask() { ui.confirm = { title: s.t >= 270 ? 'Give report and end the shift?' : 'End the shift early?', text: s.t >= 270 ? 'You\'ll hand off to the next nurse and see your debrief.' : 'Unfinished work will count as missed in your debrief.', ok: 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
     filter(el) { ui.filter = el.dataset.k; render(); },
+    'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
+    'lastfind-x'() { ui.lastFind = null; render(); },
+    'intro-tap'() { if (!ui.introAll) { ui.introAll = true; render(); } },
+    'intro-go'() { markSeen('intro:' + caseId); ui.intro = null; ui.introAll = false; render(); },
+    'coach-next'() { const c = coachFor(); if (!c) return; ui.coachStep[c.key] = c.i + 1; if (c.i + 1 >= c.n) markSeen('coach:' + c.key); coachPlace(); },
+    'coach-skip'() { markSeen('coach:station'); markSeen('coach:room'); coachPlace(); },
     msg(el) {
       const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m) return;
       m.read = true; ui.toasts = ui.toasts.filter((x) => x !== m.id);
@@ -3846,7 +4014,7 @@ window.Shift = window.Shift || {};
   const SELECT = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag']);
   const COMMIT = new Set(['med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
-  const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes']);
+  const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit' };           // answers that advance the scene
   const JUST = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
   const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -3865,9 +4033,9 @@ window.Shift = window.Shift || {};
   }
   /* A short note next to the thing that was tapped: why it can't be done, or what it is. */
   function hint(el, text, kind) {
-    document.querySelectorAll('.hint').forEach((n) => n.remove());
+    document.querySelectorAll('.pop-tip').forEach((n) => n.remove());
     if (!text) return;
-    const r = el.getBoundingClientRect(), n = document.createElement('div'); n.className = 'hint' + (kind ? ' ' + kind : ''); n.setAttribute('role', 'status'); n.textContent = text;
+    const r = el.getBoundingClientRect(), n = document.createElement('div'); n.className = 'pop-tip' + (kind ? ' ' + kind : ''); n.setAttribute('role', 'status'); n.textContent = text;
     document.body.appendChild(n);
     const w = n.offsetWidth, h = n.offsetHeight, below = r.bottom + h + 12 < innerHeight;
     n.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';

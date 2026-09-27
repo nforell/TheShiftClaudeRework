@@ -178,7 +178,7 @@
         hold(s, P, A) { A.judge('412-enox-hold', 'meds', -1, 'You held Mr. Bell\'s enoxaparin without a clinical reason.', 'After abdominal surgery, in a recent smoker with limited mobility, VTE prophylaxis matters. Platelets were normal and there was no bleeding.', '412'); return 'Held.'; },
       },
       {
-        id: '412-aml', name: 'Amlodipine', dose: '5 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '412-aml', name: 'Amlodipine', dose: '5 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('412'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }]; },
         give: () => 'Given.',
         hold(s, P, A) { A.judge('412-aml-hold', 'meds', -1, 'You held Mr. Bell\'s amlodipine with a BP well above the hold parameter.', 'His SBP ran in the 130s. The order holds only for SBP under 100.', '412'); return 'Held.'; },
@@ -361,7 +361,7 @@
         },
       },
       {
-        id: '414-prand', name: 'Insulin lispro, mealtime', dose: '6 units', route: 'SubQ', freq: 'With meals', due: 75, hold: 'Hold if intake < 50%, then notify provider',
+        id: '414-prand', name: 'Insulin lispro, mealtime', dose: '6 units', route: 'SubQ', freq: 'With meals', due: 75, param: 'Hold if intake < 50%, then notify provider',
         checks: (s, P) => [{ label: 'Breakfast intake', value: P.intakeKnown ? 'About 20%' : 'Not checked', ok: P.intakeKnown ? false : null }, { label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 90) }],
         give(s, P, A) {
           if (!P.intakeKnown) A.judge('414-prand-blind', 'meds', -2, 'You gave Mrs. Okafor her mealtime insulin without checking how much she ate.', 'Mealtime (prandial) insulin covers the carbohydrate a patient actually eats. The order made it conditional on at least 50% intake. She ate about 20% because of nausea.', '414');
@@ -545,7 +545,7 @@
         },
       },
       {
-        id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:30 116/68`, ok: null }]; },
         give(s, P, A) {
           const v = A.vitals('416'); P.lisinoprilAt = s.t;
@@ -689,7 +689,7 @@
     family: { name: 'Rosa', rel: 'Wife', mode: 'bedside', cost: 3, dialog: (s, P) => P.educated ? 'rosa_after' : 'rosa_talk' },
     meds: [
       {
-        id: '418-meto', name: 'Metoprolol succinate', dose: '50 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold for HR < 55 or SBP < 90',
+        id: '418-meto', name: 'Metoprolol succinate', dose: '50 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold for HR < 55 or SBP < 90',
         checks: (s, P) => [{ label: 'Apical pulse', value: recent(s, P.k.hrAt, 30) ? `${P.k.hr} at ${clock(P.k.hrAt)}` : 'Not counted in the last 30 min', ok: recent(s, P.k.hrAt, 30) ? P.k.hr >= 55 : false }],
         give(s, P, A) {
           const v = A.vitals('418'); P.metoAt = s.t; P.metoHR = v.HR;
@@ -705,7 +705,7 @@
         },
       },
       {
-        id: '418-los', name: 'Losartan', dose: '25 mg', route: 'PO', freq: 'Daily', due: 120, hold: 'Hold if SBP < 100',
+        id: '418-los', name: 'Losartan', dose: '25 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('418'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }]; },
         give(s, P, A) { const v = A.vitals('418'); P.losAt = s.t; if (v.SBP < 100) A.judge('418-los', 'meds', -2, `You gave losartan with an SBP of ${v.SBP}.`, 'Hold parameters exist because layering vasodilators on a soft pressure causes symptomatic hypotension.', '418'); return 'Losartan 25 mg given.'; },
         hold(s, P, A) { const v = A.vitals('418'); A.judge('418-los-hold', 'meds', v.SBP < 100 ? 1 : 0, v.SBP < 100 ? 'You held losartan for SBP under 100.' : 'You held losartan with an SBP above the parameter.', v.SBP < 100 ? 'Parameter met, dose held.' : 'His SBP was just above 100. Holding is defensible with a borderline pressure, but tell the provider.', '418'); return 'Held.'; },
@@ -950,6 +950,8 @@
     id: 'medsurg-4w-1', title: 'First light', unit: '4 West, Medical-Surgical', level: 'Orientation', start: 7 * 60, length: 300, novaCredits: 3,
     card: 'Morning on 4 West. Four patients, one quietly getting worse.',
     hero: { head: 'You have four patients. Report starts now.', lede: 'A medical-surgical morning on 4 West. Take report, walk the hall, decide who needs you first. Your patients will get better or worse depending on what you notice.' },
+    intro: { time: '06:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['You\'re the day nurse. Four patients are yours until noon.', 'Dana worked all night. She\'s tired, and report will be quick.', 'One of your patients is getting sicker. Nobody has noticed yet.'] },
+    minutes: 15,
     reportBy: 'dana', reportRole: 'night shift', provider: 'chen', cna: 'luis',
     /* Extra lines for the station's due list that aren't medications. */
     dueExtras(s) {

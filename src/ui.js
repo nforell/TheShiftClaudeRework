@@ -50,7 +50,7 @@
 
   /* ------------ game flow ------------ */
   function save() { if (s && !s.ended) E.store.save(s); }
-  function startNew() { s = E.newGame(caseId); ui.view = 'handoff'; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
+  function startNew() { s = E.newGame(caseId); ui.view = 'handoff'; ui.hFresh = true; ui.intro = C().intro && !seen('intro:' + caseId) ? 0 : null; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
   function resume() { const g = E.store.load(); if (!g) return startNew(); s = g; caseId = g.caseId; E.useCase(caseId); ui.view = s.view || 'station'; ui.ov = null; render(true); }
   function goView(v) { ui.view = v; s.view = v; ui.caption = null; save(); render(true); }
 
@@ -70,13 +70,13 @@
     if (s.ended) return endShift();
     save();
   }
-  function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = s.seq; }
+  function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = s.seq; if (kind !== 'clue') ui.lastFind = s.seq; }
 
   function endShift() {
     E.finish(s); const d = E.debrief(s);
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
     prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
-    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; render(true);
+    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; render(true);
   }
 
   /* ------------ header ------------ */
@@ -110,12 +110,14 @@
       <span style="display:flex;gap:.3rem"><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button></span></div>
       <section class="home-hero">
         <div>
+          <p class="eyebrow">A nursing shift simulator</p>
           <p class="big-clock" aria-label="${start}">${start.slice(0, 2)}<span>:</span>${start.slice(3)}</p>
           <h1>${esc(c.hero.head)}</h1>
           <p class="lede">${esc(c.hero.lede)}</p>
           <div class="cta">
-            ${saved ? `<button class="btn btn-primary" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button><button class="btn" data-act="new">Start this shift instead</button>` : `<button class="btn btn-primary" data-act="new">Start shift</button>`}
+            ${saved ? `<button class="btn btn-primary" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button><button class="btn" data-act="new">Start this shift instead</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
+          <p class="home-meta">${c.patients.length} patients · about ${c.minutes || 15} minutes · saves as you go</p>
         </div>
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
@@ -141,11 +143,11 @@
     const brain = s.brain.map((k) => { const [pid, i] = k.split(':'); return { k, pid, text: def(pid).report[+i].text }; });
     return `<main><div class="handoff">
       <section class="report" aria-labelledby="rh">
-        <div class="dana">${face(C().reportBy)}<span>${esc(rb.name)}, ${esc(C().reportRole)}, is giving you report. Tap the lines worth remembering.</span></div>
+        <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
         <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${d.age}${d.sex}, room ${d.room}</small></h2>
           <div class="muted">${esc(d.dx)}</div>
           <div class="meta"><span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${nv.T}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
-        <ul class="lines">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
+        <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
         <div class="tabsrow" role="tablist" aria-label="Patients in report">
           ${pts.map((p, i) => `<button class="pt-tab" role="tab" data-act="h-go" data-i="${i}" aria-current="${i === ui.hIdx}">${p.room}</button>`).join('')}
           <span class="sp"></span>
@@ -153,7 +155,7 @@
         </div>
       </section>
       <aside class="brain" aria-label="Your brain sheet">
-        <h2>Your brain sheet</h2><p class="hint">What you flag here stays on your board all shift.</p>
+        <h2>Your brain sheet${brain.length ? ` <span class="count">${brain.length}</span>` : ''}</h2><p class="hint">What you flag stays on your board all shift.</p>
         ${brain.length ? `<ul>${brain.map((b) => `<li class="tap" data-act="flag" data-k="${b.k}" role="button" tabindex="0" title="Tap to unflag"><b>${b.pid}</b>${esc(b.text)}</li>`).join('')}</ul>` : '<p class="empty" style="padding:0">Nothing flagged yet.</p>'}
         ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn" data-act="h-done">Skip the rest of report</button></p>` : ''}
       </aside></div></main>`;
@@ -270,6 +272,7 @@
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Hallway</button></div></div>
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
+      ${(() => { const l = ui.lastFind && s.log.find((x) => x.id === ui.lastFind && x.pid === d.id); return l ? `<div class="lastfind" data-act="lastfind-x" role="status" aria-live="polite" data-k="${l.id}"><span class="tm">${E.clock(l.t)}</span><div>${l.label ? `<b>${esc(l.label)}</b>` : ''}${esc(l.text)}</div><span class="lf-x" aria-hidden="true">✕</span></div>` : ''; })()}
       <div class="room-grid">
         <section class="dock" aria-label="Actions">
           <div class="dock-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="dock" data-id="${id}" aria-selected="${ui.dock === id}">${l}</button>`).join('')}</div>
@@ -288,22 +291,93 @@
   /* ------------ debrief ------------ */
   function vDebrief() {
     const d = E.debrief(s);
+    const prior = prof.runs.filter((r) => r.caseId === s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
+    const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
-      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">Here is what happened to your patients, and the decisions that shaped it.</p></div>
-      <div class="deb-score">${d.overall}<small>Overall, out of 100</small></div></section>
+      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
+      <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p></div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
           ${d.dom.map((x) => `<div class="meter"><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${3 - s.nova} of 3.</p>
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem"><button class="btn btn-primary" data-act="new">Play the shift again</button><button class="btn" data-act="home">Home</button></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(next.level)}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(next.level)})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
           <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
         </section>
       </div></div></main>`;
+  }
+
+  /* ------------ first-run: seen flags ------------ */
+  function seen(k) { return !!(prof.seen && prof.seen[k]); }
+  function markSeen(k) { prof.seen = prof.seen || {}; prof.seen[k] = 1; E.store.saveProfile(prof); }
+
+  /* Cold open: a few beats that set the stakes before report. Tap to hurry it; it plays once per shift. */
+  function ovIntro() {
+    const c = C(), I = c.intro;
+    return `<div class="intro ${ui.introAll ? 'all' : ''}" data-act="intro-tap" role="dialog" aria-modal="true" aria-label="${esc(c.title)}">
+      <button class="intro-skip" data-act="intro-go">Skip</button>
+      <svg class="intro-ecg" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 H420 l18 -6 12 6 h30 l10 -48 14 86 12 -52 10 14 h60 l22 -10 18 10 H1200"/></svg>
+      <div class="intro-body">
+        <p class="intro-time">${esc(I.time)}</p>
+        <p class="intro-place">${esc(I.place)}</p>
+        ${I.beats.map((b, i) => `<p class="intro-beat" style="--d:${1.1 + i * 1.5}s">${esc(b)}</p>`).join('')}
+        <button class="btn btn-primary btn-go intro-cta" data-act="intro-go" style="--d:${1.1 + I.beats.length * 1.5}s">${esc(I.cta || 'Take report')} <span aria-hidden="true">→</span></button>
+      </div></div>`;
+  }
+
+  /* Coach tips: shown once, anchored to the thing they describe. */
+  const COACH = {
+    station: [
+      { sel: '.door[data-act="goto"]', text: 'Tap a door, or a name below, to walk into a room. The clock only moves when you act.' },
+      { sel: '.phone', text: 'Your unit phone. Luis, the lab, pharmacy and the doctors reach you here. Some messages need an answer.' },
+    ],
+    room: [
+      { sel: '.pt', text: 'Tap your patient to hear from them. Tap anything in the room to look closer. Looking is free.' },
+      { sel: '.dock-tabs', text: 'Assess, treat, give meds, talk and call. Every action shows what it costs in minutes.' },
+      { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives three nudges a shift. She points; she won\'t answer for you.' },
+    ],
+  };
+  function coachFor() {
+    if (!s || s.ended || ui.ov || (ui.intro !== null && ui.intro !== undefined)) return null;
+    const key = ui.view === 'station' ? 'station' : ui.view === 'room' ? 'room' : null;
+    if (!key || seen('coach:' + key)) return null;
+    ui.coachStep = ui.coachStep || {}; const i = ui.coachStep[key] || 0; const step = COACH[key][i];
+    return step ? { key, i, step, n: COACH[key].length } : null;
+  }
+  function coachPlace() {
+    const c = coachFor(), id = c ? c.key + ':' + c.i : '';
+    let card = document.querySelector('.coach'), ring = document.querySelector('.coach-ring');
+    if (!c) { if (card) card.remove(); if (ring) ring.remove(); return; }
+    const a = document.querySelector(c.step.sel); if (!a) return;
+    let r = a.getBoundingClientRect(); if (!r.width) return;
+    if (!card || card.dataset.id !== id) {
+      if (card) card.remove(); if (ring) ring.remove();
+      if (r.top < 60 || r.bottom > innerHeight - 40) { a.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }
+      ring = document.createElement('div'); ring.className = 'coach-ring';
+      card = document.createElement('div'); card.className = 'coach'; card.dataset.id = id; card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', 'Tip');
+      card.innerHTML = `<p>${esc(c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">Skip tips</button><button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button></div>`;
+      document.body.append(ring, card);
+    }
+    r = a.getBoundingClientRect();
+    Object.assign(ring.style, { left: r.left - 6 + 'px', top: r.top - 6 + 'px', width: r.width + 12 + 'px', height: r.height + 12 + 'px' });
+    const w = card.offsetWidth, h = card.offsetHeight, below = r.bottom + h + 20 < innerHeight;
+    card.style.left = Math.max(10, Math.min(innerWidth - w - 10, r.left + r.width / 2 - w / 2)) + 'px';
+    card.style.top = (below ? r.bottom + 14 : Math.max(10, r.top - h - 14)) + 'px';
+  }
+  addEventListener('resize', () => coachPlace()); addEventListener('scroll', () => { if (document.querySelector('.coach')) coachPlace(); }, { passive: true });
+
+  /* Debrief pays off: score counts up, meters fill, outcomes land one by one. */
+  function debriefAnim(root) {
+    if (ui.view !== 'debrief' || ui.debDone) return; ui.debDone = true;
+    const n = root.querySelector('.deb-score .num'); if (!n) return;
+    const to = +n.dataset.to, t0 = performance.now(), dur = reduced() ? 1 : 1100;
+    root.querySelectorAll('.meter .bar i').forEach((b) => { const w = b.style.width; b.style.width = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; })); });
+    const tick = (now) => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); n.textContent = Math.round(to * e); if (p < 1) requestAnimationFrame(tick); else FX.play(to >= 72 ? 'right' : 'commit'); };
+    requestAnimationFrame(tick);
   }
 
   /* ------------ overlays ------------ */
@@ -331,7 +405,7 @@
       b = `<div class="tbl-wrap"><table><thead><tr><th>Resulted</th><th>Test</th><th>Result</th><th>Flag</th><th>Reference</th></tr></thead><tbody>${P.labs.slice().sort((a, b2) => b2.t - a.t).map((l) => `<tr><td>${l.t < -1000 ? 'Prior' : E.clock(l.t)}</td><td>${esc(l.name)}</td><td class="${l.flag ? 'ab' : ''} wrap">${esc(l.val)} ${esc(l.unit)}</td><td class="flag">${l.flag === 'H' ? 'High' : l.flag === 'L' ? 'Low' : l.flag === 'A' ? 'Abnormal' : ''}</td><td class="wrap">${esc(l.ref)}</td></tr>`).join('')}</tbody></table></div>`;
     }
     if (tab === 'orders') b = `<ul class="list">${P.orders.slice().reverse().map((o) => `<li>${esc(o.text)}${o.isNew ? '<span class="new-tag">New ' + E.clock(o.t) + '</span>' : ''}</li>`).join('')}</ul>`;
-    if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(m.dose)}${m.hold ? `<br><small class="muted">${esc(m.hold)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
+    if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(m.dose)}${m.param ? `<br><small class="muted">${esc(m.param)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${n.t < -600 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
     return `<div class="scrim" data-act="close" data-scrim="1" style="padding:0;justify-content:flex-end"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Chart for ${esc(d.name)}">
@@ -349,7 +423,7 @@
     const block = m.block ? m.block(s, P, Ax) : null;
     const done = !m.prn && (st.status === 'given' || st.status === 'held');
     const verify = st.status === 'verify';
-    let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.hold ? `<br><b>${esc(m.hold)}</b>` : ''}</div>
+    let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
       <p class="muted" style="margin:.2rem 0">Allergies: ${esc(d.allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
     if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => `<button class="btn" data-act="prep" data-p="${p}">${PREP[p][0]} <span class="muted">${PREP[p][1]} min</span></button>`).join('')}</div>`;
@@ -490,13 +564,17 @@
     else if (ov === 'settings') h += ovSettings();
     else if (ov === 'help') h += ovHelp();
     else if (ov === 'confirm') h += ovConfirm();
+    if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     root.innerHTML = h;
+    if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
+    ui.hFresh = false;
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
     ui.enter = false; ui.adv = null;
+    coachPlace(); debriefAnim(root);
     if (ui.stamp && !ui.stamp.shown) { ui.stamp.shown = true; const st = ui.stamp; setTimeout(() => { if (ui.stamp === st) { ui.stamp = null; const n = root.querySelector('.stamp'); if (n) { n.classList.add('out'); setTimeout(() => n.remove(), 250); } } }, 1500); }
     if (ui.justKey) { const jk = ui.justKey; ui.justKey = null; const el = [...root.querySelectorAll('[data-act]')].find((x) => keyOf(x) === jk && !x.dataset.scrim); if (el) { const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el; tgt.classList.add('just'); } }
     if (scrollTop) window.scrollTo(0, 0); else window.scrollTo(0, y);
@@ -524,7 +602,7 @@
     spend(move, () => {});
     if (s.ended) return;
     s.loc = pid; s.lastRoom = pid; s.p[pid].seenAt = s.t; s.p[pid].callLight = false;
-    ui.view = 'room'; s.view = 'room'; ui.ov = null; ui.enter = true; ui.caption = null; ui.chart = null;
+    ui.view = 'room'; s.view = 'room'; ui.ov = null; ui.enter = true; ui.caption = null; ui.chart = null; ui.lastFind = null;
     s.inbox.forEach((m) => { if (m.pid === pid) m.read = true; });
     save(); render(true);
   }
@@ -580,7 +658,7 @@
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
     close() { if (ui.ov === 'dialog') { ui.dlg = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
-    'h-go'(el) { ui.hIdx = +el.dataset.i; render(true); },
+    'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
     'h-done'() { ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
     rk(el) { const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank; [r[i], r[j]] = [r[j], r[i]]; render(); },
     'rank-submit'() {
@@ -618,7 +696,7 @@
     'med-hold'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const reasons = ['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'];
-      spend(2, (Ax) => { let t; if (m.hold) t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
+      spend(2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
       ui.ov = null; ui.med = null; stamp(`${m.name} held`, 2); if (!s.ended) render();
     },
     talk(el) { const d = def(s.loc), id = d.talk(s, s.p[d.id], A()); if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; } spend(3, () => {}); if (s.ended) return; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
@@ -664,6 +742,12 @@
     endask() { ui.confirm = { title: s.t >= 270 ? 'Give report and end the shift?' : 'End the shift early?', text: s.t >= 270 ? 'You\'ll hand off to the next nurse and see your debrief.' : 'Unfinished work will count as missed in your debrief.', ok: 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
     filter(el) { ui.filter = el.dataset.k; render(); },
+    'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
+    'lastfind-x'() { ui.lastFind = null; render(); },
+    'intro-tap'() { if (!ui.introAll) { ui.introAll = true; render(); } },
+    'intro-go'() { markSeen('intro:' + caseId); ui.intro = null; ui.introAll = false; render(); },
+    'coach-next'() { const c = coachFor(); if (!c) return; ui.coachStep[c.key] = c.i + 1; if (c.i + 1 >= c.n) markSeen('coach:' + c.key); coachPlace(); },
+    'coach-skip'() { markSeen('coach:station'); markSeen('coach:room'); coachPlace(); },
     msg(el) {
       const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m) return;
       m.read = true; ui.toasts = ui.toasts.filter((x) => x !== m.id);
@@ -685,7 +769,7 @@
   const SELECT = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag']);
   const COMMIT = new Set(['med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
-  const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes']);
+  const NAV = new Set(['goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit' };           // answers that advance the scene
   const JUST = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
   const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -704,9 +788,9 @@
   }
   /* A short note next to the thing that was tapped: why it can't be done, or what it is. */
   function hint(el, text, kind) {
-    document.querySelectorAll('.hint').forEach((n) => n.remove());
+    document.querySelectorAll('.pop-tip').forEach((n) => n.remove());
     if (!text) return;
-    const r = el.getBoundingClientRect(), n = document.createElement('div'); n.className = 'hint' + (kind ? ' ' + kind : ''); n.setAttribute('role', 'status'); n.textContent = text;
+    const r = el.getBoundingClientRect(), n = document.createElement('div'); n.className = 'pop-tip' + (kind ? ' ' + kind : ''); n.setAttribute('role', 'status'); n.textContent = text;
     document.body.appendChild(n);
     const w = n.offsetWidth, h = n.offsetHeight, below = r.bottom + h + 12 < innerHeight;
     n.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
