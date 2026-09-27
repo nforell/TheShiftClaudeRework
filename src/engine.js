@@ -130,6 +130,7 @@ window.Shift = window.Shift || {};
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;
     let rating = overall >= 85 ? 'Charge-nurse material' : overall >= 72 ? 'Safe, solid shift' : overall >= 58 ? 'Getting there' : 'Rough shift';
     if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';
+    if (!harmed && rating === 'Rough shift' && overall >= 45) rating = 'Getting there';
     return { dom, overall, rating, outcomes, judg: s.judg.slice().sort((a, b) => a.t - b.t) };
   }
 

@@ -35,7 +35,7 @@
     }
     // IV pole, pump and line
     const ivOn = f.iv && f.iv !== 'lock', blood = f.iv === 'blood', bag = blood ? '#9E1B22' : '#E8F2F6', line = blood ? '#B3262D' : '#BCD7E0';
-    back += hot('iv', 'IV site and pump', `<path d="M262 52 V400" stroke="#8F9A98" stroke-width="4.5"/><path d="M246 52 h32" stroke="#8F9A98" stroke-width="4"/>
+    back += hot('iv', 'IV site and pump', `<rect x="236" y="50" width="56" height="350" fill="#fff" fill-opacity="0"/><path d="M262 52 V400" stroke="#8F9A98" stroke-width="4.5"/><path d="M246 52 h32" stroke="#8F9A98" stroke-width="4"/>
       ${ivOn ? `<path d="M250 58 q-8 30 8 48 q14 -18 6 -48 Z" fill="${bag}" stroke="#9FB6C1" stroke-width="1.5"/>` : ''}${f.bloodHung && !blood ? `<path d="M272 60 q-6 22 6 36 q10 -14 4 -36 Z" fill="#9E1B22" opacity=".8"/><path d="M278 96 v10" stroke="#555" stroke-width="4"/>` : ''}
       <rect x="247" y="160" width="32" height="44" rx="5" fill="#E4EBE9" stroke="#8A9A96" opacity="${ivOn ? 1 : .55}"/><rect x="252" y="167" width="22" height="11" rx="2" fill="${f.iv === 'bolus' ? '#F3C35B' : ivOn ? '#9FE0B8' : '#C9D2CF'}" class="${f.iv === 'bolus' ? 'blink' : ''}"/>
       ${ivOn ? `<path d="M263 204 C 262 280 360 300 ${X - 50} ${B + 16}" stroke="${line}" stroke-width="${blood ? 3 : 2.4}" fill="none"/>` : ''}`);
@@ -52,8 +52,9 @@
     if (f.foley) front += hot('foley', 'Foley bag', `<g transform="translate(${X + 170} 392)"><path d="M0 0 q-8 16 4 30" stroke="#E7D98F" stroke-width="3" fill="none"/><rect x="-14" y="26" width="36" height="40" rx="6" fill="#F7EBA4" stroke="#B9AD6A"/></g>`);
     // bed frame and alarm
     front += `<rect x="${X - 242}" y="402" width="484" height="14" rx="5" fill="var(--scene-bedframe)"/><rect x="${X - 224}" y="416" width="9" height="22" fill="var(--scene-bedframe)"/><rect x="${X + 215}" y="416" width="9" height="22" fill="var(--scene-bedframe)"/>`;
-    if (f.fallPrec) front += hot('alarm', 'Fall precautions', `<rect x="${X - 230}" y="398" width="46" height="8" rx="3" fill="#F0B64A" class="alarm-lamp"/><rect x="${X - 180}" y="420" width="140" height="10" rx="3" fill="#6B8F9A" opacity=".6"/>`);
-    else if (def.id === '416' && !f.empty) front += hot('alarm', 'Bed rails and alarm', `<rect x="${X + 244}" y="300" width="18" height="90" rx="4" fill="none" stroke="#A7B3B2" stroke-width="2" stroke-dasharray="4 4"/>`);
+    let alarm = '';
+    if (f.fallPrec) alarm = hot('alarm', 'Fall precautions', `<rect x="${X - 230}" y="398" width="46" height="8" rx="3" fill="#F0B64A" class="alarm-lamp"/><rect x="${X - 180}" y="420" width="140" height="10" rx="3" fill="#6B8F9A" opacity=".6"/>`);
+    else if (def.id === '416' && !f.empty) alarm = hot('alarm', 'Bed rails and alarm', `<rect x="${X - 232}" y="300" width="18" height="90" rx="4" fill="#fff" fill-opacity="0" stroke="#A7B3B2" stroke-width="2" stroke-dasharray="4 4"/>`);
     // overbed table and its contents
     let tbl = '';
     if (f.tray && f.tray !== 'none') tbl += hot('tray', 'Meal tray', `<rect x="776" y="278" width="66" height="14" rx="3" fill="#DFE4E2"/>${f.tray === 'full' || f.tray === 'untouched' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="10" ry="5" fill="#E9C77F"/>` : f.tray === 'barely' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="5" ry="3" fill="#E9C77F"/>` : f.tray === 'soup' ? `<rect x="786" y="248" width="22" height="30" rx="5" fill="#B4453B"/><rect x="786" y="244" width="22" height="6" rx="2" fill="#7C2F28"/>` : f.tray === 'renal' ? `<path d="M782 272 q14 -14 30 -4 q-14 2 -30 4Z" fill="#F2CF4A" stroke="#B8962A"/><rect x="818" y="256" width="14" height="20" rx="2" fill="#F5A031" opacity=".9"/><ellipse cx="800" cy="277" rx="12" ry="4" fill="#E9D7B0"/>` : `<rect x="784" y="262" width="14" height="16" rx="2" fill="#F2B85B" opacity=".85"/><rect x="804" y="266" width="16" height="10" rx="2" fill="#D85F60" opacity=".75"/>`}`);
@@ -65,8 +66,9 @@
     front += `<g><rect x="764" y="292" width="124" height="11" rx="3" fill="var(--scene-table)"/><rect x="820" y="303" width="9" height="100" fill="#8A8F91"/><rect x="796" y="400" width="56" height="8" rx="3" fill="#6F7577"/>${tbl}</g>`;
     if (f.consent) tbl += hot('consent', 'Clipboard', `<rect x="840" y="262" width="30" height="30" rx="3" fill="#C7A57A"/><rect x="844" y="266" width="22" height="24" fill="#FAFAF7"/><path d="M848 272 h14 M848 277 h14 M848 282 h9" stroke="#9AA" stroke-width="1.3"/>`);
     if (f.thermos) tbl += hot('thermos', 'Thermos', `<rect x="784" y="248" width="16" height="44" rx="5" fill="#3E7C6E"/><rect x="782" y="244" width="20" height="8" rx="3" fill="#2C5A50"/>`);
-    if (f.walker) front += hot('walker', 'Walker', `<g transform="translate(930 250)"><path d="M0 0 L10 150 M50 0 L40 150 M0 0 H50 M4 60 H46" stroke="#9AA6A9" stroke-width="5" fill="none"/><circle cx="10" cy="152" r="5" fill="#555"/><circle cx="40" cy="152" r="5" fill="#555"/></g>`);
+    if (f.walker) front += hot('walker', 'Walker', `<g transform="translate(930 250)"><rect x="-6" y="-6" width="62" height="168" fill="#fff" fill-opacity="0"/><path d="M0 0 L10 150 M50 0 L40 150 M0 0 H50 M4 60 H46" stroke="#9AA6A9" stroke-width="5" fill="none"/><circle cx="10" cy="152" r="5" fill="#555"/><circle cx="40" cy="152" r="5" fill="#555"/></g>`);
     if (f.family) front += hot('family', f.familyLabel || 'Family at the bedside', `<rect x="900" y="286" width="126" height="116" rx="14" fill="#8B6F5A"/><rect x="908" y="240" width="110" height="60" rx="14" fill="#9C7F69"/>${R.place(f.family, 'bust', null, 'translate(963 250) scale(.62)', 'room:' + f.family)}<rect x="900" y="330" width="126" height="72" rx="12" fill="#8B6F5A"/>`);
+    front += alarm;
     const light = callLight ? `<circle cx="1004" cy="30" r="10" fill="#F0B64A" class="blink"/>` : '';
     return `<svg class="scene" viewBox="0 30 1030 410" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Room ${def.room}. ${def.name} in bed. Select objects in the room to inspect them, or ${def.short} to speak with them.">
       <defs><linearGradient id="${gid}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s2}"/><stop offset="1" stop-color="${s1}"/></linearGradient>

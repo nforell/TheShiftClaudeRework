@@ -359,7 +359,7 @@ td.wrap{white-space:normal;min-width:220px}
 @keyframes stampin{from{opacity:0;transform:translate(-50%,-10px) scale(.92)}}
 @keyframes draw{to{stroke-dashoffset:0}}
 /* triage reveal cascades row by row */
-.rank li.right,.rank li.wrong{animation:reveal .4s ease-out backwards}
+.rank li.right,.rank li.wrong,.rank li.settled{animation:reveal .4s ease-out backwards}
 .rank li:nth-child(2){animation-delay:.12s}.rank li:nth-child(3){animation-delay:.24s}.rank li:nth-child(4){animation-delay:.36s}.rank li:nth-child(5){animation-delay:.48s}
 @keyframes reveal{from{opacity:0;transform:translateX(-8px)}}
 :root[data-motion="reduced"] .stamp .tick path{stroke-dashoffset:0}
@@ -478,3 +478,11 @@ svg.scene{max-height:min(52vh,460px)}
 .msg.fresh{animation:msgin .5s ease-out}
 @keyframes msgin{from{opacity:0;transform:translateX(10px);background:color-mix(in srgb,var(--teal) 18%,transparent)}}
 .lock-l{color:var(--ink-2);font-style:italic}
+.rank li.settled{opacity:.85}
+.lookaround{display:none}
+@media (max-width:640px){
+  .lookaround{display:flex;gap:.35rem;overflow-x:auto;padding:.55rem .1rem .1rem;scrollbar-width:none;align-items:center}
+  .lookaround span{flex:none;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:.15rem}
+  .look{flex:none;min-height:36px;padding:.3em .8em;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:.84rem;cursor:pointer;white-space:nowrap}
+  .look:active{transform:scale(.96)}
+}
