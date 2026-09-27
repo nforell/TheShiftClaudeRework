@@ -498,6 +498,30 @@ svg.scene{max-height:min(52vh,460px)}
   .look:active{transform:scale(.96)}
 }
 .deleg-note{margin:0 0 .8rem;padding:.55rem .8rem;border-radius:8px;background:var(--amber-bg);font-size:.9rem}
+/* triage ranking: numbers you can read at a glance, moves you can see */
+.rank-guide{display:flex;align-items:center;gap:.6rem;margin:.9rem 0 .2rem;font-size:.8rem;color:var(--ink-2)}
+.rank-guide b{display:inline-grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:50%;background:var(--teal);color:var(--teal-ink);font-size:.75rem;margin-right:.3rem}
+.rank-guide span:last-child b{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+.rank-guide-line{flex:1;height:2px;background:linear-gradient(90deg,var(--teal),var(--line))}
+.rank li{grid-template-columns:3.2rem 44px minmax(0,1fr) auto;position:relative}
+.rank .n{display:flex;flex-direction:column;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);line-height:1}
+.rank .n b{font-size:1.45rem;font-weight:700;color:var(--ink)}
+.rank .n small{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-top:.15rem}
+.rank:not(.done) li:first-child .n{background:var(--teal);border-color:var(--teal)}
+.rank:not(.done) li:first-child .n b,.rank:not(.done) li:first-child .n small{color:var(--teal-ink)}
+.rank .mv{gap:.35rem}
+.rank .mv .btn{min-width:64px;min-height:44px;padding:0 .55rem;gap:.2rem;font-size:.8rem;font-weight:600}
+.rank .mv .btn .ico{width:18px;height:18px}
+.rank .mv .btn:not(.off):hover{border-color:var(--teal);color:var(--teal)}
+.rank .mv .btn.off{opacity:.3}
+.rank li.moved{border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent);background:color-mix(in srgb,var(--teal) 6%,var(--surface));z-index:1}
+.rank li.moved .n{animation:numpop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes numpop{0%{transform:scale(.7)}}
+@media (max-width:640px){
+  .rank li{grid-template-columns:2.8rem 36px minmax(0,1fr)}
+  .rank .n{width:2.6rem;height:2.6rem}.rank .n b{font-size:1.2rem}
+  .rank .mv{grid-column:1 / -1;justify-content:stretch}.rank .mv .btn{flex:1}
+}
 </style></head>
 <body><div id="app"></div>
 <script>/* The Shift — simulation engine. Knows nothing about specific patients; cases plug in. */
@@ -4684,7 +4708,8 @@ window.Shift = window.Shift || {};
     const r = ui.rank, pr = C().priority;
     const done = ui.rankDone;
     const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
-      <ol class="rank">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; return `<li class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''}"><span class="n">${i + 1}</span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? '' : `<span class="mv"><button class="btn" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol>`;
+      ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p>'}
+      <ol class="rank ${done ? 'done' : ''}">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}"><span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}<span>Up</span></button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}<span>Down</span></button></span>`}</li>`; }).join('')}</ol>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -4850,8 +4875,19 @@ window.Shift = window.Shift || {};
     close() { if (ui.ov === 'dialog') { ui.dlg = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
     'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
-    'h-done'() { ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
-    rk(el) { const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank; [r[i], r[j]] = [r[j], r[i]]; render(); },
+    'h-done'() { ui.rankMoved = null; ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
+    rk(el) {
+      const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank;
+      const before = {}; document.querySelectorAll('.rank li[data-pid]').forEach((li) => { before[li.dataset.pid] = li.getBoundingClientRect().top; });
+      [r[i], r[j]] = [r[j], r[i]]; ui.rankMoved = r[j]; render();
+      document.querySelectorAll('.rank li[data-pid]').forEach((li) => {
+        const dy = (before[li.dataset.pid] || 0) - li.getBoundingClientRect().top; if (!dy || reduced()) return;
+        li.style.transition = 'none'; li.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => { li.style.transition = 'transform .28s cubic-bezier(.2,.8,.2,1)'; li.style.transform = ''; });
+      });
+      const btn = document.querySelector(`.rank li[data-pid="${r[j]}"] [data-act="rk"][data-d="${j < i ? -1 : 1}"]:not([aria-disabled="true"])`) || document.querySelector(`.rank li[data-pid="${r[j]}"] [data-act="rk"]:not([aria-disabled="true"])`); if (btn) btn.focus({ preventScroll: true });
+      clearTimeout(ui.rankT); ui.rankT = setTimeout(() => { ui.rankMoved = null; const m = document.querySelector('.rank li.moved'); if (m) m.classList.remove('moved'); }, 900);
+    },
     'rank-submit'() {
       const pr = C().priority, r = ui.rank, Ax = A(); s.answers.rank = r.slice();
       const hits = r.filter((p, i) => pr.correct[i] === p).length;

@@ -503,7 +503,8 @@
     const r = ui.rank, pr = C().priority;
     const done = ui.rankDone;
     const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
-      <ol class="rank">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; return `<li class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''}"><span class="n">${i + 1}</span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? '' : `<span class="mv"><button class="btn" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol>`;
+      ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p>'}
+      <ol class="rank ${done ? 'done' : ''}">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}"><span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span><b>${d.room} ${esc(d.short)}</b><br><small class="muted">${esc(d.dx)}</small></span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}<span>Up</span></button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}<span>Down</span></button></span>`}</li>`; }).join('')}</ol>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -669,8 +670,19 @@
     close() { if (ui.ov === 'dialog') { ui.dlg = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
     'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
-    'h-done'() { ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
-    rk(el) { const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank; [r[i], r[j]] = [r[j], r[i]]; render(); },
+    'h-done'() { ui.rankMoved = null; ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
+    rk(el) {
+      const i = +el.dataset.i, j = i + +el.dataset.d; const r = ui.rank;
+      const before = {}; document.querySelectorAll('.rank li[data-pid]').forEach((li) => { before[li.dataset.pid] = li.getBoundingClientRect().top; });
+      [r[i], r[j]] = [r[j], r[i]]; ui.rankMoved = r[j]; render();
+      document.querySelectorAll('.rank li[data-pid]').forEach((li) => {
+        const dy = (before[li.dataset.pid] || 0) - li.getBoundingClientRect().top; if (!dy || reduced()) return;
+        li.style.transition = 'none'; li.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => { li.style.transition = 'transform .28s cubic-bezier(.2,.8,.2,1)'; li.style.transform = ''; });
+      });
+      const btn = document.querySelector(`.rank li[data-pid="${r[j]}"] [data-act="rk"][data-d="${j < i ? -1 : 1}"]:not([aria-disabled="true"])`) || document.querySelector(`.rank li[data-pid="${r[j]}"] [data-act="rk"]:not([aria-disabled="true"])`); if (btn) btn.focus({ preventScroll: true });
+      clearTimeout(ui.rankT); ui.rankT = setTimeout(() => { ui.rankMoved = null; const m = document.querySelector('.rank li.moved'); if (m) m.classList.remove('moved'); }, 900);
+    },
     'rank-submit'() {
       const pr = C().priority, r = ui.rank, Ax = A(); s.answers.rank = r.slice();
       const hits = r.filter((p, i) => pr.correct[i] === p).length;
