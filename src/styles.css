@@ -486,3 +486,4 @@ svg.scene{max-height:min(52vh,460px)}
   .look{flex:none;min-height:36px;padding:.3em .8em;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:.84rem;cursor:pointer;white-space:nowrap}
   .look:active{transform:scale(.96)}
 }
+.deleg-note{margin:0 0 .8rem;padding:.55rem .8rem;border-radius:8px;background:var(--amber-bg);font-size:.9rem}

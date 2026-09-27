@@ -8,8 +8,10 @@
   }
   let uid = 0;
   /* Time-of-day window light. */
+  const isNight = (t) => { const a = ((S.engine.abs(t) % 1440) + 1440) % 1440; return a >= 1260 || a < 300; };
   function sky(t) {
-    const a = S.engine.abs(t);                       // minutes after midnight
+    const a = ((S.engine.abs(t) % 1440) + 1440) % 1440; // minutes after midnight
+    if (isNight(t)) return ['#2a3558', '#0b1026'];   // night
     if (a < 480) return ['#f3c9a8', '#9fb7cf'];      // dawn
     if (a < 600) return ['#f6e2c4', '#a9c7dc'];      // morning
     if (a < 1050) return ['#e8f1f6', '#8fb8d6'];     // day
@@ -39,6 +41,7 @@
       ${ivOn ? `<path d="M250 58 q-8 30 8 48 q14 -18 6 -48 Z" fill="${bag}" stroke="#9FB6C1" stroke-width="1.5"/>` : ''}${f.bloodHung && !blood ? `<path d="M272 60 q-6 22 6 36 q10 -14 4 -36 Z" fill="#9E1B22" opacity=".8"/><path d="M278 96 v10" stroke="#555" stroke-width="4"/>` : ''}
       <rect x="247" y="160" width="32" height="44" rx="5" fill="#E4EBE9" stroke="#8A9A96" opacity="${ivOn ? 1 : .55}"/><rect x="252" y="167" width="22" height="11" rx="2" fill="${f.iv === 'bolus' ? '#F3C35B' : ivOn ? '#9FE0B8' : '#C9D2CF'}" class="${f.iv === 'bolus' ? 'blink' : ''}"/>
       ${ivOn ? `<path d="M263 204 C 262 280 360 300 ${X - 50} ${B + 16}" stroke="${line}" stroke-width="${blood ? 3 : 2.4}" fill="none"/>` : ''}`);
+    if (f.pca) back += hot('pca', 'PCA pump', `<rect x="244" y="212" width="36" height="40" rx="5" fill="#EFE6D2" stroke="#9A8E72"/><rect x="250" y="218" width="24" height="10" rx="2" fill="#2F6B5A"/><circle cx="262" cy="240" r="4" fill="#C84B3A"/><path d="M262 252 C 270 330 330 350 ${X - 190} 360" stroke="#6E6A60" stroke-width="2.4" fill="none"/><rect x="${X - 196}" y="352" width="16" height="28" rx="6" fill="#C84B3A" stroke="#7C2A20"/>`);
     back += `<rect x="409" y="112" width="212" height="170" rx="26" fill="var(--scene-headboard)"/><ellipse cx="${X}" cy="238" rx="122" ry="46" fill="var(--scene-pillow)"/>`;
     if (f.commode) back += hot('commode', 'Bedside commode', `<g transform="translate(140 318)"><rect x="0" y="0" width="70" height="12" rx="4" fill="#9AA6A9"/><path d="M6 12 L2 62 M64 12 L68 62" stroke="#9AA6A9" stroke-width="5"/><rect x="12" y="14" width="46" height="26" rx="5" fill="#E6EBEA" stroke="#9AA6A9"/></g>`);
     if (f.bipap) back += hot('bipap', 'BiPAP machine', `<rect x="300" y="330" width="66" height="44" rx="7" fill="#DDE4E6" stroke="#8B979A"/><rect x="310" y="338" width="30" height="14" rx="2" fill="#1d2b30"/><path d="M366 346 C 420 330 440 240 ${X - 26} 205" stroke="#B9C6CA" stroke-width="7" fill="none"/>`);
@@ -60,6 +63,7 @@
     if (f.tray && f.tray !== 'none') tbl += hot('tray', 'Meal tray', `<rect x="776" y="278" width="66" height="14" rx="3" fill="#DFE4E2"/>${f.tray === 'full' || f.tray === 'untouched' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="10" ry="5" fill="#E9C77F"/>` : f.tray === 'barely' ? `<ellipse cx="796" cy="277" rx="14" ry="6" fill="#F5E7C8"/><ellipse cx="824" cy="277" rx="5" ry="3" fill="#E9C77F"/>` : f.tray === 'soup' ? `<rect x="786" y="248" width="22" height="30" rx="5" fill="#B4453B"/><rect x="786" y="244" width="22" height="6" rx="2" fill="#7C2F28"/>` : f.tray === 'renal' ? `<path d="M782 272 q14 -14 30 -4 q-14 2 -30 4Z" fill="#F2CF4A" stroke="#B8962A"/><rect x="818" y="256" width="14" height="20" rx="2" fill="#F5A031" opacity=".9"/><ellipse cx="800" cy="277" rx="12" ry="4" fill="#E9D7B0"/>` : `<rect x="784" y="262" width="14" height="16" rx="2" fill="#F2B85B" opacity=".85"/><rect x="804" y="266" width="16" height="10" rx="2" fill="#D85F60" opacity=".75"/>`}`);
     if (f.soda) tbl += hot('soda', 'Large soda cup', `<path d="M850 240 L872 240 L868 292 L854 292Z" fill="#E24B3F"/><rect x="848" y="236" width="26" height="6" rx="2" fill="#fff"/><path d="M864 236 L870 216" stroke="#fff" stroke-width="3"/>`);
     if (f.is) tbl += hot('is', 'Incentive spirometer', `<rect x="850" y="248" width="24" height="44" rx="4" fill="${f.isUsed ? '#DFF1F7' : '#E6EEF1'}" stroke="#7EA9B8"/><circle cx="862" cy="${f.isUsed ? 262 : 284}" r="4.5" fill="#3D86A3"/>${f.isUsed ? '' : `<path d="M846 246 L878 294" stroke="#C5CED1" stroke-width="1.3"/>`}`);
+    if (f.aids) tbl += hot('aids', 'Glasses and hearing aids', `<rect x="778" y="280" width="34" height="12" rx="5" fill="#6D4A63"/><circle cx="824" cy="284" r="7" fill="none" stroke="#3A3A3E" stroke-width="2.2"/><circle cx="842" cy="284" r="7" fill="none" stroke="#3A3A3E" stroke-width="2.2"/><path d="M831 284 h4" stroke="#3A3A3E" stroke-width="2"/>`);
     if (f.tablet) tbl += hot('tablet', 'Tablet', `<rect x="776" y="${f.tray && f.tray !== 'none' ? 270 : 286}" width="46" height="6" rx="2" fill="#2D3438"/><rect x="780" y="${f.tray && f.tray !== 'none' ? 267 : 283}" width="38" height="3" fill="#6FA0C4"/>`);
     if (f.gingerale) tbl += hot('gingerale', 'Ginger ale', `<rect x="852" y="266" width="14" height="26" rx="3" fill="#7BB070"/><rect x="852" y="270" width="14" height="6" fill="#E8E0B8"/>`);
     if (f.flowers) tbl += hot('flowers', 'Card on the table', `<path d="M850 264 L876 264 L876 292 L850 292Z" fill="#FFF6E8" stroke="#D5C7AD"/><path d="M856 274 q6 -6 12 0" stroke="#E07A5F" stroke-width="2" fill="none"/>`);
@@ -75,9 +79,9 @@
       <radialGradient id="${gid}v" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="${tension ? '#5a0f0a' : '#000'}" stop-opacity="${tension ? '.38' : '.12'}"/></radialGradient></defs>
       <rect width="1030" height="440" fill="var(--scene-wall)"/><rect y="378" width="1030" height="62" fill="var(--scene-floor)"/><path d="M0 378 H1030" stroke="var(--scene-trim)" stroke-width="5"/>
       <polygon points="40,212 222,212 470,440 0,440" fill="${s1}" opacity=".16"/>
-      <g><rect x="40" y="42" width="182" height="170" rx="5" fill="url(#${gid}s)" stroke="var(--scene-frame)" stroke-width="9"/><path d="M40 176 q44 -26 90 -8 q44 14 92 -12 V212 H40Z" fill="#8AA99A" opacity=".55"/><path d="M131 42 V212 M40 127 H222" stroke="var(--scene-frame)" stroke-width="5"/></g>
+      <g><rect x="40" y="42" width="182" height="170" rx="5" fill="url(#${gid}s)" stroke="var(--scene-frame)" stroke-width="9"/><path d="M40 176 q44 -26 90 -8 q44 14 92 -12 V212 H40Z" fill="#8AA99A" opacity=".55"/>${isNight(s.t) ? '<circle cx="178" cy="78" r="13" fill="#F4EBD0" opacity=".9"/><circle cx="184" cy="74" r="11" fill="#2a3558" opacity=".9"/><circle cx="70" cy="64" r="1.6" fill="#fff"/><circle cx="104" cy="96" r="1.2" fill="#fff"/><circle cx="200" cy="112" r="1.2" fill="#fff"/>' : ''}<path d="M131 42 V212 M40 127 H222" stroke="var(--scene-frame)" stroke-width="5"/></g>
       ${back}${person}${front}${light}
-      <rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
+      ${isNight(s.t) ? '<rect width="1030" height="440" fill="#0a1230" opacity=".2" pointer-events="none"/>' : ''}<rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
     </svg>`;
   }
 

@@ -1,7 +1,7 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
   const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx;
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => document.querySelector(sel);
@@ -131,7 +131,6 @@
       <div>
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map(rung).join('')}
-          <div class="rung locked"><b>Intermediate</b><span>Night shift, fewer hands.</span><small>Coming later</small></div>
           <div class="rung locked"><b>Specialty units</b><span>Psych, ED, ICU, peds.</span><small>Coming later</small></div>
         </div>
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}</span><span>Original clinical content for education. Not a substitute for clinical instruction.</span></div>
@@ -474,7 +473,8 @@
   function ovDeleg() {
     const tasks = C().delegation.tasks.filter((t) => !t.avail || t.avail(s));
     const active = s.deleg.filter((x) => !x.done);
-    const body = `${ui.delegMsg ? `<div class="reply" style="margin-bottom:1rem">${face(C().cna)}<p class="voice" style="margin:0">${esc(ui.delegMsg)}</p></div>` : ''}
+    const note = C().delegation.note ? C().delegation.note(s) : '';
+    const body = `${note ? `<p class="deleg-note">${esc(note)}</p>` : ''}${!tasks.length ? '<p class="empty" style="padding:0">Nothing to hand off right now.</p>' : ''}${ui.delegMsg ? `<div class="reply" style="margin-bottom:1rem">${face(C().cna)}<p class="voice" style="margin:0">${esc(ui.delegMsg)}</p></div>` : ''}
       ${active.length ? `<p class="muted" style="margin-top:0">${esc(cna().name)} is working on: ${active.map((x) => `${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()} (${x.pid}), done about ${E.clock(x.due)}`).join('; ')}.</p>` : ''}
       ${tasks.map((t) => `<div style="padding:.6rem 0;border-bottom:1px solid var(--line)"><div style="font-weight:600;margin-bottom:.35rem">${esc(t.label)}</div><div class="prep">${t.rooms.filter((r) => here(def(r)) && !gone(s.p[r])).map((r) => `<button class="btn" data-act="deleg" data-t="${t.id}" data-pid="${r}">${r} ${esc(def(r).short)}</button>`).join('')}</div></div>`).join('')}`;
     return sheet(`Ask ${esc(cna().name)}`, body, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: face(C().cna), label: `Delegate to ${cna().name}, ${cna().role}` });
@@ -632,7 +632,7 @@
     const d = def(s.loc), P = s.p[d.id];
     const run = (k) => {
       if (k === 'vitals') {
-        const v = A().recordVitals(d.id, 'You'); P.k.hrAt = s.t; P.k.hr = v.HR;
+        const v = A().recordVitals(d.id, 'You'); P.k.hrAt = s.t; P.k.hr = v.HR; if (v.poss) P.k.possAt = s.t;
         logHere(d.id, `T ${fT(v.T)} °C, HR ${v.HR}${v.rhythm ? ' (' + v.rhythm + ')' : ''}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}% on ${o2txt(v.O2)}${v.poss ? ', sedation ' + v.poss.split(',')[0] : ''}. Pain ${v.pain}/10.`, 'find');
         s.log[s.log.length - 1].label = 'Vital signs';
       } else {

@@ -247,7 +247,8 @@
     const chatter = d.rigors && d.alertEff < 2 && calm ? (Math.sin(t * 38) > 0 ? .1 : 0) : 0;
     const open = clamp(cur.open + gasp + chatter), sm = cur.smile, mw = 18 + Math.max(0, sm) * 6 + cur.guard * 5 + open * 3;
     const my = -sm * 4.6, up = sm * 5.6 - open * 2, lo = sm * 5.6 + open * 17;
-    I.mouth.setAttribute('d', `M ${-mw / 2} ${my} Q 0 ${up} ${mw / 2} ${my} Q 0 ${lo} ${-mw / 2} ${my} Z`);
+    const fd = clamp(v.facial || 0);   // facial droop: the patient's right corner (viewer's left) sags
+    I.mouth.setAttribute('d', `M ${-mw / 2} ${my + fd * 7} Q 0 ${up + fd * 2.5} ${mw / 2} ${my} Q 0 ${lo + fd * 2.5} ${-mw / 2} ${my + fd * 7} Z`);
     I.mouth.setAttribute('stroke', mix(c.lip, '#5D6FA6', cur.cyan * .8));
     I.cheeks.setAttribute('opacity', .22 + cur.flush * .5); I.fh.setAttribute('opacity', cur.flush * .18);
     I.pallor.setAttribute('opacity', cur.pallor * .55); I.green.setAttribute('opacity', cur.green * .24); I.cyan.setAttribute('opacity', cur.cyan * .5);
@@ -274,6 +275,7 @@
           if (cur.pick > .02) { tx = lerp(tx, -bw * .74 + Math.sin(t * 3.1) * 9 * calm, cur.pick); ty = lerp(ty, B + 22 - Math.abs(Math.sin(t * 6.2)) * 5 * calm, cur.pick); }
         }
         tx = lerp(tx, s * bw * .42, cur.lean); ty = lerp(ty, B + 40, cur.lean);
+        if (s === -1 && v.facial) { tx = lerp(tx, -bw * .72, clamp(v.facial)); ty = lerp(ty, B + 38, clamp(v.facial)); }   // weak right arm lies still
         const ak = 1 - Math.exp(-dt * 4); a.x = lerp(a.x, tx, ak); a.y = lerp(a.y, ty, ak);
         const hxh = a.x + trem * Math.sin(t * 57 + s) * 1.8 + jx, hyh = a.y + trem * Math.cos(t * 63 + s) * 1.4 + jy;
         const Sx = s * bw * .84, Sy = T0 + 24 - riseAmt - cur.lean * 7, Ex = (Sx + hxh) / 2 + s * 24, Ey = (Sy + hyh) / 2 + 8;
