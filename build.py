@@ -16,4 +16,12 @@ html=f'''<!doctype html>
 <style>{css}</style></head>
 <body><div id="app"></div>
 <script>{js}</script></body></html>'''
-out=pathlib.Path(__file__).parent/'dist'/'the-shift.html'; out.write_text(html); (out.parent/'index.html').write_text(html); print(len(html))
+root=pathlib.Path(__file__).parent; dist=root/'dist'
+# The game: /play/ on the site, plus a standalone single file.
+(dist/'play').mkdir(parents=True, exist_ok=True)
+(dist/'the-shift.html').write_text(html); (dist/'play'/'index.html').write_text(html)
+# The beta landing page at / and its screenshots at /assets/.
+import shutil
+(dist/'index.html').write_text((root/'site'/'index.html').read_text())
+shutil.copytree(root/'site'/'assets', dist/'assets', dirs_exist_ok=True)
+print(len(html))

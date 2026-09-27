@@ -5,6 +5,8 @@ A nursing clinical-judgment simulation. You work a hospital shift (med-surg, the
 ## Play
 Open `dist/the-shift.html` in a browser. It's a single self-contained file.
 
+The deployed site (Vercel, serving `dist/`) has a beta landing page at `/` (source: `site/index.html`, screenshots in `site/assets/`) and the game at `/play/`. Run `python3 build.py` to rebuild both.
+
 ## Shifts
 - **Shift 1 — First light** (Orientation, 07:00–): four patients, rooms 412–418.
 - **Shift 2 — Second wind** (Beginner, 15:00–20:00): COPD CO₂ retainer, alcohol withdrawal, GI bleed with a blood-product mismatch, hyperkalemia, and an appendicitis admission.
