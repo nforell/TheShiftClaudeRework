@@ -324,3 +324,43 @@ td.wrap{white-space:normal;min-width:220px}
 }
 :root[data-motion="reduced"] *,:root[data-motion="reduced"] *::before,:root[data-motion="reduced"] *::after{animation:none!important;transition:none!important}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}}
+
+/* ---------- feedback: presses, picks, stamps ---------- */
+.btn,.act,.choice,.opt,.line,.rung,.dock-tabs button,.seg button{transition:transform .09s ease-out,background .15s,border-color .15s,box-shadow .15s}
+.btn:active:not([disabled]),.act:active:not([disabled]),.choice:active,.opt:active,.line:active,.rung:active{transform:scale(.975)}
+.nova-l{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--teal)}
+.clock{position:relative}
+.clock.bump{animation:bump .32s ease-out}
+@keyframes bump{35%{transform:translateY(-2px);color:var(--teal)}}
+.clock .adv{position:absolute;right:0;top:100%;margin-top:.3rem;font-size:.72rem;font-weight:700;color:var(--teal);white-space:nowrap;pointer-events:none;animation:adv 1.4s ease-out forwards}
+@keyframes adv{0%{opacity:0;transform:translateY(-4px)}15%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateY(4px)}}
+/* an answer the player just chose */
+.choice{position:relative;padding-right:2.6rem}
+.choice.chosen{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 12%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent);animation:pick .28s ease-out}
+.choosing .choice:not(.chosen),.choosing .rep .btn:not(.chosen),.choosing .prep .btn:not(.chosen){opacity:.45;transition:opacity .2s}
+.choice.chosen::after,.btn.chosen::after{content:'';position:absolute;right:.9rem;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5L17.5 8.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;animation:checkin .26s cubic-bezier(.3,1.6,.5,1)}
+.btn.chosen{position:relative;padding-right:2.4rem;border-color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,var(--surface));animation:pick .28s ease-out}
+.toast .btn.chosen{background:rgba(255,255,255,.3)}
+@keyframes pick{40%{transform:scale(1.018)}}
+@keyframes checkin{from{transform:scale(0);opacity:0}}
+/* an option that was just toggled on */
+.opt:has(input:checked){border-color:var(--teal);background:color-mix(in srgb,var(--teal) 7%,var(--surface))}
+.just{animation:just .34s ease-out}
+.opt.just:has(input:checked),.line.just[aria-pressed="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent)}
+@keyframes just{0%{transform:scale(.97)}45%{transform:scale(1.015)}}
+/* confirmation stamp after committing an action */
+.stamp{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top,0px));z-index:60;display:flex;align-items:center;gap:.65rem;padding:.55rem 1.1rem .55rem .6rem;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--teal) 45%,var(--line));box-shadow:0 14px 34px -14px rgba(0,0,0,.45);transform:translateX(-50%);animation:stampin .38s cubic-bezier(.2,1.4,.4,1);pointer-events:none;max-width:calc(100% - 2rem)}
+.stamp.out{opacity:0;transform:translate(-50%,-6px);transition:opacity .22s,transform .22s}
+.stamp b{display:block;font-size:.95rem;line-height:1.2}
+.stamp small{display:block;font-size:.76rem;color:var(--ink-2);font-weight:600}
+.stamp .tick{width:30px;height:30px;flex:none}
+.stamp .tick circle{fill:var(--teal)}
+.stamp .tick path{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:20;stroke-dashoffset:20;animation:draw .34s .12s ease-out forwards}
+@keyframes stampin{from{opacity:0;transform:translate(-50%,-10px) scale(.92)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* triage reveal cascades row by row */
+.rank li.right,.rank li.wrong{animation:reveal .4s ease-out backwards}
+.rank li:nth-child(2){animation-delay:.12s}.rank li:nth-child(3){animation-delay:.24s}.rank li:nth-child(4){animation-delay:.36s}.rank li:nth-child(5){animation-delay:.48s}
+@keyframes reveal{from{opacity:0;transform:translateX(-8px)}}
+:root[data-motion="reduced"] .stamp .tick path{stroke-dashoffset:0}
+@media (max-width:640px){.dock-tabs button{padding:.5em .55em}}

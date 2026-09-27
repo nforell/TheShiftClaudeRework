@@ -15,6 +15,7 @@ Source is plain JavaScript on a global `window.Shift` object:
 | File | Purpose |
 |---|---|
 | `src/engine.js` | Clock, state, scoring, debrief, save/load |
+| `src/fx.js` | Synthesized sounds and haptics (no audio files) |
 | `src/case-*.js` | Case content (patients, meds, events, dialogs, end checks) |
 | `src/rig.js` | Procedural SVG character rig driven by vitals |
 | `src/art.js` | Room and hallway scenes |

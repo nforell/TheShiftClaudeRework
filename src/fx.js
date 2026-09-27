@@ -1,0 +1,89 @@
+/* The Shift — feedback. Small synthesized sounds and haptics, no audio files.
+   Every sound is built from oscillators so the game stays one self-contained file.
+   Sounds confirm that an action registered. They never hint at right or wrong,
+   except where the game already shows the answer (Nova's triage reveal). */
+(function (S) {
+  let ctx = null, master = null, on = true;
+
+  function audio() {
+    if (!on) return null;
+    try {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { on = false; return null; }
+        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.55;
+        const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    } catch (e) { on = false; return null; }
+  }
+
+  /* One voice: a pitched tone with a fast attack and an exponential tail. */
+  function tone(f, at, dur, o) {
+    o = o || {};
+    const c = ctx, t = c.currentTime + at;
+    const osc = c.createOscillator(), g = c.createGain();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(f, t);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + (o.glide || dur * 0.6));
+    const peak = o.gain || 0.2;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + (o.attack || 0.004));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    let node = osc;
+    if (o.lp) { const f2 = c.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = o.lp; osc.connect(f2); node = f2; }
+    node.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  /* A short filtered noise burst: the "tick" of a physical switch. */
+  function click(at, o) {
+    o = o || {};
+    const c = ctx, t = c.currentTime + at, len = Math.floor(c.sampleRate * 0.018);
+    const buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = o.f || 3200; bp.Q.value = o.q || 1.4;
+    const g = c.createGain(); g.gain.value = o.gain || 0.22;
+    src.connect(bp); bp.connect(g); g.connect(master); src.start(t);
+  }
+
+  const SOUNDS = {
+    // Plain buttons, tabs, navigation: a soft switch.
+    tap() { click(0, { f: 2600, gain: 0.12 }); tone(1500, 0, 0.035, { gain: 0.03 }); },
+    // Choosing an answer or toggling an option: a round, upward pop.
+    select() { click(0, { f: 3400, gain: 0.16 }); tone(540, 0, 0.13, { to: 900, glide: 0.05, gain: 0.16, type: 'triangle', lp: 2600 }); },
+    // Unchecking: the same pop, falling.
+    deselect() { click(0, { f: 2400, gain: 0.12 }); tone(760, 0, 0.1, { to: 480, glide: 0.05, gain: 0.1, type: 'triangle', lp: 2200 }); },
+    // Committing (give, hold, call, delegate, lock in): a bright two-note confirm.
+    commit() {
+      click(0, { f: 3000, gain: 0.16 });
+      tone(659.3, 0, 0.32, { gain: 0.14, type: 'triangle', lp: 3200 });
+      tone(987.8, 0.075, 0.5, { gain: 0.13, type: 'sine' });
+      tone(1975.5, 0.075, 0.25, { gain: 0.025, type: 'sine' });
+    },
+    // Time passing on the clock: a soft woodblock.
+    time() { tone(1180, 0, 0.06, { gain: 0.05, type: 'sine', to: 900, glide: 0.04 }); },
+    // A new message on the unit phone.
+    msg() { tone(1318.5, 0, 0.16, { gain: 0.07 }); tone(1760, 0.09, 0.26, { gain: 0.06 }); },
+    // An urgent message: three insistent pulses, not harsh.
+    urgent() { [0, 0.16, 0.32].forEach((t) => tone(740, t, 0.12, { gain: 0.1, type: 'square', lp: 1400 })); },
+    // Triage reveal only, where the game already shows the answer.
+    right() { [523.3, 659.3, 784].forEach((f, i) => tone(f, i * 0.07, 0.35, { gain: 0.11, type: 'triangle', lp: 3000 })); },
+    miss() { tone(392, 0, 0.22, { gain: 0.08, type: 'triangle', lp: 1600 }); tone(329.6, 0.11, 0.3, { gain: 0.07, type: 'triangle', lp: 1400 }); },
+    // Opening a sheet.
+    open() { tone(420, 0, 0.12, { to: 620, glide: 0.08, gain: 0.05, type: 'sine' }); },
+  };
+  const BUZZ = { select: 8, deselect: 5, commit: [10, 45, 16], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+
+  let last = 0;
+  function play(name) {
+    const now = performance.now();
+    if (name === 'tap' && now - last < 40) return; // don't stack a tap on top of a richer sound
+    last = now;
+    if (on && navigator.vibrate && BUZZ[name]) { try { navigator.vibrate(BUZZ[name]); } catch (e) { /* not supported */ } }
+    const c = audio(); if (!c || !SOUNDS[name]) return;
+    try { SOUNDS[name](); } catch (e) { /* audio is best-effort */ }
+  }
+
+  S.fx = { play, setOn(v) { on = !!v; }, isOn: () => on, unlock() { audio(); } };
+})(window.Shift = window.Shift || {});

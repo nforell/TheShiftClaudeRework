@@ -1,6 +1,6 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx;
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -13,11 +13,12 @@
     back: '<svg class="ico" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"/></svg>',
     up: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',
     down: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+    tick: '<svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg>',
   };
 
   let s = null;                 // game state
   let prof = E.store.profile(); // persistent profile + settings
-  const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption: null, toasts: [], rank: null, rankDone: false, dlg: null, med: null, sbar: null, delegMsg: null, nova: null, hIdx: 0, newLog: 0, filter: 'all', confirm: null };
+  const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption: null, toasts: [], rank: null, rankDone: false, dlg: null, med: null, sbar: null, delegMsg: null, nova: null, hIdx: 0, newLog: 0, filter: 'all', confirm: null, adv: null, stamp: null, justKey: null, busy: false };
 
   const C = () => E.getCase(caseId);
   const A = () => E.api(s);
@@ -44,6 +45,7 @@
     const r = document.documentElement, st = prof.settings;
     if (st.theme === 'system') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', st.theme);
     r.setAttribute('data-text', st.text); r.setAttribute('data-motion', st.motion);
+    FX.setOn(st.sound !== 'off');
   }
 
   /* ------------ game flow ------------ */
@@ -55,14 +57,16 @@
   /* Spend time; collect new messages into toasts; end shift if the clock runs out. */
   function spend(mins, fn) {
     E.perform(s, mins, fn);
+    if (mins > 0) ui.adv = mins;
     const fresh = s.fresh.splice(0);
+    if (fresh.length) { const urgent = fresh.some((id) => (s.inbox.find((x) => x.id === id) || {}).urgent); setTimeout(() => FX.play(urgent ? 'urgent' : 'msg'), 420); }
     fresh.forEach((id) => {
       const m = s.inbox.find((x) => x.id === id); if (!m) return;
       ui.toasts.push(m.id);
       // Routine messages step aside after a few seconds (they stay in the phone); urgent ones wait for the player.
       if (!m.urgent) setTimeout(() => { if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }, 8000);
     });
-    ui.toasts = ui.toasts.slice(-2);
+    ui.toasts = ui.toasts.slice(-1);
     if (s.ended) return endShift();
     save();
   }
@@ -82,9 +86,9 @@
     return `<header class="top">
       <button class="mark" data-act="menu" aria-label="The Shift menu">The Shift</button>
       <div class="where">${loc}</div>
-      ${ui.view !== 'handoff' ? `<button class="icon-btn" data-act="nova" aria-label="Ask the charge nurse, ${s.nova} credits left"><span class="dots" aria-hidden="true">${Array.from({ length: C().novaCredits || 3 }, (_, i) => i).map((i) => `<i class="${i < s.nova ? 'on' : ''}"></i>`).join('')}</span><span class="sr">Ask Nova</span></button>
+      ${ui.view !== 'handoff' ? `<button class="icon-btn" data-act="nova" aria-label="Ask the charge nurse, ${s.nova} credits left"><span class="dots" aria-hidden="true">${Array.from({ length: C().novaCredits || 3 }, (_, i) => i).map((i) => `<i class="${i < s.nova ? 'on' : ''}"></i>`).join('')}</span><span class="nova-l" aria-hidden="true">Nova</span></button>
       <button class="icon-btn" data-act="inbox" aria-label="Messages, ${unread} unread">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ''}</button>` : ''}
-      <div class="clock" role="timer" aria-live="off" aria-label="Shift time ${E.clock(s.t)}">${E.clock(s.t)}<small>ends ${E.clock(C().length)}</small></div>
+      <div class="clock ${ui.adv ? 'bump' : ''}" role="timer" aria-live="off" aria-label="Shift time ${E.clock(s.t)}">${E.clock(s.t)}<small>ends ${E.clock(C().length)}</small>${ui.adv ? `<span class="adv" aria-hidden="true">+${ui.adv} min</span>` : ''}</div>
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     </header>`;
   }
@@ -178,11 +182,11 @@
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
         <section class="board" aria-labelledby="bh">
-          <div class="board-h"><h2 id="bh">Assignment</h2><span class="muted" style="font-size:.85rem">Select a door or a name to go to the room.</span></div>
+          <div class="board-h"><h2 id="bh">Assignment</h2></div>
           ${pts().map((d) => { const P = s.p[d.id]; const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row ${gone(P) ? 'gone' : ''}">
             ${pface(d.id)}
             <div><div class="nm">${d.room} ${esc(d.name)}<small>${d.age}${d.sex}</small></div><div class="dx">${esc(d.dx)}</div>
-            <div class="facts"><span class="chip">${esc(d.code)}</span>${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${v ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
+            <div class="facts">${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${v ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
             <div class="go">${gone(P) ? '' : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
           </div>`; }).join('')}
           ${pending.map((d) => `<div class="pt-row pending"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} Admission</div><div class="dx">From the ED, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
@@ -194,8 +198,7 @@
           <div class="tools">
             <button class="btn" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>Delegate to the ${esc(cna().role)}</small></button>
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
-            <button class="btn" data-act="nova"><b>Ask Nova</b><small>${s.nova} of ${C().novaCredits || 3} left</small></button>
-            <button class="btn" data-act="catchup"><b>Chart and catch up</b><small>Pass 10 minutes</small></button>
+            <button class="btn" data-act="catchup" style="grid-column:1/-1"><b>Chart and catch up</b><small>Pass 10 minutes</small></button>
             ${s.t >= C().length - 30 ? `<button class="btn btn-primary" data-act="endask" style="grid-column:1/-1"><b>Give report and end shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
           </div>
         </aside>
@@ -213,7 +216,7 @@
     const list = s.inbox.slice(0, n);
     return `<section class="phone" aria-labelledby="ph"><div class="phone-h"><b id="ph">Unit phone</b><span style="font-size:.8rem">${s.inbox.filter((m) => !m.read).length} unread</span></div>
       <div class="msgs">${list.length ? list.map(msgHTML).join('') : '<p class="empty">Quiet so far.</p>'}</div>
-      ${s.inbox.length ? `<div style="padding:.5rem;border-top:1px solid var(--line);display:flex;gap:.4rem"><button class="btn btn-quiet" data-act="inbox" style="flex:1">All messages</button><button class="btn btn-quiet" data-act="readall" style="flex:1">Mark all read</button></div>` : ''}</section>`;
+      ${s.inbox.length > n ? `<div style="padding:.4rem;border-top:1px solid var(--line)"><button class="btn btn-quiet" data-act="inbox" style="width:100%">All ${s.inbox.length} messages</button></div>` : ''}</section>`;
   }
 
   /* ------------ room ------------ */
@@ -239,13 +242,11 @@
       return (d.meds || []).filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); return `<button class="act med" data-act="med" data-id="${m.id}" ${m.later || m.initStatus === 'given' ? 'disabled' : ''}><span><b>${esc(m.name)}</b> ${esc(m.dose)} ${m.route}<br><small class="muted">${esc(m.freq)}</small></span><span class="st ${st.cls}">${st.text}</span></button>`; }).join('');
     }
     if (ui.dock === 'talk') {
+      const Ax2 = Ax;
       let h = `<button class="act" data-act="talk"><span>Talk with ${esc(d.short)}</span><span class="c">3 min</span></button>`;
       if (d.family) h += `<button class="act" data-act="family"><span>${d.family.mode === 'phone' ? 'Call' : 'Talk with'} ${esc(d.family.name)} (${esc(d.family.rel.toLowerCase())})</span><span class="c">${d.family.cost} min</span></button>`;
-      return h;
-    }
-    if (ui.dock === 'call') {
-      let h = `<button class="act" data-act="sbar" data-pid="${d.id}"><span>Call ${esc(prov().name)} with an SBAR</span><span class="c">6 min</span></button>`;
-      (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { h += `<button class="act ${x.id === 'rrt' ? 'urgent' : ''}" data-act="comm" data-id="${x.id}"><span>${esc(x.label)}</span><span class="c">${x.cost} min</span></button>`; });
+      h += `<button class="act" data-act="sbar" data-pid="${d.id}"><span>Call ${esc(prov().name)} with an SBAR</span><span class="c">6 min</span></button>`;
+      (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax2)).forEach((x) => { h += `<button class="act ${x.id === 'rrt' ? 'urgent' : ''}" data-act="comm" data-id="${x.id}"><span>${esc(x.label)}</span><span class="c">${x.cost} min</span></button>`; });
       h += `<button class="act" data-act="delegate"><span>Ask ${esc(cna().name)} (${esc(cna().role)})</span><span class="c">1 min</span></button>`;
       if (!(d.comms || []).some((x) => x.id === 'rrt')) h += `<button class="act" data-act="rrt-generic"><span>Call a rapid response</span><span class="c">3 min</span></button>`;
       return h;
@@ -256,7 +257,8 @@
     const d = def(s.loc), P = s.p[d.id], Ax = A();
     const v = Ax.lastVitals(d.id), fl = d.scene(s, P, Ax), st = d.status(s, P, Ax);
     const tense = st === 'urgent';
-    const tabs = [['assess', 'Assess'], ['care', 'Care'], ['meds', 'Medications'], ['talk', 'Talk'], ['call', 'Call and delegate']];
+    if (ui.dock === 'call') ui.dock = 'talk';
+    const tabs = [['assess', 'Assess'], ['care', 'Care'], ['meds', 'Meds'], ['talk', 'Talk &amp; call']];
     const logs = s.log.filter((l) => l.pid === d.id).slice().reverse();
     const ab = { T: v.T >= 38 || v.T < 36, HR: v.HR > 100 || v.HR < 55, BP: v.SBP < 100 || v.SBP > 160, RR: v.RR > 22 || v.RR < 12, SpO2: v.SpO2 < 92 };
     const bg = P.bgs && P.bgs.length ? P.bgs[P.bgs.length - 1] : null;
@@ -272,13 +274,12 @@
         <section class="dock" aria-label="Actions">
           <div class="dock-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="dock" data-id="${id}" aria-selected="${ui.dock === id}">${l}</button>`).join('')}</div>
           <div class="acts" role="tabpanel">${roomActions(d, P)}</div>
-          ${ui.dock === 'meds' ? '<p class="dock-note">Scanning at the bedside. Open a medication to review its checks before you give or hold it.</p>' : ui.dock === 'assess' ? '<p class="dock-note">Select objects in the room to look at them closely. It takes no time.</p>' : ''}
         </section>
         <section class="feedbox" aria-label="At the bedside">
           <div class="vstrip" aria-label="Last recorded vitals">
             <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${v.T}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}"><span>SpO₂</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
           </div>
-          <div class="vcap">Last recorded at ${E.clock(v.t)} by ${esc(v.by)}${s.t - v.t > 60 ? '. Over an hour old.' : '.'} Values in red are outside normal range.</div>
+          <div class="vcap">Recorded ${E.clock(v.t)} by ${esc(v.by)}${s.t - v.t > 60 ? ', <b>over an hour ago</b>' : ''}</div>
           <ul class="feed" aria-live="polite">${logs.length ? logs.map((l) => `<li class="k-${l.kind} ${l.id > ui.newLogSeen ? 'new' : ''}"><span class="tm">${E.clock(l.t)}</span><span class="tx">${l.kind === 'find' ? `<b>${esc(l.label || '')}</b>` : ''}${esc(l.text)}</span></li>`).join('') : `<li><span class="tm"></span><span class="tx muted">You're at the bedside. Start with what you see.</span></li>`}</ul>
         </section>
       </div></main>`;
@@ -358,7 +359,7 @@
     if (done) body += `<div class="warnbox">${st.status === 'given' ? 'Given' : 'Held'} at ${E.clock(st.at)}.${st.note ? ' ' + esc(st.note) : ''}</div>`;
     if (m.doses && !block && !verify) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
     if (ui.med.holding) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Reason for holding</legend>${['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'].map((r, i) => `<label class="opt"><input type="radio" name="hr" data-act="hreason" data-v="${i}" ${ui.med.reason == i ? 'checked' : ''}><span>${r}</span></label>`).join('')}</fieldset>`;
-    let foot = `<button class="btn" data-act="close">Cancel</button>`;
+    let foot = '';
     if (!done && !block && !verify) {
       if (ui.med.holding) foot += `<button class="btn btn-primary" data-act="med-hold" ${ui.med.reason == null ? 'disabled' : ''}>Hold this dose</button>`;
       else {
@@ -385,7 +386,7 @@
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : 'disabled'}><span>${esc(it.label)}${it.need ? '' : `<small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
         ${reqs.map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
-    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn" data-act="close">Cancel</button><button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : 'disabled'}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(C().provider), wide: true });
+    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : 'disabled'}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(C().provider), wide: true });
   }
 
   function ovDeleg() {
@@ -427,9 +428,6 @@
   function ovMenu() {
     const inShift = s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief';
     return sheet('Menu', `<div class="menu-list">
-      <button class="btn" data-act="close">Back to the shift</button>
-      ${inShift && ui.view === 'room' ? '<button class="btn" data-act="back">Return to nurses\' station</button>' : ''}
-      ${inShift ? `<button class="btn" data-act="chart" data-pid="${ui.view === 'room' ? s.loc : pts()[0].id}">Open charts</button>` : ''}
       <button class="btn" data-act="help">How it plays</button><button class="btn" data-act="settings">Settings</button>
       ${inShift && s.t >= 15 ? '<button class="btn" data-act="endask">End the shift early and see debrief</button>' : ''}
       ${inShift ? '<button class="btn btn-danger" data-act="restart">Restart this shift</button>' : ''}
@@ -437,11 +435,11 @@
   }
   function ovSettings() {
     const st = prof.settings;
-    const seg = (key, opts) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-act="set" data-k="${key}" data-v="${v}" aria-pressed="${st[key] === v}">${l}</button>`).join('')}</div>`;
+    const seg = (key, opts) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-act="set" data-k="${key}" data-v="${v}" aria-pressed="${(st[key] || opts[0][0]) === v}">${l}</button>`).join('')}</div>`;
     return sheet('Settings', `<div class="setrow"><span>Theme</span>${seg('theme', [['system', 'System'], ['light', 'Day'], ['dark', 'Night']])}</div>
       <div class="setrow"><span>Text size</span>${seg('text', [['normal', 'Standard'], ['large', 'Large']])}</div>
       <div class="setrow"><span>Motion</span>${seg('motion', [['full', 'Full'], ['reduced', 'Reduced']])}</div>
-      <p class="muted" style="font-size:.85rem">Sound is not in this build yet.</p>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
+      <div class="setrow"><span>Sound and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
   }
   function ovHelp() {
     return sheet('How it plays', `<div class="help">
@@ -459,15 +457,16 @@
   }
 
   function toasts() {
-    if (!ui.toasts.length || !s) return '';
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m) return ''; const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast ${m.urgent ? 'urgent' : ''}" role="alert">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
+    if (!ui.toasts.length || !s || ui.view === 'station') return '';
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (ui.ov && !m.urgent)) return ''; const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast ${m.urgent ? 'urgent' : ''}" role="alert">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
   }
 
   /* ------------ render ------------ */
+  const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
   function render(scrollTop) {
     applySettings();
     const root = $('#app');
-    const focusKey = document.activeElement && document.activeElement.dataset ? JSON.stringify([document.activeElement.dataset.act, document.activeElement.dataset.id, document.activeElement.dataset.pid, document.activeElement.dataset.i, document.activeElement.dataset.k, document.activeElement.dataset.tab, document.activeElement.dataset.p, document.activeElement.dataset.t]) : null;
+    const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
     const y = window.scrollY;
     let h = '';
     if (ui.view === 'home' || !s) h = vHome();
@@ -476,6 +475,7 @@
       if (ui.view === 'debrief') h += `<header class="top"><button class="mark" data-act="home">The Shift</button><div class="where">Debrief</div></header>`;
       h += ui.view === 'handoff' ? vHandoff() : ui.view === 'station' ? vStation() : ui.view === 'room' ? vRoom() : vDebrief();
       h += toasts();
+      if (ui.stamp) h += `<div class="stamp" role="status" aria-live="polite">${ICON.tick}<span><b>${esc(ui.stamp.text)}</b>${ui.stamp.sub ? `<small>${esc(ui.stamp.sub)}</small>` : ''}</span></div>`;
     }
     const ov = ui.ov;
     if (ov === 'chart' && s) h += ovChart();
@@ -495,13 +495,15 @@
     R.hydrate(root);
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
-    ui.enter = false;
+    ui.enter = false; ui.adv = null;
+    if (ui.stamp && !ui.stamp.shown) { ui.stamp.shown = true; const st = ui.stamp; setTimeout(() => { if (ui.stamp === st) { ui.stamp = null; const n = root.querySelector('.stamp'); if (n) { n.classList.add('out'); setTimeout(() => n.remove(), 250); } } }, 1500); }
+    if (ui.justKey) { const jk = ui.justKey; ui.justKey = null; const el = [...root.querySelectorAll('[data-act]')].find((x) => keyOf(x) === jk && !x.dataset.scrim); if (el) { const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el; tgt.classList.add('just'); } }
     if (scrollTop) window.scrollTo(0, 0); else window.scrollTo(0, y);
     // restore focus
     let target = null;
     if (focusKey) {
       const k = JSON.parse(focusKey);
-      target = [...root.querySelectorAll('[data-act]')].find((el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t]) === focusKey && !el.dataset.scrim);
+      target = [...root.querySelectorAll('[data-act]')].find((el) => keyOf(el) === focusKey && !el.dataset.scrim);
     }
     const dlg = root.querySelector('[role="dialog"]');
     if (dlg && (!target || !dlg.contains(target))) { const f = dlg.querySelector('button:not([disabled]),input:not([disabled])'); if (f) f.focus({ preventScroll: true }); }
@@ -555,6 +557,7 @@
     render();
   }
 
+  const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(s.t - mins)} · ${mins} min` : E.clock(s.t) }; };
   const handlers = {
     'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); render(); },
     new() { if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
@@ -580,7 +583,7 @@
     back() { ui.ov = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) { ui.dock = el.dataset.id; render(); },
     assess(el) { doAssess(el.dataset.sys); ui.caption = null; render(); },
-    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); spend(x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; }); ui.caption = null; render(); },
+    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); spend(x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; }); ui.caption = null; stamp(x.label, x.cost); render(); },
     poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), cl = d.clues(s, s.p[d.id], A()); const t = cl[el.dataset.id]; if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
@@ -598,13 +601,13 @@
     'med-give'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       spend(5, (Ax) => { const t = m.give(s, P, Ax, ui.med.dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); });
-      ui.ov = null; ui.med = null; if (!s.ended) render();
+      ui.ov = null; ui.med = null; stamp(`${m.name} given`, 5); if (!s.ended) render();
     },
     'med-hold'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const reasons = ['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'];
       spend(2, (Ax) => { let t; if (m.hold) t = m.hold(s, P, Ax); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[ui.med.reason]; logHere(d.id, `${m.name} held (${reasons[ui.med.reason].toLowerCase()}). ${t}`, 'act'); });
-      ui.ov = null; ui.med = null; if (!s.ended) render();
+      ui.ov = null; ui.med = null; stamp(`${m.name} held`, 2); if (!s.ended) render();
     },
     talk() { const d = def(s.loc), id = d.talk(s, s.p[d.id], A()); if (!id) return; spend(3, () => {}); if (s.ended) return; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
     family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
@@ -634,10 +637,10 @@
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Concise beats complete. Every item in an SBAR should earn its place.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov().name}. "${reply}"`, 'info');
       });
-      if (s.ended) return; ui.sbar.reply = reply; render();
+      if (s.ended) return; ui.sbar.reply = reply; stamp(`Called ${prov().name}`, 6); render();
     },
     delegate() { ui.ov = 'deleg'; ui.delegMsg = null; render(); },
-    deleg(el) { const t = C().delegation.tasks.find((x) => x.id === el.dataset.t); let msg = ''; spend(1, (Ax) => { msg = C().delegation.start(t, el.dataset.pid, s, Ax); }); if (s.ended) return; ui.delegMsg = msg; ui.ov = 'deleg'; render(); },
+    deleg(el) { const t = C().delegation.tasks.find((x) => x.id === el.dataset.t); let msg = ''; spend(1, (Ax) => { msg = C().delegation.start(t, el.dataset.pid, s, Ax); }); if (s.ended) return; ui.delegMsg = msg; ui.ov = 'deleg'; stamp(`${cna().name} is on it`, 1); render(); },
     nova() { ui.nova = null; ui.ov = 'nova'; render(); },
     'nova-ask'() { if (s.nova <= 0) return; s.nova -= 1; ui.nova = C().novaHint(s, A()); s.novaLog.push({ t: s.t, text: ui.nova }); save(); render(); },
     inbox() { ui.ov = 'inbox'; render(); s.inbox.forEach((m) => { m.read = true; }); save(); },
@@ -651,13 +654,36 @@
     filter(el) { ui.filter = el.dataset.k; render(); },
   };
 
+  /* Feedback. Answers get a pop and a moment to register; commitments get a chime and a stamp.
+     None of it says whether the choice was right: that stays in the debrief. */
+  const SELECT = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue']);
+  const TOGGLE = new Set(['sbar-pick', 'flag']);
+  const COMMIT = new Set(['med-give', 'med-hold', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
+  const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit' };           // answers that advance the scene
+  const JUST = new Set(['sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter']);
+  const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   function onClick(e) {
     const el = e.target.closest('[data-act]');
     if (!el) return;
     if (el.dataset.scrim && e.target !== el) return; // clicks inside sheet don't close
     const a = el.dataset.act; if (!a) return;
-    if (el.tagName === 'INPUT') { /* let the checkbox/radio toggle, then re-render */ }
-    const h = handlers[a]; if (h) { e.preventDefault(); h(el); }
+    const h = handlers[a]; if (!h) return;
+    e.preventDefault();
+    if (el.disabled || ui.busy) return;
+    const choose = CHOOSE[a] || (a === 'sbar' && el.classList.contains('choice') ? 'select' : null);
+    if (choose) {
+      // Let the pick land: mark it, sound it, then move on.
+      ui.busy = true; el.classList.add('chosen'); const box = el.closest('.sheet, .toast, .msg'); if (box) box.classList.add('choosing');
+      FX.play(choose);
+      setTimeout(() => { ui.busy = false; h(el); }, reduced() ? 60 : 280);
+      return;
+    }
+    if (a === 'set' && el.dataset.k === 'sound') FX.setOn(el.dataset.v !== 'off');
+    if (JUST.has(a)) ui.justKey = keyOf(el);
+    h(el);
+    if (a === 'rank-submit') { const pr = C().priority; FX.play(ui.rank.every((p, i) => pr.correct[i] === p) ? 'right' : 'commit'); }
+    else if (TOGGLE.has(a)) FX.play((a === 'flag' ? s.brain.includes(el.dataset.k) : ui.sbar && ui.sbar.picked.includes(el.dataset.id)) ? 'select' : 'deselect');
+    else FX.play(COMMIT.has(a) ? 'commit' : SELECT.has(a) ? 'select' : 'tap');
   }
   function onKey(e) {
     if (e.key === 'Escape' && ui.ov && ui.ov !== 'rank') { handlers.close(); return; }
