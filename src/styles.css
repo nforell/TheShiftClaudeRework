@@ -364,3 +364,34 @@ td.wrap{white-space:normal;min-width:220px}
 @keyframes reveal{from{opacity:0;transform:translateX(-8px)}}
 :root[data-motion="reduced"] .stamp .tick path{stroke-dashoffset:0}
 @media (max-width:640px){.dock-tabs button{padding:.5em .55em}}
+
+/* ---------- punch: every tap flashes and ripples ---------- */
+.zap{position:fixed;z-index:70;pointer-events:none;overflow:hidden;box-shadow:0 0 0 2px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 40%,transparent);background:color-mix(in srgb,var(--teal) 10%,transparent);animation:zapring .5s cubic-bezier(.2,.8,.3,1) forwards}
+.zap i{position:absolute;border-radius:50%;background:color-mix(in srgb,var(--teal) 30%,transparent);transform:translate(-50%,-50%) scale(0);animation:ripple .5s cubic-bezier(.2,.8,.3,1) forwards}
+.zap.strong{box-shadow:0 0 0 3px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 50%,transparent)}
+.zap.strong i{background:color-mix(in srgb,var(--teal) 42%,transparent)}
+.zap.big{box-shadow:none;background:none}
+.zap.no{box-shadow:0 0 0 2px var(--amber);background:color-mix(in srgb,var(--amber) 12%,transparent);animation:zapno .45s ease-out forwards}
+.zap.no i{background:color-mix(in srgb,var(--amber) 22%,transparent)}
+@keyframes zapring{0%{opacity:1}60%{opacity:1;box-shadow:0 0 0 2px var(--teal),0 0 0 7px color-mix(in srgb,var(--teal) 0%,transparent)}100%{opacity:0;box-shadow:0 0 0 2px var(--teal),0 0 0 10px color-mix(in srgb,var(--teal) 0%,transparent)}}
+@keyframes ripple{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@keyframes zapno{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}100%{opacity:0}}
+.hint{position:fixed;z-index:75;max-width:min(320px,calc(100vw - 16px));padding:.45rem .75rem;border-radius:8px;background:var(--ink);color:var(--bg);font-size:.85rem;font-weight:600;line-height:1.35;box-shadow:0 12px 28px -12px rgba(0,0,0,.5);pointer-events:none;animation:rise .18s ease-out}
+.hint.no{background:var(--amber-bg);color:var(--ink);border:1px solid var(--amber)}
+.hint.out{opacity:0;transition:opacity .22s}
+/* things you can tap look tappable */
+.tap{cursor:pointer}
+.pt-row.tap:hover,.due li.tap:hover,.brain li.tap:hover,.msg.tap:hover{background:color-mix(in srgb,var(--teal) 6%,transparent)}
+.pt-row.tap:active,.due li.tap:active,.brain li.tap:active,.msg.tap:active,.vstrip.tap:active,.home-cast figure.tap:active{transform:scale(.99)}
+.pt-row,.due li,.brain li,.msg,.vstrip,.home-cast figure{transition:transform .09s ease-out,background .15s}
+.vstrip.tap:hover{background:color-mix(in srgb,var(--teal) 5%,transparent)}
+.home-cast figure.tap:hover{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--teal) 45%,transparent)}
+.home-cast q{display:block;font-family:var(--serif);font-style:italic;color:var(--ink);quotes:"\201C" "\201D";animation:rise .2s ease-out}
+.due li.tap span:last-child::after{content:" \203A";color:var(--teal);font-weight:700}
+/* disabled but still tappable (so it can explain itself) */
+.btn.off,.act.off{opacity:.45;cursor:not-allowed}
+.btn.off:hover{border-color:var(--line)}
+.opt input.off{cursor:not-allowed}
+.btn:active:not(.off),.act:active:not(.off),.choice:active,.opt:active,.line:active,.rung:active,.dock-tabs button:active,.chart-tabs button:active,.seg button:active,.pt-tab:active,.icon-btn:active{transform:scale(.955)}
+.clue:active,.door:active,.pt:active{filter:brightness(1.12)}
+.dock-tabs button.just,.chart-tabs button.just,.pt-tab.just{animation:just .3s ease-out}

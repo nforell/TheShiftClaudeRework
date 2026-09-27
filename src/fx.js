@@ -10,7 +10,7 @@
     try {
       if (!ctx) {
         const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { on = false; return null; }
-        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.55;
+        ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.7;
         const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
       }
       if (ctx.state === 'suspended') ctx.resume();
@@ -47,33 +47,36 @@
     src.connect(bp); bp.connect(g); g.connect(master); src.start(t);
   }
 
+  // A low body under every click: the "thock" that makes it feel physical.
+  const thock = (g) => tone(165, 0, .075, { to: 85, glide: .05, gain: g || .24, type: 'sine' });
   const SOUNDS = {
-    // Plain buttons, tabs, navigation: a soft switch.
-    tap() { click(0, { f: 2600, gain: 0.12 }); tone(1500, 0, 0.035, { gain: 0.03 }); },
-    // Choosing an answer or toggling an option: a round, upward pop.
-    select() { click(0, { f: 3400, gain: 0.16 }); tone(540, 0, 0.13, { to: 900, glide: 0.05, gain: 0.16, type: 'triangle', lp: 2600 }); },
+    // Plain buttons, tabs, navigation: a crisp switch with body.
+    tap() { thock(.2); click(0, { f: 2300, q: .9, gain: .3 }); tone(2900, 0, .018, { gain: .035, type: 'square', lp: 5200 }); },
+    // Choosing an answer or toggling an option: switch plus a round, upward pop.
+    select() { thock(.2); click(0, { f: 3000, gain: .26 }); tone(560, .005, .14, { to: 980, glide: .045, gain: .2, type: 'triangle', lp: 2800 }); },
     // Unchecking: the same pop, falling.
-    deselect() { click(0, { f: 2400, gain: 0.12 }); tone(760, 0, 0.1, { to: 480, glide: 0.05, gain: 0.1, type: 'triangle', lp: 2200 }); },
-    // Committing (give, hold, call, delegate, lock in): a bright two-note confirm.
+    deselect() { thock(.14); click(0, { f: 2200, gain: .2 }); tone(780, 0, .1, { to: 460, glide: .05, gain: .12, type: 'triangle', lp: 2200 }); },
+    // Committing (give, hold, call, delegate, lock in): a heavy press and a bright two-note confirm.
     commit() {
-      click(0, { f: 3000, gain: 0.16 });
-      tone(659.3, 0, 0.32, { gain: 0.14, type: 'triangle', lp: 3200 });
-      tone(987.8, 0.075, 0.5, { gain: 0.13, type: 'sine' });
-      tone(1975.5, 0.075, 0.25, { gain: 0.025, type: 'sine' });
+      thock(.3); click(0, { f: 2600, gain: .3 });
+      tone(659.3, .01, .32, { gain: .15, type: 'triangle', lp: 3200 });
+      tone(987.8, .085, .5, { gain: .14, type: 'sine' });
+      tone(1975.5, .085, .25, { gain: .03, type: 'sine' });
     },
+    // Something that can't be done: two low, dull knocks.
+    nope() { tone(210, 0, .08, { gain: .12, type: 'square', lp: 700 }); tone(170, .09, .11, { gain: .11, type: 'square', lp: 600 }); click(0, { f: 900, gain: .12 }); },
     // Time passing on the clock: a soft woodblock.
-    time() { tone(1180, 0, 0.06, { gain: 0.05, type: 'sine', to: 900, glide: 0.04 }); },
+    time() { tone(1180, 0, .06, { gain: .05, type: 'sine', to: 900, glide: .04 }); },
     // A new message on the unit phone.
-    msg() { tone(1318.5, 0, 0.16, { gain: 0.07 }); tone(1760, 0.09, 0.26, { gain: 0.06 }); },
+    msg() { tone(1318.5, 0, .16, { gain: .08 }); tone(1760, .09, .26, { gain: .07 }); },
     // An urgent message: three insistent pulses, not harsh.
-    urgent() { [0, 0.16, 0.32].forEach((t) => tone(740, t, 0.12, { gain: 0.1, type: 'square', lp: 1400 })); },
+    urgent() { [0, .16, .32].forEach((t) => tone(740, t, .12, { gain: .11, type: 'square', lp: 1400 })); },
     // Triage reveal only, where the game already shows the answer.
-    right() { [523.3, 659.3, 784].forEach((f, i) => tone(f, i * 0.07, 0.35, { gain: 0.11, type: 'triangle', lp: 3000 })); },
-    miss() { tone(392, 0, 0.22, { gain: 0.08, type: 'triangle', lp: 1600 }); tone(329.6, 0.11, 0.3, { gain: 0.07, type: 'triangle', lp: 1400 }); },
-    // Opening a sheet.
-    open() { tone(420, 0, 0.12, { to: 620, glide: 0.08, gain: 0.05, type: 'sine' }); },
+    right() { [523.3, 659.3, 784].forEach((f, i) => tone(f, i * .07, .35, { gain: .12, type: 'triangle', lp: 3000 })); },
+    miss() { tone(392, 0, .22, { gain: .08, type: 'triangle', lp: 1600 }); tone(329.6, .11, .3, { gain: .07, type: 'triangle', lp: 1400 }); },
+    open() { tone(420, 0, .12, { to: 620, glide: .08, gain: .05, type: 'sine' }); },
   };
-  const BUZZ = { select: 8, deselect: 5, commit: [10, 45, 16], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+  const BUZZ = { tap: 6, select: 10, deselect: 6, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
 
   let last = 0;
   function play(name) {
