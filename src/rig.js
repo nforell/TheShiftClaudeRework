@@ -236,7 +236,7 @@
       e.low.setAttribute('y', lowY); e.low.setAttribute('height', Math.max(0, ry + 3 - lowY));
       const cy = Math.max(-ry * .08, lidY), hw = lidY < -ry * .08 ? rx + 1.2 : rx * Math.sqrt(Math.max(0, 1 - (cy / ry) ** 2)) + 1.4;
       const apex = lidY + (openAmt < .3 ? 3.2 * (1 - openAmt / .3) : 0);
-      e.lash.setAttribute('d', `M ${-hw} ${cy} Q 0 ${2 * apex - cy} ${hw} ${cy} L ${e.s * (hw + 2.4)} ${cy - 1.8}`);
+      e.lash.setAttribute('d', `M ${-e.s * hw} ${cy} Q 0 ${2 * apex - cy} ${e.s * hw} ${cy} L ${e.s * (hw + 2.4)} ${cy - 1.8}`);
       e.iris.setAttribute('transform', `translate(${g.x * maxOff} ${g.y * maxOff * .8 + cur.droop * 1.5})`);
       const ir = rx * .8; e.pupil.setAttribute('r', ir * .46 * (1 + cur.dil * .42)); e.hl.setAttribute('r', ir * .32 * (1 + cur.glassy * .35));
     });
