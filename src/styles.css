@@ -725,3 +725,62 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
   .rt[aria-selected="true"] .rt-s{display:none}
 }
 @media (max-width:760px){.roomv .room-top{max-height:none}}
+
+/* ===================== Critical moments ===================== */
+.crit{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));overflow:auto}
+.crit-dim{position:fixed;inset:0;background:rgba(3,6,8,.9);animation:dimIn .45s ease-out both}
+.crit-dim::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(190,40,30,.34) 100%);animation:vig 1.6s ease-in-out infinite}
+@keyframes dimIn{from{opacity:0}}
+@keyframes vig{50%{opacity:.35}}
+.crit-stage{position:relative;text-align:center;color:#F1F5F3;max-width:580px;width:100%}
+.crit-spot{position:relative;width:min(230px,52vw);aspect-ratio:1;margin:0 auto;border-radius:50%;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.2),rgba(255,255,255,.04) 62%,transparent 70%);animation:spotIn .7s .12s cubic-bezier(.2,.9,.3,1.25) both}
+.crit-bust{position:absolute;inset:4% 6% 0;width:88%;height:96%}
+.crit-ring{position:absolute;inset:0;border-radius:50%;border:2px solid #E0493C;animation:ring 1.5s .5s ease-out infinite;opacity:0}
+.crit-ring.r2{animation-delay:1.25s}
+@keyframes ring{0%{transform:scale(.92);opacity:.9}100%{transform:scale(1.45);opacity:0}}
+@keyframes spotIn{from{transform:scale(.55);opacity:0;filter:blur(6px)}}
+.crit-ecg{display:block;width:100%;height:46px;margin:.2rem 0 .1rem}
+.crit-ecg path{fill:none;stroke:#E0493C;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;animation:ecgDraw 1.1s .35s ease-out forwards,ecgGlow 1.5s 1.4s ease-in-out infinite}
+@keyframes ecgDraw{to{stroke-dashoffset:0}}
+@keyframes ecgGlow{50%{opacity:.45}}
+.crit-k{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#FF7A6E;animation:critUp .45s .55s both}
+.crit h2{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.02em;line-height:1.05;margin:.3rem 0 0;color:#fff;animation:critUp .5s .7s both}
+.crit-tx{font-family:var(--serif);font-size:clamp(1.1rem,2.6vw,1.35rem);line-height:1.5;margin:.8rem auto 0;max-width:34em;color:#E7EEEB;animation:critUp .5s .95s both}
+.crit-from{display:inline-flex;align-items:center;gap:.5rem;margin:.9rem 0 0;font-size:.85rem;color:#B9C8C3;animation:critUp .5s 1.1s both}
+.crit-from .portrait{width:30px;height:30px}
+.crit-from b{color:#fff;font-weight:600}
+.crit-f{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.4rem;animation:critUp .5s 1.3s both}
+@keyframes critUp{from{opacity:0;transform:translateY(14px)}}
+.btn-crit{background:#D8483C;border-color:#D8483C;color:#fff;font-weight:700;min-height:52px;padding:.6em 1.5em;font-size:1.05rem;box-shadow:0 12px 30px -10px rgba(216,72,60,.8)}
+.btn-crit:hover{filter:brightness(1.08);border-color:#D8483C}
+.crit-later{background:transparent;border-color:rgba(255,255,255,.3);color:#E7EEEB}
+.crit-later:hover{border-color:#fff}
+
+/* Result card, critical mode: a dark beat and the patient first, then the details */
+.res-scrim.crit-worse{background:rgba(3,6,8,.86);animation:dimIn .4s both}
+.res-scrim.crit-better{background:rgba(4,22,15,.72);animation:dimIn .4s both}
+.res-intro{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);width:min(420px,90vw);text-align:center;color:#fff;pointer-events:none;z-index:2;animation:introLife 1.75s cubic-bezier(.3,.7,.3,1) both}
+.res-intro b{display:block;font-family:var(--serif);font-size:clamp(1.9rem,6vw,2.8rem);font-weight:600;letter-spacing:-.02em;margin-top:.6rem;animation:critUp .4s .3s both}
+.res-intro span{display:block;font-size:.95rem;color:#D5E0DC;margin-top:.2rem;animation:critUp .4s .45s both}
+.res-intro.better .crit-ring{border-color:#5FD08E}
+.res-intro.better b{color:#BFF2D2}
+.res-intro.worse b{color:#fff}
+.res-intro .crit-spot{width:min(200px,46vw)}
+@keyframes introLife{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}14%{opacity:1;transform:translate(-50%,-50%) scale(1)}74%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-78%) scale(.82)}}
+.res.late-in{animation:resIn .45s 1.45s cubic-bezier(.2,.9,.25,1.15) both}
+.res.late-in.worse{animation:resIn .45s 1.45s cubic-bezier(.2,.9,.25,1.15) both,resShake .5s 1.85s ease-in-out}
+.res-alert{display:grid;grid-template-columns:34px minmax(0,1fr);gap:.6rem;align-items:start;margin-top:.8rem;padding:.65rem .8rem;border-radius:10px;border:1px solid var(--red);background:color-mix(in srgb,var(--red-bg) 70%,var(--surface))}
+.res-alert .portrait{width:34px;height:34px}
+.res-alert p{margin:0;font-size:.92rem}
+.res-alert b{display:block;font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--red)}
+
+/* Back in the room: a spotlight on the patient for a beat */
+.room-top.spot::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse 34% 58% at 50% 46%,transparent 55%,rgba(2,5,6,.72) 100%);animation:spotFade 2.6s ease-in-out both}
+@keyframes spotFade{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
+.room-top.spot{animation:spotPulse 2.6s ease-in-out}
+@keyframes spotPulse{0%,100%{box-shadow:var(--shadow)}20%{box-shadow:0 0 0 4px rgba(216,72,60,.55),var(--shadow)}}
+
+@media (prefers-reduced-motion:reduce){.crit *,.crit-dim,.res-intro,.res.late-in,.room-top.spot::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}.res-intro{display:none}}
+:root[data-motion="reduced"] .crit *,:root[data-motion="reduced"] .res-intro{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}
+:root[data-motion="reduced"] .res-intro{display:none}
+:root[data-motion="reduced"] .res.late-in{animation:none}
