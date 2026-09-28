@@ -856,3 +856,53 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 @media (prefers-reduced-motion:reduce){.ghost,.b-row.gdone,.b-grp.ghosts,.fs-row.stamped,.dl-row.sent,.dl-bar i{animation-duration:.01s!important}}
 :root[data-motion="reduced"] .ghost,:root[data-motion="reduced"] .b-row.gdone,:root[data-motion="reduced"] .dl-bar i{animation:none}
 .due-ghosts ul{list-style:none;margin:0;padding:0}
+
+/* ===================== Decision review ===================== */
+.rv{margin-top:.9rem;display:grid;gap:.5rem}
+.rv .res-cl{display:block;margin-bottom:.1rem}
+.rv-i{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:.65rem;align-items:start;padding:.75rem .85rem;border-radius:10px;border:1px solid var(--line);border-left:5px solid var(--ink-2);background:var(--surface-2);animation:rvIn .45s calc(.35s + var(--i) * .15s) cubic-bezier(.2,.9,.3,1.2) both}
+.res.late-in .rv-i{animation-delay:calc(1.8s + var(--i) * .15s)}
+@keyframes rvIn{from{opacity:0;transform:translateY(10px) scale(.98)}}
+.rv-i.good{border-left-color:var(--good);background:color-mix(in srgb,var(--good-bg) 65%,var(--surface))}
+.rv-i.bad{border-left-color:var(--red);background:color-mix(in srgb,var(--red-bg) 70%,var(--surface))}
+.rv-ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:var(--ink-2)}
+.rv-i.good .rv-ic{background:var(--good)}.rv-i.bad .rv-ic{background:var(--red)}
+.rv-k{display:block;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.rv-i.good .rv-k{color:var(--good)}.rv-i.bad .rv-k{color:var(--red)}
+.rv-i b{display:block;font-weight:700;line-height:1.3;margin-top:.1rem}
+.rv-i p{margin:.3rem 0 0;font-family:var(--serif);font-size:1rem;line-height:1.5;color:var(--ink)}
+.rv-pts{font-weight:900;font-size:1.05rem;padding:.2em .55em;border-radius:8px;white-space:nowrap}
+.rv-pts.up{color:var(--good);background:var(--good-bg)}.rv-pts.dn{color:#fff;background:var(--red)}
+.rv-i.bad{animation:rvIn .45s calc(.35s + var(--i) * .15s) cubic-bezier(.2,.9,.3,1.2) both,rvShake .45s calc(.8s + var(--i) * .15s) ease-in-out}
+@keyframes rvShake{25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.sheet .rv{margin-top:1rem}
+.calls-t{font-size:.74rem;font-weight:700;color:var(--ink-2);margin:.9rem 0 -.5rem .2rem}
+
+/* Meanwhile: the cost of time */
+.res-mw{margin-top:.8rem;padding:.6rem .8rem;border-radius:10px;border:1px dashed var(--amber);background:color-mix(in srgb,var(--amber-bg) 60%,var(--surface))}
+.res-mw .res-cl{display:block;margin-bottom:.25rem;color:var(--amber)}
+.res-mw ul{margin:0;padding-left:1.1rem}
+.res-mw li{font-size:.92rem}
+
+/* Header tally */
+.tally{display:inline-flex;align-items:center;gap:.35rem;min-height:36px;padding:.2rem .55rem;border:1px solid var(--line);border-radius:18px;background:var(--surface);cursor:pointer;font:inherit;font-size:.82rem;font-weight:800}
+.tally .tg{color:var(--good)}.tally .tb{color:var(--red)}
+.tally.bump{animation:tallyBump .6s cubic-bezier(.2,.9,.3,1.6)}
+@keyframes tallyBump{30%{transform:scale(1.25)}}
+@media (max-width:640px){.tally{padding:.2rem .4rem;font-size:.74rem}}
+
+/* Critical overlay: why this happened */
+.crit-why{margin:1rem auto 0;max-width:34em;text-align:left;padding:.8rem 1rem;border-radius:12px;border:1px solid rgba(255,122,110,.55);background:rgba(120,20,15,.35);animation:critUp .5s 1.2s both}
+.crit-why .rv-k{color:#FF9A90}
+.crit-why b{display:block;color:#fff;margin-top:.15rem}
+.crit-why p{margin:.3rem 0 0;font-family:var(--serif);color:#E7EEEB;line-height:1.5}
+.crit-f{animation-delay:1.45s}
+
+/* Press and hold */
+.holdbtn{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(255,255,255,.28);pointer-events:none}
+.fs-row .hold-fill{background:color-mix(in srgb,var(--red) 22%,transparent)}
+.holdbtn.holding .hold-fill{width:100%;transition:width .8s linear}
+.holdbtn.holding{transform:scale(.985)}
+.holdbtn>*:not(.hold-fill){position:relative}
+.hold-note{color:var(--red)!important;font-weight:700}
