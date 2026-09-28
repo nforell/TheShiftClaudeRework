@@ -74,9 +74,12 @@
     // Triage reveal only, where the game already shows the answer.
     right() { [523.3, 659.3, 784].forEach((f, i) => tone(f, i * .07, .35, { gain: .12, type: 'triangle', lp: 3000 })); },
     miss() { tone(392, 0, .22, { gain: .08, type: 'triangle', lp: 1600 }); tone(329.6, .11, .3, { gain: .07, type: 'triangle', lp: 1400 }); },
+    // The patient's condition changed after what you did. Worse: a low, falling pair. Better: a soft, rising pair.
+    worse() { tone(311, 0, .32, { gain: .1, type: 'triangle', lp: 1200, to: 262, glide: .25 }); tone(196, .16, .5, { gain: .09, type: 'sine' }); },
+    better() { tone(523.3, 0, .28, { gain: .08, type: 'sine' }); tone(784, .1, .42, { gain: .07, type: 'sine' }); },
     open() { tone(420, 0, .12, { to: 620, glide: .08, gain: .05, type: 'sine' }); },
   };
-  const BUZZ = { select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+  const BUZZ = { worse: [40, 60, 40], better: 10, select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
 
   let last = 0;
   function play(name) {
