@@ -1,7 +1,7 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
   const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx;
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => document.querySelector(sel);
@@ -42,6 +42,11 @@
   const unitS = () => esc(C().unitShort || '4 West');
   const sysL = (id, l) => (C().sysLabels && C().sysLabels[id]) || l;
   const legal = (d) => (d.legal ? `<span class="chip legal">${esc(d.legal)}</span>` : '');
+  /* Normal ranges are per patient: a heart rate of 150 is normal at four months and alarming at forty. */
+  const NORM = { T: [36, 37.9], HR: [55, 100], RR: [12, 22], SBP: [100, 160], SpO2: [92, 101] };
+  const norm = (d, k) => (d && d.norms && d.norms[k]) || NORM[k];
+  const abn = (d, k, v) => { const [lo, hi] = norm(d, k); return v < lo || v > hi; };
+  const ageSex = (d) => (typeof d.age === 'number' ? `${d.age}${d.sex}` : `${d.age}, ${d.sex}`);
   const fT = (t) => (typeof t === 'number' ? t.toFixed(1) : t);
   const fLab = (l) => (typeof l.val === 'number' && Number.isInteger(l.val) && /\d\.\d/.test(l.ref || '') ? l.val.toFixed(1) : l.val);
   const o2txt = (o) => (o === 'Room air' ? 'room air' : o);
@@ -153,7 +158,7 @@
       <div>
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map(rung).join('')}
-          <div class="rung locked"><b>More specialty units</b><span>ED, ICU, peds.</span><small>Coming later</small></div>
+          <div class="rung locked"><b>More specialty units</b><span>ED, ICU, labor and delivery.</span><small>Coming later</small></div>
         </div>
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}</span><span>Original clinical content for education. Not a substitute for clinical instruction.</span></div>
       </div>
@@ -168,7 +173,7 @@
     return `<main><div class="handoff">
       <section class="report" aria-labelledby="rh">
         <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
-        <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${d.age}${d.sex}, room ${d.room}</small></h2>
+        <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${ageSex(d)}, room ${d.room}</small></h2>
           <div class="muted">${esc(d.dx)}</div>
           <div class="meta">${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
         <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
@@ -181,7 +186,7 @@
       <aside class="brain" aria-label="Your brain sheet">
         <h2>Your brain sheet${brain.length ? ` <span class="count">${brain.length}</span>` : ''}</h2><p class="hint">Everyone you have today. What you flag lands under their name and stays with you all shift.</p>
         <ol class="bs">${pts.map((p, i) => { const fl = brain.filter((b) => b.pid === p.id); const cur = i === ui.hIdx, heard = i < ui.hIdx || s.hHeard && s.hHeard.includes(p.id); return `<li class="bs-p ${cur ? 'cur' : heard ? 'heard' : 'next'}">
-          <button class="bs-h" data-act="h-go" data-i="${i}" aria-current="${cur}">${pface(p.id)}<span class="bs-who"><b>${p.room} ${esc(p.short)}</b><small>${esc(p.age + p.sex)} · ${esc(p.dx)}</small></span><span class="bs-st">${cur ? 'Reporting' : heard ? 'Heard' : 'Up next'}</span></button>
+          <button class="bs-h" data-act="h-go" data-i="${i}" aria-current="${cur}">${pface(p.id)}<span class="bs-who"><b>${p.room} ${esc(p.short)}</b><small>${esc(ageSex(p))} · ${esc(p.dx)}</small></span><span class="bs-st">${cur ? 'Reporting' : heard ? 'Heard' : 'Up next'}</span></button>
           ${fl.length ? `<ul>${fl.map((b) => `<li class="tap" data-act="flag" data-k="${b.k}" role="button" tabindex="0" title="Tap to unflag">${esc(b.text)}</li>`).join('')}</ul>` : ''}</li>`; }).join('')}</ol>
         ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn btn-quiet" data-act="h-done">Skip to triage</button></p>` : ''}
       </aside></div></main>`;
@@ -217,7 +222,7 @@
       const d = def(pid), P = s.p[pid], g = gone(P), fl = flagsFor(pid), n = prioN(pid);
       const due = inShift && !g ? brainRows(d, P).filter((r) => !r.done && !r.prog && r.t !== null && (r.late || r.t <= s.t + 30)) : [];
       return `<article class="ro ${g ? 'gone' : ''}">
-        <div class="ro-h">${n ? `<span class="ro-n" title="Your priority">${n}<small>${ordinal(n)}</small></span>` : ''}${pface(pid)}<div class="ro-who"><b>${d.room} ${esc(d.name)}</b> <small>${d.age}${d.sex}</small><span>${esc(d.dx)}</span></div>
+        <div class="ro-h">${n ? `<span class="ro-n" title="Your priority">${n}<small>${ordinal(n)}</small></span>` : ''}${pface(pid)}<div class="ro-who"><b>${d.room} ${esc(d.name)}</b> <small>${ageSex(d)}</small><span>${esc(d.dx)}</span></div>
           ${s.prio && inShift && !g ? `<span class="ro-mv"><button class="btn" data-act="prio" data-pid="${pid}" data-d="-1" aria-label="Move ${esc(d.short)} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="prio" data-pid="${pid}" data-d="1" aria-label="Move ${esc(d.short)} down" ${i === list.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>` : ''}</div>
         <p class="ro-why"><b>Here for</b> ${esc(d.reason)}</p>
         <div class="facts">${legal(d)}<span class="chip">${esc(d.code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
@@ -262,7 +267,7 @@
           <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="min-height:36px;font-size:.85rem">In your priority order · Re-rank</button>` : ''}</div>
           ${prioList().map(def).map((d) => { const P = s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'chart' : 'goto'}" data-pid="${d.id}">
             <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
-            <div><div class="nm">${d.room} ${esc(d.name)}<small>${d.age}${d.sex}</small></div><div class="dx">${esc(d.dx)}</div><div class="why">Here for ${esc(d.reason.charAt(0).toLowerCase() + d.reason.slice(1))}</div>
+            <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(d.dx)}</div><div class="why">Here for ${esc(d.reason.charAt(0).toLowerCase() + d.reason.slice(1))}</div>
             <div class="facts">${legal(d)}${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${v ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
             <div class="go">${gone(P) ? '' : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
           </div>`; }).join('')}
@@ -448,13 +453,13 @@
     if (!PANES.some((p) => p[0] === ui.dock)) ui.dock = 'brain';
     const pane = PANES.find((p) => p[0] === ui.dock), cnt = railCounts(d, P);
     const logs = s.log.filter((l) => l.pid === d.id).slice().reverse();
-    const ab = { T: v.T >= 38 || v.T < 36, HR: v.HR > 100 || v.HR < 55, BP: v.SBP < 100 || v.SBP > 160, RR: v.RR > 22 || v.RR < 12, SpO2: v.SpO2 < 92 };
+    const ab = { T: abn(d, 'T', v.T), HR: abn(d, 'HR', v.HR), BP: abn(d, 'SBP', v.SBP), RR: abn(d, 'RR', v.RR), SpO2: abn(d, 'SpO2', v.SpO2) };
     const bg = P.bgs && P.bgs.length ? P.bgs[P.bgs.length - 1] : null;
     const body = ui.dock === 'brain' ? paneBrain(d, P) : ui.dock === 'assess' ? paneAssess(d, P) : ui.dock === 'care' ? paneCare(d, P) : ui.dock === 'meds' ? paneMeds(d, P) : paneTalk(d, P);
     return `<main class="roomv">
       <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''}">
         ${sceneSvg}
-        <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${d.age}${d.sex}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
+        <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
           <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Station</button></div></div>
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
@@ -502,7 +507,7 @@
     const r = ui.res, d = def(r.pid), changed = r.st0 !== r.st1, dir = !changed ? 0 : r.st1 === 'gone' ? 0 : stRank(r.st1) > stRank(r.st0) ? 1 : -1;
     const V = r.vNew, Vp = r.vPrev;
     const dlt = (k, lab, fmt, hi, lo) => { const a = V[k], b = Vp ? Vp[k] : null; const diff = b === null || b === undefined ? 0 : a - b; const ab = a > hi || a < lo; return `<div class="${ab ? 'ab' : ''}"><span>${lab}</span><b>${fmt(a)}</b>${diff ? `<em class="${diff > 0 ? 'up' : 'dn'}">${diff > 0 ? '▲' : '▼'} ${fmt(Math.abs(diff))}</em>` : Vp ? '<em>no change</em>' : ''}</div>`; };
-    const vit = V ? `<div class="res-vit">${dlt('T', 'Temp', (x) => (+x).toFixed(1), 37.9, 36)}${dlt('HR', 'HR', (x) => Math.round(x), 100, 55)}${dlt('SBP', 'Systolic', (x) => Math.round(x), 160, 99)}${dlt('RR', 'RR', (x) => Math.round(x), 22, 11)}${dlt('SpO2', 'SpO₂', (x) => Math.round(x) + '%', 101, 91)}</div>${Vp ? `<p class="res-since">Compared with ${E.clock(Vp.t)} (${esc(Vp.by)})</p>` : ''}` : '';
+    const vit = V ? `<div class="res-vit">${dlt('T', 'Temp', (x) => (+x).toFixed(1), norm(d, 'T')[1], norm(d, 'T')[0])}${dlt('HR', 'HR', (x) => Math.round(x), norm(d, 'HR')[1], norm(d, 'HR')[0])}${dlt('SBP', 'Systolic', (x) => Math.round(x), norm(d, 'SBP')[1], norm(d, 'SBP')[0])}${dlt('RR', 'RR', (x) => Math.round(x), norm(d, 'RR')[1], norm(d, 'RR')[0])}${dlt('SpO2', 'SpO₂', (x) => Math.round(x) + '%', 101, norm(d, 'SpO2')[0] - 1)}</div>${Vp ? `<p class="res-since">Compared with ${E.clock(Vp.t)} (${esc(Vp.by)})</p>` : ''}` : '';
     const mins = r.t1 - r.t0;
     const intro = r.crit ? `<div class="res-intro ${r.crit}" aria-hidden="true"><div class="crit-spot"><span class="crit-ring"></span><span class="crit-ring r2"></span>${R.bust(r.pid, rigV(r.pid), 'crit-bust')}</div><b>${r.crit === 'worse' ? (r.st1 === 'urgent' || r.alerts.length ? 'Needs you now' : 'Getting worse') : 'Turning point'}</b><span>${esc(d.room)} ${esc(d.short)}${changed ? `: ${esc(stName(r.st0))} → ${esc(stName(r.st1))}` : ''}</span></div>` : '';
     const alerts = (r.alerts || []).map((a) => `<div class="res-alert">${faceOf(a.from)}<p><b>${esc(who(a.from).name)}</b>${esc(a.text)}</p></div>`).join('');
@@ -627,11 +632,11 @@
     const pid = ui.chart.pid, tab = ui.chart.tab, d = def(pid), P = s.p[pid];
     const tabs = [['overview', 'Overview'], ['vitals', 'Vitals'], ['labs', 'Labs'], ['orders', 'Orders'], ['mar', 'MAR'], ['notes', 'Notes'], ['io', 'Intake/output']];
     let b = '';
-    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${d.age}${d.sex}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(d.dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd><b style="color:var(--red)">${esc(d.allergies)}</b></dd><dt>Code status</dt><dd>${esc(d.code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${d.lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
+    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(d.dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd><b style="color:var(--red)">${esc(d.allergies)}</b></dd><dt>Code status</dt><dd>${esc(d.code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${d.lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
     if (tab === 'vitals') {
-      const ab = (k, v) => ({ T: v >= 38 || v < 36, HR: v > 100 || v < 55, SBP: v < 100 || v > 160, RR: v > 22 || v < 12, SpO2: v < 92 }[k]);
+      const ab = (k, v) => abn(d, k, v);
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
-        ${P.vit.slice().reverse().map((v) => `<tr><td>${E.clock(v.t)}</td><td class="${ab('T', v.T) ? 'ab' : ''}">${fT(v.T)}${ab('T', v.T) ? ' ▲' : ''}</td><td class="${ab('HR', v.HR) ? 'ab' : ''}">${v.HR}${ab('HR', v.HR) ? (v.HR < 55 ? ' ▼' : ' ▲') : ''}</td><td class="${ab('SBP', v.SBP) ? 'ab' : ''}">${v.SBP}/${v.DBP}${ab('SBP', v.SBP) ? ' ▼' : ''}</td><td class="${ab('RR', v.RR) ? 'ab' : ''}">${v.RR}</td><td class="${ab('SpO2', v.SpO2) ? 'ab' : ''}">${v.SpO2}%</td><td>${esc(v.O2)}</td><td>${v.pain}</td><td>${esc(v.by)}</td></tr>`).join('')}</tbody></table></div>
+        ${P.vit.slice().reverse().map((v) => `<tr><td>${E.clock(v.t)}</td><td class="${ab('T', v.T) ? 'ab' : ''}">${fT(v.T)}${ab('T', v.T) ? ' ▲' : ''}</td><td class="${ab('HR', v.HR) ? 'ab' : ''}">${v.HR}${ab('HR', v.HR) ? (v.HR < norm(d, 'HR')[0] ? ' ▼' : ' ▲') : ''}</td><td class="${ab('SBP', v.SBP) ? 'ab' : ''}">${v.SBP}/${v.DBP}${ab('SBP', v.SBP) ? ' ▼' : ''}</td><td class="${ab('RR', v.RR) ? 'ab' : ''}">${v.RR}</td><td class="${ab('SpO2', v.SpO2) ? 'ab' : ''}">${v.SpO2}%</td><td>${esc(v.O2)}</td><td>${v.pain}</td><td>${esc(v.by)}</td></tr>`).join('')}</tbody></table></div>
         ${P.bgs ? `<h3 style="margin:1.2rem 0 .5rem">Point-of-care glucose</h3>${P.bgs.length ? `<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>mg/dL</th><th>By</th></tr></thead><tbody>${P.bgs.slice().reverse().map((g) => `<tr><td>${E.clock(g.t)}</td><td class="${g.val < 70 ? 'ab' : ''}">${g.val}${g.val < 70 ? ' ▼' : ''}</td><td>${esc(g.by)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No glucose checked this shift.</p>'}` : ''}
         <p class="muted" style="font-size:.85rem">▲ ▼ mark values outside the normal range. Trends only exist if someone keeps measuring.</p>`;
     }
@@ -644,7 +649,7 @@
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${n.t < -600 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
     return `<div class="scrim" data-act="close" data-scrim="1" style="padding:0;justify-content:flex-end"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Chart for ${esc(d.name)}">
-      <div class="chart-h"><div class="who"><b>${esc(d.name)}</b> <span class="muted">${d.age}${d.sex}, room ${d.room}, ${esc(d.code)}</span></div>
+      <div class="chart-h"><div class="who"><b>${esc(d.name)}</b> <span class="muted">${ageSex(d)}, room ${d.room}, ${esc(d.code)}</span></div>
       <div class="seg" role="group" aria-label="Switch patient">${pts().map((p) => `<button data-act="chart" data-pid="${p.id}" data-tab="${tab}" aria-pressed="${p.id === pid}">${p.room}</button>`).join('')}</div>
       <button class="btn" data-act="close">${ICON.close}Close chart</button></div>
       <div class="chart-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="chart" data-pid="${pid}" data-tab="${id}" aria-selected="${tab === id}">${l}</button>`).join('')}</div>
@@ -742,7 +747,7 @@
     const done = ui.rankDone;
     const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
       ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p>'}
-      <ol class="rank ${done ? 'done' : ''}">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}"><span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${d.age}${d.sex}</small><br><small class="muted">${esc(d.dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}<span>Up</span></button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}<span>Down</span></button></span>`}</li>`; }).join('')}</ol>`;
+      <ol class="rank ${done ? 'done' : ''}">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}"><span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(d.dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}<span>Up</span></button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}<span>Down</span></button></span>`}</li>`; }).join('')}</ol>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
