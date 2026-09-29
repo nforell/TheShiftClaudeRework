@@ -566,7 +566,7 @@
       lines: { calm: 'Is Carl still here? Tell him to go home and sleep.', drowsy: 'Mm... so sleepy...', pain: 'It burns when I move.', none: 'She doesn\'t open her eyes. Her breathing is slow, with long pauses.' } },
     bio: 'Middle school principal. Direct and funny. Her husband Carl is anxious, devoted, and has not left her side.',
     dx: 'Post-op day 0, open hysterectomy', reason: 'Open total abdominal hysterectomy for large fibroids',
-    hx: ['Obstructive sleep apnea, untreated (didn\'t bring CPAP)', 'BMI 36', 'Opioid-naive'],
+    hx: ['Obstructive sleep apnea; didn\'t bring her CPAP', 'BMI 36', 'Opioid-naive'],
     allergies: 'Codeine (nausea)', code: 'Full code', weight: '96 kg',
     lines: ['PIV 20g left forearm: LR at 100 mL/h and hydromorphone PCA', 'Foley catheter', 'Midline incision, dressing dry'], mobility: 'Bed rest tonight, dangle in the morning', diet: 'Clear liquids',
     init: { op: 1.2, taught: false, pcaStopped: false, presses: [], naloxAt: null, naloxDose: null, capno: false, o2: false, crisis: null, icu: false, histSeen: false, reported: false, carlTalked: false },

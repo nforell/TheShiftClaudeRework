@@ -83,6 +83,7 @@ window.Shift = window.Shift || {};
         if (s.fired[ev.id] !== undefined) return;
         if (ev.when(s, A)) { s.fired[ev.id] = s.t; ev.run(s, A); }
       });
+      if (S.flow) S.flow.tick(s, A, c);
     }
     if (s.t >= c.length) s.ended = true;
   }
@@ -98,7 +99,7 @@ window.Shift = window.Shift || {};
   function finish(s) {
     const c = cases[s.caseId];
     const A = api(s);
-    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); }
+    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); if (S.flow) S.flow.endChecks(s, A); }
     s.ended = true;
     return debrief(s);
   }
@@ -123,6 +124,7 @@ window.Shift = window.Shift || {};
     const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
     const outcomes = c.patients.map((d) => {
       const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
+      if (S.flow) o.next = S.flow.nextFor(s, A, d, P);
       // A patient nobody saw can't have a good outcome credited to the nurse.
       if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone !== 'bad') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
       return o;

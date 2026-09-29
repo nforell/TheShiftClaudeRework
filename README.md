@@ -14,6 +14,15 @@ The deployed site (Vercel, serving `dist/`) has a beta landing page at `/` (sour
 - **Shift 4 — Quiet voices** (Specialty: Psych, 3 East, 07:00–12:00): sudden calm before a suicide attempt, escalating mania and the least-restrictive ladder, lithium toxicity passed off as a stomach bug, first-episode psychosis and the right to refuse, and water intoxication on clozapine. California legal framing: 5150, 5250, Riese, LPS.
 - **Shift 5 — Small voices** (Specialty: Peds, 5 South, 15:00–20:00): RSV bronchiolitis on high-flow (suction, feeding thresholds, interpreter use), sickle cell crisis to acute chest syndrome (pain bias), a weight entered in pounds as kilograms (2.2x dosing), sentinel bruising and abusive head trauma in a non-mobile infant (mandated reporting), and a silent-chest asthma trap. Age-based vital sign ranges.
 
+## Every shift
+
+These run on every unit, from `src/flow.js`:
+
+- **Follow-up after a transfer.** A patient who goes to the ICU, PICU, ED, OR or medicine stays on your list. Call report to the receiving nurse, update the family, write the event note, and call for updates as their course plays out. The debrief shows what happened next, including after your shift.
+- **Hourly rounds and call lights.** A patient nobody has checked on for a while asks for something. Answer it, round ahead of it, or send your aide, but some requests need a nurse.
+- **PRN reassessment.** Every as-needed pain, antiemetic, bronchodilator or sedative dose becomes a "did it work?" task.
+- **Report to the oncoming nurse.** In the last hour, give report on everyone still on the unit. Pending work you mention is fine; pending work you don't mention is a miss.
+
 ## Develop
 Source is plain JavaScript on a global `window.Shift` object:
 

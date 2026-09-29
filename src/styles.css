@@ -979,3 +979,36 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 .chip.prio-chip{background:var(--teal);color:var(--teal-ink);border-color:var(--teal);cursor:pointer;font:inherit;font-size:.8rem;font-weight:700}
 .pt-row.pending{grid-template-columns:56px minmax(0,1fr)}
 @media (max-width:640px){.pt-row{grid-template-columns:auto 44px minmax(0,1fr)}.pt-row.pending{grid-template-columns:44px minmax(0,1fr)}.ro-list{grid-template-columns:minmax(0,1fr)}}
+/* ---------- follow-up: patients off the unit ---------- */
+.pill.af-crit,.chip.af-crit{background:var(--red-bg);color:var(--red);border-color:transparent}
+.pill.af-serious,.chip.af-serious{background:var(--amber-bg);color:var(--amber);border-color:transparent}
+.pill.af-improving,.chip.af-improving,.pill.af-stable,.chip.af-stable{background:var(--good-bg);color:var(--good);border-color:transparent}
+.pill.af-surgery,.chip.af-surgery{background:var(--surface-2);color:var(--ink-2);border-color:transparent}
+.aw-top{display:flex;align-items:center;gap:.8rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.aw-top .portrait{width:48px;height:48px;flex:none}
+.aw-top>div{flex:1;min-width:0}
+.aw-k{display:block;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.aw-top .pill{font-size:.8rem;padding:.25rem .6rem;border-radius:99px;font-weight:700;white-space:nowrap}
+.aw-ev{margin:.8rem 0;font-size:.95rem;line-height:1.45}
+.aw-h3{font-size:.95rem;margin:1rem 0 .4rem}
+.aw-tl{list-style:none;margin:0;padding:0 0 0 .9rem;border-left:2px solid var(--line)}
+.aw-tl li{position:relative;display:grid;grid-template-columns:auto auto 1fr;gap:.2rem .6rem;align-items:baseline;padding:.45rem 0}
+.aw-tl li::before{content:"";position:absolute;left:calc(-.9rem - 6px);top:.8rem;width:10px;height:10px;border-radius:50%;background:var(--line)}
+.aw-tl li.now::before{background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 22%,transparent)}
+.aw-tl li.after{opacity:.85}.aw-tl li.after::before{background:transparent;border:2px dashed var(--ink-2)}
+.aw-tl .aw-tm{font-weight:700;font-variant-numeric:tabular-nums;font-size:.85rem}
+.aw-tl .pill{font-size:.72rem;padding:.12rem .5rem;border-radius:99px;font-weight:700}
+.aw-tl p{grid-column:1/-1;margin:.1rem 0 0;font-size:.92rem;line-height:1.45}
+.aw-new{margin:.5rem 0 0;font-weight:600;color:var(--teal)}
+.aw-note{margin:.7rem 0;padding:.6rem .8rem;border-radius:10px;background:var(--good-bg);font-size:.9rem}.aw-note p{margin:.2rem 0 0}
+.fs-row.due{box-shadow:inset 3px 0 0 var(--amber)}
+.nx{margin-top:.5rem}.nx summary{cursor:pointer;font-weight:600;color:var(--teal);font-size:.9rem;min-height:32px;display:flex;align-items:center}
+.nx .aw-tl{margin-top:.4rem}
+.rep-tabs{margin:.2rem 0 .8rem;flex-wrap:wrap}
+.rep-who{display:flex;gap:.7rem;align-items:center;margin:.2rem 0 .6rem}.rep-who .portrait{width:44px;height:44px;flex:none}
+.ps.gone{opacity:.8}.ps.gone .ps-dx{color:var(--ink-2)}
+ul.fs{list-style:none;margin:0;padding:0}
+.pt-row.gone{opacity:1}.pt-row.gone>.portrait,.pt-row.gone .nm,.pt-row.gone .dx,.pt-row.gone .why{opacity:.62}
+.ro.gone{opacity:1}.ro.gone .ro-h{opacity:.7}
+.toast .tb .btn.sm{font-size:.82rem;padding:.3rem .6rem}
+@media (max-width:430px){.top{gap:.35rem}.top .icon-btn .nova-l{display:none}.top .tally{padding:0 .35rem}.top .mark{font-size:1rem}}
