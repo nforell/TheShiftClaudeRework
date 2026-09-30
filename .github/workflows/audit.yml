@@ -1,0 +1,47 @@
+# Runs the game's test suite on every push and pull request:
+# builds dist/, sweeps every screen of all five shifts (phone, tablet, desktop, light and dark),
+# then plays three shifts back to back. Fails on any JS error, sideways overflow,
+# overlapping text or covered button. See docs/ARCHITECTURE.md.
+name: Game audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Playwright and Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Build, sweep and soak
+        run: python tests/run_all.py
+
+      - name: Check the built game is committed
+        run: |
+          python build.py > /dev/null
+          git diff --quiet -- dist || { echo "::error::dist/ is out of date. Run python build.py and commit dist/."; exit 1; }
+
+      - name: Keep the audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: tests/out/
+          retention-days: 14
