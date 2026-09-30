@@ -1445,6 +1445,29 @@
     n.style.top = (below ? r.bottom + 8 : Math.max(8, r.top - h - 8)) + 'px';
     setTimeout(() => { n.classList.add('out'); setTimeout(() => n.remove(), 250); }, 2200);
   }
+  /* Crash guard: an error never leaves a dead screen. The player can carry on, and the details are kept to report. */
+  function safe(act, fn) { try { fn(); return true; } catch (err) { crashed(err, act); return false; } }
+  function crashed(err, act) {
+    ui.busy = false;
+    const info = { at: new Date().toISOString(), act: act || '', msg: String(err && err.message || err), stack: String(err && err.stack || '').split('\n').slice(0, 6).join('\n'), view: ui.view, ov: ui.ov, t: s ? s.t : null, caseId: s ? s.caseId : caseId, ua: navigator.userAgent };
+    try { localStorage.setItem('theshift.lastError', JSON.stringify(info)); } catch (e) { /* storage off */ }
+    try { console.error('The Shift error', info); } catch (e) { /* no console */ }
+    if (document.querySelector('.oops')) return;
+    const n = document.createElement('div'); n.className = 'oops'; n.setAttribute('role', 'alertdialog');
+    const detail = `${info.msg}\n[${info.act || 'render'} · ${info.view}${info.ov ? '/' + info.ov : ''} · t=${info.t} · ${info.caseId}]\n${info.stack}`;
+    n.innerHTML = `<div class="oops-c"><h2>Something went wrong</h2><p>Your shift is saved. You can keep playing, or go home and resume.</p><pre>${esc(detail)}</pre><div class="oops-f"><button class="btn" data-x="copy">Copy details</button><button class="btn" data-x="home">Home</button><button class="btn btn-primary" data-x="go">Keep playing</button></div></div>`;
+    document.body.appendChild(n);
+    n.addEventListener('click', (e) => {
+      const x = e.target.closest('[data-x]'); if (!x) return; e.stopPropagation();
+      if (x.dataset.x === 'copy') { try { navigator.clipboard.writeText(detail); x.textContent = 'Copied'; } catch (er) { x.textContent = 'Select the text above'; } return; }
+      n.remove(); document.querySelectorAll('.ff,.xpop,.coach,.coach-ring').forEach((q) => q.remove());
+      if (x.dataset.x === 'home') { if (s && !s.ended) save(); ui.view = 'home'; }
+      ui.ov = null; ui.ff = null; ui.pops = []; ui.critQ = [];
+      try { render(true); } catch (e2) { ui.view = 'home'; try { render(true); } catch (e3) { /* truly stuck */ } }
+    });
+  }
+  addEventListener('error', (e) => { if (e.error) crashed(e.error, 'async'); });
+  addEventListener('unhandledrejection', (e) => crashed(e.reason, 'promise'));
   function onClick(e) {
     const el = e.target.closest('[data-act]');
     if (!el) return;
@@ -1467,7 +1490,7 @@
     if (NAV.has(a)) {
       // Screen changes: show the press first, then move.
       ui.busy = true; FX.play(COMMIT.has(a) ? 'commit' : a === 'msg' ? 'select' : 'tap');
-      setTimeout(() => { ui.busy = false; document.querySelectorAll('.zap').forEach((z) => z.remove()); h(el); }, reduced() ? 40 : 130);
+      setTimeout(() => { ui.busy = false; document.querySelectorAll('.zap').forEach((z) => z.remove()); safe(a, () => h(el)); }, reduced() ? 40 : 130);
       return;
     }
     const choose = CHOOSE[a] || (a === 'sbar' && el.classList.contains('choice') ? 'select' : null);
@@ -1475,12 +1498,12 @@
       // Let the pick land: mark it, sound it, then move on.
       ui.busy = true; el.classList.add('chosen'); const box = el.closest('.sheet, .toast, .msg'); if (box) box.classList.add('choosing');
       FX.play(choose);
-      setTimeout(() => { ui.busy = false; h(el); }, reduced() ? 60 : 280);
+      setTimeout(() => { ui.busy = false; safe(a, () => h(el)); }, reduced() ? 60 : 280);
       return;
     }
     if (a === 'set' && el.dataset.k === 'sound') FX.setOn(el.dataset.v !== 'off');
     if (JUST.has(a)) ui.justKey = keyOf(el);
-    h(el);
+    if (!safe(a, () => h(el))) return;
     if (a === 'rank-submit') { const pr = C().priority; FX.play(ui.rank.every((p, i) => pr.correct[i] === p) ? 'right' : 'commit'); }
     else if (TOGGLE.has(a)) FX.play((a === 'flag' ? s.brain.includes(el.dataset.k) : a === 'away-pick' ? ui.away.picked.includes(el.dataset.id) : a === 'rep-pick' ? ui.rep.picked.includes(el.dataset.id) : ui.sbar && ui.sbar.picked.includes(el.dataset.id)) ? 'select' : 'deselect');
     else FX.play(COMMIT.has(a) ? 'commit' : SELECT.has(a) ? 'select' : 'tap');
@@ -1489,7 +1512,7 @@
   function startHold(e) {
     const el = e.target.closest('[data-hold]'); if (!el || el.getAttribute('aria-disabled') === 'true' || ui.busy) return;
     cancelHold(); ui.holdEl = el; el.classList.add('holding'); el.addEventListener('pointerleave', cancelHold, { once: true }); FX.play('tap');
-    ui.holdT = setTimeout(() => { ui.holdT = null; el.classList.remove('holding'); ui.holdDone = true; setTimeout(() => { ui.holdDone = false; }, 600); zap(el, null, 'strong'); FX.play('commit'); const h = handlers[el.dataset.act]; if (h) h(el); }, 800);
+    ui.holdT = setTimeout(() => { ui.holdT = null; el.classList.remove('holding'); ui.holdDone = true; setTimeout(() => { ui.holdDone = false; }, 600); zap(el, null, 'strong'); FX.play('commit'); const h = handlers[el.dataset.act]; if (h) safe(el.dataset.act, () => h(el)); }, 800);
   }
   function cancelHold() { if (ui.holdT) { clearTimeout(ui.holdT); ui.holdT = null; } if (ui.holdEl) ui.holdEl.classList.remove('holding'); ui.holdEl = null; }
   function onKey(e) {
@@ -1511,7 +1534,7 @@
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
     document.addEventListener('keydown', onKey);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
-    ui.view = 'home'; render(true);
+    ui.view = 'home'; safe('boot', () => render(true));
   }
   S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
