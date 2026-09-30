@@ -1330,6 +1330,28 @@ table.health td{white-space:normal}
 }
 .big-clock{padding:.1em 0 .16em}   /* the huge thin numerals overhang their .85 line box; the padding scales with them */
 .brain li.tap{min-height:34px}
+/* Stories: getting to know patients */
+:root{--bond:#B04A6A;--bond-bg:#F9E6EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bond:#F08DAA;--bond-bg:#3a1f28}}
+:root[data-theme="dark"]{--bond:#F08DAA;--bond-bg:#3a1f28}
+.st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem .8rem;margin:0 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:var(--bond-bg)}
+.st-k{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--bond)}
+.st-tr{display:inline-flex;align-items:center;gap:3px;min-width:0}
+.st-tr i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bond);opacity:.55;transition:background .3s,opacity .3s}
+.st-tr i.on{background:var(--bond);opacity:1}
+.st-tr small{margin-left:.4rem;font-size:.76rem;font-weight:600;color:var(--bond);white-space:nowrap}
+.st-tag{display:inline-block;margin-left:.4rem;padding:.05rem .45rem;border-radius:99px;background:var(--bond-bg);color:var(--bond);font-size:.72rem;font-weight:700;vertical-align:.08em;white-space:nowrap}
+.st-epi{margin:.6rem 0 .2rem;padding:.6rem .75rem;border-left:3px solid var(--bond);border-radius:0 8px 8px 0;background:var(--bond-bg)}
+.st-epi .st-eh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.3rem .8rem;margin-bottom:.3rem}
+.st-epi p{margin:.2rem 0 .4rem;font-family:var(--serif);font-size:1rem;line-height:1.55}
+.st-epi details{margin:.2rem 0}
+.st-epi summary{cursor:pointer;font-size:.85rem;font-weight:600;color:var(--ink)}
+.st-epi ul{margin:.35rem 0 .2rem;padding-left:1.1rem;font-size:.88rem;color:var(--ink-2)}
+.st-epi ul li{margin:.15rem 0}
+.st-epi>small{display:block;font-size:.8rem;line-height:1.4}
+.xpop.bond b{color:var(--bond)}
+.outs:has(.st-epi){grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));column-gap:1.2rem}
+.out .st-epi p{color:var(--ink);font-size:.95rem}
 </style></head>
 <body><div id="app"></div>
 <script>/* The Shift — simulation engine. Knows nothing about specific patients; cases plug in. */
@@ -2480,6 +2502,7 @@ window.Shift = window.Shift || {};
     { id: 'comeback', label: 'Comeback', how: 'Beat your last score on a shift by 15 points or more', g: 'up' },
     { id: 'second', label: 'Second chance', how: 'Replay a shift and turn a patient\'s poor outcome into a good one', g: 'redo' },
     { id: 'reflect', label: 'Reflective practice', how: 'Review "What to rethink" in three debriefs', g: 'book' },
+    { id: 'bedside', label: 'Bedside manner', how: 'End a shift close with every patient (at least 4)', g: 'chat' },
   ];
 
   /* Tracks: lifetime progress with bronze, silver and gold tiers. */
@@ -2488,6 +2511,7 @@ window.Shift = window.Shift || {};
     { id: 'lessons', label: 'Lessons learned', how: 'Mistakes fixed on a later shift', tiers: [1, 10, 30], val: (p) => Object.values(p.lessons || {}).filter((l) => l.fixed).length },
     { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 15, (S.floor ? S.floor.POOL.length : 28)], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
     { id: 'shifts', label: 'Shifts worked', how: 'Shifts finished through handoff', tiers: [1, 10, 25], val: (p) => (p.life && p.life.shifts) || 0 },
+    { id: 'stories', label: 'Their stories', how: 'Moments you shared with patients and families', tiers: [10, 40, 90], val: (p) => (p.life && p.life.beats) || 0 },
     { id: 'stars', label: 'Stars', how: 'Best stars, added across all five shifts', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },
   ]);
   const TIER = ['Not started', 'Bronze', 'Silver', 'Gold'];
@@ -2505,6 +2529,7 @@ window.Shift = window.Shift || {};
     const t0 = tiers(prof);
     s.judg.forEach((j) => { if (j.delta > 0) prof.life.good[j.domain] = (prof.life.good[j.domain] || 0) + 1; });
     if (done) prof.life.shifts = (prof.life.shifts || 0) + 1;
+    if (S.story) prof.life.beats = (prof.life.beats || 0) + S.story.stats(s, c).beats;
     const rank = { wrong: 0, ok: 1, best: 2 };
     (s.floor ? s.floor.q : []).forEach((x) => { if (x.done !== 'answered') return; const now = x.v === 2 ? 'best' : x.v === 1 ? 'ok' : 'wrong', was = prof.floorSeen[x.id]; if (was === undefined || rank[now] > rank[was]) prof.floorSeen[x.id] = now; });
     // Lessons: every mistake from a finished shift goes in the log; it's fixed when you replay and don't repeat it.
@@ -2561,7 +2586,7 @@ window.Shift = window.Shift || {};
     const test = {
       first: true, three: st === 3, goals: gd === 4, zone: s.bestStreak >= 12, sharp: fl.total >= 4 && fl.best === fl.total,
       catch: !!(topOut && topOut.tone === 'good'), solo: d.overall >= 72 && s.nova === (c.novaCredits || 3),
-      bells: bells >= 3 && !bellMiss, float: cases.every((id) => allRuns.includes(id)), house: cases.every((id) => starsAfter[id] === 3),
+      bells: bells >= 3 && !bellMiss, bedside: (() => { const x = S.story ? S.story.stats(s, c) : { n: 0, close: 0 }; return x.n >= 4 && x.close === x.n; })(), float: cases.every((id) => allRuns.includes(id)), house: cases.every((id) => starsAfter[id] === 3),
     };
     BADGES.forEach((b) => { if (test[b.id] && !have[b.id]) earned.push(b.id); });
     return { goals: g, stars: st, prevStars, lines, total, before, after, lvBefore: level(before), lvAfter: level(after), earned, starsAfter };
@@ -7424,6 +7449,1155 @@ window.Shift = window.Shift || {};
   });
 })(window.Shift);
 
+/* The Shift — stories. Every patient is a person before they're a diagnosis. Each has a short arc that opens up
+   over the shift as you spend time with them: a few beats, each unlocked by trust.
+
+   How it plays:
+   - Talking to a patient shows their clinical conversation first. After that, when they're stable enough to chat,
+     talking moves their story forward instead. Sick patients don't make small talk.
+   - Trust (0–5) rises with therapeutic choices, answering their call light yourself, and plain presence. It falls
+     with dismissive answers. Each beat needs a little more trust than the last; below it, they stay guarded.
+   - Some beats hold something clinically important that they'd only tell a nurse they trust.
+   - The debrief tells you what became of them, shaped by how well you knew them.
+
+   Arcs live in src/stories/*.js and register with S.story.add(caseId, { pid: arc }). An arc:
+     { who?, gate?(s,P,A), idle?: [clinical dialog ids that story may replace right away], gap?: minutes,
+       beats: [{ need, who?, learn, text, choices: [{ label, reply, rap, judge?: [domain, delta, text, why], set? }] }],
+       guarded: ['line', ...], presence: 'reply when you just sit with them',
+       epi: { close, warm, distant, hard, mixed? } }                                                                     */
+(function (S) {
+  const ARCS = {};
+  const MAXR = 5;
+  function add(caseId, arcs) { ARCS[caseId] = Object.assign(ARCS[caseId] || {}, arcs); }
+  const arcOf = (c, pid) => (ARCS[c.id] || {})[pid];
+  const has = (c) => !!ARCS[c.id];
+  function st(P) { if (!P.story) P.story = { n: 0, at: -999, heard: [], rap: 0, sat: -999, g: 0 }; return P.story; }
+  const clampR = (x) => Math.max(0, Math.min(MAXR, x));
+  const trust = (P) => clampR(Math.round(st(P).rap));
+  function bump(P, d) { const S0 = st(P); S0.rap = clampR(S0.rap + d); }
+  const TRUST = ['A stranger', 'Getting to know you', 'Opening up', 'Trusts you', 'Close', 'Close'];
+
+  /* Put every beat into the case's dialog table so the existing dialog sheet can show it. */
+  function install(c) {
+    const arcs = ARCS[c.id]; if (!arcs) return;
+    Object.keys(arcs).forEach((pid) => {
+      const arc = arcs[pid], base = arc.who || pid;
+      arc.beats.forEach((b, i) => {
+        const id = `st:${pid}:${i}`, who = b.who || base;
+        c.dialogs[id] = { who, pid, story: { pid, i }, text: b.text, choices: b.choices.map((ch, k) => ({ label: ch.label, next: `${id}:r${k}`, fx: (s, A) => choose(s, A, c, pid, i, k) })) };
+        b.choices.forEach((ch, k) => { c.dialogs[`${id}:r${k}`] = { who, pid, story: { pid, i, reply: k }, text: ch.reply }; });
+      });
+      (arc.guarded || ['"I\'m alright. Just tired."']).forEach((g, j) => {
+        c.dialogs[`st:${pid}:g${j}`] = { who: base, pid, story: { pid, guarded: true }, text: g, choices: [
+          { label: 'Pull up a chair and stay a few minutes. No questions, no agenda.', next: `st:${pid}:sat`, fx: (s) => { const P = s.p[pid], S0 = st(P); S0.sat = s.t; bump(P, 1); s.storyFresh = { pid, d: 1, why: 'presence' }; } },
+          { label: 'Let them rest.', next: null, fx: () => {} },
+        ] };
+      });
+      c.dialogs[`st:${pid}:sat`] = { who: base, pid, story: { pid, sat: true }, text: arc.presence || 'You sit. Neither of you says much. After a while the silence feels less like a wall.' };
+    });
+  }
+  function choose(s, A, c, pid, i, k) {
+    const P = s.p[pid], S0 = st(P), b = arcOf(c, pid).beats[i], ch = b.choices[k];
+    bump(P, ch.rap || 0); S0.n = i + 1; S0.at = s.t; if (!S0.heard.includes(i)) S0.heard.push(i);
+    if (ch.judge) A.judge(`st-${pid}-${i}`, ch.judge[0], ch.judge[1], ch.judge[2], ch.judge[3], pid);
+    if (ch.set) Object.assign(P, ch.set);
+    s.storyFresh = { pid, d: ch.rap || 0 };
+  }
+
+  /* What talking to this patient should open right now: a story beat, a guarded line, or nothing (clinical). */
+  function next(s, c, d, P, A) {
+    const arc = arcOf(c, d.id); if (!arc) return null;
+    const S0 = st(P);
+    if (S0.n >= arc.beats.length) return null;
+    const stt = d.status(s, P, A);
+    if ((arc.watch ? stt === 'urgent' : stt !== 'stable') || P.icu || P.gone) return null;   // parent arcs (watch) can talk while the child is being watched
+    if (arc.gate && !arc.gate(s, P, A)) return null;
+    if (S0.n > 0 && s.t - S0.at < (arc.gap || 18)) return null;
+    const b = arc.beats[S0.n];
+    if (b.when && !b.when(s, P, A)) return null;
+    if ((b.need || 0) > trust(P)) return s.t - S0.sat < 25 ? null : { guarded: true };
+    return { i: S0.n };
+  }
+  function pick(s, c, d, P, A, clinicalId) {
+    const arc = arcOf(c, d.id); if (!arc) return null;
+    s.seenDlg = s.seenDlg || {};
+    // The clinical conversation always wins while it still has something to decide. The story takes over from
+    // idle lines right away, from listed conversations once they've been had, and from any line without choices once seen.
+    if (clinicalId && !(arc.idle || []).includes(clinicalId)) {
+      const node = c.dialogs[clinicalId], seen = !!s.seenDlg[clinicalId];
+      if (!seen || !((arc.after || []).includes(clinicalId) || !(node && node.choices))) return null;
+    }
+    const nx = next(s, c, d, P, A); if (!nx) return null;
+    if (nx.guarded) { const g = (arc.guarded || ['']).length; const S0 = st(P); S0.g = (S0.g + 1) % g; return `st:${d.id}:g${S0.g}`; }
+    return `st:${d.id}:${nx.i}`;
+  }
+  const waiting = (s, c, d, P, A) => { const nx = next(s, c, d, P, A); return !!(nx && !nx.guarded); };
+
+  /* Trust shifts from the rest of the shift, too: every judged conversation with them or their family, and
+     coming yourself when they ring. */
+  function fromDialog(s, pid, judged) { const P = s.p[pid]; if (!P) return 0; const d = judged.reduce((n, j) => n + Math.sign(j.delta), 0); if (d) bump(P, Math.max(-1, Math.min(1, d))); return d; }
+  function fromBell(s, pid) { const P = s.p[pid]; if (P) bump(P, 0.5); }
+
+  /* The debrief: what became of them, and what you learned about them. */
+  function epilogue(s, c, d, P, tone) {
+    const arc = arcOf(c, d.id); if (!arc || !arc.epi) return null;
+    const S0 = st(P), t = trust(P), e = arc.epi;
+    // A mixed outcome can have its own set; any entry can be a function of the patient, so the story never
+    // contradicts what happened clinically.
+    const m = tone === 'mixed' && e.mixed ? (typeof e.mixed === 'object' ? e.mixed : { close: e.mixed, warm: e.mixed, distant: e.mixed }) : {};
+    const pickE = (k) => (m[k] !== undefined ? m[k] : e[k]);
+    const raw = tone === 'bad' && e.hard ? e.hard : t >= 3 ? pickE('close') : t >= 1 ? pickE('warm') : pickE('distant');
+    const text = typeof raw === 'function' ? raw(s, P, tone) : raw;
+    const learned = S0.heard.map((i) => arc.beats[i].learn).filter(Boolean);
+    return { text, trust: t, label: TRUST[t], learned, total: arc.beats.length, heard: S0.heard.length };
+  }
+  function stats(s, c) {
+    const arcs = ARCS[c.id] || {}; let beats = 0, close = 0, n = 0;
+    Object.keys(arcs).forEach((pid) => { const P = s.p[pid]; if (!P) return; const d = c.patients.find((x) => x.id === pid); if (d && d.arrives && !P.arrived) return; n += 1; beats += st(P).heard.length; if (trust(P) >= 3) close += 1; });
+    return { beats, close, n };
+  }
+
+  S.story = { add, install, pick, waiting, fromDialog, fromBell, epilogue, stats, trust, has, TRUST, MAXR, _arcs: ARCS };
+})(window.Shift);
+
+/* First light, 4 West. Stories for Marcus, Grace, Eleanor and Samuel. */
+(function (S) {
+  S.story.add('medsurg-4w-1', {
+    '412': {
+      idle: ['bell_idle'],
+      guarded: [`"I'm fine, chief. Don't worry about me."`, `He keeps his eyes on the game. "All good."`],
+      presence: `You sit. The game goes to commercial. "Denise hates this team," he says eventually, to nobody. It's the first thing he's said that isn't "fine."`,
+      beats: [
+        { need: 0, learn: `Quit smoking two weeks ago, because Denise asked him to.`,
+          text: `He mutes the TV. "Two weeks ago I quit smoking. Thirty years, cold turkey, because Denise asked me to. Then my gut blows a hole in itself." He almost laughs, then catches the incision. "Universe has a sense of humor."`,
+          choices: [
+            { label: `Two weeks without a cigarette is already helping. More oxygen gets to that incision. Your timing is better than it feels.`, rap: 1, reply: `"Huh." He looks down at his belly like it might be listening. "Don't tell Denise she was right. She'll frame it."` },
+            { label: `The universe owes you one, then.`, rap: 0, reply: `"Put it on my tab." He unmutes the game.` },
+            { label: `Honestly, the smoking probably didn't help your gut either.`, rap: -1, reply: `His face goes flat. "Yeah. Heard that one." The TV comes back on.` },
+          ] },
+        { need: 1, learn: `His brother Ray died of an overdose at 49. That is why pain pills scare him.`,
+          text: `"You asked about the pain pills. My brother Ray hurt his back at the plant, got a bottle of pills, then got everything else. We buried him at forty-nine." He turns his wedding ring. "So when somebody says 'oxycodone,' I hear Ray."`,
+          choices: [
+            { label: `I'm sorry about Ray. Thank you for telling me. Can we make a plan together, so you get what you need to heal and nothing that scares you?`, rap: 1,
+              judge: [`comm`, 1, `You let Mr. Bell tell you why pain medicine frightens him.`, `Asking about the story behind a fear turns a refusal into a plan you make together. Now you both know what "safe" means to him.`],
+              reply: `He nods slowly. "Lowest dose. You tell me when it's time to step down. And you don't let me get stupid about it." He holds out his hand to shake on it.` },
+            { label: `Addiction does run in families, so it's smart to be careful.`, rap: 0, reply: `"Yeah." He goes quiet. You're not sure whether you eased the fear or confirmed it.` },
+            { label: `That won't happen to you. You're only here a few days.`, rap: -1, reply: `"That's what Ray's doctor said." He doesn't look at you.` },
+          ] },
+        { need: 2, learn: `Hid three days of belly pain from Denise before he came in.`,
+          text: `"Want to know something dumb? I had the pain three days before I came in. Told Denise it was the chili. I didn't want to be the guy in the ambulance." He picks at the blanket. "Forty years fixing buses. You don't pull a bus off the road for a little noise. Then it's a big noise."`,
+          choices: [
+            { label: `A lot of people wait. In here, I want the little noises: dizziness, new pain, trouble breathing. The sooner you tell me, the easier it is to fix. Deal?`, rap: 1, set: { bellHonest: true },
+              reply: `"Little noises." He points at you. "You're gonna regret that. I'm a very noisy bus." Twenty minutes later he tells you, unprompted, that he felt lightheaded when he reached for his water. He told you.` },
+            { label: `Well, you're here now. That's what matters.`, rap: 0, reply: `"I guess." He shrugs, and winces.` },
+            { label: `Three days? You could have died.`, rap: -1, reply: `"Yeah. Denise said that too. Loudly." He shuts down.` },
+          ] },
+        { need: 3, learn: `He and Denise restored the old number 9 bus for the transit museum.`,
+          text: `He finds a photo on his phone: a green-and-cream city bus, gleaming, with a woman in a ball cap grinning from the driver's seat. "Old number 9. Denise and me restored her for the transit museum. Took four years." A pause. "So why'd you get into this, anyway? Nursing."`,
+          choices: [
+            { label: `Honestly? Moments like this one.`, rap: 1, reply: `He snorts. "Smooth." But he's pleased. "Denise is gonna want to meet you. Brace yourself. She hugs."` },
+            { label: `Someone took good care of my family once. I wanted to be that person for somebody else.`, rap: 1, reply: `He's quiet a second. "Yeah. That's a good reason." He sets the phone face up on the table, the bus turned toward you.` },
+            { label: `Long story. Let's get you walking first.`, rap: 0, reply: `"Always working." He grins and swings his legs to the edge of the bed. "Fine. Show me how to do this without splitting in half."` },
+          ] },
+      ],
+      epi: {
+        close: `Marcus walked a full lap of the unit with Denise before he went home on day four, holding his IV pole like the rail on the number 9. A month later a card came to 4 West: a photo of the bus, and on the back, "For the nurse who made me a deal. Ray would've liked you. Still quit. — M."`,
+        warm: `Marcus went home on day four. Denise says he walks the block twice a day and complains the whole way, which she counts as a good sign.`,
+        distant: `Marcus went home on day four. He didn't say much at discharge. At his follow-up he admitted he'd barely touched his pain pills, and the surgeon could hear it in his lungs.`,
+        hard: `Marcus's recovery took longer than it should have. Denise stayed every evening. When he finally went home, he told her the nurses were fine, and didn't say anything else about it.`,
+      },
+    },
+
+    '414': {
+      idle: ['okafor_later'],
+      guarded: [`"I'm fine. Just trying to get through these." She taps the stack of lab reports.`, `She gives you a polite smile. "All good."`],
+      presence: `You sit while she grades. After a while she hands you a report. "Tell me if this kid's hypothesis makes sense." It doesn't. You tell her. She laughs.`,
+      beats: [
+        { need: 0, learn: `Teaches seventh-grade science and grades lab reports from bed.`,
+          text: `She holds up a lab report covered in red pen. "Seventh grade. This one says plants eat dirt. Very confident. Terrible handwriting." She caps the pen. "Sorry. Grading calms me down. Everything in here beeps."`,
+          choices: [
+            { label: `What do you tell a kid who's sure plants eat dirt?`, rap: 1, reply: `She lights up. "You weigh the dirt before and after you grow the bean. He's going to be so mad when it doesn't change." For a minute she isn't a patient at all.` },
+            { label: `You should really rest instead of working.`, rap: 0, reply: `"This is resting." She uncaps the pen again.` },
+            { label: `Twenty-eight of those? Rather you than me.`, rap: 0, reply: `She laughs. "Twenty-seven. I'm very efficient when I'm scared."` },
+          ] },
+        { need: 1, learn: `Stopped checking her feet months ago. She can't feel them, and she's afraid to look.`,
+          text: `"Can I tell you the stupid part? My dad wouldn't let anyone see his feet. Not even my mother. By the time anybody looked, it was too late." She stares at the blanket over her left foot. "I haven't looked at my own feet in months. I can't feel them anyway. It's easier not to know."`,
+          choices: [
+            { label: `That makes sense, after what you saw with your dad. Would you let me show you a two-minute foot check with a mirror, so knowing gets less scary?`, rap: 1, set: { footTeach: true },
+              judge: [`assess`, 1, `Mrs. Okafor told you she'd stopped checking her feet.`, `Neuropathy plus avoidance is how small wounds become amputations. She told you because you'd earned it. Now the foot check is something she wants, not a lecture.`],
+              reply: `She takes a long breath. "Okay. Show me. I teach observation for a living. I should be able to do it on myself." She holds the mirror herself.` },
+            { label: `You really need to check them every day.`, rap: 0, reply: `"I know." She says it the way her students do.` },
+            { label: `That's how your dad ended up losing his leg.`, rap: -1, reply: `Her face closes like a door. "Thank you. I'm aware."` },
+          ] },
+        { need: 2, learn: `Spends every weekend caring for her mother, who has dementia.`,
+          text: `"Nine point eight. My A1c. I know what that means, I teach cellular respiration." She laughs without smiling. "Every weekend I drive to my mother's. She has dementia. I cook for her and eat whatever's in the vending machine at the rest stop. By Monday I forget I have a pancreas."`,
+          choices: [
+            { label: `That's a lot to carry. What would make those weekends even a little easier on your own health?`, rap: 1, reply: `She thinks like a scientist. "Pack my meals on Friday. Put the glucometer by her coffee maker, where I'll see it." She writes it on the back of a lab report. "Hypothesis."` },
+            { label: `You have to put yourself first sometimes.`, rap: 0, reply: `"Everybody says that. Nobody says how." She goes back to grading.` },
+            { label: `Nine point eight is really high. You need to take this seriously.`, rap: -1, reply: `"I said I know what it means." The pen scratches harder.` },
+          ] },
+        { need: 3, learn: `Her students built her a get-well DNA model out of gummy bears.`,
+          text: `She turns her tablet around. A photo: a lopsided double helix made of gummy bears and toothpicks, and a sign in marker: GET WELL MS. O. WE DID IT WRONG ON PURPOSE. Her eyes are wet. "Adenine only pairs with thymine. They know that. I taught them that."`,
+          choices: [
+            { label: `They wanted to make sure you'd come back to correct it.`, rap: 1, reply: `She laughs so hard she has to hold her side. "Oh, I'm coming back. With a rubric."` },
+            { label: `They sound like they love you.`, rap: 1, reply: `"Don't," she says, wiping her eyes and smiling. "I'll ruin my professional reputation."` },
+            { label: `Cute. Let's check your glucose.`, rap: 0, reply: `"Right. Of course." She holds out her finger, still looking at the photo.` },
+          ] },
+      ],
+      epi: {
+        close: `Grace went home on oral antibiotics with a hand mirror in her bag and a glucometer on her mother's coffee maker. In the spring her class sent 4 West a second model, correct this time, with a note: "Ms. O checks her feet every night. We check her work."`,
+        warm: `Grace went home the next day on oral antibiotics. Her foot healed. She still grades from the couch, but she props the leg up now.`,
+        distant: `Grace went home the next day. She was polite at discharge and didn't ask many questions. Nobody knows whether she's looking at her feet.`,
+        hard: `Grace's stay got longer and harder than it needed to be. She was gracious about it, the way teachers are with a difficult class. She didn't say much about the nurses.`,
+      },
+    },
+
+    '416': {
+      after: ['whitfield_early'],
+      gate: (s, P) => P.sev < 32,   // she can only tell you who she is once the infection lets go
+      guarded: [`"Hello, dear." She smiles politely, the way you'd smile at a stranger on a bus.`, `"I'm quite all right, thank you." She looks toward the window.`],
+      presence: `You sit with her. She dozes, wakes, and seems surprised you're still there. "You're not in a hurry," she says. "That's rare."`,
+      beats: [
+        { need: 0, learn: `Read aloud to children for forty years as a librarian.`,
+          text: `She's sitting up with her glasses on, clearer-eyed than at seven. "I'm sorry, dear. I think I was a bit of a muddle this morning." She smooths the blanket. "Forty years a children's librarian. I read Where the Wild Things Are out loud more times than any human being should. They always wanted the wild rumpus page twice."`,
+          choices: [
+            { label: `Did you do the voices?`, rap: 1, reply: `"Oh, the voices were mandatory." She does Max, then a Wild Thing: a very good roar for eighty-two. Down the hall, Luis laughs.` },
+            { label: `You were sick. The infection caused the confusion.`, rap: 1, reply: `"That's what Ruth said on the phone. An infection. How undignified." She smiles anyway.` },
+            { label: `That sounds like a lovely career.`, rap: 0, reply: `"It was." She looks out the window for a while. "It was."` },
+          ] },
+        { need: 1, learn: `Her cat Biscuit arrived through the library's book drop in a snowstorm.`,
+          text: `"Biscuit came to me through the book drop. Truly. January, a snowstorm, 2012, and there's this orange kitten sitting on top of the returns, looking very put out." She laughs. "He's been overdue ever since." Then, quieter: "Has anyone fed him?"`,
+          choices: [
+            { label: `Let's find out right now. Would you like me to dial Ruth for you?`, rap: 1, set: { biscuitFed: true }, reply: `"Would you? My fingers are all thumbs today." Ruth answers on the first ring. Biscuit has been fed, and is furious about the delay. Eleanor closes her eyes, relieved.` },
+            { label: `I'm sure someone's taking care of him.`, rap: 0, reply: `"I'm sure." She isn't. She glances at the phone on the table.` },
+            { label: `Try not to worry about the cat right now.`, rap: -1, reply: `"He isn't 'the cat,' dear. He's Biscuit." She folds her hands and says nothing more.` },
+          ] },
+        { need: 2, learn: `Afraid Ruth will make her give up the house she's lived in for fifty-one years.`,
+          text: `"Ruth wants me to move in with her. She's been working up to it for a year, and now she has her proof." She taps the IV. "I've lived in that house fifty-one years. I know which stair creaks. I'm not ready to be somebody's project."`,
+          choices: [
+            { label: `That house is part of who you are. What would help you feel safe there, so you and Ruth could look at options together?`, rap: 1,
+              judge: [`comm`, 1, `You explored Mrs. Whitfield's fear of losing her home instead of taking a side.`, `Older adults recovering from delirium often fear losing their independence. Listening, then naming real options (a home safety check, a medical alert, a visiting nurse) supports her autonomy and her safety at once.`],
+              reply: `She thinks. "A grab bar in the tub. One of those buttons on a necklace. Perhaps someone to look in on Tuesdays." A pause. "Ruth would like that. She likes a list." She asks you to write it down for the case manager.` },
+            { label: `Ruth probably just wants you to be safe.`, rap: 0, reply: `"I know what Ruth wants." She says it kindly, and the conversation is over.` },
+            { label: `After this, living alone might not be safe anymore.`, rap: -1, reply: `Her eyes fill. "Well. Now it's two against one."` },
+          ] },
+        { need: 3, learn: `Asked you, and not Ruth, what she said while she was confused.`,
+          text: `She reaches for your hand. "Can I ask you something I can't ask Ruth? This morning. Was I... terrible? Did I say things?"`,
+          choices: [
+            { label: `You were very sick, and the infection did that. The whole time, the only thing you worried about was Biscuit.`, rap: 1, reply: `She laughs a little shakily. "Well. That's in character." She squeezes your hand. "Thank you for telling me the truth."` },
+            { label: `You kept asking what day it was, and you tried to go home. Nothing you need to apologize for.`, rap: 1, reply: `"Trying to go home." She smiles. "Also in character." She lets go of your hand slowly.` },
+            { label: `Don't worry about it. Everyone gets confused in the hospital.`, rap: 0, reply: `"Everyone," she repeats. She doesn't sound comforted.` },
+          ] },
+      ],
+      epi: {
+        close: `Eleanor went home on day five with a grab bar in the tub, a pendant on a chain, and a Tuesday nurse visit that Ruth set up from your list. She mailed 4 West an old paper library card with one book checked out: Where the Wild Things Are. Due date: whenever you like.`,
+        warm: `Eleanor went home on day five. Ruth stays over on weekends now. Biscuit has forgiven everyone, eventually.`,
+        distant: `Eleanor recovered and went home on day six. Ruth has started touring assisted living. Eleanor hasn't agreed to anything.`,
+        hard: `Eleanor spent three days in the ICU before she came back to herself. She doesn't remember most of this shift. Ruth does.`,
+      },
+    },
+
+    '418': {
+      idle: ['ortiz_idle'],
+      guarded: [`"Mija, I'm fine. Just tired." He smiles, but he's watching you.`, `"All good, all good." He pats Rosa's hand instead of answering.`],
+      presence: `You sit. Rosa offers you a tamale from her bag. Samuel says, "Don't let her feed you, she'll never stop." For a moment you feel like family.`,
+      beats: [
+        { need: 0, learn: `Planted half the jacaranda trees on Del Mar Street.`,
+          text: `"Forty years I planted other people's yards, mija. Half the jacarandas on Del Mar Street are mine. Every May the whole street goes purple, and not one of those people knows my name." He grins. "Doesn't matter. The trees know."`,
+          choices: [
+            { label: `What was your favorite job?`, rap: 1, reply: `He doesn't hesitate. "A school, 1988. The kids helped me plant. One of them teaches there now. She sends me a picture every spring." He points at his phone. You look.` },
+            { label: `That's beautiful. Let me get your vitals.`, rap: 0, reply: `"Always the vitals." He holds out his arm, amused.` },
+            { label: `I love jacarandas.`, rap: 0, reply: `"Everybody does. They're messy. Beautiful things usually are." He winks at Rosa.` },
+          ] },
+        { need: 1, learn: `Skips his water pill on the days he watches his grandkids.`,
+          text: `He lowers his voice so Rosa can't hear. "Can I tell you a secret? The water pill. Tuesdays and Thursdays I watch the grandkids. Two little ones, a park, no bathroom for a mile." He shrugs. "So those days I skip it. Rosa would kill me."`,
+          choices: [
+            { label: `Thank you for telling me. That's fixable. Let's ask the doctor about timing it for after the kids go home, so it's a plan you can actually keep.`, rap: 1, set: { lasixSecret: true },
+              judge: [`assess`, 1, `Mr. Ortiz told you he skips his furosemide on babysitting days.`, `That missed dose is a direct cause of his fluid overload, and he'd never have said it in front of Rosa or on a form. Now the team can change the timing instead of just adding more pills.`],
+              reply: `He looks relieved, like he's been carrying it for a while. "After they go home. Why didn't anybody ever ask me that?" He lets you write it down for Dr. Chen.` },
+            { label: `You can't skip it. That's how you ended up in here.`, rap: 0, reply: `"Yeah, yeah." He waves it off. You're not sure anything will change.` },
+            { label: `I'll have to tell Rosa, so she can make sure you take it.`, rap: -1, reply: `His face falls. "Please don't. I'll take it." He doesn't tell you anything else.` },
+          ] },
+        { need: 2, learn: `Treats his heart's "thirty percent" like a test he means to pass the second time.`,
+          text: `"The doctor said my heart is thirty percent. She said it like a grade." He taps his chest. "Night school, English class, my first test, I got thirty percent. Second test, ninety-one. So I'm thinking: what do I do for the second test?"`,
+          choices: [
+            { label: `That's the right question. Weigh yourself every morning, keep to the salt and fluid limits, take the pills on time, and walk a little every day. Want to go over it with Rosa?`, rap: 1, reply: `"A study guide." He laughs. "Rosa is the best student in this family. Yes. Teach her, and she'll teach me."` },
+            { label: `Thirty percent can still mean a good life, with the right treatment.`, rap: 0, reply: `"Good." He nods. "Good. But what's the homework?"` },
+            { label: `Heart failure doesn't really get better.`, rap: -1, reply: `The grin goes out of him. "Okay, mija." He looks out the window a long time.` },
+          ] },
+        { need: 3, learn: `Married to Rosa for fifty-one years. Wants her told he behaved.`,
+          text: `Rosa has gone down to the cafeteria. He watches the door. "Fifty-one years. She still brings me caldo like I'm going to leave her for the hospital food." He smiles. "Do me a favor. When I'm gone, tell her I behaved. Even if I didn't."`,
+          choices: [
+            { label: `You can tell her yourself for a long time yet, once we get this fluid off.`, rap: 1, reply: `"You hear that, vieja?" he says to the empty chair. "The nurse says a long time." He seems to believe it.` },
+            { label: `I'll tell her you behaved. And that you still love her soup.`, rap: 1, reply: `"Don't tell her that! She'll bring more." He laughs until he coughs, then waves off your concern. "Worth it."` },
+            { label: `Let's not talk like that.`, rap: 0, reply: `"Okay, okay." He pats your hand. "Nurses. Always in a hurry to make you feel better."` },
+          ] },
+      ],
+      epi: {
+        close: `Samuel went home three days later, two kilos lighter, with his water pill moved to the afternoon and a study guide on the fridge in Rosa's handwriting. In May a photo arrived at 4 West: Del Mar Street, purple from end to end. On the back: "The trees say hello. So does Rosa. I behaved."`,
+        warm: `Samuel went home three days later, two kilos lighter. Rosa weighs him every morning and writes it on the calendar. He complains about it, and lets her.`,
+        distant: `Samuel went home three days later. He was back in the ED within a month, short of breath again. Nobody had asked him about Tuesdays and Thursdays.`,
+        hard: `Samuel's day went badly before it got better. Rosa slept in the chair beside his ICU bed. When he woke up, the first thing he asked for was her caldo.`,
+      },
+    },
+  });
+})(window.Shift);
+
+/* Second wind, 4 West. Stories for Pat, Kevin, Bea, Darnell and Amina. */
+(function (S) {
+  S.story.add('medsurg-4w-2', {
+    '421': {
+      after: ['pat_anxious'],
+      guarded: [`"I'm fine, hon. Just let me breathe." She keeps her eyes shut.`, `"Can't really talk right now." She's concentrating on every breath.`],
+      presence: `You sit and breathe with her: in through the nose, out through pursed lips. After a minute she's matching you. Neither of you says a word. It's enough.`,
+      beats: [
+        { need: 0, learn: `Dispatched school buses for thirty-one years.`,
+          text: `"Thirty-one years I dispatched school buses. Snow days, flat tires, a kindergartner who got on the wrong bus and ended up at the high school." She grins. "You learn to keep your voice calm while everything's on fire. Funny. I can't do it for myself."`,
+          choices: [
+            { label: `What did you say to a driver who was panicking?`, rap: 1, reply: `"Slow down. Tell me what you see. We'll handle it one thing at a time." She hears herself. "Huh. That's the breathing thing, isn't it? The lips thing." She tries it without being asked.` },
+            { label: `You're doing fine.`, rap: 0, reply: `"Am I?" She eyes the oxygen monitor like it might argue.` },
+            { label: `That sounds like a stressful job.`, rap: 0, reply: `"The best kind." She settles back against the pillows.` },
+          ] },
+        { need: 1, learn: `Blames herself for forty-five years of smoking.`,
+          text: `"Forty-five years I smoked. Quit at sixty." She holds up the oxygen tubing. "So this is my fault. You can say it. Everybody's thinking it."`,
+          choices: [
+            { label: `I'm not thinking that. You quit, and that took real strength. What matters now is keeping you breathing well.`, rap: 1, reply: `She blinks fast. "My sister says I did this to myself." A long breath out through pursed lips. "Thank you for not saying it."` },
+            { label: `Quitting at sixty still helped a lot.`, rap: 0, reply: `"Tell that to my lungs." But she seems a little lighter.` },
+            { label: `Well, smoking is the main cause of COPD.`, rap: -1, reply: `"I know." She turns to the window. The cardinal isn't there.` },
+          ] },
+        { need: 2, learn: `Terrified of dying breathless, at night, alone.`,
+          text: `It's quiet. She says it to the window. "Nights are the worst. I wake up and I can't get the air out and I think, this is it. This is how it goes. Alone in the dark, drowning." She presses a hand to her chest. "That's why I ask for the pill."`,
+          choices: [
+            { label: `That sounds terrifying. Could we make a night plan together: how you'll sit, a fan on your face, the breathing, and when to press the call light, so you're never alone with it?`, rap: 1, set: { nightPlan: true },
+              judge: [`comm`, 1, `You let Mrs. Kowalski name her fear of dying breathless.`, `Fear of suffocation drives much of the anxiety in COPD. Naming it, staying with it, and giving her tools that work (positioning, a fan, pursed-lip breathing, her provider's plan) is care, not just comfort.`],
+              reply: `She nods, again and again. "A plan. Yes. A plan I can do in the dark." You write it on a card and tape it to the bed rail. She reads it twice.` },
+            { label: `You won't be alone. The nurses are right outside.`, rap: 0, reply: `"Right outside." She looks at the door. It helps a little.` },
+            { label: `That's just anxiety. Your oxygen level is fine.`, rap: -1, reply: `"Just anxiety." She laughs, short and hurt. "Okay."` },
+          ] },
+        { need: 3, learn: `Has seen thirty-one kinds of warbler and wants a thirty-second.`,
+          text: `She hands you the binoculars. "Go on. The ledge across the way." The cardinal is there, bright red against the brick. "In May the warblers come through the marsh by my house. Forty kinds. I've seen thirty-one." She smiles. "I'd like to get to thirty-two."`,
+          choices: [
+            { label: `Then let's get you to May. Pulmonary rehab could help you walk the marsh trail again. Want me to ask about a referral?`, rap: 1, reply: `"Rehab." She says it like the name of a new bird. "Irene would drive me. She'd complain the whole way." She's already smiling about it.` },
+            { label: `Which one are you still waiting for?`, rap: 1, reply: `"The cerulean. Blue as a gas flame. Never seen one." Her voice goes soft. "This could be the year."` },
+            { label: `Pretty bird.`, rap: 0, reply: `"He is." She takes the binoculars back and watches him a long time.` },
+          ] },
+      ],
+      epi: {
+        close: `Pat went home on day five with a card on her fridge that says NIGHT PLAN in your handwriting. In May her sister Irene sent 4 West a photo: Pat on the marsh boardwalk, oxygen on, binoculars up. Taped to the back, a small blue feather and "#32. Cerulean. Tell the evening nurse."`,
+        warm: `Pat went home on day five. She goes to pulmonary rehab twice a week and reports on the cardinals to anyone who'll listen.`,
+        distant: `Pat went home on day five. The anxiety came home with her. Her sister says the nights are still the worst.`,
+        hard: `Pat's evening went wrong. She woke up in the ICU with a mask on her face and no memory of how she got there. When she could talk, she asked whether anyone had seen the cardinal.`,
+      },
+    },
+
+    '423': {
+      idle: ['kevin_idle'],
+      guarded: [`"I'm good. Just leave the light off." He doesn't look at you.`, `"Yeah, fine." He's scrolling his phone, not really reading it.`],
+      presence: `You sit. He puts on a cooking video, some guy in Hanoi making broth. After a while he says, "He's rushing it." You watch the rest together.`,
+      beats: [
+        { need: 0, learn: `Cooks pho from his mother's recipe. Nine hours for the broth.`,
+          text: `"Nine hours for the broth. You char the ginger and onion till they're black, then star anise, cinnamon, cardamom. My mom's recipe. She'd make me start over if I rushed it." He looks at the IV. "Now I can't even eat. Figures."`,
+          choices: [
+            { label: `What's the secret nobody gets right?`, rap: 1, reply: `"Rock sugar. Just a little. People think it's too sweet, but it's balance." He grins for the first time. "Don't tell anybody. My mom will know it was you."` },
+            { label: `You'll be eating again soon.`, rap: 0, reply: `"Yeah. Clear liquids. Great." He almost laughs.` },
+            { label: `Nine hours? That's dedication.`, rap: 0, reply: `"That's pho." He shrugs, a little proud.` },
+          ] },
+        { need: 1, learn: `Started drinking heavily after his divorce, when he lost the house and the dog.`,
+          text: `"The divorce. Everybody asks." He looks at his hands, which are steadier now. "It wasn't dramatic. We just stopped talking. She kept the house. The dog picked her too." A dry laugh. "So I'd close the kitchen and have a beer. Then it was six. Then I stopped counting."`,
+          choices: [
+            { label: `That's a lot of loss in one year. Thank you for trusting me with it.`, rap: 1, reply: `He's quiet. "Nobody says it like that. They say, 'You gotta stop drinking.' Like I don't know that."` },
+            { label: `Have you ever tried going to a meeting?`, rap: 0, reply: `"Yeah, yeah." He shrugs. It wasn't the moment.` },
+            { label: `That's not a good reason to drink.`, rap: -1, reply: `"Never said it was." He turns toward the wall.` },
+          ] },
+        { need: 2, learn: `Once woke up on a kitchen floor after quitting cold turkey: a possible withdrawal seizure he never told anyone about.`,
+          text: `"Can I tell you something I didn't tell the ER? Last spring I tried to quit on my own. Day two, I'm prepping at work, and then I'm on the kitchen floor. Bit my tongue. My cousin said I was shaking." He swallows. "I told everybody I slipped on grease."`,
+          choices: [
+            { label: `Thank you for telling me. That sounds like a withdrawal seizure, and it changes how we keep you safe tonight. I'm going to tell your doctor right now.`, rap: 1, set: { seizHx: true },
+              judge: [`assess`, 1, `Mr. Tran told you about a possible withdrawal seizure he'd kept hidden.`, `A previous withdrawal seizure is one of the strongest predictors of another. It changes his monitoring and treatment tonight, and he told you because you'd listened first.`],
+              reply: `"Is it bad?" You tell him it means watching closely and treating early, and that he did the right thing. He nods, pale, and doesn't argue about the monitor after that.` },
+            { label: `You should probably tell the doctor about that.`, rap: 0, reply: `"Maybe." He doesn't look like he will.` },
+            { label: `You told everyone you slipped? That's dangerous.`, rap: -1, reply: `"Yeah. I know." He regrets saying it. You can see him decide not to say anything else.` },
+          ] },
+        { need: 3, learn: `Wants to tell his mother the truth about the drinking, but not yet.`,
+          text: `His phone lights up: MOM. He lets it ring. "Every night at eight. She thinks I quit drinking after the divorce. I told her I did." He watches the screen until it goes dark. "She'd blame herself. That's what she does."`,
+          choices: [
+            { label: `You get to decide when to tell her. If you want, the social worker can help you figure out how, and what support you'd want afterward.`, rap: 1, reply: `He thinks a long time. "After I'm out. When I have a plan. So it's not just bad news." He texts her: in hospital, stomach thing, I'm ok, love you. He shows you before he sends it.` },
+            { label: `She'd probably want to know.`, rap: 0, reply: `"Yeah." He sets the phone face down.` },
+            { label: `She's going to find out anyway.`, rap: -1, reply: `"Thanks." He sets the phone face down and doesn't pick it up again.` },
+          ] },
+      ],
+      epi: {
+        close: `Kevin stayed four more days. The seizure history went into his chart, his withdrawal was treated early, and it passed without another one. The social worker found him a counselor who'd cooked for twenty years. Six weeks later his mother brought a pot of pho to the 4 West night shift. "He told me," she said. "He's doing better. He made this. It's a little sweet."`,
+        warm: `Kevin made it through withdrawal and left on day five with a counselor's card in his wallet. He texted his mom from the parking lot. He didn't say what.`,
+        distant: `Kevin left on day four. He was back on the line at the restaurant by Friday. Nobody knows whether he kept the counselor's number.`,
+        hard: `Kevin's withdrawal got ahead of the team. He spent two nights in the ICU. His mother found out anyway, from a stranger on the phone, which was exactly what he'd been afraid of.`,
+      },
+    },
+
+    '425': {
+      idle: ['bea_idle'],
+      guarded: [`"Hm? Oh. I'm fine, dear." You were standing on her left.`, `"Just resting my eyes." She doesn't open them.`],
+      presence: `You stand on her right side and wait. She hums something under her breath, slow and sad. "Chopin," she says, eyes closed. "You can stay."`,
+      beats: [
+        { need: 0, learn: `Taught piano for fifty years. Her late husband Kenji turned the pages, always late.`,
+          text: `She pats the right side of the bed. "This side, dear. My left ear retired in 1987: a very enthusiastic student and a very loud Rachmaninoff." She laughs. "Fifty years of lessons. My husband Kenji turned the pages at every recital. Never once on time."`,
+          choices: [
+            { label: `What did he do when he missed the turn?`, rap: 1, reply: `"He'd hum the next bar, loudly and wrong, so I'd laugh instead of panic." She's smiling at something far away. "Forty-six years. I still hear him humming."` },
+            { label: `I'll stand on your right from now on.`, rap: 1, reply: `"Thank you. Most people just shout into the wrong ear." She pats your hand.` },
+            { label: `Fifty years is amazing.`, rap: 0, reply: `"It went by in a minute." She smooths the blanket.` },
+          ] },
+        { need: 1, learn: `Chose DNR after watching CPR on her husband. She still wants blood and every other treatment.`,
+          text: `"You've seen the letters on my chart. D-N-R. People see them and stop looking at me." She holds your gaze. "Kenji's heart stopped in our kitchen. I watched them break his ribs for twenty minutes. I won't have that. But I'd like the blood, please. I'd like to see my granddaughter's recital."`,
+          choices: [
+            { label: `DNR only means no CPR. Everything else, the blood, the fluids, watching you closely: you get all of it. You'll get to that recital.`, rap: 1,
+              judge: [`comm`, 1, `You made sure Mrs. Nakamura knew what her DNR does and doesn't mean.`, `DNR means no CPR. It doesn't mean do not treat. She wants blood, fluids and every other treatment, and hearing that from the nurse hanging the blood matters.`],
+              reply: `Her eyes shine. "Thank you. The last nurse looked at me like I'd already gone." She holds her arm out for the IV check, steady.` },
+            { label: `We'll respect your wishes.`, rap: 0, reply: `"Yes, dear." It's true, but it isn't what she was asking.` },
+            { label: `Are you sure you want blood if you're DNR?`, rap: -1, reply: `She stiffens. "Quite sure." The warmth goes out of the room.` },
+          ] },
+        { need: 2, learn: `Her granddaughter Emi plays a Chopin nocturne at her recital, and asked Bea to turn the pages.`,
+          text: `"Emi is eleven. She plays Chopin like she's angry at him." Bea laughs. "Her recital is on the twenty-first. The Nocturne in E-flat. She asked me to turn her pages." A pause. "Kenji would find that very funny."`,
+          choices: [
+            { label: `Then we have a deadline. Let's get your blood count up so you're turning pages on the twenty-first.`, rap: 1, reply: `"On time," she says firmly. "Unlike some people." She taps the IV pole like a metronome.` },
+            { label: `That sounds wonderful.`, rap: 0, reply: `"It will be." She says it like a promise to herself.` },
+            { label: `Chopin is beautiful.`, rap: 0, reply: `"It's sad, dear. Beautiful and sad. That's why eleven-year-olds love it."` },
+          ] },
+        { need: 3, learn: `Taught you the first three bars of the nocturne on the bedside table.`,
+          text: `She takes your hand and lays your fingers on the bedside table like it's a keyboard. "Here. E-flat. Now this one. Now lift." She taps the rhythm on your knuckles. "There. The first three bars of the nocturne. Now you know something Chopin wanted you to know."`,
+          choices: [
+            { label: `Will you teach me the fourth bar next time?`, rap: 1, reply: `"If you practice." She's delighted. "Fifty years, and I still get a new student on the last day."` },
+            { label: `That's the nicest thing anyone's done for me at work in a long time.`, rap: 1, reply: `"Then you've been working in the wrong rooms, dear." She pats your hand twice, like a downbeat.` },
+            { label: `I can't play, but I'll try.`, rap: 0, reply: `"Everyone can play. Not everyone practices." She winks.` },
+          ] },
+      ],
+      epi: {
+        close: `Bea turned Emi's pages on the twenty-first, on time. Keiko sent 4 West the recital program. On the back, in shaky, elegant handwriting: "To my newest student. Bar four is E-flat, B-flat, G. Practice."`,
+        warm: `Bea's blood count came up and she went home on day four, with no more ibuprofen. Keiko says she's already teaching Emi's little brother.`,
+        distant: `Bea went home on day four. She was polite to everyone. She didn't mention the recital to anyone on the unit.`,
+        hard: `Bea's evening got much harder than it should have. She pulled through, slowly. She missed Emi's recital; Keiko recorded it on her phone and played it for her in bed.`,
+      },
+    },
+
+    '427': {
+      idle: ['darnell_idle'],
+      guarded: [`"I'm good, I'm good." He keeps grading and doesn't look up.`, `"Just resting, coach." He keeps his eyes on the quiz.`],
+      presence: `You sit. He hands you a quiz and the answer key. "Grade this one. Be tough." You are. He's thrilled.`,
+      beats: [
+        { need: 0, learn: `Coaches JV basketball and teaches U.S. history.`,
+          text: `He has a stack of history quizzes on his lap. "Reconstruction. My juniors think it's boring." He looks personally offended. "The most important twelve years in American history, and they think it's boring. That's on me. I gotta teach it better."`,
+          choices: [
+            { label: `How would you teach it better?`, rap: 1, reply: `His whole face lights up. "Primary sources. Letters. A freedman writing to his old master asking for his back wages. Kids hear that and they sit up." He's gesturing with the red pen. "You'd have been a good student."` },
+            { label: `I thought it was boring too.`, rap: 0, reply: `"See? SEE? This is a crisis." He laughs his big laugh.` },
+            { label: `You'll be back in the classroom soon.`, rap: 0, reply: `"Yeah. That's the plan." He taps the pen on his knee.` },
+          ] },
+        { need: 1, learn: `Uses a salt substitute on everything. It's potassium chloride.`,
+          text: `"You know what's crazy? I did everything they said. Cut the salt, cut the fast food. Tanya even bought that salt substitute, the No-Salt. I put it on everything." He shrugs. "And here I am, potassium through the roof. Make it make sense."`,
+          choices: [
+            { label: `That's really important. Most salt substitutes are made of potassium. With your kidneys, that could be part of why your potassium is high. Let's tell the doctor and the dietitian.`, rap: 1, set: { noSalt: true },
+              judge: [`assess`, 1, `You caught Mr. Brooks's salt substitute.`, `Most salt substitutes are potassium chloride. For someone with stage 4 kidney disease and a potassium of 5.8, that's a hidden cause, and it only came up because he was comfortable telling you about his kitchen.`],
+              reply: `He stares at you. "The No-Salt? That's POTASSIUM?" He's already texting Tanya: THROW OUT THE NO-SALT. "Why isn't that on the label in big letters?"` },
+            { label: `Diet changes can be really confusing.`, rap: 0, reply: `"Tell me about it." The moment passes.` },
+            { label: `It's probably mostly from the kidney injury.`, rap: 0, reply: `"Yeah, probably." He nods. It's true, but it isn't the whole story.` },
+          ] },
+        { need: 2, learn: `His father was on dialysis for eleven years. He swore he'd never end up in that chair.`,
+          text: `"My dad did dialysis. Eleven years, three days a week. I drove him once I got my license." He turns the red pen over and over. "He'd come out gray. Like the machine took the color out of him." A pause. "I promised myself I'd never end up in that chair."`,
+          choices: [
+            { label: `That's a heavy thing to carry into this room. Dialysis has changed a lot; some people do it at home, overnight. Would it help to talk through the options with your doctor, with Tanya there?`, rap: 1, reply: `"At home? At NIGHT?" He sits up. "Like, while I sleep? And coach in the afternoon?" He writes HOME DIALYSIS??? on the back of a quiz. "Okay. Okay. That's a conversation."` },
+            { label: `You might not need dialysis long-term.`, rap: 0, reply: `"Might not." He holds on to the word. You're not sure that was a kindness.` },
+            { label: `Lots of people do fine on dialysis.`, rap: -1, reply: `"My dad did 'fine.'" He puts the pen down. "Okay."` },
+          ] },
+        { need: 3, learn: `Keeps a clipboard of every player he's ever coached, and where they are now.`,
+          text: `He shows you a clipboard, thick with pages. "Every kid I ever coached. Twenty-two years. Where they are now." He flips through: a firefighter, a pastor, a kid in prison he writes to every month, a girl who's a nurse at this hospital. "That's the scoreboard I care about."`,
+          choices: [
+            { label: `Which one surprised you most?`, rap: 1, reply: `"The kid in prison. He writes back. He's getting his GED." He taps the page. "Nobody's done. Not while they're still breathing."` },
+            { label: `Somebody's going to put you on their clipboard someday.`, rap: 1, reply: `He laughs his big laugh, then stops, a little choked up. "Man. Don't do that to me in a hospital gown."` },
+            { label: `That's a lot of kids.`, rap: 0, reply: `"Every one of them mattered." He closes the clipboard gently.` },
+          ] },
+      ],
+      epi: {
+        close: `Darnell's kidneys came partway back. He went home on day six with no more No-Salt and a home dialysis consult on the calendar "just in case," with Tanya taking notes. In March the JV team sent 4 West a signed basketball. On one panel, in Coach's handwriting: "Primary source. Keep it."`,
+        warm: `Darnell went home on day six. His potassium is back in range. The No-Salt went in the trash, and he tells everyone why.`,
+        distant: `Darnell went home on day six. Two weeks later his potassium was high again. Nobody had asked what was in his kitchen.`,
+        hard: (s, P) => (P.icu ? `Darnell's heart stopped. Calcium and CPR brought it back, and he spent a week in the ICU on dialysis. He's okay now. His JV kids made him a card: COACH DON'T DO THAT AGAIN.` : `Darnell's potassium stayed dangerous far longer than it should have. He was lucky. His JV kids made him a card anyway: COACH DON'T DO THAT AGAIN.`),
+      },
+    },
+
+    '429': {
+      after: ['amina_scared'],
+      guarded: [`"I'm okay." She's curled on her side, eyes closed.`, `She nods without opening her eyes.`],
+      presence: `You stay a minute. Her mother offers you tea from the thermos. You say no kindly and explain why, Amina translates, and her mother laughs and pats your arm.`,
+      beats: [
+        { need: 0, learn: `Has been her family's interpreter since she was nine.`,
+          text: `Her mom and brother are talking quietly in Somali. Amina rolls her eyes at you, fond. "I've been the family translator since I was nine. Doctor visits, the landlord, parent-teacher conferences. For myself, once." She laughs, then winces. "Today I don't want to translate. I just want to be the patient."`,
+          choices: [
+            { label: `You shouldn't have to. Let me get a Somali interpreter, so your mom can ask everything and you can rest.`, rap: 1, set: { interpAsk: true },
+              judge: [`comm`, 1, `You heard that Amina didn't want to interpret her own care.`, `Family members, and certainly the patient herself, shouldn't be the medical interpreter. A professional interpreter protects accuracy, and lets Amina just be the patient.`],
+              reply: `"You can do that?" She looks at you like you've offered her a vacation. "Yes. Please. Hooyo will have a hundred questions." Her mother sees her face and reaches for her hand.` },
+            { label: `You're doing great at it.`, rap: 0, reply: `"Thanks." She sounds exhausted.` },
+            { label: `Your brother could translate instead.`, rap: 0, reply: `"Abdi's twelve." She shakes her head. "He shouldn't have to hear this stuff."` },
+          ] },
+        { need: 1, learn: `Has never had surgery, and is scared of not waking up from anesthesia.`,
+          text: `"Can I ask a dumb question? When they put you to sleep. What if you don't wake up?" She laughs like it's a joke, but her hands are tight on the blanket. "I've never even had stitches."`,
+          choices: [
+            { label: `It's not a dumb question. An anesthesiologist stays with you the whole time, watching your breathing and heart every second. Want me to ask them to come meet you before surgery?`, rap: 1, reply: `"Every second?" She lets out a breath. "Yeah. I want to meet the person who watches me." She's a little less pale.` },
+            { label: `It's very safe. Don't worry.`, rap: 0, reply: `"Okay." She's still worrying.` },
+            { label: `That's a good question for the surgeon.`, rap: 0, reply: `"Right." She nods, and asks nobody else.` },
+          ] },
+        { need: 2, learn: `Wants to be the first CPA in her family; her mother cleaned offices at night so she could study.`,
+          text: `"Second year, accounting. I want to be a CPA. First one in my family who does the taxes instead of getting done by them." She grins. "My mom cleaned offices at night for eleven years so I could do this. My midterm was supposed to be Friday. If I lose this semester..."`,
+          choices: [
+            { label: `Schools have ways to handle medical absences. I'll ask the team for a letter so you can email your professor tonight.`, rap: 1, reply: `"A letter. Okay." She's already typing with one thumb. "Professor Adeyemi is nice. She'll let me make it up." She looks at her mother. "Hooyo. It's okay."` },
+            { label: `Your health comes first.`, rap: 0, reply: `"I know." She says it the way people do when they don't feel it.` },
+            { label: `One semester isn't the end of the world.`, rap: 0, reply: `"It kind of is, for us." She puts the phone down.` },
+          ] },
+      ],
+      epi: {
+        close: `Amina's appendix came out that night, with a Somali interpreter at her mother's side for every question. She emailed Professor Adeyemi from recovery. In June her brother Abdi left a card at the 4 West desk: a drawing of a calculator in a graduation cap. "She passed. She says thanks for letting her just be the patient."`,
+        warm: `Amina's surgery went well. She went home the next day and took her midterm two weeks late. She got a B-plus and is still annoyed about the minus.`,
+        distant: `Amina's surgery went well. Tired and in pain, she translated her own discharge instructions for her mother. Nobody offered an interpreter.`,
+        hard: `Amina's surgery was harder than it should have been, and her recovery longer. Her mother didn't leave her side. Abdi did his homework in the waiting room every night.`,
+      },
+    },
+  });
+})(window.Shift);
+
+/* Small hours, 4 West. Stories for Dorothy, Walter, Kaia, Frank and Renee. Night shift: people say things at 2 a.m. they wouldn't at noon. */
+(function (S) {
+  S.story.add('medsurg-4w-3', {
+    '431': {
+      idle: ['dot_calm'],
+      guarded: [`"Who are you again, baby?" She's polite, but wary.`, `"I'm fine. Let an old woman sleep."`],
+      presence: `You sit with her. She puts her hand out on the blanket, palm up, and you take it. She's asleep in two minutes, still holding on.`,
+      beats: [
+        { need: 0, learn: `Played the organ at Mount Olive for sixty years.`,
+          text: `She's wide awake, hearing aids in, glasses on. "Sixty years on the organ at Mount Olive. Weddings, funerals, the baptisms of all eleven of my grandbabies." She taps the rail like pedals. "You know the secret to a good funeral? Play the hymn a little faster than they expect. Grief drags if you let it."`,
+          choices: [
+            { label: `What would you want played at yours?`, rap: 1, reply: `"Oh, baby, I've got a list." She counts on her fingers. "And none of it slow. I want them clapping." She cackles, then presses a hand to her hip. "Lord. Don't make me laugh."` },
+            { label: `Sixty years is a long time.`, rap: 0, reply: `"Went by like a hymn. Four verses and done." She smiles.` },
+            { label: `You should try to rest. It's two in the morning.`, rap: 0, reply: `"Plenty of time to rest when I'm dead." She winks.` },
+          ] },
+        { need: 1, learn: `Fell reaching for her mother's hymnal. Her son wants her in assisted living.`,
+          text: `"I fell reaching for my mother's hymnal. Top shelf. I've reached for that book every Sunday for forty years." She's quiet a moment. "Now my son wants me in one of those places. With the bingo."`,
+          choices: [
+            { label: `What would it take to keep you home, and safe?`, rap: 1, reply: `"A step stool with a handle. And a lower shelf." She laughs. "Lord, it's that simple, isn't it? I'll make my son move the hymnal. That'll hurt him more than me."` },
+            { label: `Your son just wants you to be safe.`, rap: 0, reply: `"Everybody wants me safe. Nobody asks what I want." She says it gently.` },
+            { label: `Falls at your age are really dangerous.`, rap: -1, reply: `"Mm-hm." She looks at the ceiling. "So I hear."` },
+          ] },
+        { need: 2, learn: `Was afraid she'd hurt someone while she was confused.`,
+          text: `"The nurse before you said I tried to climb out of this bed." She looks ashamed. "I don't remember. Did I swing at anybody? I would never. I'm a deaconess."`,
+          choices: [
+            { label: `You didn't hurt anyone. Your bladder was full and you couldn't tell us, so you were trying to get to the bathroom. Once we emptied it, you came right back to yourself.`, rap: 1, reply: `"My BLADDER?" She's scandalized, then delighted. "All that fuss over a full bladder. Don't you dare tell my pastor."` },
+            { label: `You were a little confused, that's all.`, rap: 0, reply: `"A little," she repeats, and looks at her hands.` },
+            { label: `Don't worry about it. It happens a lot after surgery.`, rap: 0, reply: `"Mm." She wanted to know more than that.` },
+          ] },
+        { need: 3, learn: `Sang you the first verse of "It Is Well With My Soul" at three in the morning.`,
+          text: `The unit is quiet. She says, "You look tired, baby. Come here." When you lean in, she sings, low and steady, the first verse of "It Is Well With My Soul." Her voice is thin and perfectly in tune.`,
+          choices: [
+            { label: `Thank you. I needed that tonight.`, rap: 1, reply: `"I know you did. I've been watching you run up and down that hall." She pats your cheek. "Go on. I'll be here."` },
+            { label: `Will you sing the second verse later?`, rap: 1, reply: `"If you come back and check on me." She smiles. "That's my price."` },
+            { label: `You should be sleeping.`, rap: 0, reply: `"So should you." She closes her eyes, still humming.` },
+          ] },
+      ],
+      epi: {
+        close: `Dorothy went to rehab on day four and home three weeks later, with the hymnal on the second shelf and a step stool her son grumbled about installing. At Easter her church mailed 4 West a recording of the service. Forty-one minutes in, a thin, perfectly in-tune voice at the organ plays "It Is Well" a little faster than anyone expects.`,
+        warm: `Dorothy went to rehab on day four. She's walking with a walker and bossing the physical therapists. Her son moved the hymnal.`,
+        distant: `Dorothy went to rehab on day four. Her son is looking at assisted living. She hasn't said yes or no.`,
+        hard: `Dorothy's delirium lasted days. She went to a nursing home from the hospital instead of home. Her grandbabies visit on Sundays and play her old records.`,
+      },
+    },
+
+    '433': {
+      idle: ['walter_idle'],
+      guarded: [`"Busy. Seven letters." He doesn't look up from the crossword.`, `"Fine, thank you." He's polite and closed.`],
+      presence: `You sit. He hands you the puzzle and a pencil, not the pen. "You can do the easy ones. In pencil." You get two. He corrects one of them.`,
+      beats: [
+        { need: 0, learn: `Taught high school chemistry for thirty-four years.`,
+          text: `"Four letters. 'Noble gas that glows red in signs.'" He doesn't wait. "Neon. The constructor's being lazy tonight." He sets the pen down. "Thirty-four years teaching chemistry. I'm constitutionally unable to leave a wrong answer alone."`,
+          choices: [
+            { label: `What was your favorite demonstration?`, rap: 1, reply: `"A gummy bear dropped in molten potassium chlorate. Shrieks like a banshee. Purple flame." He grins. "The principal made me stop in 1998. Best day of every sophomore's life."` },
+            { label: `I was terrible at chemistry.`, rap: 0, reply: `"Nobody's terrible at chemistry. Plenty of people had a terrible chemistry teacher." He points the pen at you. "Different thing."` },
+            { label: `That's a long career.`, rap: 0, reply: `"Long enough." He picks the pen back up.` },
+          ] },
+        { need: 1, learn: `His wife Helen died four years ago. He still leaves her half of the crossword blank.`,
+          text: `He taps the empty half of the grid. "Helen did the downs. I did the acrosses. Thirty-eight years." He clears his throat. "She's been gone four years and I still leave the downs blank until I remember."`,
+          choices: [
+            { label: `Tell me about her.`, rap: 1, reply: `"Sharp. Funnier than me, which she'd want you to know." He looks at the blank squares. "She'd have hated this. She'd have been down at that desk demanding things." He smiles. "You'd have liked her."` },
+            { label: `I'm sorry for your loss.`, rap: 0, reply: `"Thank you." He fills in one down, carefully.` },
+            { label: `Want some help with the downs?`, rap: 0, reply: `"No." Too fast. Then, softer: "No, thank you. Those are hers."` },
+          ] },
+        { need: 2, learn: `Wants to make it to Friday, when his son flies in from Singapore.`,
+          text: `"My son Daniel flies in Friday. From Singapore. We haven't talked properly in, oh, six years. Politics, then pride, then habit." He's looking at the ceiling. "The oncologist says months, maybe. I just need Friday. I have things to say that I've been rehearsing."`,
+          choices: [
+            { label: `Then Friday is the goal. Can I tell you how the clot shots and the leg squeezers help get you there?`, rap: 1, set: { walterGoal: true },
+              judge: [`comm`, 1, `You asked Mr. Brandt what matters most to him.`, `His goal, being well enough on Friday, is also the best argument for clot prevention, and it came from him. Goals-of-care conversations turn a refusal into a shared plan.`],
+              reply: `He's quiet. "If I'd known that's what they were for, I'd have stuck the needle in myself." He holds out his arm, then laughs. "Belly. Right. Go ahead."` },
+            { label: `I hope it goes well with your son.`, rap: 0, reply: `"So do I." He folds the paper.` },
+            { label: `That's a lot to hope for.`, rap: 0, reply: `"It's one day. I've had twenty-three thousand of them." He shrugs. "I can hope for one more."` },
+          ] },
+        { need: 3, learn: `Rehearsed what he'll say to his son, and practiced it on you.`,
+          text: `"Can I practice on you? What I'm going to say?" He doesn't wait for an answer. "Daniel. I was wrong about more than I was right about. I was proud of you the whole time. I should have said it at your wedding, and at the airport, and every Sunday since." He stops. "Too much?"`,
+          choices: [
+            { label: `Not too much. Just that. Exactly that.`, rap: 1, reply: `He nods slowly, lips pressed together. "Exactly that." He writes it in the margin of the crossword, in pen, in capitals.` },
+            { label: `He's going to be so glad you said it.`, rap: 1, reply: `"I hope so." His eyes are wet. "Helen always said I rehearsed too much and said too little. Let's see."` },
+            { label: `You should get some sleep so you're ready.`, rap: 0, reply: `"Yes. Sleep." He puts the paper down, but keeps his hand on it.` },
+          ] },
+      ],
+      epi: {
+        close: `Walter was sitting up in a chair on Friday when Daniel walked in off a nineteen-hour flight. The day nurse said they talked for three hours with the door closed. Walter died at home six weeks later with Daniel beside him. His son mailed 4 West a crossword, finished, the downs filled in by a second, careful hand.`,
+        warm: `Walter made it to Friday. He and Daniel watched a ballgame together and argued about the umpire. His son says it was the best day they'd had in years.`,
+        distant: `Walter made it to Friday. They talked about the flight and the weather. Daniel flew home on Sunday. The margin of the crossword stayed blank.`,
+        hard: `Walter didn't reach Friday the way he'd hoped. The clot changed everything. Daniel arrived to an ICU room and a father who couldn't say what he'd rehearsed.`,
+      },
+    },
+
+    '435': {
+      after: ['kaia_talk'],
+      guarded: [`"Mm. Fine. Hungry." She's curled up, eyes closed.`, `"When can I eat?" is all she says.`],
+      presence: `You sit. Without a word, she shows you a video of an octopus squeezing itself through a hole the size of a coin. You watch it twice.`,
+      beats: [
+        { need: 0, learn: `Studies kelp forests. Counts sea urchins eighty feet down.`,
+          text: `"I count sea urchins for a living. Well. For a stipend." She holds up her phone: a green underwater forest, sunlight falling through it in columns. "Kelp forest, eighty feet down. The urchins are eating it faster than it grows. I'm trying to figure out why."`,
+          choices: [
+            { label: `Why do you think it's happening?`, rap: 1, reply: `She sits up, suddenly wide awake. "The sea stars that eat the urchins got wiped out by a disease. So now nobody's in charge." She laughs. "Sorry. You asked. That's my whole personality."` },
+            { label: `That's so cool.`, rap: 0, reply: `"It's the coolest." She puts the phone down, smiling.` },
+            { label: `You should rest. We can talk later.`, rap: 0, reply: `"Resting. Very hard. With the beeping." She rolls over.` },
+          ] },
+        { need: 1, learn: `Feels like she failed at her own diabetes after seventeen years without DKA.`,
+          text: `"Seventeen years with type 1. No DKA. Not once. I was the kid at diabetes camp who helped the other kids count carbs." She stares at the pump on the table. "And I let this happen. I'm supposed to be good at this."`,
+          choices: [
+            { label: `A pump site failing isn't a failure on your part. You've done a full-time job with no days off for seventeen years. One bad day doesn't erase that.`, rap: 1, reply: `She blinks fast. "A full-time job with no days off." A shaky laugh. "Can you tell that to my advisor?"` },
+            { label: `These things happen.`, rap: 0, reply: `"Yeah." She doesn't believe you.` },
+            { label: `You should always carry backup supplies.`, rap: -1, reply: `"I know." She turns to the wall. "I know."` },
+          ] },
+        { need: 2, learn: `Has been stretching her pump supplies because her insurance changed.`,
+          text: `She says it to the ceiling. "Honestly? The site was old. I left it in five days instead of three. The supplies are four hundred dollars a box, and my student insurance changed in August." She laughs, but it cracks. "So I stretch them. Everybody I know stretches them."`,
+          choices: [
+            { label: `Thank you for telling me. That's exactly the kind of thing that leads to DKA, and it's fixable. Can I ask the case manager to look at supply programs before you go home?`, rap: 1, set: { supplies: true },
+              judge: [`assess`, 1, `Ms. Sorensen told you she's been rationing her pump supplies.`, `Cost-driven rationing is a common, hidden cause of DKA, and it will happen again unless someone addresses it. Case managers and social workers can often find programs; the medical team can't fix what nobody tells them.`],
+              reply: `She turns her head. "There are programs?" You tell her there often are. She's quiet a moment. "I thought I was the only one who was bad at being broke and diabetic at the same time." She lets you write it down.` },
+            { label: `You really shouldn't leave a site in that long.`, rap: 0, reply: `"I know. I'm the one who knows." She closes her eyes.` },
+            { label: `Insurance is the worst.`, rap: 0, reply: `"The worst." She sighs, and the subject closes.` },
+          ] },
+        { need: 3, learn: `Wants to get back on the climbing wall, and is scared of going low halfway up.`,
+          text: `"Climbing is the only time my brain shuts up. You can't think about carbs twelve feet up on a crimp." She flexes her calloused fingers. "Now I'm scared of going low halfway up a wall. Of being the girl who needs rescuing."`,
+          choices: [
+            { label: `That fear makes sense. What if we plan for it: your sensor alarm on, a glucose gel in your chalk bag, a belay partner who knows what low looks like on you?`, rap: 1, reply: `"A gel in the chalk bag." She laughs, surprised. "That's so dumb. That's perfect." She texts her climbing partner right then: LEARN WHAT LOW LOOKS LIKE ON ME.` },
+            { label: `You'll get back up there.`, rap: 1, reply: `"Twelve feet at a time." She makes a fist, chalkless, and grins.` },
+            { label: `Maybe take a break from climbing for a while.`, rap: 0, reply: `"Maybe." She looks at her hands for a long time.` },
+          ] },
+      ],
+      epi: {
+        close: `Kaia went home two days later with her pump running, three boxes of supplies from an assistance program, and a glucose gel taped inside her chalk bag. In the fall she sent 4 West a photo: a kelp forest, sunlight in columns, and in one corner a sea star. "One came back. Nobody's stretching sites anymore."`,
+        warm: `Kaia went home two days later. She changes her site on time now, most of the time. She's back on the wall.`,
+        distant: `Kaia went home two days later, embarrassed and quiet. She's still stretching her supplies. Her roommate keeps a juice box by the door.`,
+        hard: `Kaia's DKA got worse before it got better, and the night frightened her. She went home three days later, more afraid of her own body than she'd been at nine.`,
+      },
+    },
+
+    '437': {
+      idle: ['frank_chat'],
+      guarded: [`"I'm fine. Leave the TV on." He's watching the ballgame.`, `"All good, chief." He doesn't look away from the screen.`],
+      presence: `You sit through a couple of innings with him. He narrates every pitch. His words are clear and both his hands wave. It's the best neuro check you'll do all night.`,
+      beats: [
+        { need: 0, learn: `Drove the number 22 bus for thirty years.`,
+          text: `"Thirty years on the 22. Downtown to the lake and back, eleven times a day." Both hands on an invisible wheel, every word crisp. "Best mechanic at the yard was a guy named Bell. Could fix a transmission with a coat hanger and bad language."`,
+          choices: [
+            { label: `What was the best part of the route?`, rap: 1, reply: `"The 6:40 run. Same folks every morning. A nurse going to her shift, a kid with a tuba, an old man who fed the pigeons." He smiles. "You get to know people by where they get off."` },
+            { label: `I think I've ridden the 22.`, rap: 0, reply: `"Then you owe me a dollar twenty-five." He holds out his palm, laughing.` },
+            { label: `Thirty years is a long time.`, rap: 0, reply: `"Went by like a green light." He grins.` },
+          ] },
+        { need: 1, learn: `Grows tomatoes from seeds his late wife Carmen saved.`,
+          text: `"Cherokee Purple. Every seed in my garden comes out of Carmen's jar. She saved seeds from the best tomato every summer for forty years." He's quiet a moment. "She's been gone three years. I've still got seeds. Maybe ten more summers' worth."`,
+          choices: [
+            { label: `Then we'd better get you home for this summer's.`, rap: 1, reply: `"That's what I keep telling the doctor!" He laughs, then looks at you seriously. "Thank you for saying 'home.' Everybody in here says 'discharge.'"` },
+            { label: `Can you save seeds from your own tomatoes too?`, rap: 1, reply: `"Every year. She taught me." He nods. "Ten summers turns into forever, if you're careful."` },
+            { label: `That's a lovely way to remember her.`, rap: 0, reply: `"She'd say it's a practical way." He smiles. "She was practical."` },
+          ] },
+        { need: 2, learn: `Worries he's become a burden to his daughter Lupe.`,
+          text: `"Lupe took three days off work for this. She's got two kids and a job with the county." He rubs his thumb over his knuckles. "Thirty years driving a bus, never missed a shift. Now I'm the thing she has to pick up."`,
+          choices: [
+            { label: `It sounds like she wants to be there. Have you asked her how she feels about it?`, rap: 1, reply: `"Asked her? No." He thinks about it. "She'd say, 'Pop, you raised me, shut up.'" He laughs. "She would. I'll ask anyway."` },
+            { label: `She's your daughter. She loves you.`, rap: 0, reply: `"I know." He looks at the door. "I know."` },
+            { label: `Maybe you could get some help at home so she doesn't have to do everything.`, rap: 0, reply: `"Maybe." He doesn't love the idea.` },
+          ] },
+        { need: 3, learn: `Promised you a Cherokee Purple in August.`,
+          text: `"August. Come by the house, the one with the tomatoes eating the fence. I'll give you a Cherokee Purple." He points at you. "Ugly as sin. You eat it standing over the sink with salt, and you'll understand everything."`,
+          choices: [
+            { label: `Is there a trick to growing them?`, rap: 1, reply: `"Talk to them." He's completely serious. "Carmen talked to them in Spanish. I do English. They grow either way. They just like being noticed."` },
+            { label: `I'll hold you to that.`, rap: 1, reply: `"You'd better." He writes "August — tomatoes" on the back of his menu card and presses it into your hand. The handwriting is steady, every letter clear.` },
+            { label: `I'm not really allowed to take gifts from patients.`, rap: 0, reply: `"Then it's not a gift. It's a tomato." He waves you off, grinning.` },
+          ] },
+      ],
+      epi: {
+        close: `Frank went home on day five, back on a blood thinner with a plan his doctor was comfortable with. In August a paper bag showed up at the 4 West desk addressed "To the night nurse." Inside: three ugly, perfect Cherokee Purples and a packet of seeds from Carmen's jar.`,
+        warm: `Frank went home on day five. Lupe says the tomatoes are the best in years. He tells everyone the night nurse was "a good one."`,
+        distant: `Frank went home on day five. He didn't say much about the hospital, just that he was glad to be out.`,
+        mixed: {
+          close: `Frank's stroke was found, but the decision about the clot-busting drug never got made in time. Rehab took the summer. In August a paper bag showed up at the 4 West desk addressed "To the night nurse." Inside: three Cherokee Purples Lupe grew for him, and a packet of seeds from Carmen's jar.`,
+          warm: `Frank spent the summer in rehab after his stroke. His right hand is slowly coming back. Lupe says he's already bossing her around in the garden.`,
+          distant: `Frank went to rehab after his stroke. He didn't say much about the night it happened.`,
+        },
+        hard: `Frank's stroke took his words for a while, and the use of his right hand. He's in rehab now, relearning both. Lupe brings him tomatoes from the garden. He can say "tomato" again.`,
+      },
+    },
+
+    '439': {
+      idle: ['renee_awake'],
+      guarded: [`"Mm... just sleepy." Her eyes drift shut.`, `"I'm okay. Ask Carl." She doesn't open her eyes.`],
+      presence: `You sit a minute. Carl wakes, sees you, and whispers, "Is she okay?" You tell him yes, and what to watch for. He nods like you've thrown him a rope.`,
+      beats: [
+        { need: 0, learn: `Principal of a middle school with eight hundred students.`,
+          text: `"Eight hundred middle schoolers. You know what that is? Eight hundred people going through puberty in one building, and I'm in charge." She laughs carefully, a pillow pressed to her incision. "I'm more scared of the cafeteria on taco day than of this surgery."`,
+          choices: [
+            { label: `What's the worst thing that's ever happened on taco day?`, rap: 1, reply: `"The Great Guacamole Incident of 2019." She's crying laughing, clutching the pillow. "Stop. I'm not allowed to laugh. Doctor's orders."` },
+            { label: `That sounds exhausting.`, rap: 0, reply: `"It's the best job in the world. Don't tell anyone." She smiles.` },
+            { label: `You should rest. You just had surgery.`, rap: 0, reply: `"I am resting. This is my resting face." She makes a very principal face.` },
+          ] },
+        { need: 1, learn: `Carl had a heart attack last spring. She's used to being the one who worries.`,
+          text: `She glances at Carl, dozing upright in the chair. "He had a heart attack last spring. Forty-seven. I found him in the garage." She keeps her voice low. "Ever since, I'm the one who watches. This is the first time I'm the one in the bed. He doesn't know what to do with his hands."`,
+          choices: [
+            { label: `So when he keeps reaching for your pain button, it's because he's scared, not careless.`, rap: 1, reply: `"He's terrified." She reaches over and touches his sleeve without waking him. "Tell him how to help me in a way that won't hurt me. He needs a job."` },
+            { label: `He seems really devoted.`, rap: 0, reply: `"He is. Too devoted." She smiles, tired.` },
+            { label: `You should both get some sleep.`, rap: 0, reply: `"Tell him that." She closes her eyes.` },
+          ] },
+        { need: 2, learn: `Is grieving the hysterectomy more than she expected to.`,
+          text: `It's quiet. "It's silly. We have our boys. We were never having more. The fibroids were awful." She presses the pillow tighter. "But they took something out of me today, and I didn't expect to feel like I lost something. Is that stupid?"`,
+          choices: [
+            { label: `It's not stupid. Plenty of people feel grief after a hysterectomy, even when it was the right decision. Both can be true.`, rap: 1, reply: `"Both can be true." She repeats it like she's filing it away. "That's going on a poster in the counseling office." She wipes her eyes on the edge of the sheet.` },
+            { label: `At least the fibroids won't bother you anymore.`, rap: 0, reply: `"Right. At least." She looks at the ceiling.` },
+            { label: `The surgeon said it went really well.`, rap: 0, reply: `"Good. That's good." It isn't what she meant.` },
+          ] },
+        { need: 3, learn: `Asked you, honestly, how long before she can go back to work.`,
+          text: `"I'm going to try to go back to work in a week. I know myself." She fixes you with the look she saves for eighth graders. "Tell me the truth. How long?"`,
+          choices: [
+            { label: `Usually about six weeks after an open hysterectomy, and nothing heavier than a gallon of milk for a while. The school will survive without you. You won't survive going back early.`, rap: 1, reply: `"Six WEEKS." She groans, then laughs. "Carl. Six weeks. Write it on the fridge." Carl, half asleep, says "Six weeks" and goes back to sleep.` },
+            { label: `That's a good question for your surgeon.`, rap: 0, reply: `"You're dodging. I know dodging. I run a middle school." But she smiles.` },
+            { label: `Maybe you could work from home?`, rap: 0, reply: `"Oh, I'll definitely be working from home." She grins. That's not what you meant.` },
+          ] },
+      ],
+      epi: {
+        close: `Renee stayed home the full six weeks, mostly. Carl took a class on caring for someone after surgery and made a chart for the fridge. On her first day back, the eighth graders held a taco day in her honor. She sent 4 West a photo of the guacamole: "Contained. Barely."`,
+        warm: `Renee recovered well and went back to work after five weeks, which her surgeon called "close enough." Carl still checks on her every hour.`,
+        distant: `Renee went back to work after two weeks and paid for it with a wound infection. She says she's fine.`,
+        hard: `Renee stopped breathing for a moment that night, from the medicine, before anyone caught it. She's okay now. Carl hasn't touched a medication button since, and he watches her breathe while she sleeps.`,
+      },
+    },
+  });
+})(window.Shift);
+
+/* Day shift, 3 East. Stories for Daniel, Jasmine, Bob, Miguel and Linda. */
+(function (S) {
+  S.story.add('psych-3e-1', {
+    '301': {
+      gate: (s, P) => P.disclosed && P.oneToOne,
+      idle: ['dan_safe'],
+      guarded: [`"I'm okay. I just don't have a lot of words right now."`, `He's lying on his side, facing the wall. "Can we do this later?"`],
+      presence: `You sit by the door. The float is shuffling his cards in the hall. After a while Daniel says, "You don't have to stay." You stay. A few minutes later: "...Thanks."`,
+      beats: [
+        { need: 0, learn: `Sound engineer. Keeps a folder of recordings of his daughter Mia laughing.`,
+          text: `"I record sound for a living. Documentaries, mostly. Birds, rain, a factory in Ohio." He turns his hands over. "I have a folder on my laptop that's just Mia laughing. Six years of it. I used to play it when I was editing, to reset my ears."`,
+          choices: [
+            { label: `What does her laugh sound like?`, rap: 1, reply: `He thinks about it like an engineer. "It starts high and falls down the stairs. Then she snorts, and that makes her laugh harder." The corner of his mouth moves. "Best sound I ever recorded."` },
+            { label: `That's a lovely thing to have saved.`, rap: 0, reply: `"Yeah." He nods. You can tell he hasn't opened it in a while.` },
+            { label: `Think about Mia. She needs her dad.`, rap: -1, reply: `His face closes. "I know what she needs. That's the whole problem." He turns toward the wall.` },
+          ] },
+        { need: 1, learn: `His sister Grace found him on Tuesday. She broke the back window to get in.`,
+          text: `"Grace found me Tuesday. She had a feeling, drove over, broke the back window with a flowerpot." He looks at his knuckles. "She cut her arm on the glass. Eleven stitches. I keep thinking about her sitting in the ED with a towel around her arm while they worked on me."`,
+          choices: [
+            { label: `That sounds like a lot to carry, knowing she was hurt too. What is it like to think about?`, rap: 1, reply: `"Like I owe her something I can't pay back." A long breath. "She texted me this morning. Just a heart. She never sends emojis. She thinks they're stupid."` },
+            { label: `She must love you a lot.`, rap: 0, reply: `"Yeah." He says it like it hurts. Maybe it does.` },
+            { label: `You're lucky she got there in time.`, rap: -1, reply: `"People keep saying 'lucky.'" His voice is flat. "Tuesday I didn't feel lucky."` },
+          ] },
+        { need: 2, learn: `His reasons to live: Mia, Grace, and the bees. He wants to finish a film about a beekeeper.`,
+          text: `He's holding a pencil and a piece of paper from the group room. At the top, in block letters: REASONS. "Andre said to write some down for the safety plan. I've got two. Mia. Grace." He taps the empty third line. "It feels stupid to write a third one."`,
+          choices: [
+            { label: `It isn't stupid. Is there something you'd want to be here for, even a small thing?`, rap: 1, set: { reasons: true },
+              judge: [`comm`, 1, `You helped Daniel name his reasons for living.`, `Reasons for living are part of a safety plan, in his words and his handwriting. You didn't argue him out of the pain. You helped him find what's already holding him.`],
+              reply: `He's quiet for a long time. Then: "There's a beekeeper in Petaluma. Eighty-one. I've been recording her hives for two years. The film's not done." He writes THE BEES on the third line and underlines it twice. "She'd be so annoyed if I didn't finish it."` },
+            { label: `Two is a good start. You can add more later.`, rap: 0, reply: `"Okay." He sets the paper down. The third line stays empty.` },
+            { label: `You have so much to live for. Your whole life's ahead of you.`, rap: -1, reply: `"Sure." He folds the paper in half. You've told him how he should feel, and he's heard that one a lot.` },
+          ] },
+        { need: 3, learn: `Called Grace. Asked her to bring the nine-legged bee Mia drew for him.`,
+          text: `He's off the phone. His eyes are red, but his shoulders are down. "I called Grace. I told her the truth, what I had planned for tonight. She didn't yell. She just cried and said 'okay, okay.'" He almost smiles. "I asked her to bring the drawing on my fridge. Mia drew me a bee. It has nine legs. She says the extra one is for holding hands."`,
+          choices: [
+            { label: `That took courage. How do you feel now?`, rap: 1, reply: `"Tired. Like after a long session." He rubs his eyes. "But it's a different tired. The other kind felt like the end of something. This feels like the middle."` },
+            { label: `A bee holding hands. I love that.`, rap: 1, reply: `"Right? Biologically inaccurate. Emotionally correct." He laughs, a real one, and then looks surprised at himself.` },
+            { label: `See? Things are already getting better.`, rap: 0, reply: `"Maybe." He's careful with the word. He doesn't want to promise too much yet.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => (P.reported
+          ? `Daniel stayed three weeks. Grace came every day and brought the nine-legged bee, which lived taped above his bed. Eleven months later a documentary about an 81-year-old beekeeper played at a small festival. The last line of the credits read: "Thank you to the day staff of 3 East, who asked me the real question."`
+          : `Daniel's hold ended at 14:00. The psychiatrist never heard the whole story, so he went home with Grace. ${P.reasons ? 'He took the paper that said REASONS. Grace taped it to the fridge, next to the nine-legged bee.' : 'He took the nine-legged bee with him.'} He called the crisis line twice that month. Both times, he says, someone picked up. He's still here.`),
+        warm: (s, P) => (P.reported
+          ? `Daniel stayed on the unit for two more weeks and started a new medication. Grace drove him home. He goes to therapy on Thursdays. He's still editing the bee film, a little at a time.`
+          : `Daniel went home at 14:00 when his hold ended. Grace drove him and stayed the week. He's on a waitlist for a therapist. The team never learned how close tonight had been.`),
+        distant: (s, P) => (P.reported
+          ? `Daniel was certified and stayed on. He didn't talk much to the day staff. His chart says he's "participating in groups," which is true, and not the whole story.`
+          : `Daniel's hold ended at 14:00 and he walked out calm, his bag already packed. Nobody on the team knew what he'd planned for tonight.`),
+        hard: (s, P) => (P.attempt
+          ? `Daniel survived. He went to the ED, then back to 3 East on a longer hold. Grace was there when he woke up. She asked the nurses one thing: "Is anybody talking to him?"`
+          : `Daniel walked out at 14:00, calm and smiling, with a plan nobody had found. Grace was waiting in the parking lot. What happens next isn't in any chart. The warning signs were there by 08:00.`),
+      },
+    },
+
+    '303': {
+      after: ['jas_chat'],
+      guarded: [`"I'm BUSY." She doesn't look up from the sketchbook.`, `"Not now, not now, I'm in the middle of a thought, it's a good one."`],
+      presence: `You sit at the dayroom table. She keeps drawing, fast. After ten minutes she tears out a page and slides it over: it's you, sitting there, a little tired. It's really good. "You looked like you needed a portrait," she says.`,
+      beats: [
+        { need: 0, learn: `DJ and designer. Draws album covers; her favorite is a woman made of sound waves.`,
+          text: `She flips the sketchbook around. Every page is covered: faces, speakers, a woman whose hair turns into sound waves that turn into birds. "I do album covers. And I DJ Fridays at a place called Low Tide." She taps the sound-wave woman. "This one's for my own record. When I make one."`,
+          choices: [
+            { label: `She's incredible. What's the record about?`, rap: 1, reply: `She slows down for the first time today. "Being too much. People always say I'm too much." She traces the birds. "I wanted to make too much sound beautiful."` },
+            { label: `You're really talented.`, rap: 0, reply: `"I KNOW, right?" And she's off again, flipping pages faster than you can look.` },
+            { label: `These are nice, but let's focus on getting you calm.`, rap: -1, reply: `She snaps the book shut. "Right. Calm. Everybody wants me calm."` },
+          ] },
+        { need: 1, learn: `Stopped her lithium because it made her feel "beige." She wants to talk to Dr. Iyer about it.`,
+          text: `"You want to know why I stopped the lithium? Everybody asks like I'm stupid." She sits, which is new. "On it, I'm beige. I can't draw. Colors look like colors instead of feelings. I missed being ME." Her knee bounces. "Right now I feel like me times a thousand. I know that's not great either."`,
+          choices: [
+            { label: `Losing what makes you you is a real cost. Would you want to tell Dr. Iyer that, in those words? There may be other options or doses that feel less beige.`, rap: 1, set: { beige: true },
+              judge: [`comm`, 1, `You asked Jasmine why she stopped her lithium, and helped her take it to her psychiatrist.`, `People stop mood stabilizers for real reasons: numbness, weight, feeling flat. Naming the reason is how the team finds a plan she'll actually stay on.`],
+              reply: `She stares at you. "Beige. I'm going to say beige." She writes BEIGE on her hand in purple marker. "Nobody ever asked me what it felt like. They just asked if I was taking it."` },
+            { label: `The lithium keeps you safe, though.`, rap: 0, reply: `"Yeah, yeah." She's heard it. She's back on her feet.` },
+            { label: `Feeling like "you" is how you ended up here.`, rap: -1, reply: `It lands like a slap. "Wow." She walks away. You were right about the facts and wrong about everything else.` },
+          ] },
+        { need: 2, learn: `Scared about the wall she punched, the rent money she spent, and her mom finding out.`,
+          text: `It's quieter now, and she's quieter too. "I punched a wall last week. At my mom's." She holds up her hand. "And I spent my rent on speakers. Like, all of it." She presses her palms into her eyes. "When this wears off I'm going to remember everything. That's the worst part. You remember everything."`,
+          choices: [
+            { label: `That's a lot to face. You don't have to face it alone. Social work can help with the rent, and when you're ready, we can think about how to talk with your mom.`, rap: 1, reply: `"Social work can do rent?" She wipes her face on her sleeve. "Okay. Okay. My mom's gonna cry. She always cries. But she always comes."` },
+            { label: `Try not to worry about that now.`, rap: 0, reply: `"Easy for you to say." But she doesn't leave.` },
+            { label: `Well, the next few weeks will be about consequences.`, rap: -1, reply: `She pulls her knees up to her chest and doesn't say anything else.` },
+          ] },
+      ],
+      epi: {
+        close: `Jasmine and Dr. Iyer changed her dose and added a second medication she says is "only a little beige." She stayed on it. Six months later, 3 East got an envelope with no letter: just a print of the sound-wave woman. In the corner, in purple, it said "not too much."`,
+        warm: `Jasmine went home after two weeks. Her mom picked her up, and cried, and came. She's back DJing on Fridays.`,
+        distant: `Jasmine was discharged after two weeks. She said the staff "were fine." She stopped the lithium again in the spring.`,
+        hard: `It was a long admission for Jasmine. She left angry at nearly everyone on 3 East, and at herself. Her mom kept the sketchbook safe for her until she was ready to open it again.`,
+      },
+    },
+
+    '305': {
+      watch: true,
+      idle: ['bob_after'],
+      guarded: [`"Just gonna rest my eyes, kid."`, `He's holding the emesis basin in his lap. "Maybe later."`],
+      presence: `You sit with him. He shakes less when he isn't trying so hard to hold still. "Ruth always sits on the left," he says. "You're on the right. It's weird." You move. He laughs.`,
+      beats: [
+        { need: 0, learn: `Carried mail for 26 years. His favorite thing was delivering a thick envelope: good news.`,
+          text: `"Twenty-six years carrying mail. Same route, Elm to Birch." He holds up a shaky hand and smiles at it. "Best thing was a thick envelope in May. College acceptance. Thin ones are rejections. I'd see a kid waiting on the porch and I'd know before they did."`,
+          choices: [
+            { label: `What did you do when it was a thin one?`, rap: 1, reply: `"Handed it over, said 'their loss,' and walked slow so they didn't feel watched." He nods to himself. "You don't just drop it and run. It's somebody's whole day."` },
+            { label: `That's a great job to have had.`, rap: 0, reply: `"It was a good one." He closes his eyes, still smiling a little.` },
+            { label: `Let's focus on getting your levels down.`, rap: -1, reply: `"Right. Sure." He goes quiet. Most people probably do only ask about his levels.` },
+          ] },
+        { need: 1, learn: `Before lithium, he lost most of a year. He calls that man "not me."`,
+          text: `"People think I'm a nuisance about the lithium. Twenty years." He's looking at the ceiling. "Before it, I lost a year. 2005. I don't remember most of it. Ruth does. She says I painted the whole house at three in the morning and then couldn't get out of bed until Easter." He swallows. "That wasn't me. The lithium gave me back."`,
+          choices: [
+            { label: `So the lithium feels like part of what keeps you yourself. That's why this has been so scary.`, rap: 1, reply: `"Yeah." It comes out rough. "Today I thought, what if they take it away? What if I lose another year?" He looks at you. "They're not going to take it away, right? Just fix it?"` },
+            { label: `We'll get the dose right, and you'll be back on track.`, rap: 0, reply: `"Hope so." He grips the basin a little tighter.` },
+            { label: `Well, that's why you have to watch the water pills.`, rap: -1, reply: `"I didn't KNOW about the water pills." He's hurt. "Nobody told me."` },
+          ] },
+        { need: 2, learn: `Builds a birdhouse for every grandchild. Number five, a yellow house with blue shutters, is due in March.`,
+          text: `He shows you a photo: a row of birdhouses on a fence, each a different color. "One for every grandkid. The red one's Tyler's, the green one's the twins'." He zooms in on an empty post. "Number five is due in March. My daughter wants a yellow house with blue shutters." He looks at his hands. "Hard to cut a straight line like this."`,
+          choices: [
+            { label: `When your level's back to normal, this tremor should settle. March is a long way off. You'll have steady hands for those shutters.`, rap: 1, reply: `He looks at his hands like he's seeing them fresh. "Steady for the shutters." He tucks the phone in his pocket. "Okay. I'll drink the water. I'll drink ALL the water."` },
+            { label: `Yellow and blue. That'll be beautiful.`, rap: 1, reply: `"It will." He smiles for real now. "I already bought the paint."` },
+            { label: `Maybe someone else could build this one.`, rap: -1, reply: `"No." He says it quietly, and that's the end of it.` },
+          ] },
+      ],
+      epi: {
+        close: `Bob's lithium level came down over two days, and his cardiologist switched the water pill. He went home steady. In March, 3 East got a photo: a yellow birdhouse with blue shutters, and a baby in a car seat underneath it. On the back: "Straight lines. Thanks, kid. — Bob."`,
+        warm: `Bob's level came down and he went home with a new blood pressure pill. Ruth made him put a list on the fridge: no Motrin, call first.`,
+        distant: `Bob went home after his level normalized. He still isn't sure which of his pills caused all this.`,
+        hard: `Bob went to medicine for a monitored correction. He was very sick for several days. When he got back to baseline, the first thing he asked Ruth was whether it was still possible to finish the birdhouse by March.`,
+      },
+    },
+
+    '307': {
+      gate: (s, P) => P.trust >= 1,
+      after: ['mig_warm'], idle: ['mig_after'],
+      guarded: [`He watches you from the bed, hood half up. "...Not now."`, `"I'm thinking." He doesn't explain what about.`],
+      presence: `You sit at the far end of the room, not too close. He watches you for a while. Then he slides a sealed juice box across the floor to you, the kind he checks. An offering. You don't open it until he nods.`,
+      beats: [
+        { need: 0, learn: `Civil engineering student who loves bridges. "They bend so they don't break."`,
+          text: `He's drawing on a napkin: a bridge, with long curving cables. "Suspension bridge. People think bridges are stiff. They're not. They're built to move. They bend so they don't break." He doesn't look up. "My dad built things. Moved back to Guadalajara two years ago. I used to send him my drawings."`,
+          choices: [
+            { label: `Bend so they don't break. Tell me more about how that works.`, rap: 1, reply: `And for five whole minutes, Miguel explains tension and load to you, clearly and patiently. He's a good teacher. He forgets to watch the door.` },
+            { label: `You miss your dad.`, rap: 0, reply: `He shrugs, which could mean anything. He keeps drawing.` },
+            { label: `That's good. Keep your mind busy.`, rap: -1, reply: `"My mind IS busy." He crumples the napkin.` },
+          ] },
+        { need: 1, learn: `Deep down he's afraid something is wrong with his mind, not just with the food.`,
+          text: `It comes out quietly, like he's been holding it. "Sometimes I think... what if it's not them. What if it's me? What if something's wrong in here." He touches his temple. "That's scarier. If it's them, I can check the seals. If it's me, I can't check anything."`,
+          choices: [
+            { label: `That sounds really frightening, not being sure what to trust. I'm glad you told me. You don't have to figure it out alone. We can take it one piece at a time.`, rap: 1,
+              judge: [`comm`, 1, `You stayed with Miguel's fear instead of arguing with it.`, `This is insight trying to come in. Pushing a label on him now ("see, it's the illness") can slam that door. Staying calm with the uncertainty lets him keep it open.`],
+              reply: `He breathes out. "One piece." He nods a few times. "Okay. Today the piece is the pill. Tomorrow maybe something else."` },
+            { label: `It's probably a little of both.`, rap: 0, reply: `"Both." He turns the word over. He doesn't look comforted.` },
+            { label: `The voices aren't real, Miguel. It's the illness.`, rap: -1,
+              judge: [`comm`, -1, `You told Miguel his voices weren't real.`, `To him, they're as real as your voice. Arguing with a psychotic experience rarely works and can cost you his trust. Respond to the fear instead.`],
+              reply: `His face shuts like a door. "You sound like the ED doctor." He pulls his hood back up.` },
+          ] },
+        { need: 2, learn: `First in his family to go to college. Calls this hospital stay a "detour."`,
+          text: `"I'm the first one in my family to go to college. My mom cleaned offices at the university for twelve years. Now I have classes in one of the buildings she cleaned." He picks at the hem of his sweatshirt. "I missed my midterms. Is this... is my whole life over?"`,
+          choices: [
+            { label: `No. Lots of students come back after a hospital stay. This is a detour, not the end of the road. The school has people who can help you take a leave and return.`, rap: 1, reply: `"A detour." He tries it out. "Bridges have detours when they're getting fixed." He almost smiles. "They're still bridges."` },
+            { label: `Let's just focus on today.`, rap: 0, reply: `"Yeah." He nods, but his eyes are far away.` },
+            { label: `School can wait. Your health comes first.`, rap: 0, reply: `"School is my health." He goes quiet.` },
+          ] },
+      ],
+      epi: {
+        close: `Miguel took his risperidone, from a blister pack he opened himself, every day. It took about three weeks for the vent to go silent. He went back to school the next fall part-time. His first project was a pedestrian bridge. He mailed the drawing to his dad, and a copy to 3 East.`,
+        warm: `Miguel started eating off the regular tray after a week, and went home with his mom and a plan for school. He calls the stay "the detour."`,
+        distant: `Miguel was stabilized and discharged after a few weeks. He doesn't talk about his time on 3 East. He's back in class.`,
+        hard: `Miguel's stay was long and frightening. For days, Ana brought arroz con pollo every afternoon, and he ate it. It was the only thing he trusted. It was enough to hold on to until the rest of the treatment caught up.`,
+      },
+    },
+
+    '309': {
+      idle: ['lin_after'],
+      guarded: [`"Shh. This is a good song."`, `She hums and doesn't look at you. "The committee's in session."`],
+      presence: `You sit. The oldies station plays Martha and the Vandellas. Linda taps along on the table. When the song ends, she says, "You have good taste in silence." You'll take it.`,
+      beats: [
+        { need: 0, learn: `Her mama played the Supremes every Sunday. Her favorite is "Someday We'll Be Together."`,
+          text: `A song comes on the radio and she turns it up. "Mama saw the Supremes live when she was sixteen. She never got over it. Every Sunday she'd put the record on while she cooked." She sways. "'Someday We'll Be Together.' That was hers. Now it's mine."`,
+          choices: [
+            { label: `What do you remember about your mama?`, rap: 1, reply: `She smiles, and for a moment she's very clear. "She sang in the kitchen. Loud. She'd point the spoon at you on the high notes." She points an imaginary spoon at you. You laugh. So does she.` },
+            { label: `That's a great song.`, rap: 0, reply: `"It IS." She turns it up a little more.` },
+            { label: `Can we turn this down so we can talk?`, rap: -1, reply: `She turns it down, and her face turns down with it.` },
+          ] },
+        { need: 1, learn: `Worked as a bank teller for years. Her drawer always balanced to the penny.`,
+          text: `"I was a bank teller. Before." She lines up her cups on the windowsill, very neatly. "First National, on Grand. My drawer balanced to the penny every day for eleven years. Mr. Hoyt said I was the best he ever had." A pause. "Then the committee started talking during the counting."`,
+          choices: [
+            { label: `Eleven years to the penny. That takes real focus. What was that job like for you?`, rap: 1, reply: `"Quiet. Orderly. Everything added up." She looks at the cups. "Nothing adds up in my head anymore. But out here, it can." She straightens the last one.` },
+            { label: `You must miss it.`, rap: 0, reply: `She nods and doesn't say more.` },
+            { label: `Maybe someday you could work again.`, rap: 0, reply: `"Maybe." She's heard it before. It's not a no.` },
+          ] },
+        { need: 2, learn: `The water feels like it "washes out" the committee. Spearmint gum and ice chips help her resist.`,
+          text: `She speaks very quietly, like the committee might hear. "Do you know why I drink the water? It washes them out. For a minute, it's quiet in there." She looks at the pitcher on the desk with its lines for each hour. "When you took the sink, they got louder."`,
+          choices: [
+            { label: `So the water is how you quiet them. That makes sense. Could we try some other things that might help, like spearmint gum, ice chips from your allowance, or the radio up during the hard times?`, rap: 1, set: { linCoping: true },
+              judge: [`comm`, 1, `You asked Linda what the water does for her and offered other ways to cope.`, `Polydipsia often has a purpose for the patient. Restricting fluid without replacing what it does leaves her alone with the voices. Offering substitutes makes the plan something she can live with.`],
+              reply: `She thinks about it seriously, like it's a business proposal. "Spearmint. The committee hates mint." A small, sly smile. "I'll try the gum."` },
+            { label: `The water is dangerous for you, Linda.`, rap: 0, reply: `"I know. I know." She rubs her temples.` },
+            { label: `The voices aren't real. The water won't do anything.`, rap: -1, reply: `"They're real to ME." She turns the radio up loud and doesn't look at you again.` },
+          ] },
+      ],
+      epi: {
+        close: `Linda's sodium came back to normal over three days. She went back to her board-and-care with a bag of spearmint gum and a new rule she made herself: one song, then one cup. Her conservator reports that she now balances the house's grocery money to the penny. She hums "Someday We'll Be Together" while she does it.`,
+        warm: `Linda's sodium recovered and she went home to her board-and-care. The staff there keep a pitcher with hourly lines on it. She calls it "the ledger."`,
+        distant: `Linda's sodium recovered and she was discharged. The plan went home with her. Whether she follows it depends a lot on the committee.`,
+        hard: `Linda went to medicine for a slow, monitored correction. She was confused for two days and scared. A nurse there found the oldies station for her. It helped more than anyone expected.`,
+      },
+    },
+  });
+})(window.Shift);
+
+/* Day shift, 5 South. Stories for Mateo's family, Aaliyah, Leo, Noah's dad, and Zoe. */
+(function (S) {
+  S.story.add('peds-5s-1', {
+    '501': {
+      who: 'lucia', watch: true,
+      gate: (s, P) => P.interp,
+      guarded: [`Lucía is rocking Mateo and doesn't look up. Through the interpreter: "Later, please. I'm watching him breathe."`, `She gives you a tired, polite smile and keeps her hand on his chest.`],
+      presence: `You sit with her for a few minutes and watch Mateo's chest rise and fall together. Neither of you needs the interpreter for this. When he settles, she lets out a breath, and you both smile.`,
+      beats: [
+        { need: 0, learn: `The family moved here last spring and has no relatives nearby. Lucía hadn't eaten since yesterday.`,
+          text: `Through the interpreter: "We moved here in the spring for my husband's work. No family here. My mother is in Oaxaca. She calls every hour to ask about him." She laughs a little and wipes her eyes. "I've been in this chair since yesterday."`,
+          choices: [
+            { label: `You've been taking care of him all night. What do you need, for you? Coffee? Food? A real chair that reclines?`, rap: 1, reply: `She looks surprised, like nobody has asked her that. "...Coffee. And maybe the chair." When you bring both, she holds the cup with both hands and closes her eyes for a second. "Gracias. Of course, gracias."` },
+            { label: `He's lucky to have you here.`, rap: 0, reply: `"Thank you." She nods and turns back to him.` },
+            { label: `You should go home and rest. We'll watch him.`, rap: -1, reply: `"No." She doesn't need the interpreter for that one. She doesn't move.` },
+          ] },
+        { need: 1, learn: `Sofía, 11, translates for her mother everywhere and wants to be a doctor.`,
+          text: `Sofía is doing homework at the foot of the crib, but she's watching the high-flow machine more than her worksheet. Lucía, through the interpreter: "She translates for me everywhere. The bank, the doctor, the school. She's eleven." She strokes Sofía's hair. "She wants to be a doctor."`,
+          choices: [
+            { label: `(To Sofía) Want me to show you how this machine helps your brother breathe? No translating needed. Just for you.`, rap: 1, reply: `Sofía's face lights up. You show her the warm, wet air, the flow number, how the prongs sit. "So it's like... a breeze that helps him push?" Exactly. Lucía watches her daughter ask questions, and looks proud enough to cry.` },
+            { label: `She's such a big help to you.`, rap: 0, reply: `Sofía shrugs, a little embarrassed. "I'm used to it."` },
+            { label: `She can keep translating, then. It's faster.`, rap: -1, reply: `Sofía's shoulders fall a little. The interpreter frowns at the phone.` },
+          ] },
+        { need: 2, learn: `Before Sofía, Lucía lost a baby boy who lived four days. She's terrified of this room.`,
+          text: `It's quiet now, and Sofía has gone for a snack. Lucía speaks slowly, and the interpreter's voice softens. "Before Sofía, I had a boy. He was born too early. He lived four days, in a room like this, with the same sounds." She touches the monitor wire. "When the machine beeps, I'm back there."`,
+          choices: [
+            { label: `I'm so sorry. That makes this room so much harder. Mateo is different, and I'll tell you what every beep means. You won't have to guess. We'll watch him together.`, rap: 1,
+              judge: [`comm`, 1, `You made room for Lucía's grief and gave her a way to feel less alone.`, `A family's past shapes how they live through the present. Naming what the alarms mean, and doing it together, turns every beep from a memory back into information.`],
+              reply: `"Together." She says it in English. Then, through the interpreter: "His name was Tomás." You'll remember that. For the rest of the shift, every time an alarm sounds, she looks at you first, and waits.` },
+            { label: `He's in good hands. You don't need to worry.`, rap: 0, reply: `She nods, but her hand stays on the wire.` },
+            { label: `This is very different. Bronchiolitis is common.`, rap: -1, reply: `"Yes." It's the right fact. It's not what she needed.` },
+          ] },
+      ],
+      epi: {
+        close: `Mateo went home five days later, eating well. Lucía learned the nurses' names and taught them how to say Tomás properly. Sofía wrote her science fair project on "How High-Flow Oxygen Helps Babies Breathe." She got first place. 5 South has a copy on the break room fridge.`,
+        warm: `Mateo came off high-flow and went home in five days. Lucía asked for the Spanish-language handout twice, once for herself and once for her mother in Oaxaca.`,
+        distant: `Mateo went home after five days. Sofía did most of the talking at discharge.`,
+        hard: `Mateo went to the PICU for more support. Lucía rode in the elevator with him, holding his foot. On the second day he turned the corner. She still stands up every time a monitor beeps.`,
+      },
+    },
+
+    '503': {
+      gate: (s, P) => P.trusted,
+      idle: ['aal_after'],
+      guarded: [`She has one earbud in. "I'm okay. Just tired."`, `She's pretending to sleep. You can tell because she's too still.`],
+      presence: `You sit. She pulls out an earbud and holds it out: marching band music. You listen together for a song. "That's my part," she says, tapping the clarinet line. "It's hard."`,
+      beats: [
+        { need: 0, learn: `First-chair clarinet. Cold weather sets off her crises, so her band director brings a sleeping bag to games.`,
+          text: `"I'm first chair clarinet." She says it like it's a secret she's proud of. "Cold makes crises happen, so football games are the worst. Mr. Reyes brings a sleeping bag for me. I play from inside a sleeping bag. Like a burrito with a clarinet."`,
+          choices: [
+            { label: `A clarinet burrito. I need to see a picture of this.`, rap: 1, reply: `She laughs, which hurts, and she laughs anyway. She finds the photo: a purple sleeping bag, a clarinet sticking out, and the whole woodwind section giving thumbs-up. "They all signed it after homecoming."` },
+            { label: `It's great your director helps you out.`, rap: 0, reply: `"Yeah. He's cool." She puts the earbud back in.` },
+            { label: `Maybe you should skip the cold games.`, rap: -1, reply: `"I'm not quitting band." Her voice is very flat.` },
+          ] },
+        { need: 1, learn: `An ED nurse once said "You again." She's never forgotten it.`,
+          text: `"Can I tell you something?" She's quiet. "Last year a nurse in the ED saw me come in and said 'You again.' Like I was the problem." She picks at her blanket. "Now I wait too long to come in. Because I don't want to be 'you again.'"`,
+          choices: [
+            { label: `I'm really sorry that happened. You're never a problem for coming in. Pain like yours is real, and getting here early is exactly right. You did the right thing today.`, rap: 1,
+              judge: [`comm`, 1, `You acknowledged the stigma Aaliyah has faced and told her coming in early is right.`, `People with sickle cell disease often meet bias in the ED, and it makes them delay care. Delays mean worse crises and missed complications like acute chest syndrome.`],
+              reply: `Her eyes fill up, and she blinks hard. "Okay." Then: "Can you write that down for my mom? That I did the right thing? She always thinks she should've brought me sooner." You write a card. She tucks it under her pillow.` },
+            { label: `That nurse was probably just tired.`, rap: -1, reply: `"Yeah. Everyone's always tired." She turns away.` },
+            { label: `That's not okay.`, rap: 0, reply: `"No." She nods. It helps a little.` },
+          ] },
+        { need: 2, learn: `Her friend Destiny had a stroke at 13. She promised to tell you right away about any chest pain.`,
+          text: `"My friend Destiny has sickle cell too. We met at camp. When she was thirteen, she had a stroke." Aaliyah stares at the ceiling. "She's okay now. She talks slower. She still plays the drums." A pause. "I think about it every single time I'm in here."`,
+          choices: [
+            { label: `That must be scary to carry. Here's something that helps: tell me right away about any chest pain, trouble breathing, weakness, or a headache that's different. Those are things we act on fast. You won't be bothering me.`, rap: 1, set: { aalChest: true },
+              reply: `"Right away." She nods. "Chest, breathing, weakness, headache." She counts on her fingers. "Destiny would tell me to say it louder."` },
+            { label: `That won't happen to you.`, rap: -1, reply: `"You don't know that." She's right. She stops talking.` },
+            { label: `I'm glad she's okay.`, rap: 0, reply: `"Me too." She hums along to her music, quietly.` },
+          ] },
+      ],
+      epi: {
+        close: `Aaliyah went home after four days. Her mom kept the card from her pillow and put it on the fridge: "You did the right thing." At homecoming the next fall, Aaliyah played first chair from inside a purple sleeping bag. Her next admission, she came in early.`,
+        warm: `Aaliyah went home in four days with a new pain plan. She told her hematologist she wanted "the same nurses as last time."`,
+        distant: `Aaliyah went home after four days. She kept her earbuds in most of the stay.`,
+        hard: (s, P) => (P.icu
+          ? `Aaliyah went to the PICU with acute chest syndrome and needed an exchange transfusion. It was a frightening week. When she got home, she asked Mr. Reyes to hold her chair. He did.`
+          : `Aaliyah's pain stayed high all evening, and "drug-seeking" went into her chart. It will be there the next time she comes in, and the time after that. She told her mom that next time, she's going to wait longer before she says anything.`),
+      },
+    },
+
+    '505': {
+      idle: ['leo_talk'],
+      guarded: [`Leo hides his face in Rexy. "No."`, `He's watching a truck video on his mom's phone and doesn't want to be interrupted.`],
+      presence: `You sit on the floor so you're smaller than him. After a minute, Leo slowly hands you Rexy to hold. You hold Rexy very carefully. He watches to make sure you're doing it right.`,
+      beats: [
+        { need: 0, learn: `Rexy the dinosaur "has a owie" too. Leo lets you check Rexy first.`,
+          text: `Leo holds up a green T. rex with one eye missing. "Rexy has a owie." He points to Rexy's tummy, right where Leo's own pain is.`,
+          choices: [
+            { label: `Oh no. Can I check Rexy first? Then maybe you, after?`, rap: 1, reply: `You listen to Rexy's tummy with your stethoscope, very seriously. "Rexy is being so brave." Leo nods, pleased. Then he pulls up his own shirt for you. That's therapeutic play: now he knows what's coming.` },
+            { label: `Rexy looks like a very good dinosaur.`, rap: 0, reply: `"He is." Leo holds Rexy tighter.` },
+            { label: `Let's look at your tummy now, okay?`, rap: -1, reply: `Leo starts to cry and hides behind Min-ji.` },
+          ] },
+        { need: 1, learn: `Rexy has tiny arms but a big bite. Rexy is scared of shots.`,
+          text: `"T. rex has tiny arms." Leo shows you, holding his arms close. "But BIG bites." He chomps at the air. Then, quieter: "Rexy is scared of shots."`,
+          choices: [
+            { label: `A lot of people are scared of shots. That's okay. If Rexy gets one, I'll tell him first, and he can squeeze your hand.`, rap: 1, reply: `Leo thinks about it. "Rexy can squeeze." He tucks Rexy under his arm like he's protecting him. Tell a three-year-old the truth, simply, and he can get ready.` },
+            { label: `No shots today!`, rap: -1, reply: `He smiles. You've just made a promise you can't keep. Next time he'll remember.` },
+            { label: `Big bites! Rawr!`, rap: 1, reply: `"RAWR!" Leo roars back, delighted, and forgets he hurts for a second.` },
+          ] },
+        { need: 2, who: 'minji', learn: `Min-ji gave two days of prune juice because she thought it was constipation. She feels guilty.`,
+          text: `While Leo naps, Min-ji talks quietly. "I gave him prune juice for two days. I thought it was constipation. He was crying and holding his tummy, and I gave him PRUNE JUICE." She presses her hand to her mouth. "What kind of mother doesn't know it's appendicitis?"`,
+          choices: [
+            { label: `A good one. Appendicitis is really hard to spot in little kids, even for doctors. It often looks like a tummy bug at first. You brought him in when it changed. That was the right call.`, rap: 1,
+              judge: [`comm`, 1, `You eased Min-ji's guilt with facts about appendicitis in young children.`, `Parents often blame themselves. In toddlers, appendicitis is frequently missed at first because they can't describe the pain well. Guilt-free parents are better partners in care.`],
+              reply: `She lets out a shaky breath. "Even doctors?" Even doctors. She looks at Leo sleeping, and for the first time since the ED, her shoulders drop.` },
+            { label: `He's getting good care now.`, rap: 0, reply: `"Yes." She nods, but you can see she's still thinking about the prune juice.` },
+            { label: `Next time, it's best to come in sooner.`, rap: -1, reply: `She flinches. "Yes. I know." She doesn't say anything else.` },
+          ] },
+      ],
+      epi: {
+        close: `Leo went home three days after surgery. Rexy got a bandage on his tummy to match. Min-ji sent a photo to 5 South: Leo and Rexy, both with bandages, both roaring. She wrote: "Even doctors. Thank you."`,
+        warm: `Leo recovered well and went home in three days. Rexy came too, of course.`,
+        distant: `Leo went home after three days. Min-ji said thank you at discharge and didn't say much else.`,
+        hard: `Leo needed extra monitoring after his breathing slowed. He was fine by the next morning. Min-ji didn't sleep that night. She held Rexy the whole time.`,
+      },
+    },
+
+    '507': {
+      who: 'travis', watch: true,
+      guarded: [`Travis is on his phone. "Yeah?" He doesn't look up.`, `"I'm good. Just tired, man."`],
+      presence: `You stand with him for a minute while Noah sleeps. Travis rubs his eyes. "I haven't slept since Tuesday," he says. It's the first thing he's told you that isn't about going home.`,
+      beats: [
+        { need: 0, learn: `Travis is 20 and works 4 a.m. warehouse shifts. He and Noah's mom trade Noah off in a parking lot.`,
+          text: `"I'm twenty." He says it like an excuse, or an apology. "I load trucks at four in the morning. His mom works days. We hand him off in the Walgreens parking lot at three." He looks at Noah. "Nobody told me it'd be this hard. Everyone just said 'congratulations.'"`,
+          choices: [
+            { label: `It is hard, especially without sleep. How are you doing, really?`, rap: 1, reply: `He's quiet for a second. "Honestly? I'm scared all the time. I don't know if I'm doing it right." He rubs his face. "Nobody asks me that. They ask about him."` },
+            { label: `You're doing a lot for a twenty-year-old.`, rap: 0, reply: `"I guess." He shrugs.` },
+            { label: `Well, you're a dad now.`, rap: -1, reply: `"Yeah. I know." He goes back to his phone.` },
+          ] },
+        { need: 1, learn: `Travis asked whether it was bad to put Noah in his crib and step outside when he wouldn't stop crying.`,
+          text: `He keeps his voice low. "Can I ask you something and you won't tell anyone? Sometimes he cries for, like, hours. Nothing works. So I put him in his crib and go outside and just stand there." He won't look at you. "Is that bad? Does that make me a bad dad?"`,
+          choices: [
+            { label: `I can't promise to keep things secret. That's part of my job. But what you described, putting him down safely and stepping away, is exactly the right thing to do. The one thing never to do, no matter how frustrated you get, is shake him. It can seriously hurt his brain.`, rap: 1, set: { purple: true },
+              judge: [`comm`, 1, `You were honest about confidentiality and taught Travis safe coping for crying.`, `Never promise secrecy: you're a mandated reporter. Inconsolable crying is a top trigger for abusive head trauma. Teaching "put him down safely, walk away, never shake" is prevention.`],
+              reply: `He nods slowly. "Never shake. Put him down. Walk away." He repeats it. "Nobody ever told me that it was okay to walk away." You hand him a handout about the Period of PURPLE Crying. He reads the whole thing.` },
+            { label: `Don't worry, it stays between us.`, rap: 0,
+              judge: [`comm`, -1, `You promised Travis secrecy.`, `You can't keep that promise. You're a mandated reporter, and what he tells you might need to be shared. Be honest up front, so trust isn't broken later.`],
+              reply: `He relaxes. "Okay, cool." He doesn't know you can't really promise that.` },
+            { label: `You shouldn't leave him alone.`, rap: -1, reply: `His face shuts down. "Forget it." He picks up his phone.` },
+          ] },
+        { need: 2, learn: `Noah is named after the grandfather who raised Travis. Travis says he needs help.`,
+          text: `"He's named after my grandpa. Noah. He raised me, after my mom left." Travis touches the crib rail. "He'd know what to do. He always knew what to do." A long pause. "I think I need help. Like, real help. I don't know who to ask."`,
+          choices: [
+            { label: `Asking for help is what good parents do. Our social worker can help with things like sleep, childcare, and support for new dads. Can I have her come talk with you?`, rap: 1, reply: `"A social worker. Okay." He takes a breath. "Yeah. Okay. My grandpa would've said yes." He sits up a little straighter.` },
+            { label: `You're doing fine.`, rap: 0, reply: `"Am I?" He doesn't sound sure.` },
+            { label: `Maybe his mom should take more of the load.`, rap: -1, reply: `"She's working too." He shakes his head. "Forget it."` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => (P.reported
+          ? `Social work and child protection are still working out what happened to Noah, carefully, as they should. That part isn't the nurse's to decide. What you can know: Travis met with the social worker, joined a group for new dads${P.purple ? ', and kept the PURPLE Crying handout folded in his wallet' : ''}. Noah went home with a safety plan while the family got help.`
+          : `Noah's bruises never made it into a report, so nobody outside this room will ask how they happened. Travis opened up to you more than to anyone. ${P.purple ? 'He took home what you taught him: put him down, walk away, never shake.' : ''} It's the only protection that went home with Noah.`),
+        warm: (s, P) => (P.reported
+          ? `Noah's case went to child protection for review, as it should. Travis met with social work before he left. ${P.purple ? 'He told her, "The nurse said it\'s okay to walk away."' : 'He answered every question she asked.'}`
+          : `Noah went home. Nobody made a report, so nobody will check in. Travis said thanks on the way out.`),
+        distant: (s, P) => (P.reported
+          ? `Noah's case went to child protection for review. Travis didn't talk much to the staff. Nobody knows yet what happened at home.`
+          : `Noah went home. Nobody knows what happened to him, and nobody made a report so that someone would find out.`),
+        hard: (s, P) => (P.icu
+          ? `Noah went to the PICU with bleeding under his skull. The hospital reported it, as it had to, and child protection opened an investigation. Whatever it finds, the signs were there to see on this shift.`
+          : `Noah went home${P.bruises ? ' with bruises that were seen and never reported' : ' with an injury nobody looked for'}. A report is how a four-month-old gets protected when he can't say what happened. Nobody made one.`),
+      },
+    },
+
+    '509': {
+      idle: ['zoe_talk'],
+      guarded: [`She's reading a book about octopuses and holds up a finger: "One more page."`, `"I'm reading." She doesn't look up.`],
+      presence: `You sit and she reads to you, out loud, from her octopus book. She skips the hard words and makes up new ones. Octopuses, according to Zoe, have "bluemanic" blood. You don't correct her.`,
+      beats: [
+        { need: 0, learn: `Loves octopuses. Her favorite is Olive, the giant Pacific octopus at the aquarium.`,
+          text: `"Octopuses have THREE hearts. And blue blood. And they can change color." She shows you a picture of a big red octopus. "This is Olive. She's a giant Pacific octopus at the aquarium. She's my favorite. She can open jars."`,
+          choices: [
+            { label: `Three hearts! Which one does Olive use to open jars?`, rap: 1, reply: `Zoe giggles. "Not her HEARTS, her ARMS! You're silly." She explains for five minutes, happily, and only stops for a breath twice.` },
+            { label: `That's really cool.`, rap: 0, reply: `"I know." She goes back to her book.` },
+            { label: `Let's focus on your breathing now.`, rap: -1, reply: `"Okay." She puts the book down and looks worried.` },
+          ] },
+        { need: 1, learn: `She hides her inhaler at school because a boy named Brayden calls her Darth Vader.`,
+          text: `Zoe whispers. "I don't use my inhaler at school." She looks at the door. "Brayden says I sound like Darth Vader when I use it. Everyone laughed. So I keep it in my backpack. In the bottom."`,
+          choices: [
+            { label: `That sounds really embarrassing. Your inhaler helps you breathe, so it's important. Could we talk to your mom and your teacher about a private place to use it, like the nurse's office?`, rap: 1, set: { schoolInhaler: true },
+              judge: [`assess`, 1, `You found out Zoe was hiding her inhaler at school.`, `Asking about how kids really use their medicine, and why, often explains repeated admissions. Kids hide inhalers out of embarrassment. A school asthma plan can fix that.`],
+              reply: `She thinks about it. "The nurse's office has a fish tank." She nods. "Okay. But don't tell Brayden." You won't.` },
+            { label: `You should use it even if he teases you.`, rap: 0, reply: `"But everyone LAUGHS." She hugs her book.` },
+            { label: `Just ignore him.`, rap: -1, reply: `She stops talking and reads.` },
+          ] },
+        { need: 2, learn: `Her lips turned blue in September. She's scared of it happening while she's asleep.`,
+          text: `She's quiet for a long time. Then: "In September my lips went blue. Mom said I looked like a Smurf, but she was crying." Zoe hugs her book. "What if it happens when I'm asleep? What if nobody sees?"`,
+          choices: [
+            { label: `That sounds really scary. While you're here, we're watching all the time, even while you sleep. That's what this sticker on your finger is for. And we'll make a plan with your mom so it doesn't get that bad again.`, rap: 1, reply: `She looks at the pulse ox on her finger. "It watches me sleep?" It does. "Like Olive watches her tank." She seems satisfied by that.` },
+            { label: `That won't happen again.`, rap: -1, reply: `"You don't know that." Zoe is eight, and she is right.` },
+            { label: `You're safe here.`, rap: 0, reply: `She nods, but she hugs the book tighter.` },
+          ] },
+      ],
+      epi: {
+        close: `Zoe went home the next day with a spacer, a school asthma plan, and a pass to the nurse's office. She hasn't been admitted since. Her mom sent a drawing to 5 South: a red octopus with an inhaler in one of its eight arms. The label says "Olive (brave)."`,
+        warm: `Zoe went home with a new spacer and a plan. Her mom wrote the steps on the fridge.`,
+        distant: `Zoe went home the next day. Her mom had a stack of handouts. Zoe had her octopus book.`,
+        hard: `Zoe went to the PICU on continuous albuterol. She was scared. The PICU nurse found her an octopus video and let her watch it all night.`,
+      },
+    },
+  });
+})(window.Shift);
+
 /* The Shift — character rig. Draws people as layered SVG and animates them from clinical inputs
    (RR, SpO2, HR, SBP, temp, pain, glucose, alertness, confusion, nausea). Generic: designs come from the case. */
 (function (S) {
@@ -7913,7 +9087,7 @@ window.Shift = window.Shift || {};
 
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story;
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -8080,6 +9254,7 @@ window.Shift = window.Shift || {};
     }, i * 260));
     if (ui.combo) { ui.combo = false; setTimeout(() => FX.play('combo'), 200); }
     if (ui.goalSound) { ui.goalSound = false; setTimeout(() => FX.play('star'), 350); }
+    if (ui.bondSound) { ui.bondSound = false; setTimeout(() => FX.play('star'), 250); }
   }
 
   function endShift() {
@@ -8509,7 +9684,8 @@ window.Shift = window.Shift || {};
   function paneTalk(d, P) {
     const Ax = A();
     const item = (act, label, c, extra, cls) => `<li><button class="fs-row ${cls || ''}" data-act="${act}" ${extra || ''}><span class="fs-l"><b>${label}</b></span><span class="fs-t"></span><span class="fs-c">${c}</span></button></li>`;
-    let h = `<div class="b-grp"><h4>At the bedside</h4><ul class="fs">${item('talk', `Talk with ${esc(d.short)}`, '3 min')}`;
+    const wants = STY && STY.waiting(s, C(), d, P, Ax);
+    let h = `<div class="b-grp"><h4>At the bedside</h4><ul class="fs">${item('talk', `Talk with ${esc(d.short)}${wants ? ' <span class="st-tag">Wants to talk</span>' : ''}`, '3 min')}`;
     if (d.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += item('family', `${d.family.mode === 'phone' ? 'Call' : 'Talk with'} ${esc(d.family.name)} (${esc(d.family.rel.toLowerCase())})`, d.family.cost + ' min');
     h += `</ul></div><div class="b-grp"><h4>Call and escalate</h4><ul class="fs">${item('sbar', `Call ${esc(prov().name)} with an SBAR`, '6 min', `data-pid="${d.id}"`)}`;
     (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { h += item('comm', esc(x.label), x.cost + ' min', `data-id="${x.id}"`, x.id === 'rrt' ? 'urgent' : ''); });
@@ -8535,7 +9711,7 @@ window.Shift = window.Shift || {};
       assess: [Object.keys(P.assessAt || {}).length ? `${Object.keys(P.assessAt).length} documented` : 'Start here', Object.keys(P.assessAt || {}).length ? '' : 'due'],
       care: P.bell ? ['Call light on', 'late'] : [`${ints + 1} option${ints === 0 ? '' : 's'}`, ''],
       meds: medLate ? [`${medLate} late`, 'late'] : medDue ? [`${medDue} due`, 'due'] : ['Nothing due', ''],
-      talk: ['Patient, family, provider', ''],
+      talk: STY && STY.waiting(s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Patient, family, provider', ''],
     };
   }
   function vRoom() {
@@ -8636,6 +9812,7 @@ window.Shift = window.Shift || {};
     shield: '<path d="M12 3.5l7 2.8v5.2c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6.3z"/><path d="M9 12l2.2 2.2L15.3 10"/>',
     up: '<path d="M4 18l5.5-5.5 3.5 3.5L20 9"/><path d="M14.5 9H20v5.5"/>',
     redo: '<path d="M18.5 8.5A7 7 0 1 0 19 14"/><path d="M19 4v4.8h-4.8"/>',
+    chat: '<path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3z"/><path d="M12 13.2s-2.8-1.6-2.8-3.3a1.5 1.5 0 0 1 2.8-.8 1.5 1.5 0 0 1 2.8.8c0 1.7-2.8 3.3-2.8 3.3z"/>',
     book: '<path d="M4.5 5.5c2.6-.8 5.1-.5 7.5 1 2.4-1.5 4.9-1.8 7.5-1v12.6c-2.6-.8-5.1-.5-7.5 1-2.4-1.5-4.9-1.8-7.5-1z"/><path d="M12 6.5v12.6"/>',
   };
   function badgeHTML(id, locked, tag) {
@@ -8668,7 +9845,7 @@ window.Shift = window.Shift || {};
   /* ------------ achievements: tracks, milestones, units, the lesson log, the floor-call collection ------------ */
   const MEDAL = ['none', 'bronze', 'silver', 'gold'];
   function medalHTML(tier, g) { return `<svg class="medal m-${MEDAL[tier]}" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 3h7l2 9-6 2zM33 3h-7l-2 9 6 2z" class="md-rib"/><circle cx="24" cy="29" r="15" class="md-rim"/><circle cx="24" cy="29" r="11" class="md-in"/><g transform="translate(12 17)" class="md-g">${GLYPH[g] || GLYPH.star}</g></svg>`; }
-  const TRACKG = { safety: 'shield', priority: 'up', assess: 'eye', meds: 'check', deleg: 'solo', comm: 'bell', judgment: 'heart', time: 'flame', lessons: 'book', floor: 'badge', shifts: 'map', stars: 'star' };
+  const TRACKG = { safety: 'shield', priority: 'up', assess: 'eye', meds: 'check', deleg: 'solo', comm: 'bell', judgment: 'heart', time: 'flame', lessons: 'book', stories: 'chat', floor: 'badge', shifts: 'map', stars: 'star' };
   const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} · ${k.level}` : 'Floor calls'; };
   const ago = (ms) => { const d = Math.round((Date.now() - ms) / 86400000); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
   function trackRow(tr) {
@@ -8717,6 +9894,11 @@ window.Shift = window.Shift || {};
   }
 
   /* ------------ debrief ------------ */
+  function storyHTML(o) {
+    if (!STY) return ''; const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); if (!e) return '';
+    const more = e.total - e.heard;
+    return `<div class="st-epi"><div class="st-eh"><span class="st-k">Their story</span>${trustDots(e.trust)}</div><p>${esc(e.text)}</p>${e.learned.length ? `<details><summary>What you learned about them <span class="muted">${e.heard} of ${e.total}</span></summary><ul>${e.learned.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}${more ? `<small class="muted">${e.heard ? `${more} more to discover` : `You didn't get to know them this shift. There's more to their story`}. Time at the bedside, when they're stable, opens it.</small>` : ''}</div>`;
+  }
   function vDebrief() {
     const d = E.debrief(s);
     const prior = prof.runs.filter((r) => r.caseId === s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
@@ -8727,7 +9909,7 @@ window.Shift = window.Shift || {};
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
       ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
-      <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
+      <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
           ${d.dom.map((x) => `<div class="meter"><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
@@ -8917,12 +10099,21 @@ window.Shift = window.Shift || {};
     return sheet('Nova Reyes, charge nurse', body, foot, { label: 'Ask Nova' });
   }
 
+  const trustDots = (t) => `<span class="st-tr" role="img" aria-label="Trust ${t} of ${STY.MAXR}: ${STY.TRUST[t]}">${Array.from({ length: STY.MAXR }, (_, i) => `<i class="${i < t ? 'on' : ''}"></i>`).join('')}<small>${STY.TRUST[t]}</small></span>`;
+  /* Choices show in a stable shuffled order per shift, so the best answer isn't always on top. */
+  function mixOrder(n, key) {
+    let h = 2166136261 ^ (s.seed || 0); for (const ch of String(key)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    const o = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) { h ^= h >>> 13; h = Math.imul(h, 1540483477); const j = (h >>> 0) % (i + 1); [o[i], o[j]] = [o[j], o[i]]; }
+    return o;
+  }
   function ovDialog() {
     if (ui.dlg.id === '__review') return sheet('Your choice', reviewHTML(ui.dlgReview, 'Why it matters'), `<button class="btn btn-primary" data-act="close">Continue</button>`, { label: 'Decision review' });
     const node = C().dialogs[ui.dlg.id];
     const w = who(node.who);
     const text = typeof node.text === 'function' ? node.text(s) : node.text;
-    const body = `<p class="dlg-text">${esc(text)}</p>${!node.choices && ui.dlgReview ? reviewHTML(ui.dlgReview) : ''}${node.choices ? node.choices.map((c, i) => `<button class="choice" data-act="dlg" data-i="${i}">${esc(c.label)}</button>`).join('') : ''}`;
+    const stHead = node.story && STY ? (() => { const P = s.p[node.story.pid], t = STY.trust(P), nm = /^\d+$/.test(node.who) ? def(node.story.pid).short : w.name.split(' ')[0]; return `<div class="st-head"><span class="st-k">Getting to know ${esc(nm)}</span>${trustDots(t)}</div>`; })() : '';
+    const body = `${stHead}<p class="dlg-text">${esc(text)}</p>${!node.choices && ui.dlgReview ? reviewHTML(ui.dlgReview) : ''}${node.choices ? mixOrder(node.choices.length, ui.dlg.id).map((i) => `<button class="choice" data-act="dlg" data-i="${i}">${esc(node.choices[i].label)}</button>`).join('') : ''}`;
     return sheet(esc(w.name), body, node.choices ? '' : `<button class="btn btn-primary" data-act="close">Continue</button>`, { face: faceOf(node.who), noScrimClose: !!node.choices });
   }
 
@@ -9048,6 +10239,7 @@ window.Shift = window.Shift || {};
       <p><b>Follow-up.</b> When a patient leaves for the ICU, ED or OR, they're still on your list: call report, update the family, write the note, and call for updates on how they're doing.</p>
       <p><b>Floor calls.</b> The rest of the unit needs you too: a critical lab, a colleague's question, a visitor at the desk. Each is a quick decision on a clock. Let it run out and Nova takes it.</p>
       <p><b>XP, streaks and goals.</b> On-time work and good calls earn care XP. A run of them builds a streak that multiplies it; anything going overdue resets it. Four shift goals, three stars and badges carry across shifts on your career ladder.</p>
+      <p><b>People, not just patients.</b> Once someone is stable, talking with them again opens up their story. Trust grows when you listen, answer their call light yourself, or just sit with them, and some of what they tell you matters clinically. The debrief tells you what became of them.</p>
       <p><b>Report.</b> In the last hour, give report to the oncoming nurse on everyone still on the unit. What's pending matters more than what's done.</p>
       <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
   }
@@ -9346,7 +10538,11 @@ window.Shift = window.Shift || {};
       const reason = ui.med.reason; ui.ov = null; ui.med = null;
       doAct(`${m.name} held`, 2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax, reason); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[reason]; logHere(d.id, `${m.name} held (${reasons[reason].toLowerCase()}). ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} held`; return `Held: ${reasons[reason].toLowerCase()}. ${t === 'Held.' ? '' : t}`.trim(); }); if (!s.ended) render();
     },
-    talk(el) { const d = def(s.loc), id = d.talk(s, s.p[d.id], A()); if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; } spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
+    talk(el) {
+      const d = def(s.loc), P = s.p[d.id], Ax = A(), cid = d.talk(s, P, Ax), sid = cid && STY ? STY.pick(s, C(), d, P, Ax, cid) : null, id = sid || cid;
+      if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; }
+      if (!sid) { s.seenDlg = s.seenDlg || {}; s.seenDlg[cid] = 1; }
+      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
     family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
     dlg(el) {
       const node = C().dialogs[ui.dlg.id], c = node.choices[+el.dataset.i];
@@ -9354,6 +10550,8 @@ window.Shift = window.Shift || {};
       const rv = judgSince(j0); ui.dlgReview = rv.length ? rv : null; reviewSound(rv);
       const text = typeof node.text === 'function' ? node.text(s) : node.text;
       const pid = node.pid || (/^\d+$/.test(node.who) ? node.who : s.loc);
+      if (STY && node.story) { const f = s.storyFresh; s.storyFresh = null; if (f && f.d > 0) { gain(25, f.why === 'presence' ? 'Presence' : 'Connection', 'bond'); ui.bondSound = true; } else if (f && f.d < 0) ui.pops.push({ text: 'Trust', label: `${def(f.pid).short} pulls back`, cls: 'lost' }); }
+      else if (STY && s.p[pid]) STY.fromDialog(s, pid, rv.filter((j) => j.pid === pid));
       logHere(pid, `You: "${c.label}"`, 'act');
       if (c.next) { const nx = C().dialogs[c.next]; logHere(pid, typeof nx.text === 'function' ? nx.text(s) : nx.text, 'info'); ui.dlg = { id: c.next }; }
       else if (ui.dlgReview && fbNow()) { ui.dlg = { id: '__review' }; }
@@ -9428,7 +10626,7 @@ window.Shift = window.Shift || {};
     'away-fam-pick'(el) { const a = ui.away, j0 = s.judg.length; let rep = ''; spend(4, (Ax) => { rep = F.famUpdate(s, Ax, a.pid, el.dataset.id); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = rep; a.replyFrom = (s.p[a.pid].out.spec.family.name || '').toLowerCase().normalize('NFD').replace(/[^a-z]/g, ''); a.review = judgSince(j0, a.pid); reviewSound(a.review); render(); },
     'away-note'() { const a = ui.away; let tx = ''; spend(3, (Ax) => { tx = F.writeNote(s, Ax, a.pid); }); if (s.ended) return; if (!ui.away) return render(); a.reply = null; a.review = null; stamp('Note signed', 3); a.noteText = tx; render(); },
     'away-upd'() { const a = ui.away; a.noteText = null; let r = null; spend(3, (Ax) => { r = F.callUpdate(s, Ax, a.pid); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = `${staff(s.p[a.pid].out.spec.nurse).name}: "${r.text}"`; a.replyFrom = s.p[a.pid].out.spec.nurse; a.review = null; FX.play(r.st === 'crit' ? 'worse' : r.st === 'improving' || r.st === 'stable' ? 'better' : 'msg'); render(); },
-    bell(el) { const d = def(s.loc); if (!s.p[d.id].bell) return render(); doAct('Answered the call light', 2, (Ax) => { const tx = F.answerBell(s, Ax, d.id); logHere(d.id, tx, 'find'); s.log[s.log.length - 1].label = 'Call light'; return tx; }); if (!s.ended) render(); },
+    bell(el) { const d = def(s.loc); if (!s.p[d.id].bell) return render(); doAct('Answered the call light', 2, (Ax) => { const tx = F.answerBell(s, Ax, d.id); logHere(d.id, tx, 'find'); s.log[s.log.length - 1].label = 'Call light'; return tx; }); if (STY && !s.ended) STY.fromBell(s, d.id); if (!s.ended) render(); },
     round(el) { const d = def(s.loc), lab = ROUND[F.kindOf(C())][0]; doAct(lab, 2, (Ax) => { const tx = F.round(s, Ax, d.id); logHere(d.id, tx, 'find'); s.log[s.log.length - 1].label = lab; return tx; }); if (!s.ended) render(); },
     report(el) { if (!s || s.ended) return; openReport(el.dataset.pid || el.dataset.id || null); },
     'rep-go'(el) { ui.rep = { pid: el.dataset.pid, picked: [], reply: null, review: null }; render(); },
@@ -9572,6 +10770,7 @@ window.Shift = window.Shift || {};
     applySettings();
     const all = CASES.map((id) => E.getCase(id)).filter(Boolean);
     all.forEach((k) => { const add = Object.assign(F.staffFor(k, all), FL.staffFor()); Object.keys(add).forEach((key) => { if (!k.staff[key]) k.staff[key] = add[key]; }); });
+    CASES.forEach((id) => { const k = E.getCase(id); if (k && STY) STY.install(k); });
     CASES.forEach((id) => { const k = E.getCase(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
     document.addEventListener('click', onClick);
     document.addEventListener('pointerdown', startHold);

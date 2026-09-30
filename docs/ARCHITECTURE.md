@@ -29,6 +29,16 @@ Memory is not the constraint. The two costs that matter are:
 - **Bound anything saved.** Lists written to the profile need a cap (the lesson log keeps at most 300).
 - **Content is data.** A new shift is a case file registered with the engine. Engine and UI changes should be rare and tested with the sweep.
 
+## Patient stories
+
+Every patient has a short arc in `src/stories/<case>.js`, run by `src/story.js`. The arcs are plain data and cost nothing at runtime; they're installed into each case's dialog table at boot.
+
+- **When a story opens.** Talking to a patient shows the clinical conversation first. Once that's had (or when it's only an idle line) and the patient is stable, talking moves their story on instead. Sick patients don't make small talk. `gate`, `idle`, `after` and `watch` on an arc tune this.
+- **Trust (0 to 5).** It rises with the warm choice in a beat, answering their call light yourself, sitting with them when they're guarded, and good calls in their other conversations. It falls with dismissive choices. Each beat has a `need`; below it they stay guarded.
+- **Some beats carry clinical weight** (`judge` on a choice): Daniel's reasons for living, Aaliyah's chest-pain promise, Travis and never shaking a baby. Those score like any other decision.
+- **The debrief** tells what became of each patient. The epilogue depends on trust and on the outcome; an entry can be a function of the patient so it never contradicts what happened clinically (`hard` for poor outcomes, optional `mixed`).
+- **Writing rules.** All strings in backticks. Plain words a tired nurse can read in five seconds. Keep one warm choice, one neutral choice and one that closes the door; choice order is shuffled on screen. Don't make the warm choice also the longest every time.
+
 ## Guardrails already built in
 
 - **Crash guard** (`safe`/`crashed` in `ui.js`): any error in a click, redraw or timer shows a "Something went wrong" card with Keep playing, Home and Copy details. The error is also stored as `theshift.lastError`.

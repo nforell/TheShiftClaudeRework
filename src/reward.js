@@ -66,6 +66,7 @@
     { id: 'comeback', label: 'Comeback', how: 'Beat your last score on a shift by 15 points or more', g: 'up' },
     { id: 'second', label: 'Second chance', how: 'Replay a shift and turn a patient\'s poor outcome into a good one', g: 'redo' },
     { id: 'reflect', label: 'Reflective practice', how: 'Review "What to rethink" in three debriefs', g: 'book' },
+    { id: 'bedside', label: 'Bedside manner', how: 'End a shift close with every patient (at least 4)', g: 'chat' },
   ];
 
   /* Tracks: lifetime progress with bronze, silver and gold tiers. */
@@ -74,6 +75,7 @@
     { id: 'lessons', label: 'Lessons learned', how: 'Mistakes fixed on a later shift', tiers: [1, 10, 30], val: (p) => Object.values(p.lessons || {}).filter((l) => l.fixed).length },
     { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 15, (S.floor ? S.floor.POOL.length : 28)], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
     { id: 'shifts', label: 'Shifts worked', how: 'Shifts finished through handoff', tiers: [1, 10, 25], val: (p) => (p.life && p.life.shifts) || 0 },
+    { id: 'stories', label: 'Their stories', how: 'Moments you shared with patients and families', tiers: [10, 40, 90], val: (p) => (p.life && p.life.beats) || 0 },
     { id: 'stars', label: 'Stars', how: 'Best stars, added across all five shifts', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },
   ]);
   const TIER = ['Not started', 'Bronze', 'Silver', 'Gold'];
@@ -91,6 +93,7 @@
     const t0 = tiers(prof);
     s.judg.forEach((j) => { if (j.delta > 0) prof.life.good[j.domain] = (prof.life.good[j.domain] || 0) + 1; });
     if (done) prof.life.shifts = (prof.life.shifts || 0) + 1;
+    if (S.story) prof.life.beats = (prof.life.beats || 0) + S.story.stats(s, c).beats;
     const rank = { wrong: 0, ok: 1, best: 2 };
     (s.floor ? s.floor.q : []).forEach((x) => { if (x.done !== 'answered') return; const now = x.v === 2 ? 'best' : x.v === 1 ? 'ok' : 'wrong', was = prof.floorSeen[x.id]; if (was === undefined || rank[now] > rank[was]) prof.floorSeen[x.id] = now; });
     // Lessons: every mistake from a finished shift goes in the log; it's fixed when you replay and don't repeat it.
@@ -147,7 +150,7 @@
     const test = {
       first: true, three: st === 3, goals: gd === 4, zone: s.bestStreak >= 12, sharp: fl.total >= 4 && fl.best === fl.total,
       catch: !!(topOut && topOut.tone === 'good'), solo: d.overall >= 72 && s.nova === (c.novaCredits || 3),
-      bells: bells >= 3 && !bellMiss, float: cases.every((id) => allRuns.includes(id)), house: cases.every((id) => starsAfter[id] === 3),
+      bells: bells >= 3 && !bellMiss, bedside: (() => { const x = S.story ? S.story.stats(s, c) : { n: 0, close: 0 }; return x.n >= 4 && x.close === x.n; })(), float: cases.every((id) => allRuns.includes(id)), house: cases.every((id) => starsAfter[id] === 3),
     };
     BADGES.forEach((b) => { if (test[b.id] && !have[b.id]) earned.push(b.id); });
     return { goals: g, stars: st, prevStars, lines, total, before, after, lvBefore: level(before), lvAfter: level(after), earned, starsAfter };

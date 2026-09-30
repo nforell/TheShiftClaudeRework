@@ -1319,3 +1319,25 @@ table.health td{white-space:normal}
 }
 .big-clock{padding:.1em 0 .16em}   /* the huge thin numerals overhang their .85 line box; the padding scales with them */
 .brain li.tap{min-height:34px}
+/* Stories: getting to know patients */
+:root{--bond:#B04A6A;--bond-bg:#F9E6EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bond:#F08DAA;--bond-bg:#3a1f28}}
+:root[data-theme="dark"]{--bond:#F08DAA;--bond-bg:#3a1f28}
+.st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem .8rem;margin:0 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:var(--bond-bg)}
+.st-k{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--bond)}
+.st-tr{display:inline-flex;align-items:center;gap:3px;min-width:0}
+.st-tr i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bond);opacity:.55;transition:background .3s,opacity .3s}
+.st-tr i.on{background:var(--bond);opacity:1}
+.st-tr small{margin-left:.4rem;font-size:.76rem;font-weight:600;color:var(--bond);white-space:nowrap}
+.st-tag{display:inline-block;margin-left:.4rem;padding:.05rem .45rem;border-radius:99px;background:var(--bond-bg);color:var(--bond);font-size:.72rem;font-weight:700;vertical-align:.08em;white-space:nowrap}
+.st-epi{margin:.6rem 0 .2rem;padding:.6rem .75rem;border-left:3px solid var(--bond);border-radius:0 8px 8px 0;background:var(--bond-bg)}
+.st-epi .st-eh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.3rem .8rem;margin-bottom:.3rem}
+.st-epi p{margin:.2rem 0 .4rem;font-family:var(--serif);font-size:1rem;line-height:1.55}
+.st-epi details{margin:.2rem 0}
+.st-epi summary{cursor:pointer;font-size:.85rem;font-weight:600;color:var(--ink)}
+.st-epi ul{margin:.35rem 0 .2rem;padding-left:1.1rem;font-size:.88rem;color:var(--ink-2)}
+.st-epi ul li{margin:.15rem 0}
+.st-epi>small{display:block;font-size:.8rem;line-height:1.4}
+.xpop.bond b{color:var(--bond)}
+.outs:has(.st-epi){grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));column-gap:1.2rem}
+.out .st-epi p{color:var(--ink);font-size:.95rem}

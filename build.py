@@ -1,7 +1,7 @@
 import pathlib
 src=pathlib.Path(__file__).parent/'src'
 css=(src/'styles.css').read_text()
-js=''.join((src/f).read_text()+'\n' for f in ['engine.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js','rig.js','art.js','ui.js'])
+js=''.join((src/f).read_text()+'\n' for f in ['engine.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/peds1.js','rig.js','art.js','ui.js'])
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
