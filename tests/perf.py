@@ -1,13 +1,15 @@
 """Idle CPU and redraw cost per screen. Usage: python tests/perf.py [case]"""
 import sys, json, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tests'))
+from fonts import fontroute
 GAME = (ROOT / 'dist' / 'the-shift.html').as_uri()
 OUT = ROOT / 'tests' / 'out'; OUT.mkdir(exist_ok=True)
 from playwright.sync_api import sync_playwright
 case=sys.argv[1] if len(sys.argv)>1 else 'medsurg-4w-1'
 with sync_playwright() as p:
     b=p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required']); pg=b.new_page(viewport={'width':1280,'height':900})
-    pg.route('**/fonts.googleapis.com/**', lambda r: r.abort())
+    fontroute(pg)
     cdp=pg.context.new_cdp_session(pg); cdp.send('Performance.enable')
     met=lambda: {x['name']:x['value'] for x in cdp.send('Performance.getMetrics')['metrics']}
     def idle(label, secs=4):

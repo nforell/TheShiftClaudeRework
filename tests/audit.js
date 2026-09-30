@@ -1,7 +1,7 @@
 (() => {
   const W = innerWidth, H = innerHeight, out = { overflow: null, off: [], overlap: [], covered: [], small: [], clipped: [] };
   const label = (el) => { const a = el.dataset && el.dataset.act; const t = (el.getAttribute && (el.getAttribute('aria-label') || '')) || (el.textContent || ''); return (a ? '[' + a + '] ' : '') + (el.tagName || '') + '.' + (typeof el.className === 'string' ? el.className.split(' ').slice(0, 2).join('.') : '') + ' "' + t.trim().replace(/\s+/g, ' ').slice(0, 50) + '"'; };
-  const vis = (el) => { const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return false; const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1; };
+  const vis = (el) => { if (el.checkVisibility && !el.checkVisibility({ contentVisibilityAuto: true, opacityProperty: true, visibilityProperty: true })) return false; const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return false; const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1; };
   if (document.documentElement.scrollWidth > W + 1) out.overflow = document.documentElement.scrollWidth;
   const inScroller = (el) => { for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) { const cs = getComputedStyle(p); if (/(auto|scroll|hidden)/.test(cs.overflowX) && p.scrollWidth > p.clientWidth + 1) return true; } return false; };
   const all = [...document.querySelectorAll('body *')].filter((e) => !(e.closest('svg') && e.tagName.toLowerCase() !== 'svg'));

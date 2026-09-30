@@ -1284,7 +1284,7 @@ svg.scene *{pointer-events:none}
 svg.scene .clue,svg.scene .clue *,svg.scene .pt,svg.scene .pt *,svg.scene [data-act],svg.scene [data-act] *{pointer-events:auto}
 /* spacing where big type crowded its label */
 .deb-score small{margin-top:1rem}
-.home h1{margin-top:1.7rem}
+.home h1{margin-top:.6rem}
 .big-clock{margin:.3rem 0 .2rem}
 /* brain sheet rows: the subtitle stops before the status tag */
 .bs-who{display:block;min-width:0;overflow:hidden}
@@ -1317,5 +1317,5 @@ table.health td{white-space:normal}
   .lookaround span{flex:none;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:.15rem}
   .look{flex:none;min-height:36px;padding:.3em .8em;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:.84rem;cursor:pointer;white-space:nowrap}
 }
-.big-clock{padding-top:.1em}
+.big-clock{padding:.1em 0 .16em}   /* the huge thin numerals overhang their .85 line box; the padding scales with them */
 .brain li.tap{min-height:34px}

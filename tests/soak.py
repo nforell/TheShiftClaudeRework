@@ -1,12 +1,14 @@
 """Three full shifts back to back in one page: memory, element count, redraw times, errors. Usage: python tests/soak.py"""
 import sys, os, json, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tests'))
+from fonts import fontroute
 GAME = (ROOT / 'dist' / 'the-shift.html').as_uri()
 OUT = ROOT / 'tests' / 'out'; OUT.mkdir(exist_ok=True)
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     b=p.chromium.launch(); pg=b.new_page(viewport={'width':1280,'height':900})
-    if os.environ.get('CI') != 'true': pg.route('**/fonts.googleapis.com/**', lambda r: r.abort())
+    fontroute(pg)
     errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)[:200]))
     cdp=pg.context.new_cdp_session(pg); cdp.send('Performance.enable')
     def m():
