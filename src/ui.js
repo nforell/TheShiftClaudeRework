@@ -156,9 +156,16 @@
     E.finish(s); tallyJudg(true); const d = E.debrief(s);
     s.reward = RW.settle(s, C(), A(), d, prof, CASES);
     prof.xp = s.reward.after; prof.stars = s.reward.starsAfter; prof.badges = prof.badges || {}; s.reward.earned.forEach((b) => { prof.badges[b] = Date.now(); });
+    prof.done = prof.done || {}; prof.done[s.caseId] = (prof.done[s.caseId] || 0) + 1;
+    prof.best = prof.best || {}; prof.best[s.caseId] = Math.max(prof.best[s.caseId] || 0, d.overall);
+    const L = RW.record(prof, s, C(), d), R0 = s.reward; s.reward.learn = L;
+    if (L.fixed.length) R0.lines.push({ k: `Lessons fixed, ${L.fixed.length}`, v: L.fixed.length * 60 });
+    L.ups.forEach((u) => R0.lines.push({ k: `${RW.TRACKS.find((x) => x.id === u.id).label}: ${RW.TIER[u.tier]}`, v: u.tier * 100 }));
+    R0.earned = R0.earned.concat(L.badges);
+    if (L.xp) { R0.total += L.xp; R0.after += L.xp; R0.lvAfter = RW.level(R0.after); prof.xp = R0.after; }
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
     prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
-    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; render(true);
+    ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; ui.reflected = false; render(true);
   }
 
   /* ------------ header ------------ */
@@ -690,6 +697,11 @@
     bell: '<path d="M6.5 15.8V11a5.5 5.5 0 0 1 11 0v4.8l1.6 2H4.9z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
     map: '<path d="M12 20.8s-5.8-5.4-5.8-10.6a5.8 5.8 0 0 1 11.6 0c0 5.2-5.8 10.6-5.8 10.6z"/><circle cx="12" cy="10.2" r="2.3"/>',
     crown: '<path d="M4.5 17l-1.3-8.6 4.9 3.7L12 5.3l3.9 6.8 4.9-3.7-1.3 8.6z"/><path d="M4.8 20h14.4"/>',
+    home: '<path d="M4 11.2L12 4.5l8 6.7"/><path d="M6.3 9.6V19h11.4V9.6"/><path d="M10.3 19v-4.6h3.4V19"/>',
+    shield: '<path d="M12 3.5l7 2.8v5.2c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6.3z"/><path d="M9 12l2.2 2.2L15.3 10"/>',
+    up: '<path d="M4 18l5.5-5.5 3.5 3.5L20 9"/><path d="M14.5 9H20v5.5"/>',
+    redo: '<path d="M18.5 8.5A7 7 0 1 0 19 14"/><path d="M19 4v4.8h-4.8"/>',
+    book: '<path d="M4.5 5.5c2.6-.8 5.1-.5 7.5 1 2.4-1.5 4.9-1.8 7.5-1v12.6c-2.6-.8-5.1-.5-7.5 1-2.4-1.5-4.9-1.8-7.5-1z"/><path d="M12 6.5v12.6"/>',
   };
   function badgeHTML(id, locked, tag) {
     const b = RW.BADGES.find((x) => x.id === id);
@@ -713,8 +725,60 @@
   }
   function careerHTML() {
     const xp = prof.xp || 0, lv = RW.level(xp), have = prof.badges || {}, n = Object.keys(have).length;
-    return `<section class="career" aria-label="Your career"><div class="cr-l"><p class="eyebrow">Your career</p>${lvHTML(lv, xp, 0, false)}</div>
-      <div class="cr-b"><p class="eyebrow">Badges <span>${n} of ${RW.BADGES.length}</span></p><div class="cr-badges">${RW.BADGES.map((b) => badgeHTML(b.id, !have[b.id])).join('')}</div></div></section>`;
+    const les = Object.values(prof.lessons || {}), open = les.filter((l) => !l.fixed).length, fixed = les.length - open;
+    return `<section class="career" aria-label="Your career"><div class="cr-l"><p class="eyebrow">Your career</p>${lvHTML(lv, xp, 0, false)}${les.length ? `<button class="cr-les" data-act="awards" data-k="lessons"><b>${open}</b> open lesson${open === 1 ? '' : 's'} · <b>${fixed}</b> fixed<span aria-hidden="true">›</span></button>` : ''}</div>
+      <div class="cr-b"><p class="eyebrow">Badges <span>${n} of ${RW.BADGES.length}</span><button class="btn btn-quiet cr-all" data-act="awards">All achievements ›</button></p><div class="cr-badges">${RW.BADGES.map((b) => badgeHTML(b.id, !have[b.id])).join('')}</div></div></section>`;
+  }
+
+  /* ------------ achievements: tracks, milestones, units, the lesson log, the floor-call collection ------------ */
+  const MEDAL = ['none', 'bronze', 'silver', 'gold'];
+  function medalHTML(tier, g) { return `<svg class="medal m-${MEDAL[tier]}" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 3h7l2 9-6 2zM33 3h-7l-2 9 6 2z" class="md-rib"/><circle cx="24" cy="29" r="15" class="md-rim"/><circle cx="24" cy="29" r="11" class="md-in"/><g transform="translate(12 17)" class="md-g">${GLYPH[g] || GLYPH.star}</g></svg>`; }
+  const TRACKG = { safety: 'shield', priority: 'up', assess: 'eye', meds: 'check', deleg: 'solo', comm: 'bell', judgment: 'heart', time: 'flame', lessons: 'book', floor: 'badge', shifts: 'map', stars: 'star' };
+  const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} · ${k.level}` : 'Floor calls'; };
+  const ago = (ms) => { const d = Math.round((Date.now() - ms) / 86400000); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
+  function trackRow(tr) {
+    const v = tr.val(prof), tier = RW.tierOf(tr, v), next = tr.tiers[tier], lo = tier ? tr.tiers[tier - 1] : 0, pct = next ? Math.min(1, (v - lo) / (next - lo)) : 1;
+    return `<li class="trk t-${MEDAL[tier]}">${medalHTML(tier, TRACKG[tr.dom || tr.id])}<div class="trk-b"><b>${esc(tr.label)}<span class="trk-t">${RW.TIER[tier]}</span></b><small>${esc(tr.how)}</small><div class="trk-bar" aria-hidden="true"><i style="width:${(pct * 100).toFixed(0)}%"></i></div><small class="trk-n">${v}${next ? ` of ${next} for ${RW.TIER[tier + 1].toLowerCase()}` : ' · maxed'}</small></div></li>`;
+  }
+  function lessonsHTML(filter) {
+    const L = Object.entries(prof.lessons || {}).map(([k, l]) => Object.assign({ k }, l));
+    const list = L.filter((l) => (filter === 'fixed' ? l.fixed : !l.fixed)).sort((a, b) => (b.last || b.first) - (a.last || a.first));
+    if (!L.length) return '<p class="empty">No lessons yet. Finish a shift: every call to rethink lands here, and it\'s marked fixed when you replay that shift and don\'t repeat it.</p>';
+    const groups = {}; list.forEach((l) => { const g = l.caseId || 'floor'; (groups[g] = groups[g] || []).push(l); });
+    const order = CASES.concat('floor').filter((g) => groups[g]);
+    return (order.length ? order.map((g) => `<div class="les-g"><h4>${esc(g === 'floor' ? 'Floor calls' : caseTitle(g))}${g !== 'floor' && filter !== 'fixed' ? `<button class="btn btn-quiet les-play" data-act="pick-case" data-id="${g}">Replay to fix ›</button>` : ''}</h4><ul class="les">${groups[g].map((l) => `<li class="${l.fixed ? 'fixed' : ''}"><details><summary><span class="les-ic" aria-hidden="true">${l.fixed ? '✓' : '!'}</span><span class="les-t"><b>${esc(l.text)}</b><small>${esc((DOM[l.dom] || '') + (l.pid ? ' · ' + l.pid : ''))} · ${l.fixed ? `fixed ${ago(l.fixed)}` : l.times > 1 ? `happened ${l.times} times` : `first seen ${ago(l.first)}`}</small></span></summary><p>${esc(l.why)}</p></details></li>`).join('')}</ul></div>`).join('') : `<p class="empty">${filter === 'fixed' ? 'Nothing fixed yet. Replay a shift and avoid a mistake you made before.' : 'No open lessons. Every mistake you\'ve made, you\'ve fixed.'}</p>`);
+  }
+  function floorHTML() {
+    const seen = prof.floorSeen || {}, P = FL.POOL, KIND = { med: 'Med-surg', psych: 'Psych', peds: 'Peds' };
+    return `<p class="muted ach-note">Floor calls come at random. Answer one with the best choice to collect it; anything less can be collected on a later shift.</p><div class="fcol">${P.map((x) => { const v = seen[x.id]; return `<div class="fc-t ${v || 'unseen'}" title="${esc(v ? x.title : 'Not seen yet')}"><span class="fc-g" aria-hidden="true">${v === 'best' ? '★' : v ? '◐' : '?'}</span><b>${v ? esc(x.title) : 'Not seen yet'}</b><small>${x.k.length > 1 ? 'Any unit' : KIND[x.k[0]]}${v && v !== 'best' ? ' · try again' : ''}</small></div>`; }).join('')}</div>`;
+  }
+  function vAwards() {
+    const have = prof.badges || {}, tr = RW.TRACKS, tiers = RW.tiers(prof), medals = Object.values(tiers).reduce((n, x) => n + x, 0);
+    const les = Object.values(prof.lessons || {}), open = les.filter((l) => !l.fixed).length, fixed = les.length - open;
+    const col = Object.values(prof.floorSeen || {}).filter((v) => v === 'best').length, lv = RW.level(prof.xp || 0);
+    const tab = ui.awTab || 'all', tabs = [['all', 'Overview'], ['lessons', `Lesson log${open ? ` (${open})` : ''}`], ['floor', 'Floor calls'], ['units', 'Units']];
+    let body = '';
+    if (tab === 'all') body = `<section class="ach-sec"><h2>Skill tracks</h2><p class="muted ach-note">Every good call counts toward its skill for good. Bronze, silver, gold.</p><ul class="trks">${tr.map(trackRow).join('')}</ul></section>
+      <section class="ach-sec"><h2>Milestones <span class="muted">${Object.keys(have).length} of ${RW.BADGES.length}</span></h2><div class="ach-badges">${RW.BADGES.map((b) => `<div class="ach-b ${have[b.id] ? '' : 'lock'}">${badgeHTML(b.id, !have[b.id], 'span')}<div><b>${esc(b.label)}</b><small>${esc(b.how)}</small>${have[b.id] ? `<small class="ach-when">Earned ${ago(have[b.id])}</small>` : ''}</div></div>`).join('')}</div></section>`;
+    if (tab === 'lessons') body = `<section class="ach-sec"><h2>Lesson log</h2><p class="muted ach-note">Every call to rethink from a finished shift is kept here with the reason. Replay that shift and don't repeat it, and the lesson is marked fixed (+60 XP). Floor-call lessons are fixed when you meet that call again and choose the best answer.</p>
+      <div class="filter" role="group" aria-label="Lessons">${[['open', `Still to fix (${open})`], ['fixed', `Fixed (${fixed})`]].map(([k, l]) => `<button class="btn ${(ui.lesF || 'open') === k ? 'btn-primary' : ''}" data-act="les-f" data-k="${k}" aria-pressed="${(ui.lesF || 'open') === k}">${l}</button>`).join('')}</div>${lessonsHTML(ui.lesF || 'open')}</section>`;
+    if (tab === 'floor') body = `<section class="ach-sec"><h2>Floor-call collection <span class="muted">${col} of ${FL.POOL.length}</span></h2>${floorHTML()}</section>`;
+    if (tab === 'units') body = `<section class="ach-sec"><h2>Units</h2><div class="ach-units">${CASES.map((id) => { const k = E.getCase(id), st = (prof.stars || {})[id] || 0, n = (prof.done || {})[id] || prof.runs.filter((r) => r.caseId === id).length, best = (prof.best || {})[id] || (prof.runs.filter((r) => r.caseId === id).map((r) => r.score).sort((a, b) => b - a)[0]), ol = les.filter((l) => l.caseId === id && !l.fixed).length; return `<div class="ach-u"><span class="rung-st">${[0, 1, 2].map((i) => starSvg(i < st, i, 'rs')).join('')}</span><b>${esc(k.title)}</b><small>${esc(k.level)}</small><dl><dt>Best</dt><dd>${best !== undefined ? best : '–'}</dd><dt>Played</dt><dd>${n || 0}</dd><dt>Open lessons</dt><dd>${ol}</dd></dl><button class="btn ${n ? '' : 'btn-primary'}" data-act="pick-case" data-id="${id}">${n ? 'Play again' : 'Play'}</button></div>`; }).join('')}</div></section>`;
+    return `<header class="top"><button class="mark" data-act="aw-back">The Shift</button><div class="where">Achievements</div><button class="btn btn-quiet" data-act="aw-back">${ICON.back}Back</button></header><main><div class="ach">
+      <section class="ach-hero"><div class="ach-lv">${lvHTML(lv, prof.xp || 0, 0, false)}</div><div class="ach-sum"><div><b>${medals}</b><small>track medals</small></div><div><b>${Object.keys(have).length}</b><small>milestones</small></div><div><b>${fixed}</b><small>lessons fixed</small></div><div><b>${col}</b><small>floor calls collected</small></div></div></section>
+      <nav class="ach-tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-act="aw-tab" data-k="${k}" aria-selected="${tab === k}">${l}</button>`).join('')}</nav>${body}</div></main>`;
+  }
+  function learnHTML() {
+    const r = s.reward, L = r && r.learn; if (!L) return '';
+    const fx = L.fixed.map((k) => prof.lessons[k]).filter(Boolean), ag = L.again.map((k) => prof.lessons[k]).filter(Boolean);
+    const ups = L.ups.map((u) => { const tr = RW.TRACKS.find((x) => x.id === u.id); return `<span class="up">${medalHTML(u.tier, TRACKG[tr.dom || tr.id])}<span><b>${esc(tr.label)}</b><small>${RW.TIER[u.tier]}</small></span></span>`; }).join('');
+    if (!fx.length && !L.added.length && !ups && !ag.length) return `<section class="learn"><p class="muted">Every call to rethink from a finished shift goes into your lesson log. <button class="btn btn-quiet" data-act="awards">Achievements ›</button></p></section>`;
+    return `<section class="learn" aria-label="What you learned">
+      ${fx.length ? `<div class="ln-fix"><h3>Lessons you fixed <span>${fx.length}</span></h3><ul>${fx.slice(0, 6).map((l) => `<li><span class="les-ic" aria-hidden="true">✓</span><span>${esc(l.text)}</span></li>`).join('')}${fx.length > 6 ? `<li class="muted">and ${fx.length - 6} more</li>` : ''}</ul><p class="muted">Last time you made these mistakes. This time you didn't.</p></div>` : ''}
+      ${ag.length ? `<div class="ln-ag"><h3>Came back <span>${ag.length}</span></h3><ul>${ag.slice(0, 4).map((l) => `<li><span class="les-ic" aria-hidden="true">!</span><span>${esc(l.text)}</span></li>`).join('')}</ul></div>` : ''}
+      ${ups ? `<div class="ln-ups"><h3>Track medals</h3><div>${ups}</div></div>` : ''}
+      <div class="ln-f">${L.added.length ? `<p><b>${L.added.length} new lesson${L.added.length === 1 ? '' : 's'}</b> in your log. Replay this shift and avoid ${L.added.length === 1 ? 'it' : 'them'} to mark ${L.added.length === 1 ? 'it' : 'them'} fixed.</p>` : ''}<button class="btn" data-act="awards" data-k="lessons">Open lesson log ›</button><button class="btn btn-quiet" data-act="awards">All achievements</button></div>
+    </section>`;
   }
 
   /* ------------ debrief ------------ */
@@ -726,7 +790,7 @@
     return `<main><div class="deb">
       <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
-      ${rewardHTML()}
+      ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
@@ -1069,7 +1133,8 @@
     const y = window.scrollY;
     if (s && !s.ended && (ui.view === 'station' || ui.view === 'room')) { if (fbNow()) tallyJudg(); goalWatch(); }
     let h = '';
-    if (ui.view === 'home' || !s) h = vHome();
+    if (ui.view === 'awards') h = vAwards();
+    else if (ui.view === 'home' || !s) h = vHome();
     else {
       h = (ui.view === 'debrief' ? '' : header());
       if (ui.view === 'debrief') h += `<header class="top"><button class="mark" data-act="home">The Shift</button><div class="where">Debrief</div></header>`;
@@ -1365,7 +1430,15 @@
     badge(el) { const b = RW.BADGES.find((x) => x.id === el.dataset.id); if (b) hint(el, `${b.label}: ${b.how}${prof.badges && prof.badges[b.id] ? ' ✓' : ''}`); },
     endask() { const late = s.t >= C().length - 30, left = pts().filter((x) => !gone(s.p[x.id]) && !(s.report && s.report[x.id])).map((x) => x.room); ui.confirm = { title: late ? 'End the shift?' : 'End the shift early?', text: late ? (left.length ? `You haven't given ${oncoming().name} report on ${left.join(', ')}. The next nurse starts blind on them.` : `${oncoming().name} has report on everyone. You'll see your debrief.`) : 'Unfinished work will count as missed in your debrief.', ok: late && left.length ? 'End without report' : 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
-    filter(el) { ui.filter = el.dataset.k; render(); },
+    filter(el) {
+      ui.filter = el.dataset.k;
+      if (el.dataset.k === 'bad' && s && !ui.reflected) { ui.reflected = true; prof.reflect = (prof.reflect || 0) + 1; prof.badges = prof.badges || {}; if (prof.reflect >= 3 && !prof.badges.reflect) { prof.badges.reflect = Date.now(); setTimeout(() => { const b = document.querySelector('.filter [data-k="bad"]'); if (b) hint(b, 'New badge: Reflective practice. Looking hard at your misses is how they stop happening.'); FX.play('star'); }, 120); } E.store.saveProfile(prof); }
+      render();
+    },
+    awards(el) { ui.awFrom = ui.view === 'debrief' ? 'debrief' : 'home'; ui.view = 'awards'; ui.awTab = (el && el.dataset.k) || ui.awTab || 'all'; ui.ov = null; render(true); },
+    'aw-tab'(el) { ui.awTab = el.dataset.k; render(); },
+    'les-f'(el) { ui.lesF = el.dataset.k; render(); },
+    'aw-back'() { ui.view = ui.awFrom === 'debrief' && s && s.ended ? 'debrief' : 'home'; render(true); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
     'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
@@ -1414,7 +1487,7 @@
 
   /* Feedback. Answers get a pop and a moment to register; commitments get a chime and a stamp.
      None of it says whether the choice was right: that stays in the debrief. */
-  const SELECT = new Set(['away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
+  const SELECT = new Set(['aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
   const COMMIT = new Set(['away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);

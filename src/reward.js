@@ -61,7 +61,68 @@
     { id: 'bells', label: 'Nobody waited', how: 'Answer every call light on a shift (at least 3)', g: 'bell' },
     { id: 'float', label: 'Float nurse', how: 'Finish a shift on all five units', g: 'map' },
     { id: 'house', label: 'Full house', how: 'Three stars on all five shifts', g: 'crown' },
+    { id: 'allgood', label: 'Everyone home safe', how: 'Finish a shift with a good outcome for every patient', g: 'home' },
+    { id: 'clean', label: 'Clean record', how: 'Finish a shift with no calls to rethink', g: 'shield' },
+    { id: 'comeback', label: 'Comeback', how: 'Beat your last score on a shift by 15 points or more', g: 'up' },
+    { id: 'second', label: 'Second chance', how: 'Replay a shift and turn a patient\'s poor outcome into a good one', g: 'redo' },
+    { id: 'reflect', label: 'Reflective practice', how: 'Review "What to rethink" in three debriefs', g: 'book' },
   ];
+
+  /* Tracks: lifetime progress with bronze, silver and gold tiers. */
+  const DOMS = (S.engine && S.engine.DOMAINS) || [];
+  const TRACKS = DOMS.map(([id, label]) => ({ id: 'dom-' + id, dom: id, label, how: `Good calls in ${label.toLowerCase()}`, tiers: [5, 20, 50], val: (p) => (p.life && p.life.good && p.life.good[id]) || 0 })).concat([
+    { id: 'lessons', label: 'Lessons learned', how: 'Mistakes fixed on a later shift', tiers: [1, 10, 30], val: (p) => Object.values(p.lessons || {}).filter((l) => l.fixed).length },
+    { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 15, (S.floor ? S.floor.POOL.length : 28)], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
+    { id: 'shifts', label: 'Shifts worked', how: 'Shifts finished through handoff', tiers: [1, 10, 25], val: (p) => (p.life && p.life.shifts) || 0 },
+    { id: 'stars', label: 'Stars', how: 'Best stars, added across all five shifts', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },
+  ]);
+  const TIER = ['Not started', 'Bronze', 'Silver', 'Gold'];
+  const tierOf = (tr, v) => tr.tiers.filter((x) => v >= x).length;
+  const tiers = (p) => Object.fromEntries(TRACKS.map((tr) => [tr.id, tierOf(tr, tr.val(p))]));
+  // A mistake is the same mistake next time even if it happened at a different minute.
+  const norm = (k) => String(k || '').replace(/-\d+$/, '');
+  const lessonKey = (caseId, k) => (/^floor-/.test(k) ? 'floor|' + norm(k).slice(6) : caseId + '|' + norm(k));
+
+  /* After a shift: lifetime tallies, the lesson log, the floor-call collection, tier changes, and the badges that need history. */
+  function record(prof, s, c, d) {
+    const done = s.t >= c.length - 30, out = { fixed: [], added: [], again: [], ups: [], badges: [] };
+    prof.life = prof.life || { good: {}, shifts: 0 }; prof.life.good = prof.life.good || {};
+    prof.lessons = prof.lessons || {}; prof.floorSeen = prof.floorSeen || {}; prof.badOut = prof.badOut || {}; prof.badges = prof.badges || {};
+    const t0 = tiers(prof);
+    s.judg.forEach((j) => { if (j.delta > 0) prof.life.good[j.domain] = (prof.life.good[j.domain] || 0) + 1; });
+    if (done) prof.life.shifts = (prof.life.shifts || 0) + 1;
+    const rank = { wrong: 0, ok: 1, best: 2 };
+    (s.floor ? s.floor.q : []).forEach((x) => { if (x.done !== 'answered') return; const now = x.v === 2 ? 'best' : x.v === 1 ? 'ok' : 'wrong', was = prof.floorSeen[x.id]; if (was === undefined || rank[now] > rank[was]) prof.floorSeen[x.id] = now; });
+    // Lessons: every mistake from a finished shift goes in the log; it's fixed when you replay and don't repeat it.
+    const neg = {}, pos = new Set();
+    s.judg.forEach((j) => { if (!j.key) return; const k = lessonKey(s.caseId, j.key); if (j.delta < 0) neg[k] = j; else if (j.delta > 0) pos.add(k); });
+    Object.keys(prof.lessons).forEach((k) => {
+      const L = prof.lessons[k]; if (L.fixed || neg[k]) return;
+      const fl = /^floor\|/.test(k);
+      if (fl ? pos.has(k) : done && L.caseId === s.caseId) { L.fixed = Date.now(); out.fixed.push(k); }
+    });
+    if (done || Object.keys(neg).some((k) => /^floor\|/.test(k))) Object.keys(neg).forEach((k) => {
+      if (!done && !/^floor\|/.test(k)) return;
+      const j = neg[k], L = prof.lessons[k];
+      if (L) { L.times += 1; L.last = Date.now(); if (L.fixed) { L.fixed = null; out.again.push(k); } }
+      else { prof.lessons[k] = { caseId: /^floor\|/.test(k) ? null : s.caseId, text: j.text, why: j.why, dom: j.domain, pid: j.pid || null, first: Date.now(), last: Date.now(), times: 1, fixed: null }; out.added.push(k); }
+    });
+    // Badges that need history.
+    const prev = (prof.runs || []).find((r) => r.caseId === s.caseId);
+    const was = prof.badOut[s.caseId] || [];
+    const test = {
+      allgood: done && d.outcomes.every((o) => o.tone === 'good'),
+      clean: done && !s.judg.some((j) => j.delta < 0),
+      comeback: !!(prev && d.overall - prev.score >= 15),
+      second: done && was.some((pid) => (d.outcomes.find((o) => o.id === pid) || {}).tone === 'good'),
+    };
+    Object.keys(test).forEach((id) => { if (test[id] && !prof.badges[id]) { prof.badges[id] = Date.now(); out.badges.push(id); } });
+    if (done) prof.badOut[s.caseId] = d.outcomes.filter((o) => o.tone === 'bad').map((o) => o.id);
+    const t1 = tiers(prof);
+    TRACKS.forEach((tr) => { if (t1[tr.id] > t0[tr.id]) out.ups.push({ id: tr.id, tier: t1[tr.id] }); });
+    out.xp = out.fixed.length * 60 + out.ups.reduce((n, u) => n + u.tier * 100, 0);
+    return out;
+  }
 
   /* End of shift: everything the shift earned, and what changes on the profile. */
   function settle(s, c, A, d, prof, cases) {
@@ -89,5 +150,5 @@
     return { goals: g, stars: st, prevStars, lines, total, before, after, lvBefore: level(before), lvAfter: level(after), earned, starsAfter };
   }
 
-  S.reward = { level, mult, round5, stars, STARS, goals, BADGES, settle, LEVELS };
+  S.reward = { level, mult, round5, stars, STARS, goals, BADGES, settle, LEVELS, TRACKS, TIER, tierOf, tiers, record };
 })(window.Shift);

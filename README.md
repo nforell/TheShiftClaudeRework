@@ -25,6 +25,7 @@ These run on every unit, from `src/flow.js`:
 - **Skip ahead.** At the station, the clock runs minute by minute (up to 30) and stops the moment something needs you: a message, a task coming due, an admission, report time. Silent deterioration does not wake you.
 - **Floor calls** (`src/floor.js`). Up to five per shift from the rest of the unit: critical values, a colleague's needlestick, a visitor, a dose to check. Each is a timed decision with feedback. The pool is shared plus unit-specific, and which calls come changes every run.
 - **Rewards** (`src/reward.js`). Care XP for on-time work and good calls, a streak multiplier (×1.5 to ×3) that anything overdue resets, four shift goals, stars at 58/72/85, a nine-level career ladder and ten badges, all saved to the profile.
+- **Achievements.** From the home screen or the debrief: 12 bronze/silver/gold skill tracks (lifetime good calls per domain, lessons fixed, floor calls collected, shifts, stars), 15 milestones, a per-unit summary, and the **lesson log**. Every call to rethink from a finished shift is logged with its reason; replaying that shift without repeating it marks it fixed (+60 XP). Floor-call lessons are fixed by answering that call correctly later.
 
 ## Develop
 Source is plain JavaScript on a global `window.Shift` object:
