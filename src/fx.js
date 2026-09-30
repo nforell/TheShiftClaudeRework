@@ -224,8 +224,16 @@
       H.forced = 'I'; H.set = 'calm'; H.nextAt = Math.min(H.nextAt, ctx.currentTime + 1.2);   // the score resolves home with you
     },
     open() { tone(420, 0, .12, { to: 620, glide: .08, gain: .045, type: 'sine' }); },
+    // Time passing at the station: a soft rising sweep, a tick of the clock at the end.
+    whoosh() { tone(180, 0, .7, { gain: .05, type: 'triangle', to: 900, glide: .6, lp: 1600, verb: .5 }); tone(260, .05, .6, { gain: .03, type: 'sine', to: 1300, glide: .5, verb: .5 }); [0.2, 0.42, 0.62].forEach((at) => click(at, { f: 3200, gain: .05 })); },
+    // A streak multiplier going up: a quick climb that lands high.
+    combo() { [0, 2, 4, 7, 9].forEach((k, i) => pluck(keyNote(5 + k), i * .045, { gain: .08, dur: .5 + i * .1, shine: i >= 3, echo: i === 4 ? .25 : 0 })); },
+    // A star or a goal: one bright bell with a shimmer.
+    star() { pluck(keyNote(11), 0, { gain: .11, dur: 1.2, shine: true, echo: .3 }); pluck(keyNote(14), .06, { gain: .06, dur: 1.4, shine: true, verb: .6 }); tone(keyNote(18), .1, 1.2, { gain: .018, type: 'sine', verb: .9 }); },
+    // Level up: a little fanfare, resolving home.
+    levelup() { [0, 4, 7, 12, 16].forEach((k, i) => pluck(hz(12 + k), i * .11, { gain: .1, dur: 1.2 + i * .15, echo: .2, shine: i >= 3 })); tone(hz(0), .5, 1.8, { gain: .05, type: 'sine', verb: .6 }); H.forced = 'I'; H.set = 'calm'; },
   };
-  const BUZZ = { crit: [70, 140, 90, 260, 40], worse: [40, 60, 40], better: 10, check: [6, 40, 10], select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8] };
+  const BUZZ = { crit: [70, 140, 90, 260, 40], worse: [40, 60, 40], better: 10, check: [6, 40, 10], select: 6, deselect: 4, commit: [14, 40, 18], nope: [18, 50, 18], urgent: [30, 60, 30, 60, 30], right: 12, miss: [8, 30, 8], star: [10, 30, 16], combo: [6, 20, 6, 20, 10], levelup: [20, 40, 20, 40, 30] };
 
   let last = 0;
   function play(name) {

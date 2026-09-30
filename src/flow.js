@@ -390,6 +390,8 @@ window.Shift = window.Shift || {};
     const P = s.p[pid], o = P.out, i = entryAt(P, s.t - o.at), e = o.spec.course[i];
     o.calls.push(s.t);
     if (i > o.known || !o.calledOnce) { o.known = Math.max(o.known, i); o.calledOnce = true; return { fresh: true, text: e.text, st: e.st }; }
+    // Calling again with nothing new ties up two nurses; once is a note, not a lesson.
+    if (o.calls.length >= 2 && s.t - o.calls[o.calls.length - 2] < 30) A.judge(`${pid}-upd-again`, 'time', -0.5, `You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.`, 'The receiving nurse will call you when something changes, and their time is the patient\'s time. Check in after a real interval, or when you have something to pass on.', pid);
     return { fresh: false, text: `No change since the last update. ${e.text}`, st: e.st };
   }
   /* Report to the receiving nurse: the essentials travel with the patient. */

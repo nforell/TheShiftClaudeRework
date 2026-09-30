@@ -1,6 +1,6 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward;
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -14,6 +14,9 @@
     up: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',
     down: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
     tick: '<svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg>',
+    ff: '<svg class="ico ff-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l8 6-8 6zM12 6l8 6-8 6z"/></svg>',
+    xp: '<svg class="ico xp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>',
+    flame: '<svg class="fl-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c1.2 3.6 5.5 5.6 5.5 10.7a5.5 5.5 0 0 1-11 0c0-2.7 1.5-4.1 2.6-5.4.3 1.7 1.1 2.8 2.2 3.3.1-3.2-1.1-5.8.7-8.6z"/></svg>',
   };
 
   let s = null;                 // game state
@@ -66,10 +69,10 @@
   function goView(v) { ui.view = v; s.view = v; ui.caption = null; save(); render(true); }
 
   /* Spend time; collect new messages into toasts; end shift if the clock runs out. */
-  function spend(mins, fn) {
+  function spend(mins, fn, until) {
     const track = s && !s.ended && (ui.view === 'station' || ui.view === 'room');
-    const before = track ? openSnap() : null, pendingDeleg = s.deleg.filter((x) => !x.done).map((x) => x);
-    E.perform(s, mins, fn);
+    const before = track ? openSnap() : null, pendingDeleg = s.deleg.filter((x) => !x.done).map((x) => x), t0 = s.t;
+    const why = E.perform(s, mins, fn, until);
     if (track) {
       pendingDeleg.filter((x) => x.done).forEach((x) => { const tk = C().delegation.tasks.find((k) => k.id === x.id); A().log(x.pid, `${cna().name} finished: ${tk.label.toLowerCase()}.`, 'act'); s.log[s.log.length - 1].label = `${cna().name}: ${tk.label.toLowerCase()}`; });
       const after = s.ended ? {} : openSnap(), nowMs = Date.now();
@@ -79,10 +82,14 @@
         const doneNow = r.prog ? !a : r.key.startsWith('x:') ? (a ? a.t - r.t >= 30 : ui.actPid === r.pid) : !a;
         if (doneNow && !ui.actPid && !ui.chimeQ) { ui.chimeQ = true; setTimeout(() => { ui.chimeQ = false; FX.play('check'); }, 250); }
         if (doneNow) ui.ghosts.push({ pid: r.pid, text: ((x) => x.charAt(0).toUpperCase() + x.slice(1))(r.text.replace(new RegExp('^' + cna().name + ': '), '')), by: r.prog ? cna().name : 'you', born: nowMs, held: false, id: k + nowMs });
+        if (doneNow) earnTask(r);
       });
+      // Something slipped past its time while you were busy: the streak ends.
+      const slipped = Object.keys(after).filter((k) => after[k].late && !(before[k] && before[k].late) && !after[k].prog);
+      if (slipped.length) breakStreak('Overdue: ' + after[slipped[0]].text.toLowerCase());
       ui.ghosts = ui.ghosts.filter((g) => g.held || nowMs - g.born < GHOST_MS);
     }
-    if (mins > 0) ui.adv = mins;
+    if (s.t > t0) ui.adv = s.t - t0;
     const fresh = s.fresh.splice(0);
     const isCrit = (m) => m && m.urgent && m.pid && def(m.pid);
     if (fresh.length) { const ms = fresh.map((id) => s.inbox.find((x) => x.id === id)); const crit = ms.some(isCrit), urgent = ms.some((m) => m && m.urgent); setTimeout(() => FX.play(crit ? 'crit' : urgent ? 'urgent' : 'msg'), crit ? 120 : 420); }
@@ -94,13 +101,61 @@
       if (!m.urgent) setTimeout(() => { if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }, 8000);
     });
     ui.toasts = ui.toasts.slice(-1);
-    if (s.ended) return endShift();
+    if (s.ended) { endShift(); return why; }
     save();
+    return why;
   }
   function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = s.seq; if (kind !== 'clue') ui.lastFind = s.seq; }
 
+  /* ------------ care XP: finished work and good calls pay; a run of them multiplies the pay ------------ */
+  ui.pops = [];
+  const fmtN = (n) => Math.round(n).toLocaleString('en-US');
+  function gain(n, label, cls) { s.xp = (s.xp || 0) + n; ui.pops.push({ text: '+' + n, label, cls: cls || '' }); }
+  function bump() {
+    const pm = RW.mult(s.streak || 0); s.streak = (s.streak || 0) + 1; s.bestStreak = Math.max(s.bestStreak || 0, s.streak);
+    const m = RW.mult(s.streak); if (m > pm) { ui.pops.push({ text: '×' + m, label: `${s.streak} in a row`, cls: 'combo' }); ui.combo = true; }
+  }
+  function breakStreak(why) { if ((s.streak || 0) >= 3) ui.pops.push({ text: 'Streak over', label: why, cls: 'lost' }); s.streak = 0; }
+  function earnTask(r) {
+    if (r.prog) { gain(10, `${cna().name} finished`, 'cna'); return; }
+    if (r.late) { gain(5, 'Done, but late', 'late'); return; }
+    const n = RW.round5(20 * RW.mult(s.streak || 0)); gain(n, 'On time'); bump();
+  }
+  // Judgments pay out when they land, or at the debrief if feedback waits until then.
+  function tallyJudg(quiet) {
+    const L = s.judg; let i = s.xpSeen || 0;
+    for (; i < L.length; i++) {
+      const j = L[i];
+      if (j.delta > 0) { const n = RW.round5(60 * j.delta * RW.mult(s.streak || 0)); s.xp = (s.xp || 0) + n; if (!quiet) ui.pops.push({ text: '+' + n, label: /^floor-/.test(j.key || '') ? 'Floor call' : 'Good call', cls: 'good' }); bump(); }
+      else if (j.delta < 0) { if (quiet) s.streak = 0; else breakStreak('A call to rethink'); }
+    }
+    s.xpSeen = i;
+  }
+  // Goals flip as the shift goes: a little ceremony when one lands or slips away.
+  function goalWatch() {
+    const g = RW.goals(s, C(), A()); s.goalSeen = s.goalSeen || {};
+    g.forEach((x) => { const was = s.goalSeen[x.id]; if (x.st !== 'open' && was !== x.st && !s.ended) { ui.pops.push(x.st === 'done' ? { text: 'Goal met', label: x.label, cls: 'goal' } : { text: 'Goal missed', label: x.label, cls: 'lost' }); if (x.st === 'done') ui.goalSound = true; } s.goalSeen[x.id] = x.st; });
+  }
+  /* Floating rewards, drawn outside the app so a re-render doesn't cut them off. */
+  function flushPops() {
+    const P = ui.pops.splice(0); if (!P.length) return;
+    const pill = document.querySelector('.xp'); if (!pill || reduced()) return;
+    const r = pill.getBoundingClientRect();
+    P.slice(-4).forEach((p, i) => setTimeout(() => {
+      const n = document.createElement('div'); n.className = 'xpop ' + p.cls; n.innerHTML = `<b>${esc(p.text)}</b>${p.label ? `<small>${esc(p.label)}</small>` : ''}`;
+      n.style.left = Math.min(innerWidth - 150, Math.max(8, r.left + r.width / 2 - 60)) + 'px'; n.style.top = r.bottom + 6 + 'px';
+      document.body.appendChild(n); setTimeout(() => n.remove(), 1700);
+      const pl = document.querySelector('.xp'); if (pl) { pl.classList.remove('bump'); void pl.offsetWidth; pl.classList.add('bump'); }
+    }, i * 260));
+    if (ui.combo) { ui.combo = false; setTimeout(() => FX.play('combo'), 200); }
+    if (ui.goalSound) { ui.goalSound = false; setTimeout(() => FX.play('star'), 350); }
+  }
+
   function endShift() {
-    E.finish(s); const d = E.debrief(s);
+    if (s.reward) { ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; render(true); return; }   // already settled
+    E.finish(s); tallyJudg(true); const d = E.debrief(s);
+    s.reward = RW.settle(s, C(), A(), d, prof, CASES);
+    prof.xp = s.reward.after; prof.stars = s.reward.starsAfter; prof.badges = prof.badges || {}; s.reward.earned.forEach((b) => { prof.badges[b] = Date.now(); });
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
     prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
     ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; render(true);
@@ -115,7 +170,7 @@
       <div class="where">${loc}</div>
       <button class="icon-btn roster-btn" data-act="roster" aria-label="Your patients: who is who"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.4 0 4.3 1.4 5 4.3"/></svg><span class="nova-l">Patients</span></button>
       ${ui.view !== 'handoff' ? `<button class="icon-btn" data-act="nova" aria-label="Ask the charge nurse, ${s.nova} credits left"><span class="dots" aria-hidden="true">${Array.from({ length: C().novaCredits || 3 }, (_, i) => i).map((i) => `<i class="${i < s.nova ? 'on' : ''}"></i>`).join('')}</span><span class="nova-l" aria-hidden="true">Nova</span></button>
-      ${fbNow() ? (() => { const g = s.judg.filter((j) => j.delta > 0).length, b = s.judg.filter((j) => j.delta < 0).length, key = g + ':' + b, bump = ui.tally && ui.tally !== key; ui.tally = key; return `<button class="tally ${bump ? 'bump' : ''}" data-act="calls" aria-label="Your decisions: ${g} good calls, ${b} to rethink"><span class="tg">✓ ${g}</span><span class="tb">! ${b}</span></button>`; })() : ''}
+      ${(() => { const m = RW.mult(s.streak || 0); return `<button class="xp ${m > 1 ? 'hot' : ''}" data-act="calls" aria-label="Care XP ${fmtN(s.xp || 0)}${m > 1 ? `, streak times ${m}` : ''}. Your shift so far">${ICON.xp}<b>${fmtN(s.xp || 0)}</b><b class="xp-k">${(s.xp || 0) >= 10000 ? ((s.xp || 0) / 1000).toFixed(0) + 'k' : fmtN(s.xp || 0)}</b>${m > 1 ? `<span class="fl">${ICON.flame}×${m}</span>` : ''}</button>`; })()}
       <button class="icon-btn" data-act="inbox" aria-label="Messages, ${unread} unread">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ''}</button>` : ''}
       <div class="clock ${ui.adv ? 'bump' : ''}" role="timer" aria-live="off" aria-label="Shift time ${E.clock(s.t)}">${E.clock(s.t)}<small>ends ${E.clock(C().length)}</small>${ui.adv ? `<span class="adv" aria-hidden="true">+${ui.adv} min</span>` : ''}</div>
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
@@ -132,7 +187,8 @@
     const rung = (id, i) => {
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
       const prev = i ? done(CASES[i - 1]).length : 1;
-      return `<button class="rung" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><b>${esc(k.level)}</b><span>${esc(k.title)}. ${esc(k.card)}</span><small>${best !== null ? `Best score ${best}` : prev ? 'Ready' : 'Recommended after ' + esc(E.getCase(CASES[i - 1]).level)}</small></button>`;
+      const stn = (prof.stars || {})[id] || 0;
+      return `<button class="rung" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><b>${esc(k.level)}</b><span>${esc(k.title)}. ${esc(k.card)}</span><small>${best !== null ? `Best score ${best}` : prev ? 'Ready' : 'Recommended after ' + esc(E.getCase(CASES[i - 1]).level)}</small></button>`;
     };
     const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
@@ -160,6 +216,7 @@
           ${CASES.map(rung).join('')}
           <div class="rung locked"><b>More specialty units</b><span>ED, ICU, labor and delivery.</span><small>Coming later</small></div>
         </div>
+        ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}</span><span>Original clinical content for education. Not a substitute for clinical instruction.</span></div>
       </div>
     </div>`;
@@ -258,11 +315,89 @@
     return (gh ? `<div class="due-ghosts">${gh}</div>` : '') + g('Overdue', over, 'over') + g('Due now', now, 'now') + g('Coming up', soon, 'soon');
   }
   function lastSeen(P) { return P.seenAt === null ? 'Not seen yet' : `Seen ${E.clock(P.seenAt)}`; }
+
+  /* ------------ the command bar: what needs you, what's next, and a way to let time pass ------------ */
+  function nowRows() {
+    const out = [];
+    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text, late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp' }); }); });
+    const pr = prioList();
+    return out.sort((a, b) => b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
+  }
+  function nextKnown() {
+    let best = null; const put = (t, text) => { if (t > s.t && (!best || t < best.t)) best = { t, text }; };
+    pts().forEach((d) => { const P = s.p[d.id]; (gone(P) ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && r.t !== null) put(r.t, r.prog ? r.text : `${d.room} ${r.text}`); }); });
+    C().patients.forEach((d) => { if (!here(d)) put(d.arrives, `${d.room} admission from the ED`); });
+    put(C().length - 60, 'Report hour begins'); put(C().length, 'End of shift');
+    return best;
+  }
+  const rowLabel = (r) => (r.away ? `${def(r.pid).short}: ` : `${def(r.pid).room} `) + r.text;
+  const FLAVOR = {
+    med: ['Charting vitals and I&Os', 'Restocking the supply cart', 'Returning pages', 'Checking tomorrow\'s lab orders', 'A sip of cold coffee', 'Scanning the telemetry board'],
+    psych: ['Charting behavior checks', 'A walk through the milieu', 'Returning a call from a board-and-care', 'Updating the treatment plan', 'A sip of cold coffee', 'Counting sharps with the tech'],
+    peds: ['Charting intake and output', 'Restocking syringes and diapers', 'Returning a page from pharmacy', 'Weighing diapers', 'A sip of cold coffee', 'Checking pump volumes'],
+  };
+  function goalSub(x) {
+    const L = C().length;
+    if (x.st === 'done') return x.id === 'meds' ? 'None late' : x.id === 'calls' ? 'Nobody waited' : 'Done';
+    if (x.st === 'fail') return x.id === 'meds' ? `${x.n} late` : x.id === 'calls' ? `${x.n} missed` : x.id === 'eyes' ? `${x.n} of ${x.of} in time` : `${x.n} of ${x.of} given`;
+    if (x.id === 'eyes') return `${x.n} of ${x.of} · by ${E.clock(90)}`;
+    if (x.id === 'report') return s.t >= L - 60 ? `${x.n} of ${x.of} given` : `Opens ${E.clock(L - 60)}`;
+    return 'So far, so good';
+  }
+  function goalsHTML(g, cls) { return `<div class="goals ${cls || ''}" role="list" aria-label="Shift goals">${g.map((x) => `<span role="listitem" class="goal ${x.st}" title="${esc(x.sub)}"><i aria-hidden="true">${x.st === 'done' ? '✓' : x.st === 'fail' ? '✕' : ''}</i><span><b>${esc(x.label)}</b><small>${esc(goalSub(x))}</small></span></span>`).join('')}</div>`; }
+  function cmdBar() {
+    const now = nowRows(), nx = nextKnown(), open = FL.open(s), top = now[0];
+    const status = top ? `<div class="cmd-st busy"><span class="cmd-n" aria-hidden="true">${now.length}</span><div><b>${now.length === 1 ? 'One thing needs you' : `${now.length} things need you`}</b><button class="cmd-go" data-act="${top.rp ? 'report' : top.away ? 'away' : 'goto'}" data-pid="${top.pid}">${top.late ? '<em>Overdue</em> ' : ''}${esc(rowLabel(top))} <span aria-hidden="true">›</span></button></div></div>`
+      : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b><small>Skip ahead. The clock runs until something needs you.</small></div></div>`;
+    const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
+    const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip">${ICON.ff}<span><b>Skip ahead</b><small>${nx ? `Next known: ${E.clock(nx.t)} · ${esc(nx.text)}` : 'Until something happens'}</small></span></button>`;
+    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
+  }
+  /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
+  function skipAhead() {
+    if (!s || s.ended) return;
+    const t0 = s.t, f0 = s.fresh.length, base = new Set(nowRows().map((r) => r.pid + '|' + r.key)), arr = pts().length, dl = s.deleg.filter((x) => x.done).length, L = C().length;
+    const why = spend(Math.min(30, L - s.t), null, (ss) => {
+      if (ss.fresh.length > f0) { const m = ss.inbox.find((x) => x.id === ss.fresh[ss.fresh.length - 1]); if (m) return { pid: m.pid, from: m.from, text: m.text, urgent: m.urgent }; }
+      if (pts().length > arr) { const d = pts()[pts().length - 1]; return { pid: d.id, text: `${d.room} ${d.name} is up from the ED.` }; }
+      if (ss.deleg.filter((x) => x.done).length > dl) return { from: C().cna || 'luis', text: `${cna().name} is back and free.` };
+      const nk = nowRows().find((r) => !base.has(r.pid + '|' + r.key)); if (nk) return { pid: nk.pid, text: `${rowLabel(nk)}: due now` };
+      if (ss.t === L - 60) return { from: 'nova', text: 'One hour left. Start thinking about report.' };
+      if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
+      return null;
+    });
+    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : { text: 'A quiet half hour. Nothing new came up.' }) };
+    if (!s.ended) render();
+    ffPlay();
+  }
+  function ffPlay() {
+    const f = ui.ff; ui.ff = null; if (!f) return;
+    const mins = f.t1 - f.t0; document.querySelectorAll('.ff').forEach((n) => n.remove());
+    const fl = FLAVOR[F.kindOf(C())] || FLAVOR.med, pick = [fl[(f.t0 * 7) % fl.length], fl[(f.t0 * 7 + 3) % fl.length]];
+    const el = document.createElement('div'); el.className = 'ff' + (f.why.urgent ? ' urgent' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = `<div class="ff-card"><svg class="ff-clock" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="ff-face"/>${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="10" x2="50" y2="${i % 3 ? 15 : 18}" transform="rotate(${i * 30} 50 50)"/>`).join('')}<line class="ff-hh" x1="50" y1="50" x2="50" y2="28"/><line class="ff-mh" x1="50" y1="50" x2="50" y2="16"/><circle cx="50" cy="50" r="3.2" class="ff-hub"/></svg>
+      <div class="ff-t"><b class="ff-now">${E.clock(f.t0)}</b><small>+<span class="ff-m">0</span> min</small></div>
+      <p class="ff-sub">${esc(pick[0])} · ${esc(pick[1].toLowerCase())}</p>
+      <p class="ff-why">${f.why.from ? faceOf(f.why.from) : f.why.pid && def(f.why.pid) ? pface(f.why.pid) : ''}<span>${esc(f.why.text)}</span></p></div>`;
+    document.body.appendChild(el); R.hydrate(el);
+    const dur = reduced() ? 120 : Math.min(1500, 420 + mins * 20), T0 = performance.now(), st = C().start || 420;
+    const mh = el.querySelector('.ff-mh'), hh = el.querySelector('.ff-hh'), now = el.querySelector('.ff-now'), mm = el.querySelector('.ff-m');
+    const done = () => { if (el.classList.contains('out')) return; el.classList.add('out'); setTimeout(() => el.remove(), 300); };
+    if (mins > 0) FX.play('whoosh');
+    const step = (n) => {
+      const p = Math.min(1, (n - T0) / dur), e = 1 - Math.pow(1 - p, 2.4), tt = f.t0 + mins * e, abs = st + tt;
+      mh.setAttribute('transform', `rotate(${(abs % 60) * 6} 50 50)`); hh.setAttribute('transform', `rotate(${(abs % 720) * 0.5} 50 50)`);
+      now.textContent = E.clock(Math.round(tt)); mm.textContent = Math.round(mins * e);
+      if (p < 1) requestAnimationFrame(step); else { el.classList.add('woke'); setTimeout(done, f.why.urgent ? 1500 : 1150); }
+    };
+    requestAnimationFrame(step); el.addEventListener('click', done);
+  }
   function vStation() {
     const doors = C().patients.map((d) => { const P = s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives) }; const light = !gone(P) && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
     const pending = C().patients.filter((d) => !here(d));
     const due = dueList();
     return `<main>
+      ${cmdBar()}
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
         <section class="board" aria-labelledby="bh">
@@ -282,7 +417,6 @@
           <div class="tools">
             <button class="btn" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}</small></button>
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
-            <button class="btn" data-act="catchup" style="grid-column:1/-1"><b>Chart and catch up</b><small>Pass 10 minutes</small></button>
             ${s.t >= C().length - 60 ? (() => { const L = pts().filter((x) => !gone(s.p[x.id])), n = L.filter((x) => s.report && s.report[x.id]).length; return `<button class="btn ${n < L.length ? 'btn-primary' : ''}" data-act="report" style="grid-column:1/-1"><b>${n < L.length ? `Give report to ${esc(oncoming().name)}` : `Report given to ${esc(oncoming().name)}`}</b><small>${n} of ${L.length} patients · 2 min each</small></button>`; })() : ''}
             ${s.t >= C().length - 30 ? `<button class="btn ${pts().filter((x) => !gone(s.p[x.id])).every((x) => s.report && s.report[x.id]) ? 'btn-primary' : ''}" data-act="endask" style="grid-column:1/-1"><b>End shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
           </div>
@@ -349,7 +483,7 @@
   ui.ghosts = [];
   function openSnap() {
     const o = {};
-    C().patients.forEach((d) => { if (!here(d)) return; const P = s.p[d.id]; (gone(P) ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && r.key && r.t !== null) o[d.id + '|' + r.key] = { pid: d.id, key: r.key, t: r.t, text: r.text, prog: !!r.prog }; }); });
+    C().patients.forEach((d) => { if (!here(d)) return; const P = s.p[d.id]; (gone(P) ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && r.key && r.t !== null) o[d.id + '|' + r.key] = { pid: d.id, key: r.key, t: r.t, text: r.text, prog: !!r.prog, late: !!r.late }; }); });
     return o;
   }
   const GHOST_MS = 2600;
@@ -544,6 +678,45 @@
     </div></div>`;
   }
 
+  /* ------------ rewards: stars, XP, the career ladder, badges ------------ */
+  const GLYPH = {
+    badge: '<path d="M12 3.2l2.3 1.7 2.8-.2.9 2.7 2.3 1.7-.9 2.7.9 2.7-2.3 1.7-.9 2.7-2.8-.2L12 20.4l-2.3-1.7-2.8.2-.9-2.7-2.3-1.7.9-2.7-.9-2.7 2.3-1.7.9-2.7 2.8.2z"/><path d="M9.2 12.2l2 2 3.8-4.2"/>',
+    star: '<path d="M12 3.6l2.5 5.2 5.7.7-4.2 3.9 1.1 5.7L12 16.3l-5.1 2.8 1.1-5.7-4.2-3.9 5.7-.7z"/>',
+    check: '<circle cx="12" cy="12" r="8.2"/><path d="M8 12.4l2.8 2.8 5.3-5.8"/>',
+    flame: '<path d="M12 3c1 3.3 5 5.2 5 9.9a5 5 0 0 1-10 0c0-2.4 1.4-3.7 2.4-4.9.3 1.5 1 2.5 2 3 .1-2.9-1-5.3.6-8z"/>',
+    eye: '<path d="M2.8 12s3.4-5.8 9.2-5.8 9.2 5.8 9.2 5.8-3.4 5.8-9.2 5.8S2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.7"/>',
+    heart: '<path d="M12 19.6s-7-4.4-7-9.8a4 4 0 0 1 7-2.6 4 4 0 0 1 7 2.6c0 5.4-7 9.8-7 9.8z"/><path d="M5.6 12h3l1.4-2.4 2 4.6 1.5-2.2h4.8"/>',
+    solo: '<circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c.8-3.8 3.4-5.8 6.5-5.8s5.7 2 6.5 5.8"/>',
+    bell: '<path d="M6.5 15.8V11a5.5 5.5 0 0 1 11 0v4.8l1.6 2H4.9z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    map: '<path d="M12 20.8s-5.8-5.4-5.8-10.6a5.8 5.8 0 0 1 11.6 0c0 5.2-5.8 10.6-5.8 10.6z"/><circle cx="12" cy="10.2" r="2.3"/>',
+    crown: '<path d="M4.5 17l-1.3-8.6 4.9 3.7L12 5.3l3.9 6.8 4.9-3.7-1.3 8.6z"/><path d="M4.8 20h14.4"/>',
+  };
+  function badgeHTML(id, locked, tag) {
+    const b = RW.BADGES.find((x) => x.id === id);
+    return `<${tag || 'button'} class="bdg ${locked ? 'lock' : ''} g-${b.g}" ${tag ? '' : `data-act="badge" data-id="${b.id}"`} aria-label="${esc(b.label)}${locked ? ', locked' : ''}: ${esc(b.how)}"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" class="bd-rim"/><circle cx="24" cy="24" r="16.5" class="bd-in"/><g transform="translate(12 12)" class="bd-g">${GLYPH[b.g]}</g></svg><small>${esc(b.label)}</small></${tag || 'button'}>`;
+  }
+  const starSvg = (on, i, cls) => `<svg class="${cls || 'st'} ${on ? 'on' : ''}" style="--i:${i}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>`;
+  function lvHTML(lv, xp, from, up) {
+    return `<div class="rw-lv"><span class="lv-n" aria-hidden="true">${lv.n}</span><div class="lv-b"><b>${esc(lv.title)}${up ? ' <em class="lvup">Level up</em>' : ''}</b><div class="lv-bar" aria-hidden="true"><i style="--from:${(from * 100).toFixed(1)}%;--to:${(lv.pct * 100).toFixed(1)}%"></i></div><small>Level ${lv.n} · ${fmtN(xp)} XP${lv.hi ? ` · ${fmtN(lv.hi - xp)} to ${esc(lv.next)}` : ' · top of the ladder'}</small></div></div>`;
+  }
+  function rewardHTML() {
+    const r = s.reward; if (!r) return '';
+    const up = r.lvAfter.n > r.lvBefore.n, from = up ? 0 : r.lvBefore.pct;
+    const nextStar = r.stars < 3 ? `${RW.STARS[r.stars]} for ${r.stars ? 'the next' : 'a'} star` : 'Three stars';
+    return `<section class="reward ${ui.debDone ? 'shown' : 'play'}" aria-label="Rewards">
+      <div class="rw-stars" aria-label="${r.stars} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < r.stars, i)).join('')}<small>${esc(nextStar)}${r.prevStars > r.stars ? ` · your best is ${r.prevStars}` : r.stars > r.prevStars && r.prevStars ? ' · new best' : ''}</small></div>
+      <div class="rw-mid"><h3>Shift goals</h3>${goalsHTML(r.goals, 'wide')}</div>
+      <div class="rw-xp"><ul>${r.lines.map((l, i) => `<li style="--i:${i}"><span>${esc(l.k)}</span><b>+${fmtN(l.v)}</b></li>`).join('')}<li class="tot" style="--i:${r.lines.length}"><span>This shift</span><b>+${fmtN(r.total)} XP</b></li></ul>
+        ${lvHTML(r.lvAfter, r.after, from, up)}</div>
+      ${r.earned.length ? `<div class="rw-badges"><h3>New badge${r.earned.length > 1 ? 's' : ''}</h3><div>${r.earned.map((b) => badgeHTML(b, false, 'span')).join('')}</div></div>` : ''}
+    </section>`;
+  }
+  function careerHTML() {
+    const xp = prof.xp || 0, lv = RW.level(xp), have = prof.badges || {}, n = Object.keys(have).length;
+    return `<section class="career" aria-label="Your career"><div class="cr-l"><p class="eyebrow">Your career</p>${lvHTML(lv, xp, 0, false)}</div>
+      <div class="cr-b"><p class="eyebrow">Badges <span>${n} of ${RW.BADGES.length}</span></p><div class="cr-badges">${RW.BADGES.map((b) => badgeHTML(b.id, !have[b.id])).join('')}</div></div></section>`;
+  }
+
   /* ------------ debrief ------------ */
   function vDebrief() {
     const d = E.debrief(s);
@@ -553,6 +726,7 @@
     return `<main><div class="deb">
       <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
+      ${rewardHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
@@ -591,6 +765,7 @@
     station: [
       { sel: () => `.door[data-pid="${(s.answers.rank || [])[0]}"]`, alt: '.door[data-act="goto"]', text: 'You picked this room first. Tap the door, or a name below, to walk in. The clock only moves when you act.' },
       { sel: '.phone', text: () => `Your unit phone. ${cna().name}, the lab, pharmacy and the doctors reach you here. Some messages need an answer.` },
+      { sel: '.skip', text: 'Caught up? Skip ahead. The clock runs until something needs you, then stops. Care XP, your streak and four shift goals sit up top.' },
     ],
     room: [
       { sel: '.pt', text: 'Tap your patient to hear from them. Tap anything in the room to look closer. Looking is free.' },
@@ -634,6 +809,7 @@
     const to = +n.dataset.to, t0 = performance.now(), dur = reduced() ? 1 : 1100;
     root.querySelectorAll('.meter .bar i').forEach((b) => { const w = b.style.width; b.style.width = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; })); });
     const tick = (now) => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); n.textContent = Math.round(to * e); if (p < 1) requestAnimationFrame(tick); else FX.play(to >= 72 ? 'right' : 'commit'); };
+    const r = s && s.reward; if (r && !reduced()) { for (let i = 0; i < r.stars; i++) setTimeout(() => FX.play('star'), 1300 + i * 380); if (r.lvAfter.n > r.lvBefore.n) setTimeout(() => FX.play('levelup'), 2900); else if (r.earned.length) setTimeout(() => FX.play('right'), 2900); }
     requestAnimationFrame(tick);
   }
 
@@ -803,9 +979,30 @@
 
   function ovReview() { return sheet('Your reply, reviewed', `<p class="muted" style="margin-top:0">${esc(ui.review.title)}</p>${reviewHTML(ui.review.list, 'Why it matters')}`, `<button class="btn btn-primary" data-act="close">Continue</button>`, { label: 'Decision review' }); }
   function ovCalls() {
-    const list = s.judg.slice().reverse();
+    const list = s.judg.slice().reverse(), m = RW.mult(s.streak || 0);
     const good = s.judg.filter((j) => j.delta > 0).length, bad = s.judg.filter((j) => j.delta < 0).length;
-    return sheet('Your decisions so far', `<p class="muted" style="margin-top:0">${good} good call${good === 1 ? '' : 's'}, ${bad} to rethink. Newest first. The full breakdown comes at the debrief.</p>${list.length ? list.map((j) => `<div class="calls-t">${E.clock(j.t)}${j.pid ? ' · ' + esc(j.pid) : ''}</div>${reviewHTML([j], ' ').replace('<span class="res-cl"> </span>', '')}`).join('') : '<p class="empty">No decisions scored yet.</p>'}`, `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Decision log', wide: true });
+    const top = `<div class="prog-top"><div class="pg-xp">${ICON.xp}<b>${fmtN(s.xp || 0)}</b><small>care XP this shift</small></div><div class="pg-st ${m > 1 ? 'hot' : ''}">${ICON.flame}<b>${s.streak || 0}</b><small>in a row${m > 1 ? ` · ×${m} XP` : ''} · best ${s.bestStreak || 0}</small></div></div>
+      <p class="muted pg-how">On-time tasks and good calls build your streak; the streak multiplies XP (×1.5 at 3, ×2 at 5, ×2.5 at 8, ×3 at 12). Anything going overdue, or a call to rethink, resets it.</p>
+      <h3 class="pg-h">Shift goals</h3>${goalsHTML(RW.goals(s, C(), A()), 'wide')}`;
+    const dec = fbNow() ? `<h3 class="pg-h">Decisions <span class="muted">${good} good, ${bad} to rethink</span></h3>${list.length ? list.map((j) => `<div class="calls-t">${E.clock(j.t)}${j.pid ? ' · ' + esc(j.pid) : ''}</div>${reviewHTML([j], ' ').replace('<span class="res-cl"> </span>', '')}`).join('') : '<p class="empty">No decisions scored yet.</p>'}` : '<p class="muted">Decision feedback is set to show at the debrief.</p>';
+    return sheet('Your shift so far', top + dec, `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Your shift so far', wide: true });
+  }
+  /* ------------ floor calls ------------ */
+  function openFloor(id) { ui.fl = { id }; ui.ov = 'floor'; ui.chart = null; render(); }
+  function ovFloor() {
+    const v = FL.view(s, C(), ui.fl.id), w = who(v.from), left = Math.max(0, v.exp - s.t), answered = v.done === 'answered', missed = v.done === 'missed';
+    let body = `<p class="fl-from"><b>${esc(w.name)}</b>${w.role ? `, ${esc(w.role)}` : ''} · ${E.clock(v.at)}${!v.done ? ` · <span class="fl-left ${left <= 3 ? 'hurry' : ''}">${left} min to respond</span>` : ''}</p><p class="dlg-text fl-text">${esc(v.text)}</p><h3 class="fl-q">${esc(v.q)}</h3>`;
+    if (missed) body += `<div class="warnbox">Nova took this one while you were busy.</div>`;
+    const show = answered && fbNow();
+    body += `<div class="fl-opts">${v.opts.map((o) => {
+      if (!v.done) return `<button class="choice fl-opt" data-act="floor-pick" data-i="${o.i}">${esc(o.t)}</button>`;
+      const me = answered && o.i === v.pick, cls = show ? (me ? (o.v === 2 ? 'right' : o.v === 1 ? 'ok' : 'wrong') + ' picked' : o.v === 2 ? 'right' : 'dim') : me ? 'picked' : 'dim';
+      return `<div class="choice fl-opt ${cls}">${show && (me || o.v === 2) ? `<span class="fl-tag">${me ? (o.v === 2 ? 'Your answer · best' : o.v === 1 ? 'Your answer · acceptable' : 'Your answer') : 'Best answer'}</span>` : me ? '<span class="fl-tag">Your answer</span>' : ''}${esc(o.t)}${show && (me || o.v === 2) ? `<small>${esc(o.fb)}</small>` : ''}</div>`;
+    }).join('')}</div>`;
+    if (show || missed) body += `<div class="fl-teach"><span class="res-cl">Keep this</span><p>${esc(v.teach)}</p></div>`;
+    else if (answered) body += '<p class="muted">Logged. You\'ll see how it went at the debrief.</p>';
+    const foot = v.done ? `<button class="btn btn-primary" data-act="close">Back to work</button>` : `<span class="muted fl-cost">Answering takes ${v.cost} min</span>`;
+    return sheet(esc(v.title), body, foot, { face: faceOf(v.from), label: `Floor call: ${v.title}`, noScrimClose: !!v.done && false });
   }
   function ovInbox() { return sheet('Unit phone', s.inbox.length ? s.inbox.map(msgHTML).join('') : '<p class="empty">No messages yet.</p>', `<button class="btn" data-act="readall">Mark all read</button><button class="btn btn-primary" data-act="close">Close</button>`); }
 
@@ -839,7 +1036,7 @@
   }
   function ovHelp() {
     return sheet('How it plays', `<div class="help">
-      <p><b>You are the nurse.</b> This shift runs ${hhmm(C(), 0)} to ${hhmm(C(), C().length)}. The clock moves only when you act: assessing, giving meds, calling, walking between rooms. Each action shows its cost.</p>
+      <p><b>You are the nurse.</b> This shift runs ${hhmm(C(), 0)} to ${hhmm(C(), C().length)}. The clock moves when you act (assessing, giving meds, calling, walking between rooms), and each action shows its cost. When you're caught up, <b>Skip ahead</b> at the station: the clock runs until something needs you, then stops.</p>
       <p><b>Report.</b> The outgoing nurse gives you report. Flag the lines that matter; they stay on your brain sheet all shift. Flagging everything counts against you.</p>
       <p><b>Who first.</b> After report you rank your patients. Nova tells you how her order compares, and explains why at the debrief.</p>
       <p><b>The hallway.</b> Doors with an amber light need attention. Go into a room to assess, intervene, give or hold medications, and talk with patients and families. Tap objects in the room to inspect them.</p>
@@ -848,6 +1045,8 @@
       <p><b>Nova.</b> Your charge nurse gives ${C().novaCredits || 3} nudges per shift. She points; she doesn't answer for you.</p>
       <p><b>Rounds and call lights.</b> Patients you haven't checked on in a while start asking for things. An hourly round heads that off. Some requests your ${esc(cna().role.toLowerCase())} can take; some need you.</p>
       <p><b>Follow-up.</b> When a patient leaves for the ICU, ED or OR, they're still on your list: call report, update the family, write the note, and call for updates on how they're doing.</p>
+      <p><b>Floor calls.</b> The rest of the unit needs you too: a critical lab, a colleague's question, a visitor at the desk. Each is a quick decision on a clock. Let it run out and Nova takes it.</p>
+      <p><b>XP, streaks and goals.</b> On-time work and good calls earn care XP. A run of them builds a streak that multiplies it; anything going overdue resets it. Four shift goals, three stars and badges carry across shifts on your career ladder.</p>
       <p><b>Report.</b> In the last hour, give report to the oncoming nurse on everyone still on the unit. What's pending matters more than what's done.</p>
       <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
   }
@@ -868,6 +1067,7 @@
     const root = $('#app');
     const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
     const y = window.scrollY;
+    if (s && !s.ended && (ui.view === 'station' || ui.view === 'room')) { if (fbNow()) tallyJudg(); goalWatch(); }
     let h = '';
     if (ui.view === 'home' || !s) h = vHome();
     else {
@@ -899,6 +1099,7 @@
     else if (ov === 'roster' && s) h += ovRoster();
     else if (ov === 'away' && ui.away && s) h += ovAway();
     else if (ov === 'give' && ui.rep && s) h += ovGive();
+    else if (ov === 'floor' && ui.fl && s) h += ovFloor();
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     root.innerHTML = h;
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
@@ -909,7 +1110,7 @@
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
     ui.enter = false; ui.adv = null; if (s && ui.view === 'station') ui.msgSeen = s.seq;
-    coachPlace(); debriefAnim(root);
+    coachPlace(); debriefAnim(root); flushPops();
     FX.setMood(musicMood());
     if (ov === 'crit' || (ov === 'result' && ui.res && ui.res.crit)) { const k = ov === 'crit' ? (s.inbox.find((x) => x.id === ui.crit) || {}).pid : ui.res.pid; setTimeout(() => R.poke(k + ':bust'), 700); }
     if (ui.spot && ui.view === 'room') { const sp = ui.spot; ui.spot = null; const rt = root.querySelector('.room-top'); if (rt) { rt.classList.add('spot'); setTimeout(() => R.poke('room:' + sp), 350); setTimeout(() => rt.classList.remove('spot'), 2600); } }
@@ -952,7 +1153,7 @@
     spend(move, () => {});
     if (s.ended) return;
     if (s.loc !== pid) { ui.dock = 'brain'; ui.brainAll = false; }
-    s.loc = pid; s.lastRoom = pid; s.p[pid].seenAt = s.t; s.p[pid].callLight = false; ui.res = null; ui.flash = null;
+    s.loc = pid; s.lastRoom = pid; s.p[pid].seenAt = s.t; if (s.p[pid].firstSeen === undefined) s.p[pid].firstSeen = s.t; s.p[pid].callLight = false; ui.res = null; ui.flash = null;
     ui.view = 'room'; s.view = 'room'; ui.ov = null; ui.enter = true; ui.caption = null; ui.chart = null; ui.lastFind = null;
     s.inbox.forEach((m) => { if (m.pid === pid) m.read = true; });
     save(); render(true);
@@ -1027,6 +1228,7 @@
     if (r.act === 'sbar') { ui.ov = 'sbar'; ui.sbar = { pid: r.pid, picked: [], req: null, reply: null }; }
     if (r.act === 'chart') { ui.ov = 'chart'; ui.chart = { pid: r.pid, tab: r.tab || 'overview' }; }
     if (r.act === 'away') { m.read = true; return openAway(r.pid); }
+    if (r.act === 'floor') { m.read = true; return openFloor(r.id); }
     if (r.act === 'bell-cna') { m.done = true; m.read = true; const j0 = s.judg.length; spend(1, (Ax2) => F.bellToCna(s, Ax2, r.pid)); if (s.ended) return; const rv = judgSince(j0, r.pid); if (rv.length && fbNow()) { ui.review = { title: `You replied: "${r.label}"`, list: rv }; ui.ov = 'review'; reviewSound(rv); } else if (s.p[r.pid].bell && s.p[r.pid].bell.cnaAt) stamp(`${cna().name} is on it`, 1); return render(); }
     const rx = C().replies && C().replies[r.act];
     if (rx) { m.done = true; const j0 = s.judg.length; spend(1, (Ax2) => rx(s, Ax2, m, r)); if (s.ended) return; const rv = judgSince(j0).filter((j) => !j.pid || j.pid === m.pid); if (rv.length && fbNow()) { ui.review = { title: `You replied: "${r.label}"`, list: rv }; ui.ov = 'review'; reviewSound(rv); } }
@@ -1150,7 +1352,17 @@
     reply(el) { const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m || !m.replies) return; ui.toasts = ui.toasts.filter((x) => x !== m.id); ui.ov = null; onReply(m, m.replies[+el.dataset.i]); },
     'toast-x'(el) { const id = +el.dataset.m; ui.toasts = ui.toasts.filter((x) => x !== id); const m = s.inbox.find((x) => x.id === id); if (m) m.read = true; render(); },
     chart(el) { ui.chart = { pid: el.dataset.pid, tab: el.dataset.tab || (ui.chart && ui.chart.pid !== el.dataset.pid ? ui.chart.tab : 'overview') }; if (!el.dataset.tab && !(ui.ov === 'chart')) ui.chart.tab = 'overview'; ui.ov = 'chart'; render(); },
-    catchup() { spend(10, (Ax) => Ax.log(null, 'Charted and caught up.', 'act')); if (!s.ended) render(); },
+    catchup() { spend(10, (Ax) => Ax.log(null, 'Charted and caught up.', 'act')); if (!s.ended) render(); },   // test harness only; players skip ahead
+    skip() { skipAhead(); },
+    floor(el) { if (!s || s.ended) return; openFloor(el.dataset.id); },
+    'floor-pick'(el) {
+      const id = ui.fl.id, v0 = FL.view(s, C(), id); if (v0.done) return render();
+      let r = null; spend(v0.cost, (Ax) => { r = FL.answer(s, Ax, id, +el.dataset.i); });
+      if (s.ended) return; if (!r) return render();
+      if (fbNow()) { if (r.v === 2) gain(40, 'Floor call bonus', 'good'); FX.play(r.v === 2 ? 'right' : r.v === 1 ? 'commit' : 'miss'); } else FX.play('commit');
+      ui.ov = 'floor'; render();
+    },
+    badge(el) { const b = RW.BADGES.find((x) => x.id === el.dataset.id); if (b) hint(el, `${b.label}: ${b.how}${prof.badges && prof.badges[b.id] ? ' ✓' : ''}`); },
     endask() { const late = s.t >= C().length - 30, left = pts().filter((x) => !gone(s.p[x.id]) && !(s.report && s.report[x.id])).map((x) => x.room); ui.confirm = { title: late ? 'End the shift?' : 'End the shift early?', text: late ? (left.length ? `You haven't given ${oncoming().name} report on ${left.join(', ')}. The next nurse starts blind on them.` : `${oncoming().name} has report on everyone. You'll see your debrief.`) : 'Unfinished work will count as missed in your debrief.', ok: late && left.length ? 'End without report' : 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
     filter(el) { ui.filter = el.dataset.k; render(); },
@@ -1291,7 +1503,7 @@
   function boot() {
     applySettings();
     const all = CASES.map((id) => E.getCase(id)).filter(Boolean);
-    all.forEach((k) => { const add = F.staffFor(k, all); Object.keys(add).forEach((key) => { if (!k.staff[key]) k.staff[key] = add[key]; }); });
+    all.forEach((k) => { const add = Object.assign(F.staffFor(k, all), FL.staffFor()); Object.keys(add).forEach((key) => { if (!k.staff[key]) k.staff[key] = add[key]; }); });
     CASES.forEach((id) => { const k = E.getCase(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
     document.addEventListener('click', onClick);
     document.addEventListener('pointerdown', startHold);

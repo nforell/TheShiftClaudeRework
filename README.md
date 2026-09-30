@@ -22,6 +22,9 @@ These run on every unit, from `src/flow.js`:
 - **Hourly rounds and call lights.** A patient nobody has checked on for a while asks for something. Answer it, round ahead of it, or send your aide, but some requests need a nurse.
 - **PRN reassessment.** Every as-needed pain, antiemetic, bronchodilator or sedative dose becomes a "did it work?" task.
 - **Report to the oncoming nurse.** In the last hour, give report on everyone still on the unit. Pending work you mention is fine; pending work you don't mention is a miss.
+- **Skip ahead.** At the station, the clock runs minute by minute (up to 30) and stops the moment something needs you: a message, a task coming due, an admission, report time. Silent deterioration does not wake you.
+- **Floor calls** (`src/floor.js`). Up to five per shift from the rest of the unit: critical values, a colleague's needlestick, a visitor, a dose to check. Each is a timed decision with feedback. The pool is shared plus unit-specific, and which calls come changes every run.
+- **Rewards** (`src/reward.js`). Care XP for on-time work and good calls, a streak multiplier (×1.5 to ×3) that anything overdue resets, four shift goals, stars at 58/72/85, a nine-level career ladder and ten badges, all saved to the profile.
 
 ## Develop
 Source is plain JavaScript on a global `window.Shift` object:

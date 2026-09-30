@@ -20,7 +20,7 @@ window.Shift = window.Shift || {};
       v: 1, caseId, t: 0, view: 'handoff', hIdx: 0, loc: 'station',
       brain: [], p: {}, meds: {}, inbox: [], log: [], judg: [], fired: {},
       nova: c.novaCredits || 3, novaLog: [], deleg: [], ended: false,
-      answers: {}, seq: 0, fresh: [], lastRoom: null,
+      answers: {}, seq: 0, fresh: [], lastRoom: null, seed: Math.floor(Math.random() * 1e9), xp: 0, streak: 0, bestStreak: 0, xpSeen: 0,
     };
     c.patients.forEach((d) => {
       const P = Object.assign({ k: {}, vit: [], labs: [], notes: [], orders: [], seenAt: null, assessAt: {}, arrived: !d.arrives },
@@ -69,9 +69,11 @@ window.Shift = window.Shift || {};
     return a;
   }
 
-  function advance(s, mins) {
+  /* Move the clock. With `until`, stop early at the first minute it names a reason, and return that reason. */
+  function advance(s, mins, until) {
     const c = cases[s.caseId];
     const A = api(s);
+    let why = null;
     for (let i = 0; i < mins; i++) {
       if (s.t >= c.length) break;
       s.t += 1;
@@ -84,22 +86,25 @@ window.Shift = window.Shift || {};
         if (ev.when(s, A)) { s.fired[ev.id] = s.t; ev.run(s, A); }
       });
       if (S.flow) S.flow.tick(s, A, c);
+      if (S.floor) S.floor.tick(s, A, c);
+      if (until) { why = until(s, A); if (why) break; }
     }
     if (s.t >= c.length) s.ended = true;
+    return why;
   }
 
   /* Run an action: effect happens now, then the clock moves. */
-  function perform(s, cost, fn) {
-    if (s.ended) return;
+  function perform(s, cost, fn, until) {
+    if (s.ended) return null;
     const A = api(s);
     if (fn) fn(A);
-    advance(s, cost || 0);
+    return advance(s, cost || 0, until);
   }
 
   function finish(s) {
     const c = cases[s.caseId];
     const A = api(s);
-    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); if (S.flow) S.flow.endChecks(s, A); }
+    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); if (S.flow) S.flow.endChecks(s, A); if (S.floor) S.floor.endChecks(s, A); }
     s.ended = true;
     return debrief(s);
   }
