@@ -1117,7 +1117,7 @@ div.fl-opt{cursor:default}
 .fl-cost{align-self:center;font-size:.85rem}
 
 /* Fast-forward */
-.ff{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 55%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:ffIn .18s ease-out;cursor:pointer}
+.ff{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(8,20,18,.32);animation:ffIn .18s ease-out;cursor:pointer}
 @keyframes ffIn{0%{opacity:0}}
 .ff.out{animation:ffOut .3s ease-in forwards}
 @keyframes ffOut{to{opacity:0}}
@@ -8245,8 +8245,8 @@ window.Shift = window.Shift || {};
     el.innerHTML = `<div class="ff-card"><svg class="ff-clock" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="ff-face"/>${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="10" x2="50" y2="${i % 3 ? 15 : 18}" transform="rotate(${i * 30} 50 50)"/>`).join('')}<line class="ff-hh" x1="50" y1="50" x2="50" y2="28"/><line class="ff-mh" x1="50" y1="50" x2="50" y2="16"/><circle cx="50" cy="50" r="3.2" class="ff-hub"/></svg>
       <div class="ff-t"><b class="ff-now">${E.clock(f.t0)}</b><small>+<span class="ff-m">0</span> min</small></div>
       <p class="ff-sub">${esc(pick[0])} · ${esc(pick[1].toLowerCase())}</p>
-      <p class="ff-why">${f.why.from ? faceOf(f.why.from) : f.why.pid && def(f.why.pid) ? pface(f.why.pid) : ''}<span>${esc(f.why.text)}</span></p></div>`;
-    document.body.appendChild(el); R.hydrate(el);
+      <p class="ff-why"><span>${esc(f.why.text)}</span></p></div>`;
+    document.body.appendChild(el);
     const dur = reduced() ? 120 : Math.min(1500, 420 + mins * 20), T0 = performance.now(), st = C().start || 420;
     const mh = el.querySelector('.ff-mh'), hh = el.querySelector('.ff-hh'), now = el.querySelector('.ff-now'), mm = el.querySelector('.ff-m');
     const done = () => { if (el.classList.contains('out')) return; el.classList.add('out'); setTimeout(() => el.remove(), 300); };
@@ -9026,6 +9026,7 @@ window.Shift = window.Shift || {};
     else if (ov === 'give' && ui.rep && s) h += ovGive();
     else if (ov === 'floor' && ui.fl && s) h += ovFloor();
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
+    if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     root.innerHTML = h;
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;

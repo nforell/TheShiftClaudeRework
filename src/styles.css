@@ -1106,7 +1106,7 @@ div.fl-opt{cursor:default}
 .fl-cost{align-self:center;font-size:.85rem}
 
 /* Fast-forward */
-.ff{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 55%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:ffIn .18s ease-out;cursor:pointer}
+.ff{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(8,20,18,.32);animation:ffIn .18s ease-out;cursor:pointer}
 @keyframes ffIn{0%{opacity:0}}
 .ff.out{animation:ffOut .3s ease-in forwards}
 @keyframes ffOut{to{opacity:0}}
