@@ -14,9 +14,12 @@ with cf.ThreadPoolExecutor(3) as ex:
     for j, out in ex.map(run, jobs):
         print(out)
         f = ROOT / 'tests' / 'out' / f'{j[0]}-{j[1]}-{j[2]}.json'
-        if not f.exists(): bad += 1; continue
+        if not f.exists(): bad += 1; print(f"::error title={j[0]} {j[1]}px {j[2]}::sweep crashed: {out[-280:]}"); continue
         d = json.loads(f.read_text())
-        if d['errs'] or any(r['overflow'] or r['overlap'] or r['covered'] for r in d['res']): bad += 1
+        probs = [f"JS error: {e}" for e in d['errs']] + [f"{r['state']}: {k} {x if k != 'overflow' else r['overflow']}" for r in d['res'] for k in ('overflow', 'overlap', 'covered') for x in (r[k] if isinstance(r[k], list) else ([r[k]] if r[k] else []))]
+        if probs:
+            bad += 1
+            for pr in probs[:4]: print(f"::error title={j[0]} {j[1]}px {j[2]}::{pr[:300]}")   # shows on the GitHub check
 print(subprocess.run([sys.executable, str(ROOT / 'tests' / 'soak.py')], capture_output=True, text=True).stdout.strip().splitlines()[-1])
 print('FAILED' if bad else 'ALL CLEAN', bad)
 sys.exit(1 if bad else 0)

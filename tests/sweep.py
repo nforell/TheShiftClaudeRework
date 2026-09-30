@@ -1,6 +1,6 @@
 """Visit every screen and sheet of one shift and check it: JS errors, sideways overflow, overlapping text,
 covered or undersized buttons, clipped text. Usage: python tests/sweep.py <case> <width> [light|dark]"""
-import sys, json, pathlib
+import sys, os, json, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GAME = (ROOT / 'dist' / 'the-shift.html').as_uri()
 OUT = ROOT / 'tests' / 'out'; OUT.mkdir(exist_ok=True)
@@ -10,7 +10,7 @@ AUD=(ROOT/'tests'/'audit.js').read_text()
 res=[]; errs=[]
 with sync_playwright() as p:
     b=p.chromium.launch(); ctx=b.new_context(viewport={'width':W,'height':844 if W<600 else 900}, is_mobile=W<600, has_touch=W<600); pg=ctx.new_page()
-    pg.route('**/fonts.googleapis.com/**', lambda r: r.abort())
+    if os.environ.get('CI') != 'true': pg.route('**/fonts.googleapis.com/**', lambda r: r.abort())   # offline sandboxes; CI loads the real fonts players see
     pg.on('pageerror',lambda e:errs.append(str(e)[:200]+' || '+(e.stack or '')[:300]))
     pg.goto(GAME); pg.wait_for_timeout(300)
     pg.evaluate(f"(()=>{{const p=JSON.parse(localStorage.getItem('theshift.profile.v1')||'{{}}');p.settings=Object.assign(p.settings||{{}},{{theme:'{theme}',sound:'off',music:'off',motion:'reduced'}});p.seen={{'coach:station':1,'coach:room':1}};localStorage.setItem('theshift.profile.v1',JSON.stringify(p))}})()")
