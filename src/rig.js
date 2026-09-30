@@ -312,13 +312,21 @@
     });
     if (!running && live.length) { running = true; last = now(); requestAnimationFrame(loop); }
   }
-  let last = 0, frame = 0;
+  /* Budget: characters step at 30 fps (12 in lite mode), and only the ones on screen. Breathing and blinking
+     read the same at 30 as at 60, at half the cost. */
+  let last = 0, frame = 0, fps = 30;
   function loop() {
     if (!live.length) { running = false; return; }
-    const t = now(), dt = Math.min(.05, t - last); last = t; frame++;
-    for (const I of live) { if (I.el.isConnected) step(I, t, dt, frame); }
+    const t = now();
+    if (t - last >= 1 / fps - .003) {
+      const dt = Math.min(.12, t - last); last = t; frame++;
+      if (frame % 12 === 1) live.forEach((I) => { if (!I.el.isConnected) { I.vis = false; return; } const r = I.el.getBoundingClientRect(); I.vis = r.width > 0 && r.bottom > -40 && r.top < innerHeight + 40 && r.right > -40 && r.left < innerWidth + 40; });
+      for (const I of live) { if (I.vis !== false && I.el.isConnected) step(I, t, dt, frame); }
+    }
     requestAnimationFrame(loop);
   }
+  function setPower(p) { fps = p === 'lite' ? 12 : 30; }
+  const stats = () => ({ live: live.length, onscreen: live.filter((I) => I.vis !== false && I.el.isConnected).length, fps });
   function find(ck) { return live.find((I) => I.ck === ck || I.ck.startsWith(ck + ':')); }
   function poke(ck) { const I = find(ck); if (I) { I.poke = now(); remember(I); } }
   function hover(ck, on) { const I = find(ck); if (I) I.hover = on; }
@@ -332,5 +340,5 @@
   }
   function setReduced(on) { reduced = !!on || osReduced; }
   setReduced(false);
-  S.rig = { define, has, icon, bust, place, hydrate, poke, hover, say, setReduced, derive, BASE };
+  S.rig = { define, has, icon, bust, place, hydrate, poke, hover, say, setReduced, setPower, stats, derive, BASE };
 })(window.Shift);

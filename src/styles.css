@@ -1277,3 +1277,45 @@ svg.medal{width:48px;height:48px;flex:none}
 .ln-f p{margin:0;flex-basis:100%}
 .reward.play ~ .learn{animation:linein .5s 3.3s ease-out backwards}
 @media (max-width:760px){.ach-hero{grid-template-columns:1fr}.ach-sum{grid-template-columns:repeat(2,minmax(0,1fr))}.trks{grid-template-columns:1fr}}
+
+/* ===== Audit fixes ===== */
+/* scene decorations never swallow a tap meant for the object behind them */
+svg.scene *{pointer-events:none}
+svg.scene .clue,svg.scene .clue *,svg.scene .pt,svg.scene .pt *,svg.scene [data-act],svg.scene [data-act] *{pointer-events:auto}
+/* spacing where big type crowded its label */
+.deb-score small{margin-top:1rem}
+.home h1{margin-top:1.7rem}
+.big-clock{margin:.3rem 0 .2rem}
+/* brain sheet rows: the subtitle stops before the status tag */
+.bs-who{display:block;min-width:0;overflow:hidden}
+/* comfortable tap targets */
+.rk-peek{min-height:32px;padding:.35rem .1rem}
+.chip.prio-chip{min-height:30px;padding:.2em .7em}
+.ro-mv .btn{min-height:38px;min-width:40px}
+.cmd-go{padding:.3rem 0;min-height:30px}
+/* home cast names wrap instead of clipping */
+.home-cast figcaption{overflow-wrap:break-word;hyphens:auto}
+@media (max-width:640px){.home-cast{grid-template-columns:repeat(3,minmax(0,1fr))!important}.home-cast figure.lead{grid-row:auto}.home-cast figure.adm{grid-column:span 3}.home-cast figcaption{font-size:.74rem;padding:.4rem .5rem .5rem}.home-cast figcaption b{font-size:.8rem}}
+/* phones: messages drop below the patient strip, so the strip stays tappable */
+@media (max-width:640px){.toasts{top:calc(128px + env(safe-area-inset-top,0px))}}
+/* the "tense" edge glow pulses by opacity (composited) instead of repainting a full-screen shadow every frame */
+body.tense::after{box-shadow:inset 0 0 120px rgba(160,20,10,.22);animation:tenseO 3.2s ease-in-out infinite;will-change:opacity}
+@keyframes tenseO{50%{opacity:.5}}
+/* Lite graphics: no looping animations, no backdrop blur. Everything still works; it just stops moving. */
+:root[data-lite] *,:root[data-lite] *::before,:root[data-lite] *::after{animation-iteration-count:1!important}
+:root[data-lite] .top,:root[data-lite] .pstrip{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:var(--bg)}
+:root[data-lite] body.tense::after{animation:none}
+.set-sub{display:block;font-size:.76rem;color:var(--ink-2)}
+table.health th{white-space:nowrap;width:1%;padding-right:1rem}
+table.health td{white-space:normal}
+.h-err{white-space:pre-wrap;word-break:break-word;font-size:.75rem;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:.6rem;max-height:30vh;overflow:auto}
+.home .eyebrow{margin-bottom:.9rem}
+/* tablets: the nameplate lets taps through to the room, and the look-around chips are there too */
+.plate{pointer-events:none}.plate button,.plate .chip,.plate a{pointer-events:auto}
+@media (min-width:641px) and (max-width:960px){
+  .lookaround{display:flex;gap:.35rem;overflow-x:auto;padding:.55rem .1rem .1rem;scrollbar-width:none;align-items:center}
+  .lookaround span{flex:none;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:.15rem}
+  .look{flex:none;min-height:36px;padding:.3em .8em;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:.84rem;cursor:pointer;white-space:nowrap}
+}
+.big-clock{padding-top:.1em}
+.brain li.tap{min-height:34px}

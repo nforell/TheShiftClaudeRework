@@ -107,6 +107,9 @@
       if (L) { L.times += 1; L.last = Date.now(); if (L.fixed) { L.fixed = null; out.again.push(k); } }
       else { prof.lessons[k] = { caseId: /^floor\|/.test(k) ? null : s.caseId, text: j.text, why: j.why, dom: j.domain, pid: j.pid || null, first: Date.now(), last: Date.now(), times: 1, fixed: null }; out.added.push(k); }
     });
+    // Keep saved data bounded: at most 300 lessons, dropping the oldest fixed ones first.
+    const keys = Object.keys(prof.lessons);
+    if (keys.length > 300) keys.sort((a, b) => (!!prof.lessons[b].fixed - !!prof.lessons[a].fixed) || (prof.lessons[a].last || 0) - (prof.lessons[b].last || 0)).slice(0, keys.length - 300).forEach((k) => { delete prof.lessons[k]; });
     // Badges that need history.
     const prev = (prof.runs || []).find((r) => r.caseId === s.caseId);
     const was = prof.badOut[s.caseId] || [];

@@ -24,7 +24,10 @@
   const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption: null, toasts: [], rank: null, rankDone: false, dlg: null, med: null, sbar: null, delegMsg: null, nova: null, hIdx: 0, newLog: 0, filter: 'all', confirm: null, adv: null, stamp: null, justKey: null, busy: false };
 
   const C = () => E.getCase(caseId);
-  const A = () => E.api(s);
+  // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
+  let _A = null, _As = null;
+  const A = () => (_As === s && _A ? _A : (_As = s, _A = E.api(s)));
+  let RC = null;   // per-render cache: task rows computed once per patient per redraw
   const def = (id) => C().patients.find((p) => p.id === id);
   const staff = (k) => C().staff[k] || { name: k, role: '', look: null };
   /* Rig inputs for a patient: what their body is doing right now, not what was last charted. */
@@ -55,10 +58,25 @@
   const o2txt = (o) => (o === 'Room air' ? 'room air' : o);
   const hhmm = (c, t) => { const m = (c.start || 420) + Math.round(t); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 
+  /* Frame monitor: if this device can't keep up (under ~30 fps for a few seconds), switch to lighter graphics on Auto. */
+  const FM = { dts: [], last: 0, lite: false, bad: 0, fps: 60 };
+  function frameMon(ts) {
+    if (!document.hidden && FM.last) { const d = ts - FM.last; if (d < 1000) FM.dts.push(d); }
+    FM.last = ts;
+    if (FM.dts.length >= 90) {
+      const a = FM.dts.slice().sort((x, y) => x - y), med = a[a.length >> 1]; FM.fps = Math.round(1000 / med); FM.dts = [];
+      FM.bad = med > 34 ? FM.bad + 1 : 0;
+      if (FM.bad >= 2 && !FM.lite && (prof.settings.gfx || 'auto') === 'auto') { FM.lite = true; applySettings(); const n = document.querySelector('.top .mark') || document.body; hint(n, 'Switched to lighter graphics to keep things smooth. Change it in Settings.'); }
+    }
+    requestAnimationFrame(frameMon);
+  }
   function applySettings() {
     const r = document.documentElement, st = prof.settings;
     if (st.theme === 'system') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', st.theme);
     r.setAttribute('data-text', st.text); r.setAttribute('data-motion', st.motion);
+    const lite = st.gfx === 'lite' || ((st.gfx || 'auto') === 'auto' && FM.lite);
+    if (lite) r.setAttribute('data-lite', ''); else r.removeAttribute('data-lite');
+    if (R && R.setPower) R.setPower(lite ? 'lite' : 'full');
     FX.setOn(st.sound !== 'off'); FX.setMusic(st.music !== 'off');
   }
 
@@ -501,6 +519,10 @@
     return `<div class="b-grp ghosts"><h4>Just completed<span>${gs.length}</span></h4><ul>${gs.map((g) => `<li class="ghost" style="--gd:-${n - g.born}ms"><div class="b-row gdone"><span class="b-tm">${E.clock(s.t)}</span><span class="b-tx"><b>${pid === null ? esc(g.pid) + ' · ' : ''}${esc(g.text)}</b><small>Done${g.by ? ' by ' + esc(g.by) : ''}</small></span><span class="gcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg></span><span></span></div></li>`).join('')}</ul></div>`;
   }
   function brainRows(d, P) {
+    if (RC && RC.has(d.id)) return RC.get(d.id);
+    const out = brainRows0(d, P); if (RC) RC.set(d.id, out); return out;
+  }
+  function brainRows0(d, P) {
     const rows = [];
     // Shift assessment: every patient needs one, early.
     const sysDone = Object.keys(P.assessAt || {}).length + (P.vit.some((v) => v.by === 'You') ? 1 : 0);
@@ -1093,6 +1115,8 @@
     return sheet('Settings', `<div class="setrow"><span>Theme</span>${seg('theme', [['system', 'System'], ['light', 'Day'], ['dark', 'Night']])}</div>
       <div class="setrow"><span>Text size</span>${seg('text', [['normal', 'Standard'], ['large', 'Large']])}</div>
       <div class="setrow"><span>Motion</span>${seg('motion', [['full', 'Full'], ['reduced', 'Reduced']])}</div>
+      <div class="setrow"><span>Graphics<small class="set-sub">${FM.lite && (st.gfx || 'auto') === 'auto' ? 'Auto switched to Lite on this device' : 'Lite keeps things smooth on older computers'}</small></span>${seg('gfx', [['auto', 'Auto'], ['full', 'Full'], ['lite', 'Lite']])}</div>
+      <div class="setrow"><span>Health check<small class="set-sub">Speed, memory and the last error, for troubleshooting</small></span><button class="btn" data-act="health">Open</button></div>
       <div class="setrow"><span>Decision feedback</span>${seg('feedback', [['now', 'Right away'], ['debrief', 'At the debrief']])}</div>
       <div class="setrow"><span>Music</span>${seg('music', [['on', 'On'], ['off', 'Off']])}</div>
       <div class="setrow"><span>Sound effects and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>
@@ -1114,6 +1138,25 @@
       <p><b>Report.</b> In the last hour, give report to the oncoming nurse on everyone still on the unit. What's pending matters more than what's done.</p>
       <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
   }
+  function ovHealth() {
+    const pm = performance.memory, rs = R.stats ? R.stats() : {}, last = PERF.last || {};
+    let err = null; try { err = JSON.parse(localStorage.getItem('theshift.lastError') || 'null'); } catch (e) { /* storage off */ }
+    const nodes = document.getElementsByTagName('*').length, save = (() => { try { return Math.round(((localStorage.getItem('theshift.save.v1') || '').length + (localStorage.getItem('theshift.profile.v1') || '').length) / 1024); } catch (e) { return null; } })();
+    const row = (k, v, ok) => `<tr><th>${k}</th><td class="${ok === false ? 'ab' : ''}">${v}</td></tr>`;
+    const lines = [
+      row('Frame rate', `${FM.fps} fps${FM.lite ? ' (auto lite)' : ''}`, FM.fps >= 30),
+      row('Redraw, last', `${last.total || 0} ms (${last.view || ''}${last.ov ? '/' + last.ov : ''})`, (last.total || 0) < 50),
+      row('Redraw, average / worst', `${PERF.avg.toFixed(1)} / ${PERF.worst.toFixed(0)} ms · ${PERF.slow} slow of ${PERF.n}`, PERF.n < 10 || PERF.avg < 30),
+      row('Page elements', nodes, nodes < 3000),
+      row('Animated characters', `${rs.onscreen || 0} on screen of ${rs.live || 0} · ${rs.fps || 30} fps`),
+      row('Memory', pm ? `${(pm.usedJSHeapSize / 1e6).toFixed(1)} MB of ${(pm.jsHeapSizeLimit / 1e6).toFixed(0)} MB` : 'Not reported by this browser', pm ? pm.usedJSHeapSize < 100e6 : undefined),
+      row('Saved data', save === null ? 'Storage blocked' : `${save} KB`, save === null ? false : save < 2000),
+      row('Browser', esc(navigator.userAgent.replace(/^Mozilla\/5.0 /, '').slice(0, 90))),
+    ];
+    const detail = `fps ${FM.fps} · redraw avg ${PERF.avg.toFixed(1)} worst ${PERF.worst.toFixed(0)} ms · nodes ${nodes} · heap ${pm ? (pm.usedJSHeapSize / 1e6).toFixed(1) + 'MB' : 'n/a'} · save ${save}KB · ${navigator.userAgent}${err ? `\nlast error ${err.at}: ${err.msg} [${err.act} ${err.view} t=${err.t} ${err.caseId}]\n${err.stack}` : ''}`;
+    ui.healthText = detail;
+    return sheet('Health check', `<table class="health">${lines.join('')}</table>${err ? `<h3 style="margin:1rem 0 .3rem">Last error</h3><pre class="h-err">${esc(err.at + '\n' + err.msg + '\n' + err.stack)}</pre>` : '<p class="muted">No errors recorded.</p>'}`, `<button class="btn" data-act="health-copy">Copy details</button><button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Health check' });
+  }
   function ovConfirm() {
     const c = ui.confirm;
     return sheet(c.title, `<p>${esc(c.text)}</p>`, `<button class="btn" data-act="close">Cancel</button><button class="btn ${c.danger ? 'btn-danger' : 'btn-primary'}" data-act="${c.act}">${esc(c.ok)}</button>`);
@@ -1127,11 +1170,13 @@
   /* ------------ render ------------ */
   const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
   function render(scrollTop) {
+    const T0 = performance.now();
     applySettings();
     const root = $('#app');
     const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
     const y = window.scrollY;
     if (s && !s.ended && (ui.view === 'station' || ui.view === 'room')) { if (fbNow()) tallyJudg(); goalWatch(); }
+    RC = new Map();
     let h = '';
     if (ui.view === 'awards') h = vAwards();
     else if (ui.view === 'home' || !s) h = vHome();
@@ -1165,14 +1210,18 @@
     else if (ov === 'away' && ui.away && s) h += ovAway();
     else if (ov === 'give' && ui.rep && s) h += ovGive();
     else if (ov === 'floor' && ui.fl && s) h += ovFloor();
+    else if (ov === 'health') h += ovHealth();
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
+    const T1 = performance.now(); RC = null;
     root.innerHTML = h;
+    const T2 = performance.now();
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
+    const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
     ui.enter = false; ui.adv = null; if (s && ui.view === 'station') ui.msgSeen = s.seq;
@@ -1193,6 +1242,13 @@
     const dlg = root.querySelector('[role="alertdialog"]') || root.querySelector('[role="dialog"]');
     if (dlg && (!target || !dlg.contains(target))) { const f = dlg.querySelector('button:not([aria-disabled="true"]),input:not([aria-disabled="true"])'); if (f) f.focus({ preventScroll: true }); }
     else if (target) target.focus({ preventScroll: true });
+    perfNote(T0, T1, T2, T3, performance.now(), h.length);
+  }
+  /* Render budget: how long each redraw takes, kept for the health check (Settings, or ?health in the URL). */
+  const PERF = { n: 0, slow: 0, worst: 0, last: null, avg: 0 };
+  function perfNote(t0, t1, t2, t3, t4, len) {
+    const tot = t4 - t0; PERF.n += 1; PERF.avg += (tot - PERF.avg) / Math.min(PERF.n, 30); PERF.worst = Math.max(PERF.worst, tot); if (tot > 50) { PERF.slow += 1; PERF.slowLog = (PERF.slowLog || []).concat({ ms: Math.round(tot), build: +(t1 - t0).toFixed(0), dom: +(t2 - t1).toFixed(0), hyd: +(t3 - t2).toFixed(0), after: +(t4 - t3).toFixed(0), v: ui.view + (ui.ov ? '/' + ui.ov : '') }).slice(-40); }
+    PERF.last = { build: +(t1 - t0).toFixed(1), dom: +(t2 - t1).toFixed(1), hydrate: +(t3 - t2).toFixed(1), after: +(t4 - t3).toFixed(1), total: +tot.toFixed(1), kb: Math.round(len / 1024), view: ui.view, ov: ui.ov };
   }
   /* What the score should feel like right now: the scene, how many patients are in danger, day or night. */
   function musicMood() {
@@ -1428,6 +1484,8 @@
       if (fbNow()) { if (r.v === 2) gain(40, 'Floor call bonus', 'good'); FX.play(r.v === 2 ? 'right' : r.v === 1 ? 'commit' : 'miss'); } else FX.play('commit');
       ui.ov = 'floor'; render();
     },
+    health() { ui.ov = 'health'; render(); },
+    'health-copy'(el) { try { navigator.clipboard.writeText(ui.healthText || ''); hint(el, 'Copied'); } catch (e) { hint(el, 'Copy blocked here. Select the text instead.'); } },
     badge(el) { const b = RW.BADGES.find((x) => x.id === el.dataset.id); if (b) hint(el, `${b.label}: ${b.how}${prof.badges && prof.badges[b.id] ? ' ✓' : ''}`); },
     endask() { const late = s.t >= C().length - 30, left = pts().filter((x) => !gone(s.p[x.id]) && !(s.report && s.report[x.id])).map((x) => x.room); ui.confirm = { title: late ? 'End the shift?' : 'End the shift early?', text: late ? (left.length ? `You haven't given ${oncoming().name} report on ${left.join(', ')}. The next nurse starts blind on them.` : `${oncoming().name} has report on everyone. You'll see your debrief.`) : 'Unfinished work will count as missed in your debrief.', ok: late && left.length ? 'End without report' : 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
@@ -1453,7 +1511,7 @@
     'away-ho'() { ui.away.noteText = null; ui.away.mode = 'ho'; ui.away.picked = []; ui.away.reply = null; ui.away.review = null; render(); },
     'away-pick'(el) { const p = ui.away.picked, i = p.indexOf(el.dataset.id); if (i >= 0) p.splice(i, 1); else p.push(el.dataset.id); render(); },
     'away-ho-send'() { const a = ui.away, j0 = s.judg.length; let rep = ''; spend(4, (Ax) => { rep = F.giveHandoff(s, Ax, a.pid, a.picked); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = rep; a.replyFrom = s.p[a.pid].out.spec.nurse; a.review = judgSince(j0, a.pid); reviewSound(a.review); stamp('Report called', 4); render(); },
-    'away-fam'() { ui.away.noteText = null; ui.away.mode = 'fam'; ui.away.reply = null; ui.away.review = null; render(); },
+    'away-fam'() { if (!ui.away || !s.p[ui.away.pid].out || !s.p[ui.away.pid].out.spec.family) return render(); ui.away.noteText = null; ui.away.mode = 'fam'; ui.away.reply = null; ui.away.review = null; render(); },
     'away-fam-pick'(el) { const a = ui.away, j0 = s.judg.length; let rep = ''; spend(4, (Ax) => { rep = F.famUpdate(s, Ax, a.pid, el.dataset.id); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = rep; a.replyFrom = (s.p[a.pid].out.spec.family.name || '').toLowerCase().normalize('NFD').replace(/[^a-z]/g, ''); a.review = judgSince(j0, a.pid); reviewSound(a.review); render(); },
     'away-note'() { const a = ui.away; let tx = ''; spend(3, (Ax) => { tx = F.writeNote(s, Ax, a.pid); }); if (s.ended) return; if (!ui.away) return render(); a.reply = null; a.review = null; stamp('Note signed', 3); a.noteText = tx; render(); },
     'away-upd'() { const a = ui.away; a.noteText = null; let r = null; spend(3, (Ax) => { r = F.callUpdate(s, Ax, a.pid); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = `${staff(s.p[a.pid].out.spec.nurse).name}: "${r.text}"`; a.replyFrom = s.p[a.pid].out.spec.nurse; a.review = null; FX.play(r.st === 'crit' ? 'worse' : r.st === 'improving' || r.st === 'stable' ? 'better' : 'msg'); render(); },
@@ -1522,7 +1580,7 @@
   /* Crash guard: an error never leaves a dead screen. The player can carry on, and the details are kept to report. */
   function safe(act, fn) { try { fn(); return true; } catch (err) { crashed(err, act); return false; } }
   function crashed(err, act) {
-    ui.busy = false;
+    ui.busy = false; RC = null;
     const info = { at: new Date().toISOString(), act: act || '', msg: String(err && err.message || err), stack: String(err && err.stack || '').split('\n').slice(0, 6).join('\n'), view: ui.view, ov: ui.ov, t: s ? s.t : null, caseId: s ? s.caseId : caseId, ua: navigator.userAgent };
     try { localStorage.setItem('theshift.lastError', JSON.stringify(info)); } catch (e) { /* storage off */ }
     try { console.error('The Shift error', info); } catch (e) { /* no console */ }
@@ -1607,9 +1665,11 @@
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, cancelHold, true));
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
     document.addEventListener('keydown', onKey);
+    requestAnimationFrame(frameMon);
+    if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
     ui.view = 'home'; safe('boot', () => render(true));
   }
-  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render };
+  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.Shift);
