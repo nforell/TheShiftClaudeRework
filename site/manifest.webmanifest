@@ -1,0 +1,18 @@
+{
+  "name": "The Shift — a nursing shift simulator",
+  "short_name": "The Shift",
+  "description": "Work a nursing shift: take report, decide who needs you first, and see what your choices did.",
+  "id": "/play/",
+  "start_url": "/play/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E4EBE8",
+  "theme_color": "#1E6B63",
+  "categories": ["education", "medical", "games"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

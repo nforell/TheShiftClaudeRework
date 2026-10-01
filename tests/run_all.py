@@ -1,4 +1,4 @@
-"""Build, then sweep all five shifts at phone and desktop widths, then a soak run. Prints one line per run.
+"""Build, then sweep all five shifts at phone and desktop widths, then a soak run, then the telemetry and app tests. Prints one line per run.
 Fails (exit 1) on any JS error, sideways overflow, overlapping text or covered button.
 Usage: python tests/run_all.py   (needs: pip install playwright; playwright install chromium)"""
 import subprocess, sys, json, pathlib, concurrent.futures as cf
@@ -21,5 +21,13 @@ with cf.ThreadPoolExecutor(3) as ex:
             bad += 1
             for pr in probs[:4]: print(f"::error title={j[0]} {j[1]}px {j[2]}::{pr[:300]}")   # shows on the GitHub check
 print(subprocess.run([sys.executable, str(ROOT / 'tests' / 'soak.py')], capture_output=True, text=True).stdout.strip().splitlines()[-1])
+# Analytics, feedback and signup end to end; then the installable app and offline play.
+for extra in ('telemetry.py', 'pwa.py'):
+    r = subprocess.run([sys.executable, str(ROOT / 'tests' / extra)], capture_output=True, text=True)
+    print((r.stdout.strip().splitlines() or [r.stderr.strip()[-300:]])[-1])
+    if r.returncode:
+        bad += 1
+        for ln in r.stdout.splitlines():
+            if ln.startswith('FAIL'): print(f"::error title={extra}::{ln[5:300]}")
 print('FAILED' if bad else 'ALL CLEAN', bad)
 sys.exit(1 if bad else 0)

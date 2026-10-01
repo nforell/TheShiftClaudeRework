@@ -859,6 +859,8 @@
       <textarea id="rp-note" class="fb-t" data-bind="rp.note" rows="4" maxlength="2000" placeholder="Optional, but the more specific the better">${esc(r.note || '')}</textarea>`,
       `<button class="btn" data-act="close">Cancel</button><button class="btn btn-primary" data-act="rpt-send" ${r.why || r.note ? '' : 'aria-disabled="true" data-why="Pick what kind of problem, or describe it."'}>Send</button>`, { label: j ? 'Report a problem' : 'Send feedback' });
   }
+  const standalone = () => !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+  const iosInstallable = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && /^https:/.test(location.protocol) && !standalone();
   function fbWhere() { return s ? { case: s.caseId, game_min: Math.round(s.t), view: ui.view } : { case: caseId, view: ui.view }; }
 
   /* ------------ first-run: seen flags ------------ */
@@ -1148,6 +1150,7 @@
     return sheet('Menu', `<div class="menu-list">
       <button class="btn" data-act="help">How it plays</button><button class="btn" data-act="settings">Settings</button>
       <button class="btn" data-act="rpt">Send feedback or report a problem</button>
+      ${ui.installEvt ? '<button class="btn" data-act="install">Install The Shift on this device</button>' : iosInstallable() ? '<button class="btn" data-act="install-ios">Add The Shift to your home screen</button>' : ''}
       ${inShift && s.t >= 15 ? '<button class="btn" data-act="endask">End the shift early and see debrief</button>' : ''}
       ${inShift ? '<button class="btn btn-danger" data-act="restart">Restart this shift</button>' : ''}
       <button class="btn" data-act="home">Home${inShift ? ' (your shift is saved)' : ''}</button></div>`, '');
@@ -1539,6 +1542,8 @@
       ui.ov = 'floor'; render();
     },
     health() { ui.ov = 'health'; render(); },
+    install() { const ev = ui.installEvt; if (!ev) return; ui.installEvt = null; ui.ov = null; render(); try { ev.prompt(); ev.userChoice.then((c) => TEL.track('install_prompt', { outcome: c && c.outcome })).catch(() => {}); } catch (e) { /* prompt already used */ } },
+    'install-ios'(el) { TEL.track('install_prompt', { outcome: 'ios_help' }); hint(el, 'In Safari, tap the Share button, then Add to Home Screen.'); },
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
     'fb-send'() { const f = ui.fb || {}; if (!f.note && !f.pay) return; const d = s && s.ended ? E.debrief(s) : null; f.sent = TEL.feedback('debrief', Object.assign(fbWhere(), { would_pay: f.pay || '', note: (f.note || '').trim(), score: d ? d.overall : null })); render(); },
@@ -1732,7 +1737,9 @@
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
     ui.view = 'home'; safe('boot', () => render(true));
-    TEL.track('app_open', { has_save: !!(s && !s.ended), shifts_done: prof.runs.length, standalone: !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches) });
+    addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
+    addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });
+    TEL.track('app_open', { has_save: !!(s && !s.ended), shifts_done: prof.runs.length, standalone: standalone() });
     // Where people stop: the last screen of an unfinished shift when the page goes away.
     addEventListener('pagehide', () => { if (s && !s.ended && ui.view !== 'home') TEL.track('shift_left', { case: s.caseId, game_min: Math.round(s.t), view: ui.view, ov: ui.ov || '', wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null }); TEL.flush(true); });
   }
