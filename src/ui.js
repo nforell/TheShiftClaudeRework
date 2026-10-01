@@ -219,20 +219,56 @@
       <button class="hb" data-act="delegate" aria-label="Ask ${esc(cna().name)}, your ${esc(cna().role)}. ${busy ? `${busy} task${busy === 1 ? '' : 's'} in progress` : 'Free'}${sug ? `, ${sug} suggestion${sug === 1 ? '' : 's'}` : ''}"><span class="hb-f">${face(C().cna)}<i class="hb-n ${busy ? 'busy' : 'free'}">${busy || ''}</i></span><span class="hb-t"><b>Ask ${esc(cna().name)}</b><small>${busy ? `Busy · ${busy} task${busy === 1 ? '' : 's'}` : sug ? `Free · ${sug} idea${sug === 1 ? '' : 's'}` : 'Free'}</small></span></button>
     </span>`;
   }
-  /* What the aide offers to take: routine, in-scope work that's due soon, matched from the unit's due list, plus
-     vitals on anyone with an old set. The player still decides; the full list (including things an aide can't do)
-     stays one tap further down. */
-  const AIDE_MATCH = { vitals: /vital/i, bg: /glucose|sugar|\bBG\b|fingerstick/i, intake: /intake|breakfast/i, io: /intake and output|I&O|diaper/i, weigh: /weigh|weight/i, turn: /turn|reposition/i, walk: /walk|ambulat/i, ortho: /orthostatic/i, tray: /tray/i, meal: /meal|breakfast/i };
+  /* What the aide offers to take, the way a good aide would: things on the unit's due list that are theirs to do,
+     the vitals round, and routine care (walks, turns, I&O, baths). Each offer is tried on a copy of the shift first,
+     and anything the game would score as a delegation mistake is left out: an aide doesn't offer to walk a confused
+     fall risk. One-off judgment calls (a sitter, keeping someone flat) are never offered; they stay in the full list
+     with everything an aide can't do, so delegation is still a decision. */
+  const AIDE_DUE = { vitals: /vital/i, bg: /glucose|sugar|\bBG\b|fingerstick/i, intake: /intake|breakfast|lunch|dinner tray/i, io: /intake and output|\bI&O\b|diaper/i, weigh: /weigh|weight/i, turn: /turn|reposition/i, walk: /walk|ambulat/i, ortho: /orthostatic/i, tray: /tray|renal diet/i, blood: /transfus|PRBC|blood bank/i };
+  const AIDE_ROUTINE = { walk: 'Up and walking', turn: 'Due every 2 hours', io: 'Diapers and intake this shift', bath: 'When there\'s time' };
+  let aideCache = null;
   function aideSuggest() {
-    if (!s || !C().delegation) return [];
-    const tasks = C().delegation.tasks.filter((t) => (!t.avail || t.avail(s)) && AIDE_MATCH[t.id]);
+    if (!s || s.ended || !C().delegation) return [];
+    const key = [s.caseId, s.t, s.deleg.length, s.judg.length, s.seq, (s.prio || []).join()].join('|');
+    if (aideCache && aideCache.key === key) return aideCache.out;
+    const tasks = C().delegation.tasks.filter((t) => !t.avail || t.avail(s));
     const busy = (id, pid) => s.deleg.some((x) => !x.done && x.id === id && x.pid === pid);
     const ok = (t, pid) => t.rooms.includes(pid) && here(def(pid)) && !gone(s.p[pid]) && !busy(t.id, pid);
-    const out = [], seen = new Set(), add = (t, pid, why, at) => { const k = t.id + ':' + pid; if (seen.has(k) || !ok(t, pid)) return; seen.add(k); out.push({ t, pid, why, at }); };
-    dueList().filter((x) => x.pid && !/^[A-Z][a-z]+:/.test(x.text) && x.t <= s.t + 60).forEach((x) => { tasks.forEach((t) => { if (AIDE_MATCH[t.id].test(x.text)) add(t, x.pid, `${x.late ? 'Overdue' : 'Due'} ${E.clock(x.t)}`, x.t); }); });
+    const cand = [], seen = new Set(), add = (t, pid, why, rank) => { const k = t.id + ':' + pid; if (seen.has(k) || !ok(t, pid)) return; seen.add(k); cand.push({ t, pid, why, rank }); };
+    // 1. Due soon, and the aide's to do.
+    dueList().filter((x) => x.pid && x.t <= s.t + 60 && !x.text.startsWith(cna().name + ':')).forEach((x) => tasks.forEach((t) => { if (AIDE_DUE[t.id] && AIDE_DUE[t.id].test(x.text)) add(t, x.pid, `${x.late ? 'Overdue' : 'Due'} ${E.clock(x.t)}`, x.t); }));
+    // 2. The vitals round: an hour into the shift, then every four hours. Lower-priority patients first: you see your sickest yourself.
     const vt = tasks.find((t) => t.id === 'vitals');
-    if (vt) pts().forEach((d) => { const v = A().lastVitals(d.id); if (v && s.t - v.t >= 180) add(vt, d.id, `Last set ${E.clock(v.t)}`, v.t + 240); });
-    return out.sort((a, b) => a.at - b.at).slice(0, 3);
+    if (vt) {
+      const round = 60 + Math.max(0, Math.ceil((s.t - 60 - 45) / 240)) * 240;
+      if (s.t >= round - 45 && round < C().length) {
+        const order = prioList().slice().reverse();
+        order.forEach((pid, i) => { const v = A().lastVitals(pid); if (!v || v.t < round - 60) add(vt, pid, `Vitals round, ${E.clock(round)}`, round + i); });
+      }
+    }
+    // 3. Routine care.
+    tasks.filter((t) => AIDE_ROUTINE[t.id]).forEach((t) => t.rooms.forEach((pid, i) => {
+      const last = s.deleg.filter((d) => d.id === t.id && d.pid === pid).map((d) => d.at).pop();
+      if (t.id === 'turn' && last !== undefined && s.t - last < 110) return;
+      if (t.id !== 'turn' && last !== undefined) return;
+      add(t, pid, AIDE_ROUTINE[t.id], (t.id === 'bath' ? 10000 : 5000) + i);
+    }));
+    // Try each on a copy of the shift; drop what would be scored as a mistake.
+    const tryIt = (c) => {
+      try {
+        const cl = JSON.parse(JSON.stringify(s)); cl.deleg = cl.deleg.filter((x) => x.done); const j0 = cl.judg.length;
+        C().delegation.start(c.t, c.pid, cl, E.api(cl));
+        return !cl.judg.slice(j0).some((j) => j.delta < 0);
+      } catch (e) { return false; }
+    };
+    const out = [], per = {};
+    for (const c of cand.sort((a, b) => a.rank - b.rank)) {
+      if (out.length >= 3) break;
+      if ((per[c.t.id] || 0) >= 2 || !tryIt(c)) continue;
+      per[c.t.id] = (per[c.t.id] || 0) + 1; out.push(c);
+    }
+    aideCache = { key, out };
+    return out;
   }
   /* ------------ header ------------ */
   function header() {
@@ -1459,6 +1495,9 @@
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
+    // The talk bubble sits beside the patient, below the name card however tall the card is.
+    const tb = root.querySelector('.talk-bub'), pl = root.querySelector('.nameplate .plate'), rt = root.querySelector('.room-top');
+    if (tb && pl && rt && innerWidth > 760) { tb.style.top = ''; const a = rt.getBoundingClientRect(), b = pl.getBoundingClientRect(), c = tb.getBoundingClientRect(); if (b.width && c.left < b.right && c.top < b.bottom + 8) tb.style.top = Math.min(b.bottom - a.top + 12, a.height - c.height - 12) + 'px'; }
     const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;

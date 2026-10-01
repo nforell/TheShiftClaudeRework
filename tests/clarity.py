@@ -27,15 +27,31 @@ with sync_playwright() as p:
             H('delegate'); pg.wait_for_timeout(100)
             n = pg.locator('.dl-s').count(); folded = pg.locator('details.dl-all').count() == 1
             check(n <= 3 and folded and pg.locator('.dl-who').count() == 1, f'{t} the aide leads with {n} suggestion(s), the rest folded')
-            if n:
-                pg.locator('.dl-s').first.click(); pg.wait_for_timeout(150)
-                check(pg.evaluate("Shift.ui._state().deleg.length") >= 1, f'{t} a suggestion can be sent in one tap')
+            check(n >= 1, f'{t} the aide has something to offer at the start of the shift')
+            j0 = pg.evaluate("Shift.ui._state().judg.length")
+            for k in range(n):   # send every suggestion, one at a time as the aide frees up
+                if k: H('delegate'); pg.evaluate("(()=>{const s=Shift.ui._state();s.deleg.forEach(d=>d.done=true)})()"); H('close'); H('delegate')
+                if pg.locator('.dl-s').count() == 0: break
+                pg.locator('.dl-s').first.click(); pg.wait_for_timeout(100)
+            neg = pg.evaluate(f"Shift.ui._state().judg.slice({j0}).filter(j=>/^deleg/.test(j.key||'')&&j.delta<0).map(j=>j.text)")
+            check(pg.evaluate("Shift.ui._state().deleg.length") >= 1 and not neg, f'{t} suggestions send in one tap and none is scored as a mistake' + (f': {neg}' if neg else ''))
             H('close'); pid = pg.evaluate("Shift.ui._state() && Object.keys(Shift.ui._state().p).find(k=>{const d=Shift.engine.getCase(Shift.ui._state().caseId).patients.find(x=>x.id===k);return !d.arrives})")
             H('goto', pid=pid); pg.wait_for_timeout(200)
             bub = pg.locator('.talk-bub')
             check(bub.count() == 1 and bub.is_visible(), f'{t} a talk bubble is in the room')
             box, scene = bub.bounding_box(), pg.locator('.room-top svg').first.bounding_box()
             check(box and scene and box['x'] >= scene['x'] - 1 and box['x'] + box['width'] <= scene['x'] + scene['width'] + 1 and box['y'] >= scene['y'] - 1 and box['y'] + box['height'] <= scene['y'] + scene['height'] + 1, f'{t} the bubble sits inside the scene')
+            # every patient's room: the bubble is inside the scene and clear of the name card and buttons
+            bad = []
+            for q in pg.evaluate("(()=>{const s=Shift.ui._state(),c=Shift.engine.getCase(s.caseId);return c.patients.filter(d=>!d.arrives).map(d=>d.id)})()"):
+                H('goto', pid=q); H('close'); pg.wait_for_timeout(80)
+                r = pg.evaluate("""(()=>{const b=document.querySelector('.talk-bub'),sc=document.querySelector('.room-top svg');if(!b||!sc)return 'missing';const x=b.getBoundingClientRect(),y=sc.getBoundingClientRect();
+                  if(x.left<y.left-1||x.right>y.right+1||x.top<y.top-1||x.bottom>y.bottom+1)return 'outside';
+                  for(const e of document.querySelectorAll('.nameplate .plate,.plate-btns')){const z=e.getBoundingClientRect();if(z.width&&x.left<z.right&&x.right>z.left&&x.top<z.bottom&&x.bottom>z.top)return 'overlaps '+e.className}
+                  return ''})()""")
+                if r: bad.append(f'{q} {r}')
+            check(not bad, f'{t} the bubble is placed well in every room' + (': ' + ', '.join(bad) if bad else ''))
+            H('goto', pid=pid); H('close'); bub = pg.locator('.talk-bub')
             bub.click(); pg.wait_for_timeout(150)
             check(pg.evaluate("Shift.ui._ui.dock") == 'talk', f'{t} the bubble opens Talk')
             H('nova'); check('Get a tip' in pg.inner_text('.sheet') and 'charge nurse' in pg.inner_text('.sheet'), f'{t} Nova explains what she\'s for'); H('close')
