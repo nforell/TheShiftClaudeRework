@@ -70,26 +70,30 @@
     const { w, h } = c.head, ex = s * w * .4, ey = h * .1, rx = c.eye, ry = rx * 1.12, ir = rx * .8;
     return `<g transform="translate(${ex} ${ey})"><clipPath id="rec${uid}${s}"><ellipse rx="${rx}" ry="${ry}"/></clipPath>
       <g clip-path="url(#rec${uid}${s})"><ellipse rx="${rx}" ry="${ry}" fill="#FBFAF6"/>
-      <g class="r-iris"><circle r="${ir}" fill="${c.iris}"/><circle r="${ir * .62}" fill="${shade(c.iris, -18)}" opacity=".5"/><circle class="r-pupil" r="${ir * .46}" fill="#120B08"/><circle class="r-hl" cx="${-ir * .36}" cy="${-ir * .4}" r="${ir * .32}" fill="#fff"/><circle cx="${ir * .38}" cy="${ir * .34}" r="${ir * .14}" fill="#fff" opacity=".85"/></g>
+      <g class="r-iris"><circle r="${ir}" fill="${c.iris}" stroke="${shade(c.iris, -40)}" stroke-width="${Math.max(1, ir * .12)}"/><circle r="${ir * .62}" fill="${shade(c.iris, -18)}" opacity=".5"/><circle class="r-pupil" r="${ir * .46}" fill="#120B08"/><circle class="r-hl" cx="${-ir * .36}" cy="${-ir * .4}" r="${ir * .32}" fill="#fff"/><circle cx="${ir * .38}" cy="${ir * .34}" r="${ir * .14}" fill="#fff" opacity=".85"/></g>
       <rect class="r-lid" x="${-rx - 3}" y="${-ry - 3}" width="${2 * rx + 6}" height="0" fill="${c.skin}"/><rect class="r-low" x="${-rx - 3}" y="${ry + 3}" width="${2 * rx + 6}" height="0" fill="${c.skin}"/></g>
-      <path class="r-lash" fill="none" stroke="#1C1310" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+      <path class="r-lash" fill="none" stroke="#1C1310" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M ${-rx * .78} ${-ry - 4.5} Q 0 ${-ry - 9} ${rx * .78} ${-ry - 4.5}" stroke="${c.shade}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".5"/>
+      <path d="M ${-rx * .7} ${ry + 2.6} Q 0 ${ry + 4.6} ${rx * .7} ${ry + 2.6}" stroke="${c.shade}" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".35"/></g>`;
   }
   function headSVG(c, uid) {
     const { w, h } = c.head, face = faceD(w, h, c.head.jaw), H = hair(c), ex = c.extras || []; let s = `<g class="r-head">`;
     s += H.back;
     [-1, 1].forEach((d) => {
-      s += `<ellipse cx="${d * w * .97}" cy="${h * .14}" rx="8.5" ry="12.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.4"/><path d="M ${d * w} ${h * .05} q ${d * 4.5} 7 0 15" stroke="${c.shade}" stroke-width="1.6" fill="none"/>`;
+      s += `<ellipse cx="${d * w * .97}" cy="${h * .14}" rx="8.5" ry="12.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.4"/><ellipse cx="${d * w * .99}" cy="${h * .15}" rx="4.4" ry="8" fill="${c.shade}" opacity=".35"/><path d="M ${d * w} ${h * .05} q ${d * 4.5} 7 0 15" stroke="${c.shade}" stroke-width="1.6" fill="none"/>`;
       if (ex.includes('hoops')) s += `<circle cx="${d * w * .99}" cy="${h * .42}" r="6" fill="none" stroke="#D4A941" stroke-width="2"/>`;
       if (ex.includes('gold')) s += `<circle cx="${d * w * .99}" cy="${h * .36}" r="3.2" fill="#D4A941"/>`;
       if (ex.includes('pearls')) s += `<circle cx="${d * w * .99}" cy="${h * .34}" r="3.6" fill="#F7F3EA" stroke="#CFC7B8"/>`;
       if (ex.includes('studs')) s += `<circle cx="${d * w * .99}" cy="${h * .34}" r="2.4" fill="#9FC7D6"/>`;
     });
-    s += `<clipPath id="rfc${uid}"><path d="${face}"/></clipPath><path d="${face}" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.5"/>`;
-    s += `<g clip-path="url(#rfc${uid})"><ellipse cx="${w * .62}" cy="${h * .55}" rx="${w * .72}" ry="${h}" fill="${c.shade}" opacity=".24"/><ellipse class="r-fh" cx="0" cy="${-h * .5}" rx="${w * .75}" ry="${h * .32}" fill="#E0503F" opacity="0"/><path class="r-pallor" d="${face}" fill="#CDD6D3" opacity="0"/><path class="r-green" d="${face}" fill="#A5C58B" opacity="0"/></g>`;
-    s += `<g class="r-cheeks"><ellipse cx="${-w * .6}" cy="${h * .42}" rx="${w * .2}" ry="${h * .12}" fill="${c.blush}"/><ellipse cx="${w * .6}" cy="${h * .42}" rx="${w * .2}" ry="${h * .12}" fill="${c.blush}"/></g>`;
+    s += `<radialGradient id="rsk${uid}" cx=".4" cy=".34" r=".78"><stop offset="0" stop-color="${shade(c.skin, 16)}"/><stop offset=".5" stop-color="${c.skin}"/><stop offset="1" stop-color="${mix(c.skin, c.shade, .45)}"/></radialGradient>`
+      + `<radialGradient id="rbl${uid}"><stop offset="0" stop-color="${c.blush}" stop-opacity=".95"/><stop offset=".55" stop-color="${c.blush}" stop-opacity=".5"/><stop offset="1" stop-color="${c.blush}" stop-opacity="0"/></radialGradient>`;
+    s += `<clipPath id="rfc${uid}"><path d="${face}"/></clipPath><path d="${face}" fill="url(#rsk${uid})" stroke="${c.shade}" stroke-width="1.5"/>`;
+    s += `<g clip-path="url(#rfc${uid})"><ellipse cx="${w * .62}" cy="${h * .55}" rx="${w * .72}" ry="${h}" fill="${c.shade}" opacity=".24"/><ellipse class="r-fh" cx="0" cy="${-h * .5}" rx="${w * .75}" ry="${h * .32}" fill="#E0503F" opacity="0"/><path class="r-pallor" d="${face}" fill="#CDD6D3" opacity="0"/><path class="r-green" d="${face}" fill="#A5C58B" opacity="0"/>${c.hair.style !== 'balding' ? `<ellipse cx="${w * .06}" cy="${-h * .5}" rx="${w * .95}" ry="${h * .2}" fill="${shade(c.shade, -25)}" opacity=".16"/>` : ''}<ellipse cx="0" cy="${h * .98}" rx="${w * .7}" ry="${h * .2}" fill="${c.shade}" opacity=".22"/></g>`;
+    s += `<g class="r-cheeks"><ellipse cx="${-w * .58}" cy="${h * .4}" rx="${w * .27}" ry="${h * .16}" fill="url(#rbl${uid})"/><ellipse cx="${w * .58}" cy="${h * .4}" rx="${w * .27}" ry="${h * .16}" fill="url(#rbl${uid})"/></g>`;
     if (ex.includes('freckles')) [[-.55, .28], [-.45, .36], [-.64, .36], [.55, .28], [.45, .36], [.64, .36], [-.1, .3], [.1, .3]].forEach(([x, y]) => { s += `<circle cx="${x * w}" cy="${y * h}" r="1.3" fill="${c.shade}"/>`; });
     if (ex.includes('wrinkles')) s += `<g stroke="${c.shade}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".7"><path d="M ${-w * .35} ${-h * .5} q ${w * .35} -5 ${w * .7} 0"/><path d="M ${-w * .25} ${-h * .4} q ${w * .25} -4 ${w * .5} 0"/><path d="M ${-w * .32} ${h * .36} q -5 8 -2 16"/><path d="M ${w * .32} ${h * .36} q 5 8 2 16"/><path d="M ${-w * .66} ${h * .1} l -6 -2 M ${-w * .66} ${h * .16} l -6 1 M ${w * .66} ${h * .1} l 6 -2 M ${w * .66} ${h * .16} l 6 1"/></g>`;
-    s += `<path d="M -1.5 ${h * .24} Q -7 ${h * .38} 0 ${h * .41} Q 5.5 ${h * .4} 5 ${h * .33}" stroke="${c.shade}" stroke-width="2.1" fill="none" stroke-linecap="round"/>`;
+    s += `<ellipse cx="1.5" cy="${h * .28}" rx="2" ry="${h * .065}" fill="#fff" opacity=".13"/><path d="M -1.5 ${h * .24} Q -7 ${h * .38} 0 ${h * .41} Q 5.5 ${h * .4} 5 ${h * .33}" stroke="${c.shade}" stroke-width="2.1" fill="none" stroke-linecap="round"/><ellipse cx="-4" cy="${h * .39}" rx="1.8" ry="1.1" fill="${shade(c.shade, -30)}" opacity=".45"/><ellipse cx="4.2" cy="${h * .385}" rx="1.8" ry="1.1" fill="${shade(c.shade, -30)}" opacity=".45"/>`;
     s += `<ellipse class="r-cyan" cx="0" cy="${h * .6}" rx="17" ry="10" fill="#7487C0" opacity="0"/>`;
     if (ex.includes('beard')) s += `<path d="M ${-w * .95} 0 C ${-w * .95} ${h * .92} ${-w * .42} ${h * 1.12} 0 ${h * 1.12} C ${w * .42} ${h * 1.12} ${w * .95} ${h * .92} ${w * .95} 0 C ${w * .82} ${h * .55} ${w * .42} ${h * .76} 0 ${h * .76} C ${-w * .42} ${h * .76} ${-w * .82} ${h * .55} ${-w * .95} 0 Z" fill="${c.hair.color}"/>`;
     s += `<g transform="translate(0 ${h * .6})"><path class="r-mouth" fill="#4A1F1E" stroke="${c.lip}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/></g>`;
@@ -103,6 +107,7 @@
     [[-.34, -.5], [.36, -.4], [.66, -.08]].forEach(([x, y]) => { const yy = sweatFirst ? y + .38 : y; sweat += `<path class="r-drop" data-x="${x * w * (sweatFirst ? .8 : 1)}" data-y="${yy * h}" d="M 0 -4.5 C 2.8 -.6 3.4 1.8 0 3.6 C -3.4 1.8 -2.8 -.6 0 -4.5 Z" fill="#D4ECF5" stroke="#86B6CC" stroke-width=".9" opacity="0"/>`; });
     if (sweatFirst) s += sweat;
     s += H.front;
+    if (!['balding', 'hijab', 'buzz'].includes(c.hair.style)) s += `<path d="M ${-w * .52} ${-h * .84} Q ${-w * .05} ${-h * 1.04} ${w * .42} ${-h * .88}" stroke="${shade(c.hair.color, 70)}" stroke-width="${Math.max(3, h * .07)}" fill="none" stroke-linecap="round" opacity=".28"/>`;
     const gx = w * .4, gy = h * .1, gr = c.eye * 1.12 + 4.5;
     if (ex.includes('glasses') || ex.includes('thinGlasses')) { const sw = ex.includes('glasses') ? 2.8 : 1.6; s += `<g fill="none" stroke="${c.glasses}" stroke-width="${sw}"><circle cx="${-gx}" cy="${gy}" r="${gr}" fill="#fff" fill-opacity=".07"/><circle cx="${gx}" cy="${gy}" r="${gr}" fill="#fff" fill-opacity=".07"/><path d="M ${-gx + gr} ${gy - 1} Q 0 ${gy - 6} ${gx - gr} ${gy - 1}"/><path d="M ${-gx - gr} ${gy - 2} L ${-w * .98} ${gy - 4} M ${gx + gr} ${gy - 2} L ${w * .98} ${gy - 4}"/></g>`; }
     if (ex.includes('headset')) s += `<path d="M ${-w * 1.02} ${h * .05} C ${-w * 1.1} ${-h * 1.2} ${w * 1.1} ${-h * 1.2} ${w * 1.02} ${h * .05}" stroke="#3A3F44" stroke-width="4" fill="none"/><rect x="${-w * 1.1}" y="${-h * .08}" width="12" height="20" rx="5" fill="#3A3F44"/><path d="M ${-w * 1.02} ${h * .2} Q ${-w * .8} ${h * .62} ${-w * .3} ${h * .6}" stroke="#3A3F44" stroke-width="2.4" fill="none"/><circle cx="${-w * .3}" cy="${h * .6}" r="3.4" fill="#3A3F44"/>`;
@@ -116,6 +121,8 @@
     const torso = `M ${-bw} ${T + 32} C ${-bw} ${T + 6} ${-bw * .55} ${T} ${-w * .32} ${T} L ${w * .32} ${T} C ${bw * .55} ${T} ${bw} ${T + 6} ${bw} ${T + 32} L ${bw + 4} ${T + 240} L ${-bw - 4} ${T + 240} Z`;
     if (c.body.cloth === 'gown') s += `<pattern id="rgp${uid}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${cl}"/><path d="M8 4 l3 4 -3 4 -3 -4z" fill="${cd}" opacity=".55"/></pattern>`;
     s += `<path d="${torso}" fill="${c.body.cloth === 'gown' ? `url(#rgp${uid})` : cl}" stroke="${shade(cl, -35)}" stroke-width="1.2"/>`;
+    s += `<linearGradient id="rtg${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient><path d="${torso}" fill="url(#rtg${uid})"/>`
+      + `<path d="M ${-bw * .92} ${T + 30} C ${-bw * .8} ${T + 12} ${-bw * .5} ${T + 8} ${-w * .4} ${T + 6}" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".18"/><path d="M ${bw * .92} ${T + 30} C ${bw * .8} ${T + 12} ${bw * .5} ${T + 8} ${w * .4} ${T + 6}" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".18"/>`;
     s += `<path d="M ${-w * .28} ${h * .55} L ${-w * .31} ${T + 3} L ${w * .31} ${T + 3} L ${w * .28} ${h * .55} Z" fill="${c.skin}"/><ellipse cx="0" cy="${h * .86}" rx="${w * .3}" ry="8" fill="${c.shade}" opacity=".55"/>`;
     s += `<g class="r-strain" opacity="0" stroke="${c.shade}" stroke-width="2.2" stroke-linecap="round"><path d="M ${-w * .2} ${h * .9} L ${-w * .3} ${T + 2}"/><path d="M ${w * .2} ${h * .9} L ${w * .3} ${T + 2}"/></g>`;
     const k = c.body.cloth;
@@ -184,7 +191,7 @@
       brows: qa('.r-brow'), mouth: q('.r-mouth'), head: q('.r-head'), cheeks: q('.r-cheeks'), fh: q('.r-fh'), pallor: q('.r-pallor'), green: q('.r-green'), cyan: q('.r-cyan'), sheen: q('.r-sheen'), drops: qa('.r-drop'),
       torso: q('.r-torso'), strain: q('.r-strain'), blanket: q('.r-blanket'),
       arms: qa('.r-arm').map((a) => ({ s: +a.dataset.s, skin: a.querySelector('.r-skin'), mot: a.querySelector('.r-mot'), sleeve: a.querySelector('.r-sleeve'), hand: a.querySelector('.r-hand'), x: 0, y: 0 })),
-      cur: null, gaze: { x: 0, y: 0, tx: 0, ty: 0, next: 0 }, blink: { next: now() + rand(.5, 3), start: -9, dur: .15 }, phase: Math.random(), poke: -9, hover: false, seed: Math.random() * 10, yawn: { next: now() + rand(5, 10), start: -9 },
+      cur: null, micro: { next: now() + rand(3, 7), start: -9, kind: 0 }, sac: { x: 0, y: 0, next: 0 }, gaze: { x: 0, y: 0, tx: 0, ty: 0, next: 0 }, blink: { next: now() + rand(.5, 3), start: -9, dur: .15 }, phase: Math.random(), poke: -9, hover: false, seed: Math.random() * 10, yawn: { next: now() + rand(5, 10), start: -9 },
     };
     const prev = cache[ck];
     if (prev && prev.key === c.__key) {
@@ -209,6 +216,9 @@
     if (pe > 0) { if (d.alertEff < 2) { T.raise += pe * .7; if (d.painF > .5) { T.squint += pe * .3; T.worry = clamp(T.worry + pe * .3); } else T.smile = Math.min(1, T.smile + pe * .35); } else T.eye += pe * .18; }
     let yawn = 0;
     if (c.tired && calm) { if (t > I.yawn.next) { I.yawn.start = t; I.yawn.next = t + rand(9, 15); } const yt = t - I.yawn.start; if (yt >= 0 && yt < 2.2) yawn = Math.sin(Math.PI * yt / 2.2); }
+    // Small, human moments when they're comfortable: a brief smile, a raised brow, a glance.
+    let micro = 0;
+    if (calm && d.comfort > .55 && d.alertEff === 0) { const m = I.micro; if (t > m.next) { m.start = t; m.kind = Math.random() < .55 ? 0 : 1; m.next = t + rand(5, 11); } const mt = t - m.start; if (mt >= 0 && mt < 1.6) micro = Math.sin(Math.PI * mt / 1.6); if (micro) { if (I.micro.kind === 0) T.smile = Math.min(1, T.smile + micro * .3); else { T.raise += micro * .45; } } }
     if (yawn) { T.open += yawn * .95; T.eye *= 1 - yawn; T.raise += yawn * .5; T.smile = lerp(T.smile, 0, yawn); }
     for (const key in T) cur[key] = lerp(cur[key], T[key], k);
     I.phase = (I.phase + dt * Math.max(4, v.rr) / 60) % 1; const b = breathCurve(I.phase);
@@ -225,11 +235,12 @@
     }
     if (pe > 0 && d.alertEff < 2) { g.tx = 0; g.ty = 0; }
     const gk = 1 - Math.exp(-dt * (reduced ? 6 : 16)); g.x = lerp(g.x, g.tx, gk); g.y = lerp(g.y, g.ty, gk);
+    const sc = I.sac; if (calm && t > sc.next) { sc.x = rand(-.08, .08); sc.y = rand(-.06, .06); sc.next = t + rand(.4, 1.1); }
     // blink
     const bl = I.blink, drowsy = d.alertEff >= 1 || c.tired;
     if (t > bl.next) { bl.start = t; bl.dur = drowsy ? .4 : .15; bl.next = t + (drowsy ? rand(1.4, 3) : d.confused ? rand(1, 2.5) : rand(2.4, 6)); if (Math.random() < .14) bl.next = t + .3; }
     const bt = t - bl.start, blink = bt >= 0 && bt < bl.dur ? Math.sin(Math.PI * bt / bl.dur) : 0;
-    const openAmt = clamp(cur.eye * (1 - blink)), maxOff = 2.8 + (c.eye - 9.5) * .3;
+    const openAmt = clamp(cur.eye * (1 - blink) * (1 - Math.max(0, g.y) * .14)), maxOff = 2.8 + (c.eye - 9.5) * .3;
     I.eyes.forEach((e) => {
       const { rx, ry } = e, lidY = lerp(-ry * 1.02, ry * .94, 1 - openAmt), lowY = ry - cur.squint * ry * .7;
       e.lid.setAttribute('height', Math.max(0, lidY + ry + 3));
@@ -237,7 +248,7 @@
       const cy = Math.max(-ry * .08, lidY), hw = lidY < -ry * .08 ? rx + 1.2 : rx * Math.sqrt(Math.max(0, 1 - (cy / ry) ** 2)) + 1.4;
       const apex = lidY + (openAmt < .3 ? 3.2 * (1 - openAmt / .3) : 0);
       e.lash.setAttribute('d', `M ${-e.s * hw} ${cy} Q 0 ${2 * apex - cy} ${e.s * hw} ${cy} L ${e.s * (hw + 2.4)} ${cy - 1.8}`);
-      e.iris.setAttribute('transform', `translate(${g.x * maxOff} ${g.y * maxOff * .8 + cur.droop * 1.5})`);
+      e.iris.setAttribute('transform', `translate(${(g.x + I.sac.x) * maxOff} ${(g.y + I.sac.y) * maxOff * .8 + cur.droop * 1.5})`);
       const ir = rx * .8; e.pupil.setAttribute('r', ir * .46 * (1 + cur.dil * .42)); e.hl.setAttribute('r', ir * .32 * (1 + cur.glassy * .35));
     });
     const by = I.h * .1 - c.eye * 1.12 - 8;
@@ -250,15 +261,15 @@
     const fd = clamp(v.facial || 0);   // facial droop: the patient's right corner (viewer's left) sags
     I.mouth.setAttribute('d', `M ${-mw / 2} ${my + fd * 7} Q 0 ${up + fd * 2.5} ${mw / 2} ${my} Q 0 ${lo + fd * 2.5} ${-mw / 2} ${my + fd * 7} Z`);
     I.mouth.setAttribute('stroke', mix(c.lip, '#5D6FA6', cur.cyan * .8));
-    I.cheeks.setAttribute('opacity', .22 + cur.flush * .5); I.fh.setAttribute('opacity', cur.flush * .18);
+    I.cheeks.setAttribute('opacity', .5 + cur.flush * .45); I.fh.setAttribute('opacity', cur.flush * .18);
     I.pallor.setAttribute('opacity', cur.pallor * .55); I.green.setAttribute('opacity', cur.green * .24); I.cyan.setAttribute('opacity', cur.cyan * .5);
     I.sheen.setAttribute('opacity', cur.sweat * .32);
     I.drops.forEach((dr, i) => { const f = ((t * .22 + i * .37) % 1); dr.setAttribute('opacity', cur.sweat > .08 ? cur.sweat * (1 - f * .7) : 0); dr.setAttribute('transform', `translate(${dr.dataset.x} ${+dr.dataset.y + f * 12 * calm})`); });
     // motion
     const shiv = d.rigors && d.alertEff < 2 ? calm : 0, jx = shiv * Math.sin(t * 47) * 1.3, jy = shiv * Math.cos(t * 53) * .8, trem = cur.tremor * calm;
     const idle = calm * (1 - cur.droop * .6), sway = d.dizzy * calm;
-    const rot = Math.sin(t * .45 + I.seed) * 1.6 * idle + cur.droop * 9 + sway * Math.sin(t * 1.25) * 6 - yawn * 5;
-    const hxp = Math.sin(t * .6 + I.seed) * 1.2 * idle + sway * Math.sin(t * 1.25) * 4 + jx + trem * Math.sin(t * 61) * .6;
+    const rot = Math.sin(t * .45 + I.seed) * 1.6 * idle + g.x * 3 * idle + cur.droop * 9 + sway * Math.sin(t * 1.25) * 6 - yawn * 5;
+    const hxp = Math.sin(t * .6 + I.seed) * 1.2 * idle + g.x * 2.2 * idle + sway * Math.sin(t * 1.25) * 4 + jx + trem * Math.sin(t * 61) * .6;
     const P = I.B + 40, gain = I.mode === 'bed' ? .032 : .018, riseAmt = (P - I.T) * gain * b * depth;
     const hyp = -riseAmt + cur.droop * 8 + cur.lean * 13 + jy - pe * (d.alertEff < 2 ? 3 : 0) - yawn * 3;
     I.head.setAttribute('transform', `translate(${hxp} ${hyp}) rotate(${rot} 0 ${I.h * .8}) scale(${1 + cur.lean * .06})`);

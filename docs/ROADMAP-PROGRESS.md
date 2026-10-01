@@ -2,6 +2,16 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 7 — October 1, 2026 (branch `visual-polish`, built on `teen-psych-shift`)
+
+### Done
+- **Room lighting** (`src/art.js`): every room now has a warm ceiling light and a soft glow behind the bed, a wall gradient, a colored wall band per unit (teal med-surg, warm sand psych, sunny peds), a floor sheen, and something on the wall: a "Your care team" whiteboard on med-surg and peds, a painted mural on psych (nothing that can be pulled down). Night shifts keep the patient lit and only darken the edges, instead of a navy veil over everything. Lighter vignette. Dark theme room colors lifted so rooms read as dimly lit, not black.
+- **Characters** (`src/rig.js`, app-wide): soft light-from-above shading on faces and clothes, hairline and chin shadows, softer blush, iris rings, eyelid creases, nose highlight and nostrils, inner-ear shading, a hair shine. Animation: the head turns slightly toward where they're looking, lids follow the gaze down, tiny eye movements, and occasional small smiles or raised brows when a patient is comfortable.
+- Full suite clean.
+
+### Needs Nick
+- Merge `visual-polish` (includes everything since `clinical-review`): https://github.com/nforell/TheShiftClaudeRework/compare/main...visual-polish
+
 ## Session 6 — October 1, 2026 (branch `teen-psych-shift`, built on `psych-law-setting`)
 
 ### Done
@@ -15,7 +25,6 @@ Where the work from the business plan stands. Newest session first. The next ses
   - Wired everywhere: home screen, landing page (six shifts), clinical review page `/review/psych-4n-1/`, transfer follow-ups, oncoming nurse (Marco), psych-law General US wording (adds 5585). New `tests/teen.py` plays it twice: a careful run gets all five good outcomes and Evaluate outcomes 100; a run that only skips ahead sees every emergency happen. Full suite clean.
 
 ### Needs Nick
-- Merge `teen-psych-shift` (includes the guided first room and psych law setting): https://github.com/nforell/TheShiftClaudeRework/compare/main...teen-psych-shift
 - Play it once as a psych RN and use **Report a problem** on anything that rings false. Then send `/review/psych-4n-1/` to an adolescent psych nurse.
 - The content leans on California law for minors (parent-consent admissions, 5585 holds, 36-hour written CPS report). The General US setting covers the hold wording.
 

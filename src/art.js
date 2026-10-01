@@ -18,11 +18,32 @@
     if (a < 1140) return ['#f5c48e', '#b9a9c6'];     // golden hour
     return ['#e59a78', '#3f4d7a'];                   // dusk
   }
+  /* Interior light by time of day: [warm light color, strength]. Rooms are lit; night just dims the edges. */
+  function lamp(t) {
+    const a = ((S.engine.abs(t) % 1440) + 1440) % 1440;
+    if (isNight(t)) return ['#FFD9A0', .42];
+    if (a < 600) return ['#FFE6C2', .34];
+    if (a < 1050) return ['#FFF3DC', .3];
+    return ['#FFDDB0', .38];
+  }
+  const ACCENT = { med: '#7FB8B0', psych: '#D2A877', peds: '#F2C35A' };
+  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : 'med'; };
+  /* Something on the wall that makes it a room someone lives in for a few days. Psych walls have nothing that can be
+     pulled down or broken, so they get a painted mural; med and peds get the patient whiteboard. */
+  function wallArt(kind, s) {
+    if (kind === 'psych') return `<g opacity=".9" transform="translate(-20 44)"><rect x="808" y="64" width="190" height="104" rx="52" fill="#E8D7BC" opacity=".55"/><path d="M816 150 q40 -46 82 -18 q38 -40 92 -6 V168 H816 Z" fill="#9DBF9C" opacity=".7"/><circle cx="954" cy="96" r="14" fill="#F2C46B" opacity=".85"/><path d="M842 120 q8 -8 16 0 M872 108 q7 -7 14 0" stroke="#7A8C9A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></g>`;
+    const day = S.engine.clock(0);
+    return `<g transform="translate(-24 48) scale(.92)"><rect x="812" y="58" width="184" height="116" rx="6" fill="var(--scene-pillow)" stroke="var(--scene-trim)" stroke-width="3"/><rect x="812" y="58" width="184" height="18" rx="6" fill="${kind === 'peds' ? '#F2C35A' : '#7FB8B0'}"/>
+      <text x="826" y="71" font-size="10" font-weight="700" fill="#fff" font-family="Public Sans, sans-serif">${kind === 'peds' ? 'HI, I\'M YOUR NURSE!' : 'YOUR CARE TEAM'}</text>
+      <path d="M826 96 h70 M826 116 h110 M826 136 h88 M826 156 h60" stroke="#B9C4C1" stroke-width="3" stroke-linecap="round"/>
+      <text x="826" y="93" font-size="11" font-weight="600" fill="#3E6F6A" font-family="Public Sans, sans-serif">RN: you · ${day}</text>
+      ${kind === 'peds' ? '<path d="M960 120 l6 12 13 2 -9 9 2 13 -12 -6 -12 6 2 -13 -9 -9 13 -2 Z" fill="#F2C35A"/><circle cx="944" cy="150" r="6" fill="#E98A9A"/>' : '<path d="M952 134 a12 12 0 1 0 0.1 0" fill="none" stroke="#7FB8B0" stroke-width="2.5"/><path d="M946 150 q6 5 12 0" stroke="#7FB8B0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="948" cy="142" r="1.6" fill="#7FB8B0"/><circle cx="956" cy="142" r="1.6" fill="#7FB8B0"/>'}</g>`;
+  }
   const hot = (id, label, inner) => `<g class="clue" data-act="clue" data-id="${id}" tabindex="0" role="button" aria-label="${label}">${inner}</g>`;
 
   /* Room scene. The patient is a live rig character centered at x 515; f = scene flags from the case; v = rig inputs. */
   function room(def, s, P, f, v, callLight, tension) {
-    const [s1, s2] = sky(s.t), gid = 'r' + (++uid), X = 515, R = S.rig;
+    const [s1, s2] = sky(s.t), gid = 'r' + (++uid), X = 515, R = S.rig, [lc, ls] = lamp(s.t), night = isNight(s.t), kind = kindOf(s), acc = ACCENT[kind];
     const Hc = def.look.head.h, B = 150 + Hc * 1.2 + 100;       // blanket top in room coordinates
     let back = '', front = '';
     // headwall with outlets and oxygen flowmeter
@@ -92,12 +113,21 @@
     const light = callLight ? `<circle cx="1004" cy="30" r="10" fill="#F0B64A" class="blink"/>` : '';
     return `<svg class="scene" viewBox="0 30 1030 410" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Room ${def.room}. ${def.name} in bed. Select objects in the room to inspect them, or ${def.short} to speak with them.">
       <defs><linearGradient id="${gid}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s2}"/><stop offset="1" stop-color="${s1}"/></linearGradient>
-      <radialGradient id="${gid}v" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="${tension ? '#5a0f0a' : '#000'}" stop-opacity="${tension ? '.38' : '.12'}"/></radialGradient></defs>
-      <rect width="1030" height="440" fill="var(--scene-wall)"/><rect y="378" width="1030" height="62" fill="var(--scene-floor)"/><path d="M0 378 H1030" stroke="var(--scene-trim)" stroke-width="5"/>
-      <polygon points="40,212 222,212 470,440 0,440" fill="${s1}" opacity=".16"/>
+      <radialGradient id="${gid}v" cx=".5" cy=".5" r=".75"><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="${tension ? '#5a0f0a' : '#000'}" stop-opacity="${tension ? '.38' : '.07'}"/></radialGradient>
+      <radialGradient id="${gid}l" cx="${X}" cy="36" r="430" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${lc}" stop-opacity="${ls}"/><stop offset=".55" stop-color="${lc}" stop-opacity="${ls * .35}"/><stop offset="1" stop-color="${lc}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${gid}p"><stop offset="0" stop-color="${lc}" stop-opacity="${night ? .2 : .14}"/><stop offset="1" stop-color="${lc}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${gid}n" cx="${X}" cy="250" r="560" gradientUnits="userSpaceOnUse"><stop offset=".4" stop-color="#0a1230" stop-opacity="0"/><stop offset="1" stop-color="#0a1230" stop-opacity=".42"/></radialGradient>
+      <linearGradient id="${gid}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${gid}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#000" stop-opacity=".06"/></linearGradient></defs>
+      <rect width="1030" height="440" fill="var(--scene-wall)"/><rect width="1030" height="378" fill="url(#${gid}w)"/>
+      <rect y="292" width="1030" height="86" fill="${acc}" opacity=".2"/><path d="M0 292 H1030" stroke="${acc}" stroke-width="4" opacity=".55"/><rect y="378" width="1030" height="62" fill="var(--scene-floor)"/><path d="M0 378 H1030" stroke="var(--scene-trim)" stroke-width="5"/><rect y="381" width="1030" height="59" fill="url(#${gid}f)"/>
+      <rect width="1030" height="440" fill="url(#${gid}l)" pointer-events="none"/>
+      <g><rect x="${X - 74}" y="30" width="148" height="9" rx="4" fill="#FFF9EC" stroke="var(--scene-trim)" stroke-width="1.5"/><rect x="${X - 60}" y="36" width="120" height="3" rx="1.5" fill="${lc}" opacity=".9"/></g>
+      ${wallArt(kind, s)}
+      <polygon points="40,212 222,212 470,440 0,440" fill="${night ? '#9FB4E0' : s1}" opacity="${night ? .08 : .24}"/>
       <g><rect x="40" y="42" width="182" height="170" rx="5" fill="url(#${gid}s)" stroke="var(--scene-frame)" stroke-width="9"/><path d="M40 176 q44 -26 90 -8 q44 14 92 -12 V212 H40Z" fill="#8AA99A" opacity=".55"/>${isNight(s.t) ? '<circle cx="178" cy="78" r="13" fill="#F4EBD0" opacity=".9"/><circle cx="184" cy="74" r="11" fill="#2a3558" opacity=".9"/><circle cx="70" cy="64" r="1.6" fill="#fff"/><circle cx="104" cy="96" r="1.2" fill="#fff"/><circle cx="200" cy="112" r="1.2" fill="#fff"/>' : ''}<path d="M131 42 V212 M40 127 H222" stroke="var(--scene-frame)" stroke-width="5"/>${f.psych ? `<g stroke="var(--scene-frame)" stroke-width="1.1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<path d="M${40 + i * 16} 42 V212"/>`).join('')}${Array.from({ length: 11 }, (_, i) => `<path d="M40 ${42 + i * 16} H222"/>`).join('')}</g>` : ''}</g>
-      ${back}${person}${front}${light}
-      ${isNight(s.t) ? '<rect width="1030" height="440" fill="#0a1230" opacity=".2" pointer-events="none"/>' : ''}<rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
+      <ellipse cx="${X}" cy="250" rx="360" ry="190" fill="url(#${gid}p)" pointer-events="none"/>${back}${person}${front}${light}
+      ${night ? `<rect width="1030" height="440" fill="url(#${gid}n)" pointer-events="none"/>` : ''}<rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
     </svg>`;
   }
 
