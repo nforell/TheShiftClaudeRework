@@ -1376,3 +1376,5 @@ table.health td{white-space:normal}
 .rv-refs{margin:.35rem 0 0;padding-left:1.1rem;font-size:.85rem}
 .rv-go{display:inline-block;margin-top:.4rem;font-size:.9rem;font-weight:600;color:var(--teal);padding:.3rem 0;min-height:32px}
 .acct-link.rv-awaiting,.acct-link.rv-changed{color:var(--ink-2)}
+
+.coach-try{font-size:.82rem;font-weight:600;opacity:.85;padding:.35rem 0;text-align:right}

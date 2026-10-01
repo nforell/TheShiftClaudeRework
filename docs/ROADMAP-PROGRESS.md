@@ -2,6 +2,17 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 4 — October 1, 2026 (branch `guided-first-room`)
+
+`clinical-review` merged to `main` and live.
+
+### Done
+- **Guided first room.** The first time a player walks into a room, a seven-step tour has them do it, not read about it: look at the patient (free, no clock), open Assess, take vitals (see the minutes it costs), read their findings against report, open the chart, then a pointer to care/meds/talk and Nova. "Do it" steps advance only when the player does the action; Skip tour ends it for good. Telemetry: `tour_start`, `tour_step`, `tour_done`, `tour_skip`, so PostHog shows where new players drop out. New `tests/guide.py` (phone and desktop). Full suite clean (it now takes about 6 minutes).
+
+### Needs Nick
+- Merge `guided-first-room`: https://github.com/nforell/TheShiftClaudeRework/compare/main...guided-first-room
+- To see the tour yourself: Menu → Settings → Intro and tips → Show them again, then start a shift.
+
 ## Session 3 — October 1, 2026 (branch `clinical-review`)
 
 Sessions 1–2 merged to `main` (PR #1) and live.
@@ -14,13 +25,11 @@ Sessions 1–2 merged to `main` (PR #1) and live.
 
 ### Needs Nick
 - Recruit reviewers (table in `docs/CLINICAL-REVIEW.md`) and send them `https://the-shift-claude-rework.vercel.app/review/<shift>/`. You're a credentialed psych RN, so you could review Quiet voices yourself, but an outside reviewer carries more weight with schools.
-- Merge `clinical-review`: https://github.com/nforell/TheShiftClaudeRework/compare/main...clinical-review
 - Reviews only arrive in PostHog once the PostHog key is in `src/config.js`; until then they come by email.
 
 ### Up next
-1. Guided first room (60 seconds) for pre-licensure students.
-2. Jurisdiction setting for psych law.
-3. New shifts that score Evaluate outcomes.
+1. Jurisdiction setting for psych law.
+2. New shifts that score Evaluate outcomes.
 
 ## Session 2 — September 30, 2026 (same branch)
 

@@ -925,17 +925,30 @@
       { sel: '.phone', text: () => `Your unit phone. ${cna().name}, the lab, pharmacy and the doctors reach you here. Some messages need an answer.` },
       { sel: '.skip', text: 'Caught up? Skip ahead. The clock runs until something needs you, then stops. Care XP, your streak and four shift goals sit up top.' },
     ],
+    /* The first room is a guided walk: each "do" step waits for the player to actually do it. */
     room: [
-      { sel: '.pt', text: 'Tap your patient to hear from them. Tap anything in the room to look closer. Looking is free.' },
-      { sel: '.dock-tabs', text: 'Assess, treat, give meds, talk and call. Every action shows what it costs in minutes.' },
-      { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives three nudges a shift. She points; she won\'t answer for you.' },
+      { sel: '.pt', text: () => `Meet ${def(s.loc).short}. Tap the patient to see how they look and hear what they say. Looking and listening are free: the clock doesn't move.`, until: () => !!ui.caption, try: true },
+      { sel: '[data-act="dock"][data-id="assess"]', text: 'Open Assess. Vital signs and body-system checks live here.', until: () => ui.dock === 'assess', try: true },
+      { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
+      { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report. One set of numbers is a snapshot; a trend is the story.' },
+      { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
+      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
+      { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
   };
+  const youVitals = () => { const P = s && s.loc && s.p[s.loc]; return P && P.vit ? P.vit.filter((x) => x.by === 'You').length : 0; };
   function coachFor() {
-    if (!s || s.ended || ui.ov || (ui.intro !== null && ui.intro !== undefined)) return null;
+    if (!s || s.ended || (ui.intro !== null && ui.intro !== undefined)) return null;
     const key = ui.view === 'station' ? 'station' : ui.view === 'room' ? 'room' : null;
     if (!key || seen('coach:' + key)) return null;
-    ui.coachStep = ui.coachStep || {}; const i = ui.coachStep[key] || 0; const step = COACH[key][i];
+    ui.coachStep = ui.coachStep || {};
+    if (key === 'room' && ui.guidePid !== s.loc) { ui.guidePid = s.loc; ui.guide0 = youVitals(); ui.guideChart = false; if (!ui.coachStep.room) TEL.track('tour_start', { case: s.caseId }); }
+    // Steps the player completes by doing them advance on their own, even behind an open sheet.
+    let i = ui.coachStep[key] || 0;
+    while (COACH[key][i] && COACH[key][i].until && COACH[key][i].until()) { i += 1; ui.coachStep[key] = i; if (key === 'room') TEL.track('tour_step', { step: i, case: s.caseId }); }
+    if (!COACH[key][i]) { markSeen('coach:' + key); if (key === 'room') TEL.track('tour_done', { case: s.caseId }); return null; }
+    if (ui.ov) return null;
+    const step = COACH[key][i];
     return step ? { key, i, step, n: COACH[key].length } : null;
   }
   function coachPlace() {
@@ -949,7 +962,7 @@
       if (r.top < 60 || r.bottom > innerHeight - 40) { a.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }
       ring = document.createElement('div'); ring.className = 'coach-ring';
       card = document.createElement('div'); card.className = 'coach'; card.dataset.id = id; card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', 'Tip');
-      card.innerHTML = `<p>${esc(typeof c.step.text === 'function' ? c.step.text() : c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">Skip tips</button><button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button></div>`;
+      card.innerHTML = `<p>${esc(typeof c.step.text === 'function' ? c.step.text() : c.step.text)}</p><div class="coach-f"><span class="dots">${Array.from({ length: c.n }, (_, k) => `<i class="${k === c.i ? 'on' : ''}"></i>`).join('')}</span><button class="btn btn-quiet" data-act="coach-skip">${c.key === 'room' ? 'Skip tour' : 'Skip tips'}</button>${c.step.try ? '<span class="coach-try">Tap the highlighted spot</span>' : `<button class="btn btn-primary" data-act="coach-next">${c.i === c.n - 1 ? 'Got it' : 'Next'}</button>`}</div>`;
       document.body.append(ring, card);
     }
     r = a.getBoundingClientRect();
@@ -1571,7 +1584,7 @@
     readall() { s.inbox.forEach((m) => { m.read = true; }); save(); render(); },
     reply(el) { const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m || !m.replies) return; ui.toasts = ui.toasts.filter((x) => x !== m.id); ui.ov = null; onReply(m, m.replies[+el.dataset.i]); },
     'toast-x'(el) { const id = +el.dataset.m; ui.toasts = ui.toasts.filter((x) => x !== id); const m = s.inbox.find((x) => x.id === id); if (m) m.read = true; render(); },
-    chart(el) { ui.chart = { pid: el.dataset.pid, tab: el.dataset.tab || (ui.chart && ui.chart.pid !== el.dataset.pid ? ui.chart.tab : 'overview') }; if (!el.dataset.tab && !(ui.ov === 'chart')) ui.chart.tab = 'overview'; ui.ov = 'chart'; render(); },
+    chart(el) { ui.guideChart = true; ui.chart = { pid: el.dataset.pid, tab: el.dataset.tab || (ui.chart && ui.chart.pid !== el.dataset.pid ? ui.chart.tab : 'overview') }; if (!el.dataset.tab && !(ui.ov === 'chart')) ui.chart.tab = 'overview'; ui.ov = 'chart'; render(); },
     catchup() { spend(10, (Ax) => Ax.log(null, 'Charted and caught up.', 'act')); if (!s.ended) render(); },   // test harness only; players skip ahead
     skip() { skipAhead(); },
     floor(el) { if (!s || s.ended) return; openFloor(el.dataset.id); },
@@ -1643,8 +1656,8 @@
     here() { render(); window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' }); },
     'intro-tap'() { if (!ui.introAll) { ui.introAll = true; render(); } },
     'intro-go'() { markSeen('intro:' + caseId); ui.intro = null; ui.introAll = false; render(); },
-    'coach-next'() { const c = coachFor(); if (!c) return; ui.coachStep[c.key] = c.i + 1; if (c.i + 1 >= c.n) markSeen('coach:' + c.key); coachPlace(); },
-    'coach-skip'() { markSeen('coach:station'); markSeen('coach:room'); coachPlace(); },
+    'coach-next'() { const c = coachFor(); if (!c) return; ui.coachStep[c.key] = c.i + 1; if (c.i + 1 >= c.n) { markSeen('coach:' + c.key); if (c.key === 'room') TEL.track('tour_done', { case: s.caseId }); } coachPlace(); },
+    'coach-skip'() { if (ui.view === 'room' && !seen('coach:room')) TEL.track('tour_skip', { step: (ui.coachStep && ui.coachStep.room) || 0, case: s && s.caseId }); markSeen('coach:station'); markSeen('coach:room'); coachPlace(); },
     msg(el) {
       const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m) return;
       m.read = true; ui.toasts = ui.toasts.filter((x) => x !== m.id);
