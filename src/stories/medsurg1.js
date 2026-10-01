@@ -1,4 +1,4 @@
-/* First light, 4 West. Stories for Marcus, Grace, Eleanor and Samuel. */
+/* Days on 4 West. Stories for Marcus, Grace, Eleanor and Samuel. */
 (function (S) {
   S.story.add('medsurg-4w-1', {
     '412': {
@@ -85,7 +85,7 @@
       epi: {
         close: `Grace went home on oral antibiotics with a hand mirror in her bag and a glucometer on her mother's coffee maker. In the spring her class sent 4 West a second model, correct this time, with a note: "Ms. O checks her feet every night. We check her work."`,
         warm: `Grace went home the next day on oral antibiotics. Her foot healed. She still grades from the couch, but she props the leg up now.`,
-        distant: `Grace went home the next day. She was polite at discharge and didn't ask many questions. Nobody knows whether she's looking at her feet.`,
+        distant: `Grace went home the next day. She was polite at discharge and didn't ask many questions. Hard to say whether she's looking at her feet.`,
         hard: `Grace's stay got longer and harder than it needed to be. She was gracious about it, the way teachers are with a difficult class. She didn't say much about the nurses.`,
       },
     },

@@ -47,10 +47,10 @@
           : `Daniel went home at 14:00 when his hold ended. Grace drove him and stayed the week. He's on a waitlist for a therapist. The team never learned how close tonight had been.`),
         distant: (s, P) => (P.reported
           ? `Daniel was certified and stayed on. He didn't talk much to the day staff. His chart says he's "participating in groups," which is true, and not the whole story.`
-          : `Daniel's hold ended at 14:00 and he walked out calm, his bag already packed. Nobody on the team knew what he'd planned for tonight.`),
+          : `Daniel's hold ended at 14:00 and he walked out calm, his bag already packed. The team didn't know what he'd planned for tonight.`),
         hard: (s, P) => (P.attempt
           ? `Daniel survived. He went to the ED, then back to 3 East on a longer hold. Grace was there when he woke up. She asked the nurses one thing: "Is anybody talking to him?"`
-          : `Daniel walked out at 14:00, calm and smiling, with a plan nobody had found. Grace was waiting in the parking lot. What happens next isn't in any chart. The warning signs were there by 08:00.`),
+          : `Daniel walked out at 14:00, calm and smiling, and a plan still in place. Grace was waiting in the parking lot. What happens next isn't in any chart. The warning signs were there by 08:00.`),
       },
     },
 

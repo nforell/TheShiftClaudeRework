@@ -205,7 +205,7 @@
   /* ------------ header ------------ */
   function header() {
     const unread = s.inbox.filter((m) => !m.read).length;
-    const loc = ui.view === 'room' ? `${unitS()} <span aria-hidden="true">/</span> <b>Room ${s.loc} · ${esc(def(s.loc).short)}</b>` : ui.view === 'handoff' ? `${unitS()} <span aria-hidden="true">/</span> <b>Shift report</b>` : `${unitS()} <span aria-hidden="true">/</span> <b>Nurses' station</b>`;
+    const loc = ui.view === 'room' ? `${unitS()} <span aria-hidden="true">/</span> <b>${s.loc} ${esc(def(s.loc).short)}</b>` : ui.view === 'handoff' ? `${unitS()} <span aria-hidden="true">/</span> <b>Shift report</b>` : `${unitS()} <span aria-hidden="true">/</span> <b>Nurses' station</b>`;
     return `<header class="top">
       <button class="mark" data-act="menu" aria-label="The Shift menu">The Shift</button>
       <div class="where">${loc}</div>
@@ -229,7 +229,7 @@
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
       const prev = i ? done(CASES[i - 1]).length : 1;
       const stn = (prof.stars || {})[id] || 0;
-      return `<button class="rung" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><b>${esc(k.level)}</b><span>${esc(k.title)}. ${esc(k.card)}</span><small>${best !== null ? `Best score ${best}` : prev ? 'Ready' : 'Recommended after ' + esc(E.getCase(CASES[i - 1]).level)}</small></button>`;
+      return `<button class="rung" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b>${esc(k.title)}</b><span>${esc(k.card)}</span></span><span class="rg-l">${esc(k.level.replace('Specialty: ', ''))}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${best !== null ? `Best ${best}` : prev ? 'Not played' : 'After ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
     };
     const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
@@ -237,14 +237,13 @@
       <span style="display:flex;gap:.3rem"><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button></span></div>
       <section class="home-hero">
         <div>
-          <p class="eyebrow">A nursing shift simulator</p>
           <p class="big-clock" aria-label="${start}">${start.slice(0, 2)}<span>:</span>${start.slice(3)}</p>
           <h1>${esc(c.hero.head)}</h1>
           <p class="lede">${esc(c.hero.lede)}</p>
           <div class="cta">
             ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
-          <p class="home-meta">${c.patients.length} patients · about ${c.minutes || 15} minutes · saves as you go</p>
+          <p class="home-meta">${c.patients.length} patients, about ${c.minutes || 15} minutes to play. Your progress saves as you go.</p>
         </div>
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
@@ -253,9 +252,10 @@
         </div>
       </section>
       <div>
+        <h2 class="sched-h">Shifts</h2>
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map(rung).join('')}
-          <div class="rung locked"><b>More specialty units</b><span>ED, ICU, labor and delivery.</span><small>Coming later</small></div>
+          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>Not built yet</b><span>ED, ICU, step-down, labor and delivery.</span></span></div>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>Original clinical content for education. Not a substitute for clinical instruction.${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
@@ -284,7 +284,7 @@
       <aside class="brain" aria-label="Your brain sheet">
         <h2>Your brain sheet${brain.length ? ` <span class="count">${brain.length}</span>` : ''}</h2><p class="hint">Everyone you have today. What you flag lands under their name and stays with you all shift.</p>
         <ol class="bs">${pts.map((p, i) => { const fl = brain.filter((b) => b.pid === p.id); const cur = i === ui.hIdx, heard = i < ui.hIdx || s.hHeard && s.hHeard.includes(p.id); return `<li class="bs-p ${cur ? 'cur' : heard ? 'heard' : 'next'}">
-          <button class="bs-h" data-act="h-go" data-i="${i}" aria-current="${cur}">${pface(p.id)}<span class="bs-who"><b>${p.room} ${esc(p.short)}</b><small>${esc(ageSex(p))} · ${esc(p.dx)}</small></span><span class="bs-st">${cur ? 'Reporting' : heard ? 'Heard' : 'Up next'}</span></button>
+          <button class="bs-h" data-act="h-go" data-i="${i}" aria-current="${cur}">${pface(p.id)}<span class="bs-who"><b>${p.room} ${esc(p.short)}</b><small>${esc(ageSex(p))}, ${esc(p.dx)}</small></span><span class="bs-st">${cur ? 'Reporting' : heard ? 'Heard' : 'Up next'}</span></button>
           ${fl.length ? `<ul>${fl.map((b) => `<li class="tap" data-act="flag" data-k="${b.k}" role="button" tabindex="0" title="Tap to unflag">${esc(b.text)}</li>`).join('')}</ul>` : ''}</li>`; }).join('')}</ol>
         ${ui.hIdx < pts.length - 1 ? `<p style="margin-top:1rem"><button class="btn btn-quiet" data-act="h-done">Skip to triage</button></p>` : ''}
       </aside></div></main>`;
@@ -379,9 +379,9 @@
   };
   function goalSub(x) {
     const L = C().length;
-    if (x.st === 'done') return x.id === 'meds' ? 'None late' : x.id === 'calls' ? 'Nobody waited' : 'Done';
+    if (x.st === 'done') return x.id === 'meds' ? 'None late' : x.id === 'calls' ? 'All answered' : 'Done';
     if (x.st === 'fail') return x.id === 'meds' ? `${x.n} late` : x.id === 'calls' ? `${x.n} missed` : x.id === 'eyes' ? `${x.n} of ${x.of} in time` : `${x.n} of ${x.of} given`;
-    if (x.id === 'eyes') return `${x.n} of ${x.of} · by ${E.clock(90)}`;
+    if (x.id === 'eyes') return `${x.n} of ${x.of} seen, due by ${E.clock(90)}`;
     if (x.id === 'report') return s.t >= L - 60 ? `${x.n} of ${x.of} given` : `Opens ${E.clock(L - 60)}`;
     return 'So far, so good';
   }
@@ -391,7 +391,7 @@
     const status = top ? `<div class="cmd-st busy"><span class="cmd-n" aria-hidden="true">${now.length}</span><div><b>${now.length === 1 ? 'One thing needs you' : `${now.length} things need you`}</b><button class="cmd-go" data-act="${top.rp ? 'report' : top.away ? 'away' : 'goto'}" data-pid="${top.pid}">${top.late ? '<em>Overdue</em> ' : ''}${esc(rowLabel(top))} <span aria-hidden="true">›</span></button></div></div>`
       : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b><small>Skip ahead. The clock runs until something needs you.</small></div></div>`;
     const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
-    const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip">${ICON.ff}<span><b>Skip ahead</b><small>${nx ? `Next known: ${E.clock(nx.t)} · ${esc(nx.text)}` : 'Until something happens'}</small></span></button>`;
+    const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip">${ICON.ff}<span><b>Skip ahead</b><small>${nx ? `${E.clock(nx.t)} ${esc(nx.text)}` : 'Until something happens'}</small></span></button>`;
     return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
   }
   /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
@@ -442,7 +442,7 @@
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
         <section class="board" aria-labelledby="bh">
-          <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="min-height:36px;font-size:.85rem">In your priority order · Re-rank</button>` : ''}</div>
+          <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="min-height:36px;font-size:.85rem">Change order</button>` : ''}</div>
           ${prioList().map(def).map((d) => { const P = s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'away' : 'goto'}" data-pid="${d.id}">
             <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
             <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(d.dx)}</div><div class="why">Here for ${esc(d.reason.charAt(0).toLowerCase() + d.reason.slice(1))}</div>
@@ -624,7 +624,7 @@
   const PANES = [
     ['brain', 'Brain', 'Tasks for this patient, overdue first. Tap a task to do it.'],
     ['assess', 'Assess', 'Document an assessment. Each one takes time; the finding goes in the chart.'],
-    ['care', 'Care', 'Bedside interventions. What you do here changes the patient.'],
+    ['care', 'Care', 'Hands-on care at the bedside.'],
     ['meds', 'MAR', 'Medication administration record. Give or hold each scheduled dose.'],
     ['talk', 'Talk & call', 'Talk with the patient and family, call the provider, or get help.'],
   ];
@@ -749,16 +749,16 @@
   }
   const starSvg = (on, i, cls) => `<svg class="${cls || 'st'} ${on ? 'on' : ''}" style="--i:${i}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>`;
   function lvHTML(lv, xp, from, up) {
-    return `<div class="rw-lv"><span class="lv-n" aria-hidden="true">${lv.n}</span><div class="lv-b"><b>${esc(lv.title)}${up ? ' <em class="lvup">Level up</em>' : ''}</b><div class="lv-bar" aria-hidden="true"><i style="--from:${(from * 100).toFixed(1)}%;--to:${(lv.pct * 100).toFixed(1)}%"></i></div><small>Level ${lv.n} · ${fmtN(xp)} XP${lv.hi ? ` · ${fmtN(lv.hi - xp)} to ${esc(lv.next)}` : ' · top of the ladder'}</small></div></div>`;
+    return `<div class="rw-lv"><span class="lv-n" aria-hidden="true">${lv.n}</span><div class="lv-b"><b>${esc(lv.title)}${up ? ' <em class="lvup">Level up</em>' : ''}</b><div class="lv-bar" aria-hidden="true"><i style="--from:${(from * 100).toFixed(1)}%;--to:${(lv.pct * 100).toFixed(1)}%"></i></div><small>Level ${lv.n}, ${fmtN(xp)} XP.${lv.hi ? ` ${fmtN(lv.hi - xp)} more to ${esc(lv.next)}.` : ' Top of the ladder.'}</small></div></div>`;
   }
   function rewardHTML() {
     const r = s.reward; if (!r) return '';
     const up = r.lvAfter.n > r.lvBefore.n, from = up ? 0 : r.lvBefore.pct;
     const nextStar = r.stars < 3 ? `${RW.STARS[r.stars]} for ${r.stars ? 'the next' : 'a'} star` : 'Three stars';
     return `<section class="reward ${ui.debDone ? 'shown' : 'play'}" aria-label="Rewards">
-      <div class="rw-stars" aria-label="${r.stars} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < r.stars, i)).join('')}<small>${esc(nextStar)}${r.prevStars > r.stars ? ` · your best is ${r.prevStars}` : r.stars > r.prevStars && r.prevStars ? ' · new best' : ''}</small></div>
+      <div class="rw-stars" aria-label="${r.stars} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < r.stars, i)).join('')}<small>${esc(nextStar)}${r.prevStars > r.stars ? `. Your best is ${r.prevStars}` : r.stars > r.prevStars && r.prevStars ? '. New best' : ''}</small></div>
       <div class="rw-mid"><h3>Shift goals</h3>${goalsHTML(r.goals, 'wide')}</div>
-      <div class="rw-xp"><ul>${r.lines.map((l, i) => `<li style="--i:${i}"><span>${esc(l.k)}</span><b>+${fmtN(l.v)}</b></li>`).join('')}<li class="tot" style="--i:${r.lines.length}"><span>This shift</span><b>+${fmtN(r.total)} XP</b></li></ul>
+      <div class="rw-xp"><ul><li class="tot" style="--i:0"><span>This shift</span><b>+${fmtN(r.total)} XP</b></li></ul><details class="rw-more"><summary>Where it came from</summary><ul>${r.lines.map((l) => `<li><span>${esc(l.k)}</span><b>+${fmtN(l.v)}</b></li>`).join('')}</ul></details>
         ${lvHTML(r.lvAfter, r.after, from, up)}</div>
       ${r.earned.length ? `<div class="rw-badges"><h3>New badge${r.earned.length > 1 ? 's' : ''}</h3><div>${r.earned.map((b) => badgeHTML(b, false, 'span')).join('')}</div></div>` : ''}
     </section>`;
@@ -766,15 +766,14 @@
   function careerHTML() {
     const xp = prof.xp || 0, lv = RW.level(xp), have = prof.badges || {}, n = Object.keys(have).length;
     const les = Object.values(prof.lessons || {}), open = les.filter((l) => !l.fixed).length, fixed = les.length - open;
-    return `<section class="career" aria-label="Your career"><div class="cr-l"><p class="eyebrow">Your career</p>${lvHTML(lv, xp, 0, false)}${les.length ? `<button class="cr-les" data-act="awards" data-k="lessons"><b>${open}</b> open lesson${open === 1 ? '' : 's'} · <b>${fixed}</b> fixed<span aria-hidden="true">›</span></button>` : ''}</div>
-      <div class="cr-b"><p class="eyebrow">Badges <span>${n} of ${RW.BADGES.length}</span><button class="btn btn-quiet cr-all" data-act="awards">All achievements ›</button></p><div class="cr-badges">${RW.BADGES.map((b) => badgeHTML(b.id, !have[b.id])).join('')}</div></div></section>`;
+    return `<section class="career" aria-label="Your progress">${lvHTML(lv, xp, 0, false)}<div class="cr-links">${les.length ? `<button class="cr-les" data-act="awards" data-k="lessons">${open} open lesson${open === 1 ? '' : 's'}, ${fixed} fixed</button>` : ''}<button class="cr-les" data-act="awards">Badges: ${n} of ${RW.BADGES.length}</button></div></section>`;
   }
 
   /* ------------ achievements: tracks, milestones, units, the lesson log, the floor-call collection ------------ */
   const MEDAL = ['none', 'bronze', 'silver', 'gold'];
   function medalHTML(tier, g) { return `<svg class="medal m-${MEDAL[tier]}" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 3h7l2 9-6 2zM33 3h-7l-2 9 6 2z" class="md-rib"/><circle cx="24" cy="29" r="15" class="md-rim"/><circle cx="24" cy="29" r="11" class="md-in"/><g transform="translate(12 17)" class="md-g">${GLYPH[g] || GLYPH.star}</g></svg>`; }
   const TRACKG = { safety: 'shield', priority: 'up', assess: 'eye', meds: 'check', deleg: 'solo', comm: 'bell', judgment: 'heart', time: 'flame', lessons: 'book', stories: 'chat', floor: 'badge', shifts: 'map', stars: 'star' };
-  const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} · ${k.level}` : 'Floor calls'; };
+  const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} (${k.level.replace('Specialty: ', '')})` : 'Floor calls'; };
   const ago = (ms) => { const d = Math.round((Date.now() - ms) / 86400000); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
   function trackRow(tr) {
     const v = tr.val(prof), tier = RW.tierOf(tr, v), next = tr.tiers[tier], lo = tier ? tr.tiers[tier - 1] : 0, pct = next ? Math.min(1, (v - lo) / (next - lo)) : 1;
@@ -814,7 +813,7 @@
     const ups = L.ups.map((u) => { const tr = RW.TRACKS.find((x) => x.id === u.id); return `<span class="up">${medalHTML(u.tier, TRACKG[tr.dom || tr.id])}<span><b>${esc(tr.label)}</b><small>${RW.TIER[u.tier]}</small></span></span>`; }).join('');
     if (!fx.length && !L.added.length && !ups && !ag.length) return `<section class="learn"><p class="muted">Every call to rethink from a finished shift goes into your lesson log. <button class="btn btn-quiet" data-act="awards">Achievements ›</button></p></section>`;
     return `<section class="learn" aria-label="What you learned">
-      ${fx.length ? `<div class="ln-fix"><h3>Lessons you fixed <span>${fx.length}</span></h3><ul>${fx.slice(0, 6).map((l) => `<li><span class="les-ic" aria-hidden="true">✓</span><span>${esc(l.text)}</span></li>`).join('')}${fx.length > 6 ? `<li class="muted">and ${fx.length - 6} more</li>` : ''}</ul><p class="muted">Last time you made these mistakes. This time you didn't.</p></div>` : ''}
+      ${fx.length ? `<div class="ln-fix"><h3>Lessons you fixed <span>${fx.length}</span></h3><ul>${fx.slice(0, 6).map((l) => `<li><span class="les-ic" aria-hidden="true">✓</span><span>${esc(l.text)}</span></li>`).join('')}${fx.length > 6 ? `<li class="muted">and ${fx.length - 6} more</li>` : ''}</ul><p class="muted">Mistakes from last time that you didn't repeat.</p></div>` : ''}
       ${ag.length ? `<div class="ln-ag"><h3>Came back <span>${ag.length}</span></h3><ul>${ag.slice(0, 4).map((l) => `<li><span class="les-ic" aria-hidden="true">!</span><span>${esc(l.text)}</span></li>`).join('')}</ul></div>` : ''}
       ${ups ? `<div class="ln-ups"><h3>Track medals</h3><div>${ups}</div></div>` : ''}
       <div class="ln-f">${L.added.length ? `<p><b>${L.added.length} new lesson${L.added.length === 1 ? '' : 's'}</b> in your log. Replay this shift and avoid ${L.added.length === 1 ? 'it' : 'them'} to mark ${L.added.length === 1 ? 'it' : 'them'} fixed.</p>` : ''}<button class="btn" data-act="awards" data-k="lessons">Open lesson log ›</button><button class="btn btn-quiet" data-act="awards">All achievements</button></div>
@@ -825,7 +824,7 @@
   function storyHTML(o) {
     if (!STY) return ''; const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); if (!e) return '';
     const more = e.total - e.heard;
-    return `<div class="st-epi"><div class="st-eh"><span class="st-k">Their story</span>${trustDots(e.trust)}</div><p>${esc(e.text)}</p>${e.learned.length ? `<details><summary>What you learned about them <span class="muted">${e.heard} of ${e.total}</span></summary><ul>${e.learned.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}${more ? `<small class="muted">${e.heard ? `${more} more to discover` : `You didn't get to know them this shift. There's more to their story`}. Time at the bedside, when they're stable, opens it.</small>` : ''}</div>`;
+    return `<div class="st-epi"><div class="st-eh"><span class="st-k">Their story</span>${trustDots(e.trust)}</div><p>${esc(e.text)}</p>${e.learned.length ? `<details><summary>What you learned about them <span class="muted">${e.heard} of ${e.total}</span></summary><ul>${e.learned.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}${more && e.heard ? `<small class="muted">${more} more thing${more === 1 ? '' : 's'} to learn about them on another shift.</small>` : ''}</div>`;
   }
   function vDebrief() {
     const d = E.debrief(s);
@@ -833,10 +832,11 @@
     const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
-      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}Here is what happened to your patients, and the decisions that shaped it.</p></div>
-      <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>Overall, out of 100${best !== null ? ` · your best ${best}` : ''}</small></div></section>
+      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
+      <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>
       ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
+      ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); return e && !e.heard && e.total; }).length; return n ? `<p class="muted st-note">You didn't get to know ${n === d.outcomes.length ? 'any of your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. Talking with patients once they're stable fills them in.</p>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><div class="by-h"><h2 id="dh">${ui.byCj ? 'By NCLEX step' : 'By skill'}</h2>${CJ ? `<div class="seg" role="group" aria-label="Score by"><button data-act="by" data-v="skill" aria-pressed="${!ui.byCj}">Skills</button><button data-act="by" data-v="cj" aria-pressed="${!!ui.byCj}">NCLEX steps</button></div>` : ''}</div>
@@ -856,7 +856,7 @@
   const PAY = [['yes', 'Yes'], ['maybe', 'Maybe'], ['no', 'No']];
   function fbCard() {
     const f = ui.fb || (ui.fb = {});
-    if (f.sent) return `<section class="fbk sent" aria-live="polite"><h2>Thanks. That goes straight to the person building this.</h2><p class="muted">${f.sent === 'email' ? 'Your email app should have opened with it filled in. Hit send there.' : 'Every report gets read, and clinical problems get fixed first.'}</p></section>`;
+    if (f.sent) return `<section class="fbk sent" aria-live="polite"><h2>Thanks. I read every one of these.</h2><p class="muted">${f.sent === 'email' ? 'Your email app should have opened with it filled in. Hit send there.' : 'Every report gets read, and clinical problems get fixed first.'}</p></section>`;
     return `<section class="fbk" aria-labelledby="fbh"><h2 id="fbh">Help shape the beta</h2><p class="muted">Two questions. Clinical problems get fixed first.</p>
       <label class="fb-l" for="fb-note">Anything clinically off, confusing, or too easy?</label>
       <textarea id="fb-note" class="fb-t" data-bind="note" rows="3" maxlength="2000" placeholder="Room, moment, what you'd expect instead">${esc(f.note || '')}</textarea>
@@ -943,7 +943,7 @@
       { sel: '.pt', text: () => `Meet ${def(s.loc).short}. Tap the patient to see how they look and hear what they say. Looking and listening are free: the clock doesn't move.`, until: () => !!ui.caption, try: true },
       { sel: '[data-act="dock"][data-id="assess"]', text: 'Open Assess. Vital signs and body-system checks live here.', until: () => ui.dock === 'assess', try: true },
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
-      { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report. One set of numbers is a snapshot; a trend is the story.' },
+      { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
       { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
       { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
@@ -1005,6 +1005,8 @@
       <div class="sheet-b">${body}</div>${foot ? `<div class="sheet-f">${foot}</div>` : ''}</div></div>`;
   }
 
+  const ehrName = (n) => { const p = n.replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.) /, '').split(' '); return p.length > 1 ? p[p.length - 1].toUpperCase() + ', ' + p.slice(0, -1).join(' ') : n; };
+  const mrn = (d) => { let h = 7; for (const ch of d.name + d.room) h = (h * 31 + ch.charCodeAt(0)) % 9999991; return String(h).padStart(7, '0'); };
   function ovChart() {
     const pid = ui.chart.pid, tab = ui.chart.tab, d = def(pid), P = s.p[pid];
     const tabs = [['overview', 'Overview'], ['vitals', 'Vitals'], ['labs', 'Labs'], ['orders', 'Orders'], ['mar', 'MAR'], ['notes', 'Notes'], ['io', 'Intake/output']];
@@ -1015,7 +1017,7 @@
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
         ${P.vit.slice().reverse().map((v) => `<tr><td>${E.clock(v.t)}</td><td class="${ab('T', v.T) ? 'ab' : ''}">${fT(v.T)}${ab('T', v.T) ? ' ▲' : ''}</td><td class="${ab('HR', v.HR) ? 'ab' : ''}">${v.HR}${ab('HR', v.HR) ? (v.HR < norm(d, 'HR')[0] ? ' ▼' : ' ▲') : ''}</td><td class="${ab('SBP', v.SBP) ? 'ab' : ''}">${v.SBP}/${v.DBP}${ab('SBP', v.SBP) ? ' ▼' : ''}</td><td class="${ab('RR', v.RR) ? 'ab' : ''}">${v.RR}</td><td class="${ab('SpO2', v.SpO2) ? 'ab' : ''}">${v.SpO2}%</td><td>${esc(v.O2)}</td><td>${v.pain}</td><td>${esc(v.by)}</td></tr>`).join('')}</tbody></table></div>
         ${P.bgs ? `<h3 style="margin:1.2rem 0 .5rem">Point-of-care glucose</h3>${P.bgs.length ? `<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>mg/dL</th><th>By</th></tr></thead><tbody>${P.bgs.slice().reverse().map((g) => `<tr><td>${E.clock(g.t)}</td><td class="${g.val < 70 ? 'ab' : ''}">${g.val}${g.val < 70 ? ' ▼' : ''}</td><td>${esc(g.by)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No glucose checked this shift.</p>'}` : ''}
-        <p class="muted" style="font-size:.85rem">▲ ▼ mark values outside the normal range. Trends only exist if someone keeps measuring.</p>`;
+        <p class="muted" style="font-size:.85rem">▲ ▼ outside the normal range.</p>`;
     }
     if (tab === 'labs') {
       P.k.labsSeen = s.t; if (pid === '418') P.kSeen = true;
@@ -1026,7 +1028,7 @@
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${n.t < -600 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
     return `<div class="scrim" data-act="close" data-scrim="1" style="padding:0;justify-content:flex-end"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Chart for ${esc(d.name)}">
-      <div class="chart-h"><div class="who"><b>${esc(d.name)}</b> <span class="muted">${ageSex(d)}, room ${d.room}, ${esc(d.code)}</span></div>
+      <div class="chart-h"><div class="who"><b>${esc(ehrName(d.name))}</b> <span>${ageSex(d)}, Rm ${d.room}, MRN ${mrn(d)}</span><span class="ehr-tags"><span class="ehr-tag ${/No known/.test(d.allergies) ? '' : 'al'}">${/No known/.test(d.allergies) ? 'NKDA' : 'ALLERGY: ' + esc(d.allergies.split(',')[0].split('(')[0].trim())}</span><span class="ehr-tag ${/^Full code/.test(d.code) ? '' : 'cd'}">${esc(d.code.split(',')[0])}</span><span class="ehr-tag">Wt ${esc(String(d.weight).split(' (')[0])}</span></span></div>
       <div class="seg" role="group" aria-label="Switch patient">${pts().map((p) => `<button data-act="chart" data-pid="${p.id}" data-tab="${tab}" aria-pressed="${p.id === pid}">${p.room}</button>`).join('')}</div>
       <button class="btn" data-act="close">${ICON.close}Close chart</button></div>
       <div class="chart-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="chart" data-pid="${pid}" data-tab="${id}" aria-selected="${tab === id}">${l}</button>`).join('')}</div>
@@ -1585,7 +1587,7 @@
         const noise = ui.sbar.picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
         reply = d.sbar.respond.call(d.sbar, s, P, Ax, ui.sbar.picked, ui.sbar.req);
         if (!keys.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
-        if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Concise beats complete. Every item in an SBAR should earn its place.', pid);
+        if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov().name}. "${reply}"`, 'info');
       });
       if (s.ended) return; ui.sbar.reply = reply; ui.sbar.review = judgSince(j0, pid); reviewSound(ui.sbar.review); stamp(`Called ${prov().name}`, 6); render();
@@ -1636,7 +1638,7 @@
     'end-yes'() { ui.ov = null; endShift(); },
     filter(el) {
       ui.filter = el.dataset.k;
-      if (el.dataset.k === 'bad' && s && !ui.reflected) { ui.reflected = true; prof.reflect = (prof.reflect || 0) + 1; prof.badges = prof.badges || {}; if (prof.reflect >= 3 && !prof.badges.reflect) { prof.badges.reflect = Date.now(); setTimeout(() => { const b = document.querySelector('.filter [data-k="bad"]'); if (b) hint(b, 'New badge: Reflective practice. Looking hard at your misses is how they stop happening.'); FX.play('star'); }, 120); } E.store.saveProfile(prof); }
+      if (el.dataset.k === 'bad' && s && !ui.reflected) { ui.reflected = true; prof.reflect = (prof.reflect || 0) + 1; prof.badges = prof.badges || {}; if (prof.reflect >= 3 && !prof.badges.reflect) { prof.badges.reflect = Date.now(); setTimeout(() => { const b = document.querySelector('.filter [data-k="bad"]'); if (b) hint(b, 'New badge: Reflective practice, for going back over your misses.'); FX.play('star'); }, 120); } E.store.saveProfile(prof); }
       render();
     },
     awards(el) { ui.awFrom = ui.view === 'debrief' ? 'debrief' : 'home'; ui.view = 'awards'; ui.awTab = (el && el.dataset.k) || ui.awTab || 'all'; ui.ov = null; render(true); },
@@ -1683,7 +1685,7 @@
     cast(el) {
       const id = el.dataset.id; R.poke(id + ':bust');
       const d = C().patients.find((p) => p.id === id), look = d ? d.look : (C().staff[id] || {}).look;
-      const text = id === 'nova' ? 'Take a breath. Then go see the sickest one first.' : look && look.lines ? look.lines.calm : null;
+      const text = id === 'nova' ? 'Go see the sickest one first.' : look && look.lines ? look.lines.calm : null;
       ui.castSay = text ? { id, text } : null; render();
       clearTimeout(ui.castT); ui.castT = setTimeout(() => { if (ui.castSay && ui.castSay.id === id && ui.view === 'home') { ui.castSay = null; render(); } }, 3200);
     },

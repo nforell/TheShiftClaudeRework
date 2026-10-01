@@ -154,13 +154,13 @@
           : `Noah's bruises never made it into a report, so nobody outside this room will ask how they happened. Travis opened up to you more than to anyone. ${P.purple ? 'He took home what you taught him: put him down, walk away, never shake.' : ''} It's the only protection that went home with Noah.`),
         warm: (s, P) => (P.reported
           ? `Noah's case went to child protection for review, as it should. Travis met with social work before he left. ${P.purple ? 'He told her, "The nurse said it\'s okay to walk away."' : 'He answered every question she asked.'}`
-          : `Noah went home. Nobody made a report, so nobody will check in. Travis said thanks on the way out.`),
+          : `Noah went home. There's no report, so no one will check in. Travis said thanks on the way out.`),
         distant: (s, P) => (P.reported
-          ? `Noah's case went to child protection for review. Travis didn't talk much to the staff. Nobody knows yet what happened at home.`
-          : `Noah went home. Nobody knows what happened to him, and nobody made a report so that someone would find out.`),
+          ? `Noah's case went to child protection for review. Travis didn't talk much to the staff. What happened at home is still unknown.`
+          : `Noah went home. What happened to him is unknown, and without a report no one is going to find out.`),
         hard: (s, P) => (P.icu
           ? `Noah went to the PICU with bleeding under his skull. The hospital reported it, as it had to, and child protection opened an investigation. Whatever it finds, the signs were there to see on this shift.`
-          : `Noah went home${P.bruises ? ' with bruises that were seen and never reported' : ' with an injury nobody looked for'}. A report is how a four-month-old gets protected when he can't say what happened. Nobody made one.`),
+          : `Noah went home${P.bruises ? ' with bruises that were seen and never reported' : ' with an injury no one looked for'}. A report is how a four-month-old gets protected when he can't say what happened. There wasn't one.`),
       },
     },
 

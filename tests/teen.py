@@ -1,4 +1,4 @@
-"""Group chat (adolescent psych): plays the shift twice. A careful nurse should get every patient to a good outcome;
+"""Evenings on 4 North (adolescent psych): plays the shift twice. A careful nurse should get every patient to a good outcome;
 a nurse who only skips ahead should see every emergency play out. Checks outcomes, key scoring and the NCLEX
 Evaluate step, and that nothing throws. Usage: python tests/teen.py   (exit 1 on any failure)"""
 import sys, pathlib

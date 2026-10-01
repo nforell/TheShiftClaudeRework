@@ -71,7 +71,7 @@
         close: (s, P) => `${P.meeting ? 'The family meeting was on a Thursday. Jordan read the first line off their list, then couldn\'t read the rest, so Dr. Adeyemi read it with them. Their dad didn\'t say much. On Sunday he called and asked for Jordan.' : 'Jordan went home after two weeks with a safety plan and a sketchbook full of frogs.'} Detective Ribbit's latest case is a snail who got a new shell. It fits.`,
         warm: `Jordan went home after two weeks with a safety plan and a new therapist. The frog comic has fourteen episodes now. They still wear long sleeves, but sometimes they roll them up.`,
         distant: `Jordan was discharged with a safety plan. The chart says "engaged in groups." The sketchbook stayed in their bag.`,
-        hard: (s, P) => (P.gone ? `Jordan got eleven stitches in the ED and came back to 4 North on 1:1. The piece of plastic had been in their shoe all afternoon. Tasha sat with them that night and didn't ask any questions. They drew her as a frog.` : `Jordan's long sleeves stayed down. Nobody looked under them until the night shift.`),
+        hard: (s, P) => (P.gone ? `Jordan got eleven stitches in the ED and came back to 4 North on 1:1. The piece of plastic had been in their shoe all afternoon. Tasha sat with them that night and didn't ask any questions. They drew her as a frog.` : `Jordan's long sleeves stayed down. The night shift was the first to look under them.`),
       },
     },
 
@@ -144,7 +144,7 @@
         close: (s, P) => (P.reported ? `CPS opened a case that night. Kayla and Gabe went to their abuela's in Fresno while it was investigated. ${P.abuela ? 'She told the social worker herself, with a nurse sitting beside her.' : ''} In September she tried out for a club soccer team as keeper. She made it.` : `Kayla told you, and you stayed. The report still has to be made; the night nurse picked it up at 21:00.`),
         warm: (s, P) => (P.reported ? `CPS opened a case. Kayla went to stay with her abuela while it was investigated. She walks Gabe to school from there now. It's a longer walk. She doesn't mind.` : `Kayla's disclosure still needs to be reported. She's waiting for an adult to do what she was promised.`),
         distant: `Kayla was discharged with a safety plan and an outpatient therapist. She kept her hoodie zipped to the chin the whole time.`,
-        hard: (s, P) => (P.rickIn ? `After the visit, Kayla stopped talking to staff. The night nurse found the note to Gabe in her pocket and called the hotline herself. Sometimes the second adult is the one who listens.` : `Nobody made the report. Kayla went home at the end of the week. What happens next isn't in any chart.`),
+        hard: (s, P) => (P.rickIn ? `After the visit, Kayla stopped talking to staff. The night nurse found the note to Gabe in her pocket and called the hotline herself. Sometimes the second adult is the one who listens.` : `The report was never made. Kayla went home at the end of the week. What happens next isn't in any chart.`),
       },
     },
 
@@ -173,7 +173,7 @@
         close: `Eli spent three days on pediatrics with N-acetylcysteine until his liver tests turned around, then came back to 4 North. His mom visited every day. In April the letter came. He didn't get in. He told the group about it, and then about the vending machine song.`,
         warm: `Eli recovered on pediatrics and came back to finish his stay on 4 North. Low Battery played a show in June. He was on bass.`,
         distant: `Eli transferred to pediatrics, then back to 4 North. The chart says "medically recovered." He never said much to the evening staff.`,
-        hard: (s, P) => `Nobody found the overdose that evening. Eli's liver kept failing overnight until the night nurse saw the yellow in his eyes. He started the antidote a day later than he should have and spent most of a week on pediatrics. Everyone had said "medically cleared."`,
+        hard: (s, P) => `The overdose wasn't found that evening. Eli's liver kept failing overnight until the night nurse saw the yellow in his eyes. He started the antidote a day later than he should have and spent most of a week on pediatrics. Everyone had said "medically cleared."`,
       },
     },
   });

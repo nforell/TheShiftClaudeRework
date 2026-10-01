@@ -43,10 +43,10 @@
     const onUnit = c.patients.filter((d) => here(d) && !out(s.p[d.id])), rep = onUnit.filter((d) => s.report && s.report[d.id]).length;
     const report = onUnit.length && rep === onUnit.length ? 'done' : s.ended ? 'fail' : 'open';
     return [
-      { id: 'eyes', label: 'Eyes on everyone', sub: `Every patient seen by ${A.clock(seeBy)}`, st: eyes, n: seen, of: need.length },
-      { id: 'meds', label: 'On the clock', sub: 'No scheduled dose over an hour late', st: meds, n: late, of: tot, bad: true },
-      { id: 'calls', label: 'Nobody waits', sub: 'Every call light and floor call answered', st: calls, n: bellMiss + fl.missed, of: rang + fl.answered + fl.missed, bad: true },
-      { id: 'report', label: 'Clean handoff', sub: `Report on every patient by ${A.clock(len)}`, st: report, n: rep, of: onUnit.length },
+      { id: 'eyes', label: 'Everyone seen', sub: `Every patient seen by ${A.clock(seeBy)}`, st: eyes, n: seen, of: need.length },
+      { id: 'meds', label: 'Meds on time', sub: 'No scheduled dose over an hour late', st: meds, n: late, of: tot, bad: true },
+      { id: 'calls', label: 'Call lights answered', sub: 'Every call light and floor call answered', st: calls, n: bellMiss + fl.missed, of: rang + fl.answered + fl.missed, bad: true },
+      { id: 'report', label: 'Report given', sub: `Report on every patient by ${A.clock(len)}`, st: report, n: rep, of: onUnit.length },
     ];
   }
 
@@ -58,7 +58,7 @@
     { id: 'sharp', label: 'Sharp eye', how: 'Get every floor call right (at least 4)', g: 'eye' },
     { id: 'catch', label: 'Good catch', how: 'Your sickest patient ends the shift with a good outcome', g: 'heart' },
     { id: 'solo', label: 'Solo', how: 'Score 72 or better without asking Nova', g: 'solo' },
-    { id: 'bells', label: 'Nobody waited', how: 'Answer every call light on a shift (at least 3)', g: 'bell' },
+    { id: 'bells', label: 'Quick feet', how: 'Answer every call light on a shift (at least 3)', g: 'bell' },
     { id: 'float', label: 'Float nurse', how: 'Finish a shift on every unit', g: 'map' },
     { id: 'house', label: 'Full house', how: 'Three stars on every shift', g: 'crown' },
     { id: 'allgood', label: 'Everyone home safe', how: 'Finish a shift with a good outcome for every patient', g: 'home' },

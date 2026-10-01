@@ -2,6 +2,27 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 8 — October 1, 2026 (branch `house-style`, built on `visual-polish`)
+
+Goal: stop the game from looking AI-made. The direction: make it look like a hospital, not like an app.
+
+### Done
+- **Color.** Off the sage-and-teal default. Institutional off-white walls and paper, scrub navy for actions, and color only where hospitals use it: red for allergies, purple for code status, wristband yellow for warnings and the report highlighter. Night shift (dark theme) to match. Room walls warmed to hospital beige.
+- **Type.** Atkinson Hyperlegible (built for low-vision readers; slashed zeros like a chart) for text, its mono for vitals and chart values, Barlow Condensed for anything that's a sign (the logo plate, clocks, room numbers, headings), and Kalam handwriting only for things a nurse writes. Squarer corners, fewer shadows, form-style labels instead of tracked-out tiny caps.
+- **Hospital things instead of cards.** The report sidebar is a printed brain sheet with your flags in pen and a highlighter on report lines. The chart is an EHR: dark patient banner with allergy/code/weight tags and an MRN, file-folder tabs, dense mono tables. The room whiteboard is written in marker with your aide's name. The station assignment is the unit whiteboard with red magnets for your priority order. The home screen's shift list is a schedule, not a grid of cards. New app icon and favicon (a clock at 07:00) instead of the generic heartbeat line; the intro's heartbeat line is gone.
+- **Copy pass.** Shift names are what units call them ("Days on 4 West", "Evenings on 5 South") instead of poetic titles. Rewrote every shift's home-screen and intro text in plain nurse voice. Cut most of the narrator "Nobody…" lines (patient dialogue kept), repeated aphorisms, and middle-dot separators in prose. Shift goals renamed plainly (Everyone seen, Meds on time, Call lights answered, Report given).
+- **Debrief.** XP breakdown folded into "Where it came from"; one note about patients you didn't get to know instead of the same boilerplate under every patient; story boxes are plain, not pink.
+- **Home.** XP, level and badges collapsed into one line (badges still in Achievements).
+- **Phone messages** are smaller and no longer cover the Chart button.
+- **Landing page rebuilt**: left-aligned, a "Why I made this" note from Nick on a brain sheet (with a slot for a photo at `site/assets/nick.jpg`), a timeline of a shift instead of feature cards, the shift schedule, no scroll animations. Screenshots regenerated from the current build with `tools/screenshots.py`. Privacy and review pages match.
+- Full suite clean.
+
+### Needs Nick
+- **Rewrite "Why I made this" on the landing page in your own words** (`site/index.html`, section `#nick`). I kept it to facts you've told me; it should sound like you.
+- **Add a photo**: save it as `site/assets/nick.jpg` (portrait, about 400×480) and rebuild. Until then the slot hides itself.
+- Merge `house-style` (includes `visual-polish` and everything before it).
+- Art, when you're ready: an illustrator for the cast and a few props would be the next biggest step. The rig can animate their designs.
+
 ## Session 7 — October 1, 2026 (branch `visual-polish`, built on `teen-psych-shift`)
 
 ### Done

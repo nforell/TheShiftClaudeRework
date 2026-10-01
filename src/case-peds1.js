@@ -316,10 +316,10 @@
     status: (s, P) => (P.icu ? 'gone' : P.od !== null && P.naloxAt === null ? 'urgent' : leoPain(s, P) >= 6 ? 'watch' : 'stable'),
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Oversedated from a dosing error', text: 'Morphine dosed for 31 kg in a 14 kg child. He needed naloxone and a night in the PICU. The weight field had said 31 since the ED.' };
-      if (P.od !== null) return { tone: 'mixed', title: 'Oversedated, reversed', text: 'Naloxone brought him back. The dose came from a weight nobody checked.' };
+      if (P.od !== null) return { tone: 'mixed', title: 'Oversedated, reversed', text: 'Naloxone brought him back. The dose came from a weight no one checked.' };
       if (P.fixed && leoPain(s, P) <= 4) return { tone: 'good', title: 'Right weight, right dose, comfortable', text: 'You caught the pounds-for-kilograms error before any drug went in.' + (P.cl ? ' Bubbles helped too.' : '') };
       if (P.fixed) return { tone: 'mixed', title: 'Orders fixed, pain still high', text: 'The weight was corrected but he spent the evening hurting.' };
-      if (P.wrongApap) return { tone: 'mixed', title: 'Overdosed on acetaminophen', text: 'One dose at 33 mg/kg. Nobody weighed him.' };
+      if (P.wrongApap) return { tone: 'mixed', title: 'Overdosed on acetaminophen', text: 'One dose at 33 mg/kg. He was never weighed.' };
       return { tone: 'mixed', title: 'Wrong weight still in the chart', text: 'Every order is 2.2 times too high, waiting for the next nurse.' };
     },
   };
@@ -415,7 +415,7 @@
       if (P.gone) return { tone: P.cps ? 'good' : 'mixed', title: 'Head injury found, safe in the PICU', text: 'CT showed a subdural hemorrhage. Neurosurgery and the child protection team have him.' + rep + (P.confronted ? ' Dad left after being confronted.' : '') };
       if (P.bruises && P.cps) return { tone: 'mixed', title: 'Reported, workup pending', text: 'The bruises are documented and reported, but his head hasn\'t been imaged.' };
       if (P.bruises) return { tone: 'bad', title: 'Bruises seen, not reported', text: 'You saw them. The report is a legal duty and the thing that protects him when he goes home.' };
-      return { tone: 'bad', title: 'Discharged as a stomach bug', text: 'Nobody undressed him fully. He goes home tomorrow with an injury no one looked for and no report.' };
+      return { tone: 'bad', title: 'Discharged as a stomach bug', text: 'He was never fully undressed for an exam. He goes home tomorrow with an injury no one looked for and no report.' };
     },
   };
 
@@ -663,10 +663,10 @@
   [mat, aal, leo, noah, zoe].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'peds-5s-1', title: 'Small voices', unit: '5 South, Pediatrics', unitShort: '5 South', level: 'Specialty: Peds', start: 15 * 60, length: 300, novaCredits: 3,
-    card: 'Five children and their families. Kids compensate, until they don\'t.',
-    hero: { head: 'Five kids. Five families. Every dose by the kilogram.', lede: 'Evening shift on 5 South, pediatrics. Children hide how sick they are until they suddenly can\'t, and half of what you need to know will come from the parent in the chair.' },
-    intro: { time: '14:58', place: '5 South · Pediatrics · Evening', cta: 'Take report', beats: ['Five patients, from four months to fifteen years old.', 'Normal vital signs change with age. So does every dose.', 'Some of these children can\'t tell you what\'s wrong. Their bodies can.'] },
+    id: 'peds-5s-1', title: 'Evenings on 5 South', unit: '5 South, Pediatrics', unitShort: '5 South', level: 'Specialty: Peds', start: 15 * 60, length: 300, novaCredits: 3,
+    card: 'Five kids and their parents: RSV on high flow, a sickle cell crisis, a dosing error, bruises that don\'t fit the story, and asthma.',
+    hero: { head: 'Evenings, 5 South. Five kids and their parents.', lede: 'Pediatrics, 15:00 to 20:00, ages four months to fifteen years. Normal vitals depend on age and every dose depends on weight, so check both. The parent in the chair often knows first when something is off.' },
+    intro: { time: '14:58', place: '5 South, Pediatrics, Evening', cta: 'Take report', beats: ['Marcus is giving report by the peds station.', 'Five patients, from four months to fifteen years old.', 'Check the weight behind every dose. Some of these kids can\'t tell you what\'s wrong.'] },
     minutes: 20,
     handoffBy: 'Marcus (day RN)', reportBy: 'marcus', reportRole: 'day shift', provider: 'okafor', cna: 'kiana',
     staff: {

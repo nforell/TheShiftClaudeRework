@@ -18,9 +18,9 @@ One reviewer per shift is the minimum; two is better. Match the shift to the spe
 
 | Shift | Ideal reviewer |
 | --- | --- |
-| First light, Second wind, Small hours (med-surg) | Med-surg RN with 3+ years, or a med-surg clinical instructor |
-| Quiet voices (psych) | Inpatient psych RN; California-licensed for the 5150/5250/Riese content |
-| Small voices (peds) | Pediatric RN |
+| Days, evenings and nights on 4 West (med-surg) | Med-surg RN with 3+ years, or a med-surg clinical instructor |
+| Days on 3 East (adult psych) | Inpatient psych RN; California-licensed for the 5150/5250/Riese content |
+| Evenings on 5 South (peds) | Pediatric RN |
 | Any shift with heavy medication content | A PharmD for the medication traps |
 
 Credit them by name in the game (the sign-off checkbox asks permission).

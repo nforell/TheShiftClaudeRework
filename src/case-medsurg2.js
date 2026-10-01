@@ -164,7 +164,7 @@
     status: (s, P) => P.icu ? 'gone' : P.co2 >= 70 ? 'urgent' : P.co2 >= 62 || P.o2 > 3 ? 'watch' : 'stable',
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Hypercapnic respiratory failure, ICU', text: 'Found barely rousable with a PaCO₂ in the 80s. The high-flow oxygen that looked like good care drove it.' };
-      if (P.bipap) return { tone: P.co2 < 66 ? 'mixed' : 'bad', title: 'BiPAP for CO₂ retention', text: 'She needed noninvasive ventilation after hours on 6 L. Recognized and treated, but it started with an oxygen change nobody reversed.' };
+      if (P.bipap) return { tone: P.co2 < 66 ? 'mixed' : 'bad', title: 'BiPAP for CO₂ retention', text: 'She needed noninvasive ventilation after hours on 6 L. Recognized and treated, but it started with an oxygen change that was never turned back down.' };
       if (P.co2 >= 62) return { tone: 'bad', title: 'Drowsy and retaining CO₂ at handoff', text: 'Still over-oxygenated and sleepy. The next nurse inherits a patient drifting toward respiratory failure.' };
       return { tone: 'good', title: 'Back at her baseline', text: 'Sats 88–92% on 2 L, alert, breathing easier after nebs and coaching.' + (P.lorazAt !== null ? ' She did get a benzodiazepine.' : '') };
     },
@@ -637,7 +637,7 @@
       const k = darnellK(s, P);
       if (!P.hkOrders) return { tone: 'bad', title: 'Critical potassium never treated', text: `Potassium ${k} at handoff with peaked T waves. The critical value didn't reach the provider.` };
       if (P.hypo && P.hypoCaught && P.juiceAt !== null) return { tone: 'good', title: 'Potassium down, low glucose caught', text: `Potassium ${k}. His glucose dipped after the insulin, and you were already watching for it.` };
-      if (P.hypo) return { tone: 'mixed', title: 'Potassium down, glucose crashed', text: `Potassium ${k}. The insulin worked, and then his glucose fell into the 60s because nobody checked it in time.` };
+      if (P.hypo) return { tone: 'mixed', title: 'Potassium down, glucose crashed', text: `Potassium ${k}. The insulin worked, and then his glucose fell into the 60s before anyone rechecked it.` };
       return { tone: P.spiroAt !== null ? 'mixed' : 'good', title: 'Potassium coming down', text: `Potassium ${k} on recheck, heart protected with calcium, glucose watched.${P.spiroAt !== null ? ' He did get spironolactone.' : ''}` };
     },
   };
@@ -981,10 +981,10 @@
   [pat, kevin, bea, darnell, amina].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'medsurg-4w-2', title: 'Second wind', unit: '4 West, Medical-Surgical', level: 'Beginner', start: 15 * 60, length: 300, novaCredits: 3,
-    card: 'Evening on 4 West. Four patients and an admission from the ED.',
-    hero: { head: 'Four patients, one admission. Report at 15:00.', lede: 'An evening shift on 4 West. Blood is on its way up, a lab result is pending, and the ED is sending you a surgical patient before dinner. Watch what other people change, and read every order twice.' },
-    intro: { time: '14:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['Evening shift. Four patients, and the ED is sending you a fifth.', 'Blood is on its way up. A critical lab is about to call.', 'Watch what other people change. Read every order twice.'] },
+    id: 'medsurg-4w-2', title: 'Evenings on 4 West', unit: '4 West, Medical-Surgical', level: 'Beginner', start: 15 * 60, length: 300, novaCredits: 3,
+    card: 'Four patients and an ED admission: COPD, alcohol withdrawal, a GI bleed getting blood, and a critical potassium.',
+    hero: { head: 'Evenings, 4 West. Four patients and an admission before dinner.', lede: 'Med-surg, 15:00 to 20:00. A unit of blood is coming up, the lab is about to call a critical, and the ED is sending you a surgical admission. Other people will change things on you, so read orders twice.' },
+    intro: { time: '14:58', place: '4 West, Medical-Surgical', cta: 'Take report', beats: ['Marisol is at the desk, ready to give report.', 'Four patients now, and a fifth coming up from the ED.', 'Blood is on its way and the lab has a critical to call in. Read every order twice.'] },
     minutes: 20,
     handoffBy: 'Marisol (day RN)', reportBy: 'marisol', reportRole: 'day shift', provider: 'adebayo', cna: 'luis',
     staff: {
