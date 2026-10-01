@@ -33,6 +33,19 @@ with sync_playwright() as p:
     ctx.route(SITE + '/**', serve); ctx.route(PH + '/**', capture)
     pg = ctx.new_page(); fontroute(pg)
     errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
+    # Landing page: a visit from a campaign link, then a signup.
+    pg.goto(SITE + '/?utm_source=tiktok&utm_campaign=launch'); pg.wait_for_timeout(300)
+    pg.fill('#su-email', 'not-an-email'); pg.click('#signup button[type=submit]')
+    check('err' in pg.get_attribute('#su-msg', 'class'), 'signup rejects a bad email')
+    pg.fill('#su-email', 'student@example.com'); pg.select_option('#su-role', 'student'); pg.click('#signup button[type=submit]')
+    check('on the list' in pg.inner_text('#su-msg'), 'signup confirms')
+    pg.evaluate("Shift.tel.flush()"); pg.wait_for_timeout(500)
+    lv = next((e for e in sent if e['event'] == 'landing_view'), None)
+    check(bool(lv) and lv['properties'].get('first_source') == 'tiktok' and lv['properties'].get('first_campaign') == 'launch', 'landing_view carries the campaign')
+    su = next((e for e in sent if e['event'] == 'beta_signup'), None)
+    check(bool(su) and su['properties'].get('$set', {}).get('email') == 'student@example.com' and su['properties'].get('role') == 'student', 'signup carries email and role')
+    landing_id = lv['properties']['distinct_id'] if lv else None
+    pg.goto(SITE + '/privacy/'); check('Turning it off' in pg.content(), 'privacy page is served')
     pg.goto(SITE + '/play/'); pg.wait_for_timeout(300)
     pg.evaluate("localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{theme:'light',sound:'off',music:'off',motion:'reduced'},seen:{'coach:station':1,'coach:room':1}}))")
     pg.reload(); pg.wait_for_timeout(300)
@@ -57,11 +70,13 @@ with sync_playwright() as p:
     deb = [e for e in fb if e['properties'].get('kind') == 'debrief']
     check(bool(deb) and deb[0]['properties'].get('would_pay') == 'yes' and 'potassium' in deb[0]['properties'].get('note', ''), 'debrief feedback carries the answers')
     if jk: check(any(e['properties'].get('kind') == 'decision' and e['properties'].get('problem') == 'clinical' for e in fb), 'decision report carries its reason')
+    check(all(e['properties'].get('first_source') == 'tiktok' for e in sent if e['event'] == 'shift_complete'), 'shifts are credited to the campaign that brought the player')
     ids = {e['properties'].get('distinct_id') for e in sent}
+    check(landing_id in ids, 'landing visit and shifts share one id')
     check(len(ids) == 1 and all(len(i) > 10 for i in ids), 'one anonymous id per install')
     comp = next((e for e in sent if e['event'] == 'shift_complete'), {'properties': {}})['properties']
     check(comp.get('case') == 'medsurg-4w-1' and isinstance(comp.get('score'), int), 'shift_complete has case and score')
-    check(not any('@' in json.dumps(e) for e in sent if e['event'] != 'feedback'), 'no email addresses in events')
+    check(not any('@' in json.dumps(e) for e in sent if e['event'] not in ('feedback', 'beta_signup')), 'no email addresses in usage events')
     # Opt out: nothing more is sent, and the queue is dropped.
     n0 = len(sent)
     pg.evaluate("Shift.tel.setOptOut(true); Shift.tel.track('should_not_send',{}); Shift.tel.flush()"); pg.wait_for_timeout(400)

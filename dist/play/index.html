@@ -1389,7 +1389,7 @@ window.Shift.config = Object.assign({
    Events are batched, kept in a small queue across reloads, and flushed on a timer and when the page hides. */
 (function (S) {
   const CFG = S.config || {};
-  const K = { id: 'theshift.tel.id', q: 'theshift.tel.q', off: 'theshift.tel.off' };
+  const K = { id: 'theshift.tel.id', q: 'theshift.tel.q', off: 'theshift.tel.off', src: 'theshift.tel.src' };
   const MAXQ = 200, BATCH = 50, EVERY = 15000;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const put = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* storage off */ } };
@@ -1400,6 +1400,14 @@ window.Shift.config = Object.assign({
   const session = rand();
   let q = []; try { q = JSON.parse(get(K.q) || '[]') || []; } catch (e) { q = []; }
   const recent = [];   // last few events, for the health check
+  /* Where this player first came from (utm tags or the referring site), kept from their first visit so a shift
+     played days later still counts toward the post or video that brought them. */
+  let src = null; try { src = JSON.parse(get(K.src) || 'null'); } catch (e) { src = null; }
+  if (!src) {
+    const u = new URLSearchParams(location.search), ref = (() => { try { const h = new URL(document.referrer).hostname; return h && h !== location.hostname ? h : ''; } catch (e) { return ''; } })();
+    src = { source: u.get('utm_source') || ref || 'direct', medium: u.get('utm_medium') || '', campaign: u.get('utm_campaign') || '' };
+    put(K.src, JSON.stringify(src));
+  }
   let timer = null;
 
   const site = /^https?:$/.test(location.protocol) && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
@@ -1411,7 +1419,7 @@ window.Shift.config = Object.assign({
 
   const vw = () => (innerWidth < 600 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop');
   function track(event, props) {
-    const e = { event, timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), $current_url: site ? location.origin + location.pathname : '' }, props || {}) };
+    const e = { event, timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), $current_url: site ? location.origin + location.pathname : '', first_source: src.source, first_campaign: src.campaign }, props || {}) };
     recent.push({ at: e.timestamp.slice(11, 19), event, p: props || {} }); if (recent.length > 25) recent.shift();
     if (!enabled()) return false;
     q.push(e); if (q.length > MAXQ) q = q.slice(-MAXQ); put(K.q, JSON.stringify(q));
@@ -1431,30 +1439,39 @@ window.Shift.config = Object.assign({
   }
   function setOptOut(off) { if (off) { put(K.off, '1'); q = []; del(K.q); } else del(K.off); }
 
-  /* Feedback: sent with the events when analytics is on; otherwise opens a prefilled email. Returns 'sent' or 'email'. */
+  /* Things a person chose to send (feedback, a beta signup) go out even under Do Not Track, which is about tracking.
+     They still need a key, a real site, and no opt-out. */
+  const canSend = () => configured() && site && !optedOut();
+  function direct(event, props) {
+    const e = { event, timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), first_source: src.source, first_campaign: src.campaign }, props) };
+    recent.push({ at: e.timestamp.slice(11, 19), event, p: { kind: props.kind || '' } }); if (recent.length > 25) recent.shift();
+    if (enabled()) { q.push(e); put(K.q, JSON.stringify(q)); flush(); return; }
+    try { fetch(String(CFG.posthogHost || 'https://us.i.posthog.com').replace(/\/$/, '') + '/batch/', { method: 'POST', body: JSON.stringify({ api_key: CFG.posthogKey, batch: [e] }), keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {}); } catch (er) { /* offline */ }
+  }
+  function mail(subject, fields) {
+    const lines = Object.entries(fields).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${k}: ${v}`);
+    try { location.href = `mailto:${CFG.feedbackEmail || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n') + `\n\nversion: ${CFG.version || ''}`)}`; } catch (e) { /* blocked */ }
+    return 'email';
+  }
+  /* Feedback: returns 'sent', or 'email' when it opened a prefilled email instead. */
   function feedback(kind, fields) {
     const props = Object.assign({ kind }, fields);
-    if (configured() && site && !optedOut()) {   // feedback is something the player chose to send, so DNT doesn't block it
-      const e = { event: 'feedback', timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw() }, props) };
-      if (enabled()) { q.push(e); put(K.q, JSON.stringify(q)); flush(); }
-      else {   // analytics blocked by DNT: send just this one message
-        const body = JSON.stringify({ api_key: CFG.posthogKey, batch: [e] });
-        try { fetch(String(CFG.posthogHost || 'https://us.i.posthog.com').replace(/\/$/, '') + '/batch/', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {}); } catch (er) { /* offline */ }
-      }
-      recent.push({ at: e.timestamp.slice(11, 19), event: 'feedback', p: { kind } });
-      return 'sent';
-    }
-    const lines = Object.entries(props).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${k}: ${v}`);
-    const href = `mailto:${CFG.feedbackEmail || ''}?subject=${encodeURIComponent('The Shift beta: ' + kind)}&body=${encodeURIComponent(lines.join('\n') + `\n\nversion: ${CFG.version || ''}`)}`;
-    try { location.href = href; } catch (e) { /* blocked */ }
-    return 'email';
+    if (canSend()) { direct('feedback', props); return 'sent'; }
+    return mail('The Shift beta: ' + kind, props);
+  }
+  /* Beta list signup from the landing page. The address is attached to this install's anonymous id so the
+     list can be matched to who actually played. */
+  function signup(email, role) {
+    const props = { kind: 'signup', role: role || '', $set: { email, role: role || '' } };
+    if (canSend()) { direct('beta_signup', props); return 'sent'; }
+    return mail('Add me to The Shift beta list', { email, role: role || '' });
   }
 
   addEventListener('pagehide', () => flush(true));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(true); });
   setTimeout(() => flush(), 3000);   // anything left from last time
 
-  S.tel = { track, flush, feedback, enabled, configured, status, optedOut, setOptOut, recent, id: () => id };
+  S.tel = { track, flush, feedback, signup, source: () => src, enabled, configured, status, optedOut, setOptOut, recent, id: () => id };
 })(window.Shift);
 
 /* The Shift — simulation engine. Knows nothing about specific patients; cases plug in. */
@@ -10353,7 +10370,7 @@ window.Shift = window.Shift || {};
       <div class="setrow"><span>Decision feedback</span>${seg('feedback', [['now', 'Right away'], ['debrief', 'At the debrief']])}</div>
       <div class="setrow"><span>Music</span>${seg('music', [['on', 'On'], ['off', 'Off']])}</div>
       <div class="setrow"><span>Sound effects and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>
-      <div class="setrow"><span>Share anonymous usage<small class="set-sub">Which screens people reach and where they stop. No names, nothing you type.</small></span><div class="seg" role="group">${[['on', 'On'], ['off', 'Off']].map(([v, l]) => `<button data-act="tel" data-v="${v}" aria-pressed="${(TEL.optedOut() ? 'off' : 'on') === v}">${l}</button>`).join('')}</div></div>
+      <div class="setrow"><span>Share anonymous usage<small class="set-sub">Which screens people reach and where they stop. No names, nothing you type. <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></small></span><div class="seg" role="group">${[['on', 'On'], ['off', 'Off']].map(([v, l]) => `<button data-act="tel" data-v="${v}" aria-pressed="${(TEL.optedOut() ? 'off' : 'on') === v}">${l}</button>`).join('')}</div></div>
       <div class="setrow"><span>Intro and tips</span><button class="btn" data-act="reset-tips">${prof.seen && Object.keys(prof.seen).length ? 'Show them again' : 'On for your next shift'}</button></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
   }
   function ovHelp() {

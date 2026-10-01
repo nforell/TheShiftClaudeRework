@@ -124,6 +124,20 @@ h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.8rem,3.6vw,2.6rem)
 .beta-box h2{max-width:18ch;margin:0 auto}
 .beta-box p{color:var(--ink-2);max-width:36rem;margin:1rem auto 0}
 
+/* signup */
+.signup{max-width:40rem;margin:2.6rem auto 0;padding:1.4rem clamp(1rem,4vw,1.8rem);border:1px solid var(--line);border-radius:14px;background:var(--surface);text-align:left}
+.signup h3{font-family:var(--serif);font-size:1.25rem;font-weight:600;margin:0}
+.signup>p{margin:.35rem 0 0!important;max-width:none!important;font-size:.95rem}
+.su-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:.6rem;margin-top:1rem}
+.su-row input,.su-row select{min-height:46px;padding:.5em .8em;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;min-width:0;width:100%}
+.su-row input:focus-visible,.su-row select:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+@media (max-width:640px){.su-row{grid-template-columns:minmax(0,1fr)}}
+.su-msg{min-height:1.4em;font-size:.92rem!important;margin:.7rem 0 0!important}
+.su-msg.ok{color:var(--teal)!important;font-weight:600}.su-msg.err{color:var(--red)!important}
+.signup.done .su-row{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fine{font-size:.85rem!important;margin-top:1.2rem!important}
+.fine a,footer a{color:inherit}
 footer{margin-top:clamp(4rem,9vw,6.5rem);border-top:1px solid var(--line);padding:2rem 0 calc(2rem + env(safe-area-inset-bottom));font-size:.85rem;color:var(--ink-2)}
 footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:wrap}
 
@@ -241,18 +255,30 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     <div class="wrap reveal">
       <p class="kick">It's a beta</p>
       <h2>Play a shift. Then tell me what broke.</h2>
-      <p>Anything that felt clinically off, confusing, or too easy. Which unit you want next. Your progress saves in your browser as you play.</p>
+      <p>Anything that felt clinically off, confusing, or too easy. Feedback is built into the game: every decision in your debrief has a <b>Report a problem</b> link. Your progress saves in your browser as you play.</p>
       <div class="cta">
         <a class="btn btn-primary" href="/play/">Play the beta <span class="arrow" aria-hidden="true">→</span></a>
-        <a class="btn" id="fb" href="mailto:nicholasforell@gmail.com?subject=The%20Shift%20beta%20feedback">Send feedback</a>
       </div>
+      <form class="signup" id="signup" novalidate>
+        <h3>Get new shifts first</h3>
+        <p>One email when a new unit ships. Nothing else, and you can leave anytime.</p>
+        <div class="su-row">
+          <label class="sr" for="su-email">Email</label>
+          <input id="su-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+          <label class="sr" for="su-role">I am a</label>
+          <select id="su-role" name="role"><option value="">I am a…</option><option value="student">Nursing student</option><option value="newgrad">New grad</option><option value="rn">Working nurse</option><option value="educator">Nurse educator</option><option value="other">Something else</option></select>
+          <button class="btn btn-primary" type="submit">Join the list</button>
+        </div>
+        <p class="su-msg" id="su-msg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="fine"><a href="/privacy/">How your data is used</a> · <a id="fb" href="mailto:nicholasforell@gmail.com?subject=The%20Shift%20beta%20feedback">Email me directly</a></p>
     </div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <span>The Shift · Beta · © 2026</span>
+    <span>The Shift · Beta · © 2026 · <a href="/privacy/">Privacy</a></span>
     <span>An educational simulation with original clinical content. Not a substitute for clinical instruction or your facility's policies.</span>
   </div>
 </footer>
@@ -266,6 +292,127 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
   if (!('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px', threshold: .08 });
   els.forEach((e) => io.observe(e));
+})();
+</script>
+<script>/* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
+   posthogKey: the project API key from PostHog (Project settings → Project API key, starts with "phc_").
+   It is a public, write-only key; it's safe in the page. Leave it empty and nothing is ever sent:
+   events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
+window.Shift = window.Shift || {};
+window.Shift.config = Object.assign({
+  version: '0.6.0-beta',
+  posthogKey: '',
+  posthogHost: 'https://us.i.posthog.com',
+  feedbackEmail: 'nicholasforell@gmail.com',
+}, window.Shift.config || {});   // a test harness may set values first
+
+/* The Shift — telemetry and feedback delivery.
+   Anonymous: a random install id, no names, no emails (unless someone types one into feedback).
+   Opt-out in Settings; Do Not Track and Global Privacy Control are honored.
+   Sends only from a real website (not file:// or localhost) and only when config.posthogKey is set.
+   Events are batched, kept in a small queue across reloads, and flushed on a timer and when the page hides. */
+(function (S) {
+  const CFG = S.config || {};
+  const K = { id: 'theshift.tel.id', q: 'theshift.tel.q', off: 'theshift.tel.off', src: 'theshift.tel.src' };
+  const MAXQ = 200, BATCH = 50, EVERY = 15000;
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const put = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* storage off */ } };
+  const del = (k) => { try { localStorage.removeItem(k); } catch (e) { /* storage off */ } };
+  const rand = () => { try { return crypto.randomUUID(); } catch (e) { return 'x' + Math.random().toString(36).slice(2) + Date.now().toString(36); } };
+
+  let id = get(K.id); if (!id) { id = rand(); put(K.id, id); }
+  const session = rand();
+  let q = []; try { q = JSON.parse(get(K.q) || '[]') || []; } catch (e) { q = []; }
+  const recent = [];   // last few events, for the health check
+  /* Where this player first came from (utm tags or the referring site), kept from their first visit so a shift
+     played days later still counts toward the post or video that brought them. */
+  let src = null; try { src = JSON.parse(get(K.src) || 'null'); } catch (e) { src = null; }
+  if (!src) {
+    const u = new URLSearchParams(location.search), ref = (() => { try { const h = new URL(document.referrer).hostname; return h && h !== location.hostname ? h : ''; } catch (e) { return ''; } })();
+    src = { source: u.get('utm_source') || ref || 'direct', medium: u.get('utm_medium') || '', campaign: u.get('utm_campaign') || '' };
+    put(K.src, JSON.stringify(src));
+  }
+  let timer = null;
+
+  const site = /^https?:$/.test(location.protocol) && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+  const dnt = () => navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true;
+  const optedOut = () => get(K.off) === '1';
+  const configured = () => !!CFG.posthogKey;
+  const enabled = () => configured() && site && !dnt() && !optedOut();
+  const status = () => !configured() ? 'Off: no analytics key set' : !site ? 'Off: running from a local file' : dnt() ? 'Off: your browser asks not to be tracked' : optedOut() ? 'Off: you turned it off' : 'On, anonymous';
+
+  const vw = () => (innerWidth < 600 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop');
+  function track(event, props) {
+    const e = { event, timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), $current_url: site ? location.origin + location.pathname : '', first_source: src.source, first_campaign: src.campaign }, props || {}) };
+    recent.push({ at: e.timestamp.slice(11, 19), event, p: props || {} }); if (recent.length > 25) recent.shift();
+    if (!enabled()) return false;
+    q.push(e); if (q.length > MAXQ) q = q.slice(-MAXQ); put(K.q, JSON.stringify(q));
+    if (!timer) timer = setTimeout(() => { timer = null; flush(); }, EVERY);
+    return true;
+  }
+  function flush(leaving) {
+    if (!enabled() || !q.length) return;
+    const batch = q.slice(0, BATCH), url = String(CFG.posthogHost || 'https://us.i.posthog.com').replace(/\/$/, '') + '/batch/';
+    const body = JSON.stringify({ api_key: CFG.posthogKey, batch });
+    const done = () => { q = q.slice(batch.length); put(K.q, JSON.stringify(q)); if (q.length && !leaving) flush(); };
+    if (leaving && navigator.sendBeacon) { if (navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) done(); return; }
+    try {
+      fetch(url, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
+        .then((r) => { if (r.ok) done(); }).catch(() => { /* offline: keep the queue for next time */ });
+    } catch (e) { /* no fetch */ }
+  }
+  function setOptOut(off) { if (off) { put(K.off, '1'); q = []; del(K.q); } else del(K.off); }
+
+  /* Things a person chose to send (feedback, a beta signup) go out even under Do Not Track, which is about tracking.
+     They still need a key, a real site, and no opt-out. */
+  const canSend = () => configured() && site && !optedOut();
+  function direct(event, props) {
+    const e = { event, timestamp: new Date().toISOString(), properties: Object.assign({ distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), first_source: src.source, first_campaign: src.campaign }, props) };
+    recent.push({ at: e.timestamp.slice(11, 19), event, p: { kind: props.kind || '' } }); if (recent.length > 25) recent.shift();
+    if (enabled()) { q.push(e); put(K.q, JSON.stringify(q)); flush(); return; }
+    try { fetch(String(CFG.posthogHost || 'https://us.i.posthog.com').replace(/\/$/, '') + '/batch/', { method: 'POST', body: JSON.stringify({ api_key: CFG.posthogKey, batch: [e] }), keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {}); } catch (er) { /* offline */ }
+  }
+  function mail(subject, fields) {
+    const lines = Object.entries(fields).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${k}: ${v}`);
+    try { location.href = `mailto:${CFG.feedbackEmail || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n') + `\n\nversion: ${CFG.version || ''}`)}`; } catch (e) { /* blocked */ }
+    return 'email';
+  }
+  /* Feedback: returns 'sent', or 'email' when it opened a prefilled email instead. */
+  function feedback(kind, fields) {
+    const props = Object.assign({ kind }, fields);
+    if (canSend()) { direct('feedback', props); return 'sent'; }
+    return mail('The Shift beta: ' + kind, props);
+  }
+  /* Beta list signup from the landing page. The address is attached to this install's anonymous id so the
+     list can be matched to who actually played. */
+  function signup(email, role) {
+    const props = { kind: 'signup', role: role || '', $set: { email, role: role || '' } };
+    if (canSend()) { direct('beta_signup', props); return 'sent'; }
+    return mail('Add me to The Shift beta list', { email, role: role || '' });
+  }
+
+  addEventListener('pagehide', () => flush(true));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(true); });
+  setTimeout(() => flush(), 3000);   // anything left from last time
+
+  S.tel = { track, flush, feedback, signup, source: () => src, enabled, configured, status, optedOut, setOptOut, recent, id: () => id };
+})(window.Shift);
+</script>
+<script>
+(() => {
+  const T = window.Shift && window.Shift.tel;
+  if (T) T.track('landing_view', { section: location.hash.slice(1) || '' });
+  const f = document.getElementById('signup'), m = document.getElementById('su-msg'), em = document.getElementById('su-email');
+  if (!f) return;
+  f.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = em.value.trim(), role = document.getElementById('su-role').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { m.className = 'su-msg err'; m.textContent = 'That email doesn\'t look right.'; em.focus(); return; }
+    const r = T ? T.signup(email, role) : 'email';
+    if (r === 'email' && !T) location.href = 'mailto:nicholasforell@gmail.com?subject=' + encodeURIComponent('Add me to The Shift beta list') + '&body=' + encodeURIComponent(email + (role ? '\n' + role : ''));
+    f.classList.add('done'); m.className = 'su-msg ok';
+    m.textContent = r === 'sent' ? 'You\'re on the list. Go play a shift.' : 'Your email app should open with this filled in. Hit send and you\'re on the list.';
+  });
 })();
 </script>
 </body>

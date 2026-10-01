@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy — The Shift</title>
+<meta name="description" content="What The Shift collects, why, and how to turn it off.">
+<meta name="theme-color" content="#1E6B63">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E6B63'/%3E%3Cpath d='M8 36h12l5-12 8 22 6-14 4 4h13' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4EBE8;--surface:#F7F9F8;--ink:#152E2B;--ink-2:#4B625D;--line:#C6D2CE;--teal:#1E6B63;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#0D171A;--surface:#132227;--ink:#E1EBE7;--ink-2:#9DB2AC;--line:#2B3F45;--teal:#5DBBAE}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+main{max-width:42rem;margin:0 auto;padding:clamp(1.5rem,6vw,4rem) 16px calc(3rem + env(safe-area-inset-bottom))}
+a{color:var(--teal)}
+.home{font-family:var(--serif);font-weight:600;font-size:1.1rem;color:var(--ink);text-decoration:none}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;letter-spacing:-.02em;margin:2rem 0 .4rem}
+h2{font-size:1.1rem;margin:2.2rem 0 .4rem}
+p,li{color:var(--ink-2)}
+b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:1.15rem;color:var(--ink)}
+ul{padding-left:1.2rem}
+table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.95rem}
+th,td{text-align:left;vertical-align:top;padding:.55rem .6rem .55rem 0;border-bottom:1px solid var(--line)}
+th{color:var(--ink);font-weight:600;white-space:nowrap}
+td{color:var(--ink-2)}
+@media (max-width:520px){table,tbody,tr,th,td{display:block}th{padding-bottom:0;border:0}}
+.date{font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+  <a class="home" href="/">The Shift</a>
+  <h1>Privacy</h1>
+  <p class="date">Last updated September 30, 2026</p>
+  <p class="lead">The Shift collects as little as it can to find out what's confusing, what's clinically wrong, and where people stop playing. It doesn't sell data or show ads.</p>
+
+  <h2>Your game stays on your device</h2>
+  <p>Your shifts, scores, badges and settings are saved in your browser's storage. They aren't uploaded. Clearing your browser data erases them.</p>
+
+  <h2>What is collected</h2>
+  <table>
+    <tr><th>Usage events</th><td>Things like "started a shift", "finished report", "finished a shift with a score of 74", and the screen you were on if you left mid-shift. Each event carries a random ID made on your device, the app version, a device type (phone, tablet or desktop), and the site or campaign that first brought you here.</td></tr>
+    <tr><th>Errors</th><td>If the game crashes, the error message and which screen it happened on, so it can be fixed.</td></tr>
+    <tr><th>Feedback you send</th><td>Whatever you write in a feedback or "Report a problem" form, and the decision it's about. Please don't include patient information or anything identifying about real people.</td></tr>
+    <tr><th>Your email, if you join the list</th><td>Used only to tell you when new shifts ship. It's linked to your random ID so the list can show who actually played.</td></tr>
+  </table>
+  <p>Not collected: your name, your answers as you type them, your location, or anything from outside this site.</p>
+
+  <h2>Where it goes</h2>
+  <p>Events and feedback are stored with <a href="https://posthog.com/privacy">PostHog</a>, an analytics service, in the United States. Only the person who runs The Shift can see them.</p>
+
+  <h2>Turning it off</h2>
+  <ul>
+    <li>In the game: <b>Menu → Settings → Share anonymous usage → Off</b>. Anything not yet sent is deleted.</li>
+    <li>If your browser sends Do Not Track or Global Privacy Control, usage events are never sent. Feedback and signups you choose to submit still are.</li>
+    <li>To have your email or feedback deleted, or to unsubscribe, email <a href="mailto:nicholasforell@gmail.com?subject=The%20Shift%20privacy%20request">nicholasforell@gmail.com</a>.</li>
+  </ul>
+
+  <h2>Who it's for</h2>
+  <p>The Shift is an educational simulation for adults in nursing education and practice. It isn't a substitute for clinical instruction or your facility's policies, and it isn't meant for children.</p>
+
+  <h2>Changes</h2>
+  <p>If this changes in a way that matters, the date above changes and the landing page will say so.</p>
+</main>
+</body>
+</html>

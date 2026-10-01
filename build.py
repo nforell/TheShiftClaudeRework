@@ -22,6 +22,9 @@ root=pathlib.Path(__file__).parent; dist=root/'dist'
 (dist/'the-shift.html').write_text(html); (dist/'play'/'index.html').write_text(html)
 # The beta landing page at / and its screenshots at /assets/.
 import shutil
-(dist/'index.html').write_text((root/'site'/'index.html').read_text())
+# The landing page shares the game's config and telemetry, so a visit, a signup and the shifts played line up.
+tel='<script>'+(src/'config.js').read_text()+'\n'+(src/'telemetry.js').read_text()+'</script>'
+(dist/'index.html').write_text((root/'site'/'index.html').read_text().replace('<!--TELEMETRY-->', tel))
+(dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 shutil.copytree(root/'site'/'assets', dist/'assets', dirs_exist_ok=True)
 print(len(html))
