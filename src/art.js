@@ -18,11 +18,33 @@
     if (a < 1140) return ['#f5c48e', '#b9a9c6'];     // golden hour
     return ['#e59a78', '#3f4d7a'];                   // dusk
   }
+  /* Interior light by time of day: [warm light color, strength]. Rooms are lit; night just dims the edges. */
+  function lamp(t) {
+    const a = ((S.engine.abs(t) % 1440) + 1440) % 1440;
+    if (isNight(t)) return ['#FFD9A0', .42];
+    if (a < 600) return ['#FFE6C2', .34];
+    if (a < 1050) return ['#FFF3DC', .3];
+    return ['#FFDDB0', .38];
+  }
+  const ACCENT = { med: '#93AFC7', psych: '#D2A877', peds: '#F2C35A' };
+  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : 'med'; };
+  /* Something on the wall that makes it a room someone lives in for a few days. Psych walls have nothing that can be
+     pulled down or broken, so they get a painted mural; med and peds get the patient whiteboard. */
+  function wallArt(kind, s) {
+    if (kind === 'psych') return `<g opacity=".9" transform="translate(-20 44)"><rect x="808" y="64" width="190" height="104" rx="52" fill="#E8D7BC" opacity=".55"/><path d="M816 150 q40 -46 82 -18 q38 -40 92 -6 V168 H816 Z" fill="#9DBF9C" opacity=".7"/><circle cx="954" cy="96" r="14" fill="#F2C46B" opacity=".85"/><path d="M842 120 q8 -8 16 0 M872 108 q7 -7 14 0" stroke="#7A8C9A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></g>`;
+    const k = S.engine.getCase(s.caseId) || {}, aide = ((k.staff || {})[k.cna] || {}).name || '', blue = '#2B4C8C', red = '#B83A2E', green = '#2E7B4E';
+    const H = 'font-family="Kalam, Segoe Print, cursive"';
+    const head = kind === 'peds' ? `<text x="826" y="84" ${H} font-size="17" font-weight="700" fill="${red}">Hi! I'm your nurse</text><path d="M968 66 l5 10 11 2 -8 8 2 11 -10 -5 -10 5 2 -11 -8 -8 11 -2 Z" fill="none" stroke="#D9A21E" stroke-width="2"/>` : `<text x="826" y="84" ${H} font-size="16" font-weight="700" fill="${blue}">Your care team</text>`;
+    return `<g transform="translate(-24 48) scale(.92)"><rect x="812" y="58" width="184" height="124" rx="3" fill="#FCFCFA" stroke="#B8BCC0" stroke-width="4"/><rect x="812" y="176" width="184" height="8" rx="2" fill="#9EA4AA"/><rect x="900" y="172" width="22" height="6" rx="2" fill="${blue}"/>
+      ${head}<text x="826" y="110" ${H} font-size="14" fill="${blue}">RN: you</text>${aide ? `<text x="826" y="132" ${H} font-size="14" fill="${blue}">CNA: ${aide}</text>` : ''}
+      <text x="826" y="${aide ? 156 : 134}" ${H} font-size="14" fill="${green}">${kind === 'peds' ? 'Mom/Dad can stay!' : 'Goal: home soon'}</text><path d="M828 ${aide ? 162 : 140} q40 4 92 -1" stroke="${green}" stroke-width="1.6" fill="none" opacity=".7"/>
+      <path d="M940 120 q8 -12 22 -4 q-6 14 -18 10" stroke="#C9CDD1" stroke-width="5" fill="none" opacity=".5" stroke-linecap="round"/></g>`;
+  }
   const hot = (id, label, inner) => `<g class="clue" data-act="clue" data-id="${id}" tabindex="0" role="button" aria-label="${label}">${inner}</g>`;
 
   /* Room scene. The patient is a live rig character centered at x 515; f = scene flags from the case; v = rig inputs. */
   function room(def, s, P, f, v, callLight, tension) {
-    const [s1, s2] = sky(s.t), gid = 'r' + (++uid), X = 515, R = S.rig;
+    const [s1, s2] = sky(s.t), gid = 'r' + (++uid), X = 515, R = S.rig, [lc, ls] = lamp(s.t), night = isNight(s.t), kind = kindOf(s), acc = ACCENT[kind];
     const Hc = def.look.head.h, B = 150 + Hc * 1.2 + 100;       // blanket top in room coordinates
     let back = '', front = '';
     // headwall with outlets and oxygen flowmeter
@@ -34,8 +56,8 @@
       const hr = S.engine.api(s).vitals(def.id).HR;
       back += hot('monitor', 'Cardiac monitor', `<rect x="648" y="112" width="124" height="74" rx="7" fill="#0f1b1f" stroke="#2b3a3f" stroke-width="3"/>
         <polyline points="${f.teleWave === 'peaked' ? '656,152 666,152 670,144 674,160 678,152 686,152 693,122 700,152 712,152 716,144 720,160 724,152 732,152 739,122 746,152 764,152' : '656,152 670,152 674,140 678,162 682,152 706,152 710,136 714,164 718,152 740,152 746,144 750,158 754,152 764,152'}" stroke="#58d68d" stroke-width="1.8" fill="none" class="ecg"/>
-        <text x="764" y="132" text-anchor="end" fill="${hr < 50 ? '#ff6b5f' : '#58d68d'}" font-size="16" font-weight="700" font-family="Public Sans, sans-serif">${hr}</text>
-        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Public Sans, sans-serif">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Public Sans, sans-serif">SpO₂</text><text x="764" y="180" text-anchor="end" fill="#7fc8e8" font-size="13" font-weight="700" font-family="Public Sans, sans-serif">${S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
+        <text x="764" y="132" text-anchor="end" fill="${hr < 50 ? '#ff6b5f' : '#58d68d'}" font-size="16" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${hr}</text>
+        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">SpO₂</text><text x="764" y="180" text-anchor="end" fill="#7fc8e8" font-size="13" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
     }
     // IV pole, pump and line
     const ivOn = f.iv && f.iv !== 'lock', blood = f.iv === 'blood', bag = blood ? '#9E1B22' : '#E8F2F6', line = blood ? '#B3262D' : '#BCD7E0';
@@ -51,7 +73,7 @@
     if (f.cpap) back += hot('cpap', 'CPAP machine', `<rect x="150" y="352" width="54" height="34" rx="7" fill="#DFE3E3" stroke="#9AA4A4"/><circle cx="189" cy="369" r="7" fill="#BCC4C4"/><path d="M170 352 C 170 330 200 326 214 312" stroke="#BCC4C4" stroke-width="3" fill="none"/>`);
     // patient
     const person = f.empty
-      ? `<rect x="${X - 236}" y="${B}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity=".8"/><rect x="${X - 90}" y="${B - 20}" width="180" height="26" rx="10" fill="var(--scene-sheet)"/><text x="${X}" y="${B + 70}" text-anchor="middle" fill="var(--ink-2)" font-size="18" font-family="Source Serif 4, serif" font-style="italic">${f.emptyText || 'Bed stripped. Transferred to ICU.'}</text>`
+      ? `<rect x="${X - 236}" y="${B}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity=".8"/><rect x="${X - 90}" y="${B - 20}" width="180" height="26" rx="10" fill="var(--scene-sheet)"/><text x="${X}" y="${B + 70}" text-anchor="middle" fill="var(--ink-2)" font-size="18" font-family="Atkinson Hyperlegible Next, sans-serif" font-style="italic">${f.emptyText || 'Bed stripped. Transferred to ICU.'}</text>`
       : `<g class="pt" data-act="poke" tabindex="0" role="button" aria-label="Speak to ${def.name}">${def.look.small ? `<rect x="${X - 236}" y="${B + 4}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity=".55"/>` : ''}${R.place(def.id, 'bed', v, def.look.small ? `translate(${X} ${150 + (1 - def.look.small) * 330}) scale(${def.look.small})` : `translate(${X} 150)`, 'room:' + def.id)}</g>`;
     if (f.elevated && !f.empty) front += hot('leg', 'Elevated left leg', `<rect x="${X + 70}" y="${B + 4}" width="160" height="58" rx="20" fill="#fff" opacity="0"/><path d="M${X + 96} ${B + 22} q 44 -10 96 2" stroke="#D8918A" stroke-width="4" stroke-dasharray="3 4" fill="none" opacity=".75"/>`);
     // foley
@@ -92,12 +114,21 @@
     const light = callLight ? `<circle cx="1004" cy="30" r="10" fill="#F0B64A" class="blink"/>` : '';
     return `<svg class="scene" viewBox="0 30 1030 410" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Room ${def.room}. ${def.name} in bed. Select objects in the room to inspect them, or ${def.short} to speak with them.">
       <defs><linearGradient id="${gid}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s2}"/><stop offset="1" stop-color="${s1}"/></linearGradient>
-      <radialGradient id="${gid}v" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="${tension ? '#5a0f0a' : '#000'}" stop-opacity="${tension ? '.38' : '.12'}"/></radialGradient></defs>
-      <rect width="1030" height="440" fill="var(--scene-wall)"/><rect y="378" width="1030" height="62" fill="var(--scene-floor)"/><path d="M0 378 H1030" stroke="var(--scene-trim)" stroke-width="5"/>
-      <polygon points="40,212 222,212 470,440 0,440" fill="${s1}" opacity=".16"/>
+      <radialGradient id="${gid}v" cx=".5" cy=".5" r=".75"><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="${tension ? '#5a0f0a' : '#000'}" stop-opacity="${tension ? '.38' : '.07'}"/></radialGradient>
+      <radialGradient id="${gid}l" cx="${X}" cy="36" r="430" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${lc}" stop-opacity="${ls}"/><stop offset=".55" stop-color="${lc}" stop-opacity="${ls * .35}"/><stop offset="1" stop-color="${lc}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${gid}p"><stop offset="0" stop-color="${lc}" stop-opacity="${night ? .2 : .14}"/><stop offset="1" stop-color="${lc}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${gid}n" cx="${X}" cy="250" r="560" gradientUnits="userSpaceOnUse"><stop offset=".4" stop-color="#0a1230" stop-opacity="0"/><stop offset="1" stop-color="#0a1230" stop-opacity=".42"/></radialGradient>
+      <linearGradient id="${gid}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${gid}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#000" stop-opacity=".06"/></linearGradient></defs>
+      <rect width="1030" height="440" fill="var(--scene-wall)"/><rect width="1030" height="378" fill="url(#${gid}w)"/>
+      <rect y="292" width="1030" height="86" fill="${acc}" opacity=".2"/><path d="M0 292 H1030" stroke="${acc}" stroke-width="4" opacity=".55"/><rect y="378" width="1030" height="62" fill="var(--scene-floor)"/><path d="M0 378 H1030" stroke="var(--scene-trim)" stroke-width="5"/><rect y="381" width="1030" height="59" fill="url(#${gid}f)"/>
+      <rect width="1030" height="440" fill="url(#${gid}l)" pointer-events="none"/>
+      <g><rect x="${X - 74}" y="30" width="148" height="9" rx="4" fill="#FFF9EC" stroke="var(--scene-trim)" stroke-width="1.5"/><rect x="${X - 60}" y="36" width="120" height="3" rx="1.5" fill="${lc}" opacity=".9"/></g>
+      ${wallArt(kind, s)}
+      <polygon points="40,212 222,212 470,440 0,440" fill="${night ? '#9FB4E0' : s1}" opacity="${night ? .08 : .24}"/>
       <g><rect x="40" y="42" width="182" height="170" rx="5" fill="url(#${gid}s)" stroke="var(--scene-frame)" stroke-width="9"/><path d="M40 176 q44 -26 90 -8 q44 14 92 -12 V212 H40Z" fill="#8AA99A" opacity=".55"/>${isNight(s.t) ? '<circle cx="178" cy="78" r="13" fill="#F4EBD0" opacity=".9"/><circle cx="184" cy="74" r="11" fill="#2a3558" opacity=".9"/><circle cx="70" cy="64" r="1.6" fill="#fff"/><circle cx="104" cy="96" r="1.2" fill="#fff"/><circle cx="200" cy="112" r="1.2" fill="#fff"/>' : ''}<path d="M131 42 V212 M40 127 H222" stroke="var(--scene-frame)" stroke-width="5"/>${f.psych ? `<g stroke="var(--scene-frame)" stroke-width="1.1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<path d="M${40 + i * 16} 42 V212"/>`).join('')}${Array.from({ length: 11 }, (_, i) => `<path d="M40 ${42 + i * 16} H222"/>`).join('')}</g>` : ''}</g>
-      ${back}${person}${front}${light}
-      ${isNight(s.t) ? '<rect width="1030" height="440" fill="#0a1230" opacity=".2" pointer-events="none"/>' : ''}<rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
+      <ellipse cx="${X}" cy="250" rx="360" ry="190" fill="url(#${gid}p)" pointer-events="none"/>${back}${person}${front}${light}
+      ${night ? `<rect width="1030" height="440" fill="url(#${gid}n)" pointer-events="none"/>` : ''}<rect width="1030" height="440" fill="url(#${gid}v)" pointer-events="none"/>
     </svg>`;
   }
 
@@ -110,16 +141,16 @@
       if (o.pending) return `<g class="door pending" aria-label="Room ${o.room}, admission arriving">
         <rect x="${x - 10}" y="58" width="${dw + 20}" height="232" rx="4" fill="var(--scene-trim)"/><rect x="${x}" y="68" width="${dw}" height="222" rx="2" fill="var(--door)" opacity=".45"/>
         <rect x="${x + dw / 2 - 30}" y="24" width="60" height="22" rx="3" fill="var(--scene-panel)"/>
-        <text x="${x + dw / 2}" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Public Sans, sans-serif">${o.room}</text>
-        <text x="${x + dw / 2}" y="170" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="Public Sans, sans-serif">Admission</text>
-        <text x="${x + dw / 2}" y="188" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="Public Sans, sans-serif">${o.eta}</text></g>`;
+        <text x="${x + dw / 2}" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible Mono, monospace">${o.room}</text>
+        <text x="${x + dw / 2}" y="170" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="Atkinson Hyperlegible Mono, monospace">Admission</text>
+        <text x="${x + dw / 2}" y="188" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="Atkinson Hyperlegible Mono, monospace">${o.eta}</text></g>`;
       return `<g class="door ${o.state || ''}" data-act="goto" data-pid="${o.pid}" tabindex="0" role="button" aria-label="Enter room ${o.room}, ${o.name}${o.alert ? ', ' + o.alert : ''}">
         <rect x="${x - 10}" y="58" width="${dw + 20}" height="232" rx="4" fill="var(--scene-trim)"/>
         <rect x="${x}" y="68" width="${dw}" height="222" rx="2" fill="var(--door)"/>
         <rect x="${x + dw - 46}" y="92" width="30" height="80" rx="2" fill="${o.gone ? 'var(--scene-wall)' : 'var(--door-glass)'}" opacity=".85"/>
         <rect x="${x + 16}" y="176" width="10" height="26" rx="3" fill="#a3aaa8"/>
         <rect x="${x + dw / 2 - 30}" y="24" width="60" height="22" rx="3" fill="var(--scene-panel)"/>
-        <text x="${x + dw / 2}" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Public Sans, sans-serif">${o.room}</text>
+        <text x="${x + dw / 2}" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible Mono, monospace">${o.room}</text>
         <circle cx="${x + dw / 2 + 44}" cy="35" r="7" fill="${o.light ? '#f0b64a' : 'var(--line)'}" class="${o.light ? 'blink' : ''}"/>
         <rect class="door-hi" x="${x}" y="68" width="${dw}" height="222" rx="2" fill="#fff" opacity="0"/>
       </g>`;
@@ -130,8 +161,8 @@
       <rect width="1060" height="300" fill="var(--scene-wall)"/><rect y="290" width="1060" height="10" fill="var(--scene-floor)"/>
       <rect y="206" width="1060" height="6" fill="var(--scene-trim)"/>
       <rect x="18" y="80" width="112" height="200" rx="4" fill="var(--scene-panel)"/><rect x="30" y="92" width="88" height="54" rx="3" fill="#0f1b1f"/>
-      <text x="74" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#9fe0b8" font-family="Public Sans, sans-serif">${S.engine.clock(s.t)}</text>
-      <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Public Sans, sans-serif">${unit}</text>
+      <text x="74" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#9fe0b8" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.clock(s.t)}</text>
+      <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Atkinson Hyperlegible Mono, monospace">${unit}</text>
       ${d}
       <rect width="1060" height="300" fill="url(#${gid})" pointer-events="none"/>
     </svg>`;

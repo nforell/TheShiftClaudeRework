@@ -1,4 +1,4 @@
-/* Small hours, 4 West. Stories for Dorothy, Walter, Kaia, Frank and Renee. Night shift: people say things at 2 a.m. they wouldn't at noon. */
+/* Nights on 4 West. Stories for Dorothy, Walter, Kaia, Frank and Renee. Night shift: people say things at 2 a.m. they wouldn't at noon. */
 (function (S) {
   S.story.add('medsurg-4w-3', {
     '431': {

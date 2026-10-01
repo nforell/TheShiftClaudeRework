@@ -143,9 +143,9 @@
     outcome(s, P) {
       if (P.attempt) return { tone: 'bad', title: 'Suicide attempt on the unit', text: 'Found by Andre on a 15-minute check. He survived and was sent to the ED. The calm, the headphones and the letter were all there before 08:00.' };
       if (P.reported && (P.oneToOne || P.searched)) return { tone: 'good', title: 'Certified and safe', text: 'On a 5250, on 1:1, with the means removed. He told you the truth because you asked him the real question.' + (P.promised ? ' He\'s angry you told; that\'s survivable.' : '') };
-      if (P.reported) return { tone: 'mixed', title: 'Certified, but unsafe for a while', text: 'The psychiatrist heard the picture and filed a 5250, but nobody closed the 15-minute gaps or searched his room first.' };
+      if (P.reported) return { tone: 'mixed', title: 'Certified, but unsafe for a while', text: 'The psychiatrist heard the picture and filed a 5250, but the 15-minute gaps stayed open and his room wasn\'t searched.' };
       if (P.oneToOne || P.searched) return { tone: 'mixed', title: 'Safer today, heading home at 14:00', text: 'You protected him this morning, but the psychiatrist never heard why. He\'s being discharged when the hold ends.' };
-      return { tone: 'bad', title: 'Discharged with a plan nobody found', text: 'Bright, calm and denying everything, he walks out at 14:00. The warning signs were in report.' };
+      return { tone: 'bad', title: 'Discharged with a plan still in place', text: 'Bright, calm and denying everything, he walks out at 14:00. The warning signs were in report.' };
     },
   };
 
@@ -523,7 +523,7 @@
       if (P.covert) return { tone: 'bad', title: 'Medicated in secret', text: 'He tasted it. Now he knows the juice was poisoned, and he\'s right. He\'s stopped eating and drinking entirely.' };
       if (P.medTaken) return { tone: 'good', title: 'Ate, and took his first dose', text: 'Sealed food, his own hands on the package, and a nurse who didn\'t argue with him. Voluntary treatment has started.' };
       if (P.ate >= 1 && (P.riese || (P.refused && P.reported))) return { tone: 'good', title: 'Eating, refusing, and heard', text: 'He\'s eating what he can verify. His refusal is documented and ' + (P.riese ? 'a capacity hearing is being filed.' : 'the psychiatrist knows.') };
-      if (P.ate >= 1) return { tone: 'mixed', title: 'Eating, but no plan for his refusals', text: 'He ate, but nobody told the psychiatrist he\'s still refusing medication.' };
+      if (P.ate >= 1) return { tone: 'mixed', title: 'Eating, but no plan for his refusals', text: 'He ate, but the psychiatrist doesn\'t know he\'s still refusing medication.' };
       return { tone: 'mixed', title: 'Didn\'t eat, didn\'t trust anyone', text: 'Another day without food or treatment. He\'s getting dehydrated.' };
     },
   };
@@ -636,9 +636,9 @@
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Seizure from water intoxication', text: `Her sodium reached ${Math.round(P.na)}. She seized on the unit, the second time in three years. The weight, the cups and the headache were all there at 07:00.` };
       if (P.gone) return { tone: 'good', title: 'Caught, and sent for a safe correction', text: 'Her sodium was low enough to need monitored correction on medicine. She went before it became a seizure.' };
-      if (P.restricted && P.na >= 126) return { tone: 'good', title: 'Sodium holding, water restricted', text: `Restriction by ${clock(P.restAt)}, and her sodium stopped falling.` + (P.peg || P.bmReported ? ' Her bowels are being treated too.' : ' Nobody treated four days without a bowel movement on clozapine, though.') };
+      if (P.restricted && P.na >= 126) return { tone: 'good', title: 'Sodium holding, water restricted', text: `Restriction by ${clock(P.restAt)}, and her sodium stopped falling.` + (P.peg || P.bmReported ? ' Her bowels are being treated too.' : ' Four days without a bowel movement on clozapine went untreated, though.') };
       if (P.restricted) return { tone: 'mixed', title: 'Restricted late', text: 'The restriction came after her sodium had already dropped into symptoms.' };
-      return { tone: 'bad', title: 'Still drinking at noon', text: `Sodium around ${Math.round(P.na)} and falling. Nobody weighed her.` };
+      return { tone: 'bad', title: 'Still drinking at noon', text: `Sodium around ${Math.round(P.na)} and falling. She was never weighed.` };
     },
   };
 
@@ -653,7 +653,7 @@
     dan_b: { who: '301', text: '"Yeah. I feel good. Finally." He nods toward his packed bag. "My hold\'s up today, right? I\'d like to go home."' },
     dan_c: { who: '301', text: '"No. No, I\'m fine." He answers before you finish the question.' },
     dan_after: { who: '301', text: '"Are you going to tell the doctor? I don\'t want to be stuck here another two weeks."', choices: [
-      { label: 'Yes. Keeping you alive matters more to me than keeping this between us. I\'ll be honest with you about every step we take.', next: 'dan_d', fx: J('301-tell', 'comm', 1, 'You were honest with Daniel that you would share his plan.', 'Suicide risk is never a secret you keep. Being straight about it keeps the trust you just built.', '301') },
+      { label: 'Yes. Keeping you alive matters more to me than keeping this between us. I\'ll be honest with you about every step we take.', next: 'dan_d', fx: J('301-tell', 'comm', 1, 'You were honest with Daniel that you would share his plan.', 'You cannot promise to keep suicide risk a secret. It goes to the team. Being straight about it keeps the trust you just built.', '301') },
       { label: 'If you promise me you\'ll stay safe, I can keep it between us.', next: 'dan_e', fx: (s, A) => { s.p['301'].promised = true; A.judge('301-tell', 'safety', -3, 'You offered to keep Daniel\'s suicide plan secret in exchange for a promise.', 'No-harm contracts don\'t prevent suicide, and a nurse can\'t keep a plan confidential. Tell the team.', '301'); } },
     ] },
     dan_d: { who: '301', text: 'He exhales. "Okay. Yeah. Okay." He pushes the envelope on the desk an inch toward you. "Don\'t read it. Just... hold on to it."' },
@@ -677,7 +677,7 @@
     jas_f: { who: '303', text: 'She jerks away. "DON\'T touch me!" A cup hits the wall behind you.' },
     jas_secl: { who: '303', text: 'Through the window of the seclusion room door: "Let me OUT! I didn\'t DO anything!"' },
     bob_talk: { who: '305', text: '"Feel like I got hit by a truck. Can\'t stop shaking." He holds out a trembling hand. "Can I just get my Motrin and my morning pills and sleep it off?"', choices: [
-      { label: 'Bob, the shaking, vomiting and diarrhea can be signs your lithium is too high. I\'m going to hold your morning dose and your Motrin and call Dr. Iyer. Can you try small sips of water?', next: 'bob_a', fx: (s, A) => { s.p['305'].explained = true; A.judge('305-talk', 'comm', 1, 'You explained to Bob why you were holding his meds.', 'Patients on lithium should know the warning signs. Twenty years in, nobody had told him.', '305'); } },
+      { label: 'Bob, the shaking, vomiting and diarrhea can be signs your lithium is too high. I\'m going to hold your morning dose and your Motrin and call Dr. Iyer. Can you try small sips of water?', next: 'bob_a', fx: (s, A) => { s.p['305'].explained = true; A.judge('305-talk', 'comm', 1, 'You explained to Bob why you were holding his meds.', 'Patients on lithium should know the warning signs. Twenty years on lithium, and no one had told him.', '305'); } },
       { label: 'Sure. I\'ll bring your Motrin and your morning meds.', next: 'bob_b', fx: J('305-talk', 'judgment', -1, 'You promised Bob his usual meds.', 'A patient on lithium with new GI symptoms and a coarse tremor needs a level and a decision, not his routine.', '305') },
       { label: 'Sounds like the stomach bug that\'s going around.', next: 'bob_b', fx: J('305-talk', 'judgment', -1, 'You accepted the stomach-bug explanation.', 'Anchoring: the first explanation you hear tends to stick. In someone on lithium, diarrhea and tremor are toxicity until the level says otherwise.', '305') },
     ] },
@@ -730,9 +730,9 @@
     { id: 'tv', when: (s) => s.t >= 90 && s.p['303'].esc >= 1.5 && !s.p['303'].secluded, run(s, A) { const P = s.p['303']; P.esc += .3; s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'andre', pid: '303', urgent: P.esc >= 2.2, text: '303 and 307 are fighting over the dayroom TV. She\'s yelling in his face and he\'s backed into the corner. I\'m splitting them up but I can\'t hold this long.', replies: [{ label: 'Go to 303', act: 'goto', pid: '303' }] }); } },
     { id: 'covert', when: (s) => s.t >= 100 && !s.p['307'].medTaken && s.meds['307-risp'].status !== 'given', run(s, A) { A.msg({ from: 'andre', pid: '307', text: '307 still won\'t take his risperidone. At my old job we\'d just mix it in the juice. Want me to?', replies: [{ label: 'No. He has the right to refuse', act: 'covert-no' }, { label: 'Yes, mix it in', act: 'covert-yes' }] }); } },
     { id: 'jas-crisis', when: (s) => { const P = s.p['303']; return P.crisisAt === null && P.esc >= 3 && !P.secluded; }, run(s, A) { const P = s.p['303']; P.crisisAt = s.t; P.callLight = true; A.msg({ from: 'andre', pid: '303', urgent: true, text: '303 just threw a chair. She\'s swinging at anyone who gets close. We need you in the dayroom NOW.', replies: [{ label: 'Go to 303', act: 'goto', pid: '303' }] }); } },
-    { id: 'jas-emerg', when: (s) => { const P = s.p['303']; return P.crisisAt !== null && !P.emerg && P.im === null && s.t - P.crisisAt >= 12 && P.esc >= 2.6; }, run(s, A) { const P = s.p['303']; P.emerg = true; P.emergTried = P.tried || P.prnAt !== null; P.im = s.t; P.secluded = true; P.seclOk = true; P.esc = .6; A.judge('303-emerg', 'safety', P.emergTried ? 0 : -2, 'Jasmine\'s agitation reached a crisis that needed a team takedown.', P.emergTried ? 'Sometimes the ladder runs out even when you climb it right. You tried the early rungs; next time, try them earlier and more than once.' : 'Escalation is a ladder: lower stimulation, offer choices, offer PRN by mouth, then emergency measures. Skipping the early rungs leaves only the last one.', '303'); s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'nova', pid: '303', urgent: true, text: 'Code green in the dayroom. We had to hold 303 for an IM injection and she\'s in seclusion. Nobody hurt, barely. 307 watched the whole thing.' }); } },
+    { id: 'jas-emerg', when: (s) => { const P = s.p['303']; return P.crisisAt !== null && !P.emerg && P.im === null && s.t - P.crisisAt >= 12 && P.esc >= 2.6; }, run(s, A) { const P = s.p['303']; P.emerg = true; P.emergTried = P.tried || P.prnAt !== null; P.im = s.t; P.secluded = true; P.seclOk = true; P.esc = .6; A.judge('303-emerg', 'safety', P.emergTried ? 0 : -2, 'Jasmine\'s agitation reached a crisis that needed a team takedown.', P.emergTried ? 'Sometimes the ladder runs out even when you climb it right. You tried the early rungs; next time, try them earlier and more than once.' : 'Escalation is a ladder: lower stimulation, offer choices, offer PRN by mouth, then emergency measures. Skipping the early rungs leaves only the last one.', '303'); s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'nova', pid: '303', urgent: true, text: 'Code green in the dayroom. We had to hold 303 for an IM injection and she\'s in seclusion. No one was hurt, barely. 307 watched the whole thing.' }); } },
     { id: 'ana', when: (s) => s.t >= 120, run(s, A) { A.msg({ from: 'desk', pid: '307', text: 'Visitor for 307: Ana Santos, his mother. She has a tote bag and a food container.', replies: [{ label: 'Check her bag first', act: 'bag-check' }, { label: 'Send her in', act: 'bag-skip' }] }); } },
-    { id: 'ana-in', when: (s) => s.t >= 135 && s.p['307'].visit === null, run(s, A) { const P = s.p['307']; P.visit = s.t; P.charger = true; A.judge('307-bag-miss', 'safety', -1, 'Ana went in to visit without her bag being checked.', 'Visitor bags get checked on a locked unit. Cords, glass and medications come in with love, not malice.', '307'); A.msg({ from: 'desk', pid: '307', text: 'Nobody answered, so Andre let Ana Santos back to 307.' }); } },
+    { id: 'ana-in', when: (s) => s.t >= 135 && s.p['307'].visit === null, run(s, A) { const P = s.p['307']; P.visit = s.t; P.charger = true; A.judge('307-bag-miss', 'safety', -1, 'Ana went in to visit without her bag being checked.', 'Visitor bags get checked on a locked unit. Cords, glass and medications come in with love, not malice.', '307'); A.msg({ from: 'desk', pid: '307', text: 'No answer from you, so Andre let Ana Santos back to 307.' }); } },
     { id: 'charger', when: (s) => { const P = s.p['307']; return P.charger && !P.chargerFound && P.visit !== null && s.t >= P.visit + 40; }, run(s, A) { const P = s.p['307']; P.chargerFound = true; A.judge('307-charger', 'safety', -1, 'A phone charger cord sat in 307 for 40 minutes.', 'On a unit where someone in 301 has a plan, a cord in any room is a ligature risk.', '307'); A.msg({ from: 'andre', pid: '307', text: 'Found a phone charger in 307, from his mom\'s bag. Locked it up. With 301 the way he is, that scared me.' }); } },
     { id: 'float', when: (s) => { const D = s.p['301']; return D.oneToOne && D.floatAt !== null && s.t >= D.floatAt; }, run(s, A) { A.msg({ from: 'nova', pid: '301', text: 'Tess from the float pool is taking over 301\'s 1:1. Andre\'s back on the hall.' }); } },
     { id: 'attempt', when: (s) => { const D = s.p['301']; return s.t >= 150 && !D.oneToOne && !D.searched && !D.attempt; }, run(s, A) { const D = s.p['301']; D.attempt = true; D.gone = true; D.goneText = 'Sent to the ED'; A.judge('301-attempt', 'safety', -3, 'Daniel attempted suicide on the unit between 15-minute checks.', 'Sudden calm, belongings given away, a goodbye letter, and a hold ending today. Asking directly, searching, and closing the observation gap were all available.', '301'); A.msg({ from: 'andre', pid: '301', urgent: true, text: 'Medical emergency 301. I found Daniel on my check. He tried to kill himself. He\'s breathing and talking, the team is with him, and he\'s going to the ED.' }); } },
@@ -803,14 +803,14 @@
     if (!M.medTaken && M.trust < 1) return 'You can\'t talk someone out of a delusion. What can you offer that he can check for himself?';
     if (D.disclosed && !D.reported) return 'The psychiatrist is deciding about discharge today. Does she know what you know?';
     const unseen = A.c.patients.filter((d) => !s.p[d.id].gone && !s.p[d.id].icu && (s.p[d.id].seenAt === null || s.t - s.p[d.id].seenAt > 90)).map((d) => d.room);
-    if (unseen.length) return `You haven\'t talked with ${unseen.join(' and ')} in over an hour and a half. On this unit, the check-in is the assessment.`;
+    if (unseen.length) return `You haven\'t talked with ${unseen.join(' and ')} in over an hour and a half. On this unit, most of your assessment happens in check-ins.`;
     return 'You\'re on top of it. Now think about 14:00. Who\'s safe to go home, and who isn\'t?';
   }
 
   function endChecks(s, A) {
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
-      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'On a psych unit, the conversation is the assessment. Every patient gets seen.', d.id);
+      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'On a psych unit, most of the assessment is talking with the patient. Every patient gets seen.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && m.due <= Math.min(240, s.t - 60) && st.status === 'due' && !P.icu && !P.gone) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: given, or held with a reason. A refusal is documented as a hold.', d.id);
@@ -832,10 +832,10 @@
   [dan, jas, bob, mig, lin].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'psych-3e-1', title: 'Quiet voices', unit: '3 East, Adult Acute Psychiatry', unitShort: '3 East', level: 'Specialty: Psych', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'A locked adult psych unit. The danger is in what people don\'t say.',
-    hero: { head: 'Five patients. A locked door. Nobody here is on a monitor.', lede: 'Day shift on 3 East, adult acute psychiatry. The vital sign that matters most is what people tell you, and what they don\'t. Ask the hard questions.' },
-    intro: { time: '06:58', place: '3 East · Adult Acute Psychiatry', cta: 'Take report', beats: ['Five patients until noon. No IV poles, no monitors, no call lights that mean much.', 'Here, the assessment is the conversation.', 'Someone on this hall feels better today than he has in months. That should worry you.'] },
+    id: 'psych-3e-1', title: 'Days on 3 East', unit: '3 East, Adult Acute Psychiatry', unitShort: '3 East', level: 'Specialty: Psych', start: 7 * 60, length: 300, novaCredits: 3,
+    card: 'Adult locked unit, five patients until noon: mania, lithium, a med refusal, compulsive water drinking, and a man who is suddenly calm.',
+    hero: { head: 'Days, 3 East. Five patients on a locked adult unit.', lede: 'Adult acute psych, 07:00 to noon. No telemetry and no pumps. Most of your assessment is talking to people, including asking the questions that feel awkward to ask.' },
+    intro: { time: '06:58', place: '3 East, Adult Acute Psychiatry', cta: 'Take report', beats: ['Priya is giving report in the nurses\' station, behind the glass.', 'Five patients until noon. No monitors here; you assess by talking.', 'One man seems a lot better than he did yesterday. Find out why.'] },
     minutes: 20,
     sysLabels: { general: 'Appearance and behavior', neuro: 'Mental status exam', pain: 'Pain and comfort', skin: 'Skin and safety check', gi: 'Intake, output and elimination' },
     handoffBy: 'Priya (night RN)', reportBy: 'priya', reportRole: 'night shift', provider: 'iyer', cna: 'andre',

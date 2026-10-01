@@ -125,7 +125,7 @@
     status: (s, P) => (P.gone ? 'gone' : P.phos < 1.6 ? 'urgent' : s.t >= 60 && !P.reported ? 'watch' : 'stable'),
     outcome(s, P) {
       if (P.gone) return { tone: P.reported ? 'mixed' : 'bad', title: 'Refeeding syndrome, to pediatrics', text: `Phosphorus ${phosTxt(P)}, an irregular pulse and weak legs. She went to the pediatric floor on a cardiac monitor for IV replacement.${P.reported ? ' The call came, but late.' : ' The afternoon labs were under every call threshold at 16:00.'}` };
-      if (P.reported && P.replAt !== null) return { tone: P.hid ? 'mixed' : 'good', title: P.hid ? 'Electrolytes replaced, dinner in a napkin' : 'Replaced, rechecked, refeeding on track', text: `Replacement at ${clock(P.replAt)}${P.recheckSeen ? ', and the recheck showed it working' : ''}. ${P.hid ? 'Nobody sat with her at dinner, and half of it went into her napkin.' : `She finished ${P.ate >= 90 ? 'dinner' : 'most of dinner'} with someone beside her.`}` };
+      if (P.reported && P.replAt !== null) return { tone: P.hid ? 'mixed' : 'good', title: P.hid ? 'Electrolytes replaced, dinner in a napkin' : 'Replaced, rechecked, refeeding on track', text: `Replacement at ${clock(P.replAt)}${P.recheckSeen ? ', and the recheck showed it working' : ''}. ${P.hid ? 'She ate dinner alone, and half of it went into her napkin.' : `She finished ${P.ate >= 90 ? 'dinner' : 'most of dinner'} with someone beside her.`}` };
       if (P.reported) return { tone: 'mixed', title: 'Called, but the replacement never went in', text: 'The order came. The doses sat on the MAR.' };
       return { tone: 'bad', title: 'Labs under threshold, nobody called', text: `Phosphorus ${phosTxt(P)} and falling at the end of the shift. The night nurse inherits refeeding syndrome in progress.` };
     },
@@ -176,7 +176,7 @@
         id: 'skin', label: 'Skin check: private, with Tasha present, explained first', cost: 6, avail: (s, P) => !P.skinChecked,
         run(s, P, A) {
           P.skinChecked = true; const first = !P.cutsFound; P.cutsFound = true; if (!P.foundBy) P.foundBy = 'you';
-          A.judge('403-skin', 'assess', first ? 2 : 1, first ? `You did Jordan's missed skin check and found fresh self-harm.` : `You did Jordan's skin check.`, `The skin check is the assessment on self-harm precautions. A missed one, a hard phone call and long sleeves in a warm room are three reasons to do it now.`, '403');
+          A.judge('403-skin', 'assess', first ? 2 : 1, first ? `You did Jordan's missed skin check and found fresh self-harm.` : `You did Jordan's skin check.`, `On self-harm precautions, a skin check is part of every shift assessment. A missed one, a hard phone call and long sleeves in a warm room are three reasons to do it now.`, '403');
           return `You explain why, and that you'll go one area at a time. Tasha stands by the door. On the left forearm: three fresh, shallow cuts from this afternoon, edges together, oozing a little. Jordan stares at the wall. "It's not a big deal. They're not deep."`;
         },
       },
@@ -239,7 +239,7 @@
       if (P.searched && P.cutsFound && P.reported) return { tone: 'good', title: 'Found, cared for, and safer', text: `Wounds dressed, the object found, observation closed up, and the psychiatrist heard about the call with dad.${P.outed ? ' Their dad heard their name from you before they were ready, though.' : ''}` };
       if (P.cutsFound && (P.searched || P.oneToOne)) return { tone: 'mixed', title: 'Safer, but the team is behind', text: `${P.searched ? 'The object is gone.' : 'Watched closely, but the object is still somewhere.'} ${P.reported ? '' : 'The psychiatrist never heard about the new self-harm.'}` };
       if (P.cutsFound) return { tone: 'mixed', title: 'Found, not made safer', text: `The cuts were found${P.foundBy === 'tasha' ? ' by Tasha, from a spot of blood on a sleeve' : ''}, but the room wasn't searched and observation didn't change.` };
-      return { tone: 'bad', title: 'Nobody looked', text: `No skin check all day. Long sleeves, a hard call, and nobody looked.` };
+      return { tone: 'bad', title: 'Nobody looked', text: `No skin check all day. Long sleeves, a hard call, and no skin check.` };
     },
   };
 
@@ -337,7 +337,7 @@
     status: (s, P) => (P.icu ? 'gone' : P.dys >= 1.2 && P.dphAt === null ? 'urgent' : P.dys > 0 && P.dphAt === null ? 'watch' : 'stable'),
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Dystonia reached his airway', text: `Stridor and a locked jaw sent him to the ED for airway support. It started at ${clock(35)}, and everyone said he was acting out.` };
-      if (P.dphAt !== null && P.dphAt - 35 <= 40) return { tone: P.secl || P.haloAgain !== null ? 'mixed' : 'good', title: 'Dystonia recognized and reversed', text: `Diphenhydramine at ${clock(P.dphAt)}${P.reassessed ? ', reassessed and loosened' : ''}.${P.reported ? ' Haloperidol is on his allergy list now.' : ' Nobody told the psychiatrist, so haloperidol is still a PRN.'}${P.secl ? ' He spent part of it in seclusion first.' : ''}` };
+      if (P.dphAt !== null && P.dphAt - 35 <= 40) return { tone: P.secl || P.haloAgain !== null ? 'mixed' : 'good', title: 'Dystonia recognized and reversed', text: `Diphenhydramine at ${clock(P.dphAt)}${P.reassessed ? ', reassessed and loosened' : ''}.${P.reported ? ' Haloperidol is on his allergy list now.' : ' The psychiatrist was never told, so haloperidol is still a PRN.'}${P.secl ? ' He spent part of it in seclusion first.' : ''}` };
       if (P.dphAt !== null) return { tone: 'mixed', title: 'Reversed, eventually', text: `Diphenhydramine at ${clock(P.dphAt)}, after ${P.dphAt - 35} minutes of a twisted neck and a lot of people calling it behavior.` };
       if (P.dys > 0) return { tone: 'bad', title: 'Still dystonic at the end of the shift', text: `His neck and eyes were locked for hours. The antidote was on his PRN list the whole time.` };
       return { tone: 'good', title: 'Monitored after his IM dose', text: 'No side effects showed.' };
@@ -422,11 +422,11 @@
     rig: (s, P) => ({ anxious: P.shaken ? .9 : P.disclosed && !P.reported ? .6 : .4 }),
     status: (s, P) => (P.shaken ? 'urgent' : P.disclosed && !P.reported ? 'watch' : 'stable'),
     outcome(s, P) {
-      if (P.rickIn && !P.disclosed) return { tone: 'bad', title: 'He visited. Nobody asked her why she was afraid.', text: `She came out of the visit shaking. The visitor list, the lock on her door and the hoodie were all in report.` };
+      if (P.rickIn && !P.disclosed) return { tone: 'bad', title: 'He visited. No one asked her why she was afraid.', text: `She came out of the visit shaking. The visitor list, the lock on her door and the hoodie were all in report.` };
       if (P.rickIn) return { tone: 'bad', title: 'He visited after she told you', text: `She disclosed, and he was on the unit two hours later. Her trust in adults just took the hit she was afraid of.` };
       if (P.disclosed && P.reported && P.restrict) return { tone: P.promised ? 'mixed' : 'good', title: 'She told, and adults did it right', text: `Report made, visitor list changed, mom met with the team instead of at the door.${P.promised ? ' She\'s hurt you broke your promise; she\'ll understand why later, but promise less next time.' : ''}` };
       if (P.disclosed && P.reported) return { tone: 'mixed', title: 'Reported, but the team was a step behind', text: `The report is made. The psychiatrist never heard it from you${P.held ? ', though you kept him off the unit at the door' : ''}.` };
-      if (P.disclosed) return { tone: 'bad', title: 'She told you. No report was made.', text: `A disclosure of abuse is a mandated report, and nobody made it.` };
+      if (P.disclosed) return { tone: 'bad', title: 'She told you. No report was made.', text: `A disclosure of abuse is a mandated report. It wasn't made.` };
       return { tone: 'mixed', title: 'Quiet, and still carrying it', text: 'She never got the chance to say what was wrong.' };
     },
   };
@@ -524,9 +524,9 @@
     outcome(s, P) {
       if (!P.arrived) return { tone: 'mixed', title: 'Admission not yet arrived', text: 'Shift ended before he came up.' };
       if (P.gone) return { tone: P.transferAt <= 200 && P.apapAt === null ? 'good' : 'mixed', title: 'Hidden overdose, caught', text: `On pediatrics by ${clock(P.transferAt)} with N-acetylcysteine running.${P.apapAt !== null ? ' He got one more dose of acetaminophen on the way.' : ''} "Medically cleared" didn't include the one test that mattered.` };
-      if (P.labsDone) return { tone: 'mixed', title: 'Results back, nobody called', text: 'The labs showed liver injury, and they sat in the chart.' };
+      if (P.labsDone) return { tone: 'mixed', title: 'Results back, never called', text: 'The labs showed liver injury, and they sat in the chart.' };
       if (P.reported) return { tone: 'mixed', title: 'Labs pending at the end of the shift', text: 'The night nurse needs to chase them.' };
-      return { tone: 'bad', title: 'An overdose nobody found', text: `${P.admits || P.bottle || P.peerTold ? 'You had the clue. It never reached anyone who could order the antidote.' : 'Nausea, right upper abdominal pain, a suicide note and no acetaminophen level.'} His liver is failing quietly.` };
+      return { tone: 'bad', title: 'Overdose missed', text: `${P.admits || P.bottle || P.peerTold ? 'You had the clue. It never reached anyone who could order the antidote.' : 'Nausea, right upper abdominal pain, a suicide note and no acetaminophen level.'} His liver is failing quietly.` };
     },
   };
 
@@ -692,10 +692,10 @@
     if (!M.icu && M.dys > 0 && M.dphAt === null) return `Somebody's being called a faker an hour after his first-ever dose of an old-school antipsychotic. What does that med do to young muscles?`;
     if (El.arrived && !El.gone && !El.reported && (El.admits || El.bottle || El.peerTold)) return `"Medically cleared" is only as good as the tests they sent. Which one didn't they send for 409?`;
     if (!E1.gone && s.t >= 60 && !E1.reported) return `Someone's afternoon labs came back. Her orders have a list of numbers that mean "call." Did any of hers make the list?`;
-    if (!Jo.gone && !Jo.skinChecked && !Jo.cutsFound) return `Long sleeves in a warm room, a bad phone call, and a skin check nobody did. Whose job is that?`;
+    if (!Jo.gone && !Jo.skinChecked && !Jo.cutsFound) return `Long sleeves in a warm room, a bad phone call, and a skin check that didn't happen. Whose job is that?`;
     if (K.disclosed && !K.reported) return `She told you. What's the one thing you have to do yourself, that nobody can do for you?`;
     if (!K.disclosed && !K.rickIn && s.t < 210) return `Somebody keeps asking who's visiting tonight, and goes quiet at one name. Have you asked her why?`;
-    if (El.arrived && !El.gone && El.admitted === null) return `There's a bag in 409 nobody has opened yet.`;
+    if (El.arrived && !El.gone && El.admitted === null) return `There's a bag in 409 that hasn't been searched.`;
     if (Jo.cutsFound && !Jo.searched) return `New self-harm on a locked unit means there's an object on the unit. Where is it?`;
     const unseen = A.c.patients.filter((d) => (!d.arrives || s.p[d.id].arrived) && !s.p[d.id].gone && !s.p[d.id].icu && (s.p[d.id].seenAt === null || s.t - s.p[d.id].seenAt > 90)).map((d) => d.room);
     if (unseen.length) return `You haven't checked in with ${unseen.join(' and ')} in over an hour and a half. Teenagers don't come find you.`;
@@ -706,7 +706,7 @@
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
       if (d.arrives && !P.arrived) return;
-      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, `On an adolescent unit, the check-in is the assessment. Teenagers don't come find you.`, d.id);
+      if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, `On an adolescent unit, much of the assessment happens in check-ins. Teenagers don't come find you.`, d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && m.due <= Math.min(240, s.t - 60) && st.status === 'due' && !P.icu && !P.gone) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, `Every scheduled dose needs a decision: given, or held with a reason.`, d.id);
@@ -714,13 +714,13 @@
     });
     const E1 = s.p['401'], Jo = s.p['403'], M = s.p['405'], K = s.p['407'], El = s.p['409'];
     if (!E1.reported && !E1.gone && s.t >= 90) A.judge('401-norep', 'comm', -2, `Ella's refeeding labs never reached the psychiatrist.`, `Her orders listed the numbers that mean "call." All three were under them at 16:00.`, '401');
-    if (!Jo.skinChecked && !Jo.gone) A.judge('403-noskin', 'assess', -2, `Jordan's skin check was never done by a nurse.`, `On self-harm precautions, the skin check is the assessment, every shift.`, '403');
+    if (!Jo.skinChecked && !Jo.gone) A.judge('403-noskin', 'assess', -2, `Jordan's skin check was never done by a nurse.`, `On self-harm precautions, check the skin every shift.`, '403');
     if (Jo.cutsFound && !Jo.reported && !Jo.gone) A.judge('403-norep', 'comm', -1, `Jordan's new self-harm never reached the psychiatrist.`, `New self-harm on the unit changes the plan, and the team plans together.`, '403');
     if (!M.icu && M.dys > 0 && M.dphAt === null) A.judge('405-untreated', 'meds', -2, `Marcus's dystonia was never treated.`, `The antidote was on his PRN list the whole shift.`, '405');
     if (M.dphAt !== null && !M.reported && !M.icu) A.judge('405-norep', 'comm', -1, `The psychiatrist never heard about Marcus's dystonic reaction.`, `Haloperidol is still a PRN on his chart. The next nurse could give it again.`, '405');
     if (K.disclosed && !K.reported) A.judge('407-noreport', 'safety', -3, `Kayla's disclosure of abuse was never reported.`, `A mandated reporter who hears a disclosure has a personal duty to report it. Telling the team doesn't replace it.`, '407');
     if (El.arrived && !El.reported && !El.gone && (El.admits || El.bottle || (El.peerTold && !El.peerDismissed))) A.judge('409-norep', 'comm', -2, `Eli's possible acetaminophen overdose never reached the psychiatrist.`, `You had the clue. N-acetylcysteine only works if someone orders it.`, '409');
-    if (El.labsDone && El.transferAt === null && !El.gone) A.judge('409-nofollow', 'comm', -2, `Eli's critical results came back and nobody called them in.`, `Ordering a test means owning the result.`, '409');
+    if (El.labsDone && El.transferAt === null && !El.gone) A.judge('409-nofollow', 'comm', -2, `Eli's critical results came back and sat in the chart.`, `Ordering a test means owning the result.`, '409');
     const keys = []; A.c.patients.forEach((d) => (d.report || []).forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
@@ -732,10 +732,10 @@
   [ella, jordan, marcus, kayla, eli].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'psych-4n-1', title: 'Group chat', unit: '4 North, Adolescent Psychiatry', unitShort: '4 North', level: 'Specialty: Teen psych', start: 15 * 60, length: 300, novaCredits: 3,
-    card: `A locked adolescent unit. Teenagers tell each other before they tell you.`,
-    hero: { head: `Four teenagers, and a fifth on the way. Everyone's "fine."`, lede: `Evening shift on 4 North, adolescent psychiatry. Two medical emergencies here look like behavior, one secret is about to be told, and the most important report you get tonight may come from a patient.` },
-    intro: { time: '14:58', place: '4 North · Adolescent Psychiatry', cta: 'Take report', beats: ['Four teenagers until eight, and an admission coming up from the ED.', 'Here, "dramatic" and "testing" are words to be suspicious of.', 'Somebody on this hall knows something an adult doesn\'t. Listen to the kids.'] },
+    id: 'psych-4n-1', title: 'Evenings on 4 North', unit: '4 North, Adolescent Psychiatry', unitShort: '4 North', level: 'Specialty: Teen psych', start: 15 * 60, length: 300, novaCredits: 3,
+    card: 'Adolescent unit until 20:00: refeeding labs, self-harm precautions, a dystonic reaction, a disclosure, and an ED admission.',
+    hero: { head: 'Evenings, 4 North. Four teenagers and an admission from the ED.', lede: 'Adolescent psych, 15:00 to 20:00. Two of tonight\'s medical problems will look like behavior at first. Teenagers talk to each other before they talk to staff, so listen to them.' },
+    intro: { time: '14:58', place: '4 North, Adolescent Psychiatry', cta: 'Take report', beats: ['Ben is giving report in the med room.', 'Four patients until eight, plus an admission coming up from the ED.', 'Be wary of "dramatic" and "attention-seeking" in report. Go look for yourself.'] },
     minutes: 20,
     sysLabels: { general: 'Appearance and behavior', neuro: 'Mental status exam', pain: 'Pain and comfort', skin: 'Skin and safety check', gi: 'Intake, output and elimination' },
     handoffBy: 'Ben (day RN)', reportBy: 'ben', reportRole: 'day shift', provider: 'adeyemi', cna: 'tasha',

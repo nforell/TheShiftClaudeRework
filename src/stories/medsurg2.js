@@ -1,4 +1,4 @@
-/* Second wind, 4 West. Stories for Pat, Kevin, Bea, Darnell and Amina. */
+/* Evenings on 4 West. Stories for Pat, Kevin, Bea, Darnell and Amina. */
 (function (S) {
   S.story.add('medsurg-4w-2', {
     '421': {
@@ -84,7 +84,7 @@
       epi: {
         close: `Kevin stayed four more days. The seizure history went into his chart, his withdrawal was treated early, and it passed without another one. The social worker found him a counselor who'd cooked for twenty years. Six weeks later his mother brought a pot of pho to the 4 West night shift. "He told me," she said. "He's doing better. He made this. It's a little sweet."`,
         warm: `Kevin made it through withdrawal and left on day five with a counselor's card in his wallet. He texted his mom from the parking lot. He didn't say what.`,
-        distant: `Kevin left on day four. He was back on the line at the restaurant by Friday. Nobody knows whether he kept the counselor's number.`,
+        distant: `Kevin left on day four. He was back on the line at the restaurant by Friday. It's hard to know whether he kept the counselor's number.`,
         hard: `Kevin's withdrawal got ahead of the team. He spent two nights in the ICU. His mother found out anyway, from a stranger on the phone, which was exactly what he'd been afraid of.`,
       },
     },
@@ -209,7 +209,7 @@
       epi: {
         close: `Amina's appendix came out that night, with a Somali interpreter at her mother's side for every question. She emailed Professor Adeyemi from recovery. In June her brother Abdi left a card at the 4 West desk: a drawing of a calculator in a graduation cap. "She passed. She says thanks for letting her just be the patient."`,
         warm: `Amina's surgery went well. She went home the next day and took her midterm two weeks late. She got a B-plus and is still annoyed about the minus.`,
-        distant: `Amina's surgery went well. Tired and in pain, she translated her own discharge instructions for her mother. Nobody offered an interpreter.`,
+        distant: `Amina's surgery went well. Tired and in pain, she translated her own discharge instructions for her mother. No interpreter was offered.`,
         hard: `Amina's surgery was harder than it should have been, and her recovery longer. Her mother didn't leave her side. Abdi did his homework in the waiting room every night.`,
       },
     },

@@ -953,10 +953,10 @@
   [bell, okafor, whitfield, ortiz].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'medsurg-4w-1', title: 'First light', unit: '4 West, Medical-Surgical', level: 'Orientation', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'Morning on 4 West. Four patients, one quietly getting worse.',
-    hero: { head: 'You have four patients. Report starts now.', lede: 'A medical-surgical morning on 4 West. Take report, walk the hall, decide who needs you first. Your patients will get better or worse depending on what you notice.' },
-    intro: { time: '06:58', place: '4 West · Medical-Surgical', cta: 'Take report', beats: ['You\'re the day nurse. Four patients are yours until noon.', 'Dana worked all night. She\'s tired, and report will be quick.', 'One of your patients is getting sicker. Nobody has noticed yet.'] },
+    id: 'medsurg-4w-1', title: 'Days on 4 West', unit: '4 West, Medical-Surgical', level: 'Orientation', start: 7 * 60, length: 300, novaCredits: 3,
+    card: 'Four med-surg patients until noon: a fresh post-op, a diabetic with cellulitis, a confused 82-year-old, and heart failure. Start here.',
+    hero: { head: 'Day shift, 4 West. You have 412 through 418.', lede: 'Med-surg, 07:00 to noon. Dana is finishing a night shift and will give you report at the desk. After that the hall is yours: assess, prioritize, give meds, and call when you need to. How your patients do depends on what you catch.' },
+    intro: { time: '06:58', place: '4 West, Medical-Surgical', cta: 'Take report', beats: ['You badge in, grab a brain sheet, and find Dana at the desk.', 'Four patients until noon. She\'s been up all night, so report will be quick.', 'One of the four is sicker than report makes it sound.'] },
     minutes: 15,
     reportBy: 'dana', reportRole: 'night shift', provider: 'chen', cna: 'luis',
     /* Extra lines for the station's due list that aren't medications. */
@@ -989,7 +989,7 @@
     priority: {
       judge(r, A) {
         if (r[0] === '416') A.judge('rank-first', 'priority', 2, 'You chose to see Mrs. Whitfield first after report.', 'The quiet, confused 82-year-old with fever, tachycardia and a missed antibiotic had the most dangerous possible trajectory. Priority goes to who could deteriorate, not who is loudest.', '416');
-        else A.judge('rank-first', 'priority', -1, `You put ${A.def(r[0]).short} first after report, ahead of Mrs. Whitfield.`, 'Mrs. Whitfield\'s cues (new confusion, fever, tachycardia, low output, no antibiotic) suggested early sepsis. Quiet patients can be the sickest.', '416');
+        else A.judge('rank-first', 'priority', -1, `You put ${A.def(r[0]).short} first after report, ahead of Mrs. Whitfield.`, 'Mrs. Whitfield\'s cues (new confusion, fever, tachycardia, low output, no antibiotic) suggested early sepsis. A quiet, confused older patient can be the sickest one on the hall.', '416');
         if (r.indexOf('414') < 2) A.judge('rank-414', 'priority', -1, 'You ranked stable Mrs. Okafor near the top.', 'Her 07:30 glucose check is time-bound but delegable. Stable patients with predictable needs go after unstable or uncertain ones.', '414');
       },
       correct: ['416', '418', '412', '414'],

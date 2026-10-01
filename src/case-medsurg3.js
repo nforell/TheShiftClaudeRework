@@ -550,7 +550,7 @@
     outcome(s, P) {
       if (!stroke(P)) return { tone: 'good', title: 'Stable', text: 'Resting.' };
       if (P.tpa !== null) return { tone: P.poGiven ? 'mixed' : 'good', title: 'Stroke, treated in the window', text: `Alteplase at ${clock(P.tpa)}, last known well ${clock(P.lastNormal)}. His arm was lifting again by 04:00.` + (P.poGiven ? ' He did choke on an oral med first.' : '') };
-      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'Nobody saw him between 21:00 and Nova\'s walk-by. Out of the alteplase window; he\'s going to IR for a possible thrombectomy.' };
+      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'He wasn\'t checked between 21:00 and Nova\'s walk-by. Out of the alteplase window; he\'s going to IR for a possible thrombectomy.' };
       if (P.eligible === false) return { tone: 'mixed', title: 'Stroke, outside the alteplase window', text: `Last known well was ${clock(P.lastNormal)}. A midnight neuro check would have moved that time forward and kept the window open.` };
       return { tone: 'mixed', title: 'Stroke, workup incomplete', text: 'Symptoms found, but the alteplase decision never got made.' };
     },
@@ -689,7 +689,7 @@
     dot_better: { who: '431', text: '"I don\'t know what got into me earlier. I feel like myself again. Is it still Tuesday?"' },
     walter_enox: { who: '433', text: '"Before you ask: no to the belly shots. Look at this." He lifts his gown: a quilt of bruises. "Three weeks of that. And the leg squeezers make me sweat."', choices: [
       { label: 'Those bruises look miserable. Can I tell you why the shots matter so much for you right now, and ask the doctor about other options? And can I look at that sore leg?', next: 'walter_a', fx: (s, A) => { s.p['433'].educated = true; A.judge('433-talk', 'comm', 2, 'You validated Mr. Brandt\'s refusal and engaged with it.', 'Refusals are information. Acknowledge the reason, explain the risk plainly, look for alternatives, and tell the provider. The leg ache was worth asking about.', '433'); } },
-      { label: 'That\'s your right. I\'ll document that you refused.', next: 'walter_b', fx: J('433-talk', 'comm', -1, 'You accepted Mr. Brandt\'s refusal without exploring it.', 'Documenting a refusal is required, not sufficient. He hadn\'t heard why this mattered for a bed-bound cancer patient, and nobody told the provider.', '433') },
+      { label: 'That\'s your right. I\'ll document that you refused.', next: 'walter_b', fx: J('433-talk', 'comm', -1, 'You accepted Mr. Brandt\'s refusal without exploring it.', 'Documenting a refusal is required, not sufficient. He hadn\'t heard why this mattered for a bed-bound cancer patient, and the provider was never told.', '433') },
       { label: 'You really have to take them. Doctor\'s orders.', next: 'walter_b', fx: J('433-talk', 'comm', -1, 'You tried to pressure Mr. Brandt into his injections.', 'Pressure without explanation hardens a refusal. He has the right to decline; he also has the right to understand.', '433') },
     ] },
     walter_a: { who: '433', text: '"Cancer makes clots? Nobody told me that." He rubs his right calf. "This leg\'s been aching two days. Go ahead, take a look."' },
@@ -729,7 +729,7 @@
     { id: 'dee-hi', when: (s) => s.t >= 8, run(s, A) { A.msg({ from: 'dee', text: 'Hey, I\'m Dee, I\'ve got the hall with you. Heads up: staffing says they might float me to the ED around one.', replies: [{ label: 'Open tasks for Dee', act: 'delegate' }] }); } },
     { id: 'carl-tell', when: (s) => s.t >= 30 && !s.p['439'].taught, run(s, A) { A.msg({ from: 'dee', pid: '439', text: '439\'s husband asked me how often he\'s allowed to press her pain button. He said he\'s been doing it whenever she moans.', replies: [{ label: 'Go to 439', act: 'goto', pid: '439' }] }); } },
     { id: 'dot-restless', when: (s) => s.t >= 50 && s.p['431'].cathAt === null && dotAg(s, s.p['431']) > .5, run(s, A) { A.msg({ from: s.t < 120 ? 'dee' : 'nova', pid: '431', text: '431 keeps trying to get out of bed. She says she has to find the bathroom, but then she can\'t go. I can\'t get her to settle.', replies: [{ label: 'Go to 431', act: 'goto', pid: '431' }] }); } },
-    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'It\'s almost midnight and you haven\'t been in a single room. At night nobody calls to tell you something changed. Go look.' }); } },
+    { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'It\'s almost midnight and you haven\'t been in a single room. At night, changes don\'t get called in. You find them on rounds. Go look.' }); } },
     { id: 'stroke', when: (s) => s.t >= 95, run(s, A) { s.p['437'].onset = s.t; } },
     { id: 'dee-437', when: (s) => s.t >= 116 && stroke(s.p['437']) && s.p['437'].found === null, run(s, A) { A.msg({ from: 'dee', pid: '437', text: 'Before they pull me: 437\'s words were mushy when I did his vitals just now, and his right hand kept dropping the cup. He says he\'s fine.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
     { id: 'dee-float', when: (s) => s.t >= 120, run(s, A) { A.msg({ from: 'dee', urgent: true, text: 'They just floated me to the ED. I\'m so sorry. You\'ve got the whole hall. Nova says she\'ll help when she can.' }); } },
@@ -766,7 +766,7 @@
       const nm = A.def(pid).short;
       if (s.t >= 120) return 'Dee\'s phone goes to voicemail. She\'s in the ED now.';
       if (task.id === 'neuro') { A.judge('deleg-neuro', 'deleg', -1, 'You asked the CNA to do a neuro check.', 'Neurological assessment is RN work. A CNA can report what she notices; interpreting a neuro exam is yours.'); return 'Dee: "That\'s an assessment, that one\'s yours. I can get his vitals."'; }
-      if (task.id === 'pca') { A.judge('deleg-pca', 'deleg', -2, 'You asked the CNA to press a patient\'s PCA button.', 'Nobody but the patient presses a PCA. That rule is the pump\'s whole safety system.'); return 'Dee: "No way. Only the patient presses that. You know that."'; }
+      if (task.id === 'pca') { A.judge('deleg-pca', 'deleg', -2, 'You asked the CNA to press a patient\'s PCA button.', 'Only the patient presses a PCA. That rule is the pump\'s whole safety system.'); return 'Dee: "No way. Only the patient presses that. You know that."'; }
       if (s.deleg.filter((d) => !d.done).length >= 2) return 'Dee: "I\'ve got two things going. Give me a few."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'bg') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, 'Before your help disappears at 01:00, use it on the routine work so you can assess.');
@@ -804,7 +804,7 @@
   function endChecks(s, A) {
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
-      if (P.seenAt === null && !P.icu) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'At night nobody calls to tell you something changed. Every patient gets seen, early and again.', d.id);
+      if (P.seenAt === null && !P.icu) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, 'At night, changes don\'t get called in. You find them on rounds. Every patient gets seen, early and again.', d.id);
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
         if (m.due !== undefined && !m.conditional && m.due <= Math.min(240, s.t - 60) && st.status === 'due' && !P.icu) A.judge(m.id + '-missed', 'meds', -2, `${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.`, 'Every scheduled dose needs a decision: give, or hold with a reason.', d.id);
@@ -830,10 +830,10 @@
   [dot, walt, kaia, frank, renee].forEach((d) => d.meds.forEach((m) => { if (PREP[m.id]) m.prep = PREP[m.id]; }));
 
   S.engine.registerCase({
-    id: 'medsurg-4w-3', title: 'Small hours', unit: '4 West, Medical-Surgical', level: 'Intermediate', start: 23 * 60, length: 300, novaCredits: 2,
-    card: 'Night on 4 West. Five patients, fewer hands.',
-    hero: { head: 'Five patients. One aide, until one o\'clock.', lede: 'Night shift on 4 West. The halls go quiet, the lights go down, and the things that go wrong at 2 a.m. go wrong quietly. Round like you mean it.' },
-    intro: { time: '22:58', place: '4 West · Night shift', cta: 'Take report', beats: ['Five patients until 04:00. Most of them will be asleep.', 'Your aide gets floated to the ED at one. After that, it\'s you.', 'At night, nobody calls to tell you something changed. You have to go look.'] },
+    id: 'medsurg-4w-3', title: 'Nights on 4 West', unit: '4 West, Medical-Surgical', level: 'Intermediate', start: 23 * 60, length: 300, novaCredits: 2,
+    card: 'Five patients from 23:00, and your aide gets floated at 01:00. Delirium, a swollen calf, a DKA drip, a late stroke, and a PCA.',
+    hero: { head: 'Nights, 4 West. Five patients, and your aide leaves at 01:00.', lede: 'Med-surg, 23:00 to 04:00. Most of your patients will be asleep, which makes changes easy to miss. Round anyway, and look at the person, not only the numbers.' },
+    intro: { time: '22:58', place: '4 West, Night shift', cta: 'Take report', beats: ['Jamal is finishing his evening shift and wants to give report.', 'Five patients until 04:00. Your aide gets floated to the ED at 01:00.', 'At night, changes don\'t get called in. You find them on rounds.'] },
     minutes: 20,
     handoffBy: 'Jamal (evening RN)', reportBy: 'jamal', reportRole: 'evening shift', provider: 'sato', cna: 'dee',
     staff: {
