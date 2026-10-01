@@ -2,7 +2,7 @@
 (function (S) {
   const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
   /* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
      plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
@@ -12,10 +12,10 @@
     [/\ba 5250\b/g, 'an extended certification'], [/\bthe 5250\b/g, 'the extended certification'], [/^5250\b/g, 'Extended certification'], [/\b5250\b/g, 'extended certification'],
     [/\bthe hearing is usually within a day\b/g, 'the hearing timeline depends on the state'],
     [/\bRiese petition\b/g, 'petition for court-ordered medication'], [/ ?\(Riese\)/g, ''], [/\bRiese\b/g, 'capacity hearing'],
-    [/\bLPS conservatorship\b/g, 'mental health conservatorship'],
+    [/\bLPS conservatorship\b/g, 'mental health conservatorship'], [/\bWIC 5585\b/g, '72-hour involuntary hold for a minor'], [/\b5585\b/g, '72-hour hold (minor)'],
     [/\billegal in California\b/g, 'illegal in most states'], [/\bCalifornia law protects\b/g, 'Privacy law protects'], [/ \(36 hours in California\)/g, ' (the deadline varies by state)'],
   ];
-  const LAWHIT = /5150|5250|Riese|LPS|California/;
+  const LAWHIT = /5150|5250|5585|Riese|LPS|California/;
   const lawText = (x) => { if (!LAWHIT.test(x) || ((prof && prof.settings) || {}).law !== 'general') return x; LAW.forEach(([re, to]) => { x = x.replace(re, to); }); return x; };
   const esc = (x) => lawText(String(x == null ? '' : x)).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => document.querySelector(sel);
@@ -66,7 +66,7 @@
   const NORM = { T: [36, 37.9], HR: [55, 100], RR: [12, 22], SBP: [100, 160], SpO2: [92, 101] };
   const norm = (d, k) => (d && d.norms && d.norms[k]) || NORM[k];
   const abn = (d, k, v) => { const [lo, hi] = norm(d, k); return v < lo || v > hi; };
-  const ageSex = (d) => (typeof d.age === 'number' ? `${d.age}${d.sex}` : `${d.age}, ${d.sex}`);
+  const ageSex = (d) => (typeof d.age === 'number' && String(d.sex).length === 1 ? `${d.age}${d.sex}` : `${d.age}, ${d.sex}`);
   const fT = (t) => (typeof t === 'number' ? t.toFixed(1) : t);
   const fLab = (l) => (typeof l.val === 'number' && Number.isInteger(l.val) && /\d\.\d/.test(l.ref || '') ? l.val.toFixed(1) : l.val);
   const o2txt = (o) => (o === 'Room air' ? 'room air' : o);

@@ -9,7 +9,7 @@ import decisions as DEC
 CF = DEC.case_files()
 hashes = {cid: hashlib.sha256(b''.join(f.read_bytes() for f in fs)).hexdigest()[:10] for cid, fs in CF.items()}
 pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.dumps(hashes) + ';\n'
-js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/peds1.js','rig.js','art.js','ui.js'])
+js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','rig.js','art.js','ui.js'])
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -43,7 +43,7 @@ ver=re.search(r"version: '([^']+)'", (src/'config.js').read_text()).group(1)
 (dist/'manifest.webmanifest').write_text((root/'site'/'manifest.webmanifest').read_text())
 shutil.copytree(root/'site'/'icons', dist/'icons', dirs_exist_ok=True)
 # Clinical review pages: /review/ lists the shifts, /review/<shift>/ is the reviewer's checklist.
-LOGIC=['config.js','telemetry.js','engine.js','cjmm.js','review.js','flow.js','floor.js','reward.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js']
+LOGIC=['config.js','telemetry.js','engine.js','cjmm.js','review.js','flow.js','floor.js','reward.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js']
 logic='<script>'+pre+''.join((src/f).read_text()+'\n' for f in LOGIC)+'</script>'
 common=DEC.find([src/'flow.js'])   # call lights, transfers, PRN follow-up, report: scored on every shift
 decs={cid: DEC.find(fs)+common for cid, fs in CF.items()}

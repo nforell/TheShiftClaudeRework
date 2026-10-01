@@ -59,8 +59,8 @@
     { id: 'catch', label: 'Good catch', how: 'Your sickest patient ends the shift with a good outcome', g: 'heart' },
     { id: 'solo', label: 'Solo', how: 'Score 72 or better without asking Nova', g: 'solo' },
     { id: 'bells', label: 'Nobody waited', how: 'Answer every call light on a shift (at least 3)', g: 'bell' },
-    { id: 'float', label: 'Float nurse', how: 'Finish a shift on all five units', g: 'map' },
-    { id: 'house', label: 'Full house', how: 'Three stars on all five shifts', g: 'crown' },
+    { id: 'float', label: 'Float nurse', how: 'Finish a shift on every unit', g: 'map' },
+    { id: 'house', label: 'Full house', how: 'Three stars on every shift', g: 'crown' },
     { id: 'allgood', label: 'Everyone home safe', how: 'Finish a shift with a good outcome for every patient', g: 'home' },
     { id: 'clean', label: 'Clean record', how: 'Finish a shift with no calls to rethink', g: 'shield' },
     { id: 'comeback', label: 'Comeback', how: 'Beat your last score on a shift by 15 points or more', g: 'up' },
@@ -76,7 +76,7 @@
     { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 15, (S.floor ? S.floor.POOL.length : 28)], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
     { id: 'shifts', label: 'Shifts worked', how: 'Shifts finished through handoff', tiers: [1, 10, 25], val: (p) => (p.life && p.life.shifts) || 0 },
     { id: 'stories', label: 'Their stories', how: 'Moments you shared with patients and families', tiers: [10, 40, 90], val: (p) => (p.life && p.life.beats) || 0 },
-    { id: 'stars', label: 'Stars', how: 'Best stars, added across all five shifts', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },
+    { id: 'stars', label: 'Stars', how: 'Best stars, added across every shift', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },
   ]);
   const TIER = ['Not started', 'Bronze', 'Silver', 'Gold'];
   const tierOf = (tr, v) => tr.tiers.filter((x) => v >= x).length;

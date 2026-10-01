@@ -14,6 +14,8 @@
   ];
   const OVERRIDE = {
     // 'key': 'step',   e.g. '305-ortho': 'cues'
+    '401-recheck': 'eval', '407-checkback': 'eval', '403-plan': 'eval', '405-reassess': 'eval', '409-results': 'eval',
+    '401-labs': 'cues', '409-admit': 'cues', '403-skin': 'cues',
   };
   const EVAL = /\b(re-?check|re-?assess|re-?scor|re-?scan|re-?evaluat|did it work|follow(?:ed)?[ -]?up|after treating|after (?:the |her |his )?(?:dose|insulin|treatment|transfusion|bolus|naloxone|juice)|repeat (?:level|glucose|potassium|labs?|vitals|score|sodium|lithium|CIWA)|trend|through the first|still on .* at handoff|watched .* through|kept checking|came back to|post-?(?:transfusion|dose)|response to|whether .* worked)/i;
   const CUES = /^(?:You )?(?:checked|assessed|looked|listened|noticed|caught|scanned|counted|weighed|examined|took (?:a |her |his |their )?(?:full )?(?:set of )?vitals|asked .* about|spotted|saw|read|reviewed|verified|confirmed|measured|palpated|auscultated|did (?:a |the )?(?:neuro|skin|full)|got (?:a |the )?(?:full|current|fresh))\b|without (?:a |any )?current|without (?:checking|scanning|assessing|looking|a (?:pain|sedation|neuro|heart rate|glucose|blood pressure))|without (?:a |any )?baseline|learned .*(?:baseline|history)|went unrecognized|went unnoticed|nobody noticed|missed (?:the |her |his )?(?:cue|sign|change|finding)|never assessed|unseen\b/i;
