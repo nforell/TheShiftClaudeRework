@@ -2,6 +2,20 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 2 — September 30, 2026 (same branch)
+
+### Done
+- **Accounts and cloud saves** (`src/cloud.js`, `supabase/schema.sql`). Email-link sign-in, no passwords. Progress and the shift in progress sync to one row per player in Supabase, with row level security. Signing in on a second device merges both devices' progress (nothing earned is lost); a new device can resume a shift started elsewhere. Sessions refresh themselves; an expired link explains itself. Entry points: "Save your progress" on the home screen and in the menu. Privacy page updated. New `tests/cloud.py` (against a stand-in for Supabase's API; the build sandbox can't reach Supabase itself).
+- Supabase project: `omcorltahsnnmpifefpm`, schema run by Nick.
+
+### Needs Nick
+- In Supabase → Authentication → URL Configuration: Site URL = the live game address; Redirect URLs include `<live address>/play/` and the branch preview URL with `/**`.
+- Before inviting many testers: Supabase's built-in email sender is only for light testing and is heavily rate-limited. Connect a real email sender (Authentication → Emails → SMTP; Resend has a free tier) before a big beta push.
+- First real test: open the Vercel preview on your phone, Save your progress, tap the emailed link, then sign in on your laptop and check your shifts appear.
+
+### Up next
+Clinical review workflow, then the guided first room (see the list below; item 1 is done).
+
 ## Session 1 — September 30, 2026 (branch `beta-instrumentation`)
 
 ### Done

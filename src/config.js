@@ -8,4 +8,9 @@ window.Shift.config = Object.assign({
   posthogKey: '',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',
+  // Accounts and cloud saves (Supabase → Connect, or Project Settings → API Keys). The publishable key is meant to
+  // sit in web pages; row level security in supabase/schema.sql keeps each player's data to themselves.
+  // Never put the secret / service_role key here.
+  supabaseUrl: 'https://omcorltahsnnmpifefpm.supabase.co',
+  supabaseKey: 'sb_publishable_gXXC0_aKPHdzsZu8N6UkLg_rljVc_89',
 }, window.Shift.config || {});   // a test harness may set values first

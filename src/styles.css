@@ -1363,3 +1363,8 @@ table.health td{white-space:normal}
 .by-h .seg button{min-height:36px;font-size:.85rem;padding:.25em .75em}
 .by-n{font-size:.85rem;margin:-.3rem 0 .8rem}
 .moments .cj-tag{font-weight:600;color:var(--ink-2);letter-spacing:0}
+
+/* account */
+.acct-link{margin-left:.4rem;padding:.2rem 0;min-height:32px;border:0;background:none;color:var(--teal);font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-size:inherit}
+.acct-in{min-height:46px}
+.acct-err{color:var(--red);font-size:.9rem;margin:.5rem 0 0}
