@@ -1,3 +1,5 @@
 .DS_Store
 dist/*.png
 node_modules/
+tests/out/
+tests/sql/node_modules/

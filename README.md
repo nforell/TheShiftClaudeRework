@@ -11,6 +11,7 @@ The deployed site (Vercel, serving `dist/`) has a beta landing page at `/` (sour
 - **Shift 1 — Days on 4 West** (Orientation, 07:00–): four patients, rooms 412–418.
 - **Shift 2 — Evenings on 4 West** (Beginner, 15:00–20:00): COPD CO₂ retainer, alcohol withdrawal, GI bleed with a blood-product mismatch, hyperkalemia, and an appendicitis admission.
 - **Shift 3 — Nights on 4 West** (Intermediate, 23:00–04:00): delirium from urinary retention, a DVT that becomes a PE, DKA on an insulin drip, a silent overnight stroke, and PCA by proxy. The CNA is floated at 01:00.
+- **Shift 7 — Days on 6 East** (Specialty: Step-down, 07:00–12:00): AF with RVR on a diltiazem drip when the echo shows EF 25%, a retroperitoneal bleed after femoral PCI, HIT on a heparin drip (with a nomogram decision), and a long QT with low K and Mg, a doubled citalopram and a nurse-initiated electrolyte protocol.
 - **Shift 4 — Days on 3 East** (Specialty: Psych, 3 East, 07:00–12:00): sudden calm before a suicide attempt, escalating mania and the least-restrictive ladder, lithium toxicity passed off as a stomach bug, first-episode psychosis and the right to refuse, and water intoxication on clozapine. California legal framing: 5150, 5250, Riese, LPS.
 - **Shift 5 — Evenings on 4 North** (Specialty: Teen psych, 4 North, 15:00–20:00): acute dystonia after a first dose of haloperidol that staff call acting out, refeeding syndrome in anorexia (phosphorus under every call threshold), a missed skin check and a contraband shard on self-harm precautions, protecting a teen's name and pronouns on a call with their father, a disclosure of abuse and a visitor who can't come in (mandated reporting), and a "medically cleared" admission who told a peer about an acetaminophen overdose. California framing: parent-consent admissions and the 5585 hold for minors.
 - **Shift 6 — Evenings on 5 South** (Specialty: Peds, 5 South, 15:00–20:00): RSV bronchiolitis on high-flow (suction, feeding thresholds, interpreter use), sickle cell crisis to acute chest syndrome (pain bias), a weight entered in pounds as kilograms (2.2x dosing), sentinel bruising and abusive head trauma in a non-mobile infant (mandated reporting), and a silent-chest asthma trap. Age-based vital sign ranges.
@@ -30,6 +31,11 @@ These run on every unit, from `src/flow.js`:
 
 ## Beta instrumentation
 Analytics, in-game feedback, the landing-page signup and the installable app are set up in `src/config.js` and `src/telemetry.js`. Paste a PostHog project key into `src/config.js` to start receiving data; until then nothing is sent. The debrief can score by skill or by the six NCSBN clinical judgment steps (`src/cjmm.js`, review map in `docs/cjmm-map.csv`). Progress and what's next: [docs/ROADMAP-PROGRESS.md](docs/ROADMAP-PROGRESS.md).
+
+## Classes, practice questions and the shift pack
+- **Practice questions** (`src/ngn.js`): three NCLEX-style items after every debrief (bowtie, matrix, select-all, highlight, drop-down), scored the NCSBN way.
+- **Instructor dashboard** at `/teach/` (`site/teach.html`): make a class, share the code, see results by NCLEX step and skill, the most-missed decisions, practice-question results, and a CSV. Students join from **Menu → Your class**. Needs `supabase/classes-and-pack.sql`.
+- **Shift pack** (`config.pack` in `src/config.js`, off by default): a few shifts free, the rest for one payment through a Stripe Payment Link, recorded by `supabase/functions/stripe-webhook`. A class can carry a school license. Setup steps are in the progress log, Session 9.
 
 ## Performance and testing
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the budgets, the built-in guardrails (crash guard, Lite graphics, Settings → Health check or `?health`), and the growth plan. Before pushing, run `python tests/run_all.py`.

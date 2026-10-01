@@ -1,8 +1,8 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
   /* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
      plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
@@ -96,7 +96,11 @@
 
   /* ------------ game flow ------------ */
   function save() { if (s && !s.ended) E.store.save(s); }
-  function startNew() { s = E.newGame(caseId); s.wall0 = Date.now(); TEL.track('shift_start', { case: caseId, attempt: ((prof.done || {})[caseId] || 0) + 1, shifts_done: prof.runs.length }); ui.view = 'handoff'; ui.hFresh = true; ui.intro = C().intro && !seen('intro:' + caseId) ? 0 : null; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
+  /* The shift pack. Locked shifts can be picked and previewed; starting one offers the pack instead. */
+  const PACK = (S.config || {}).pack || {};
+  const owned = () => !!(CL && CL.owns && CL.owns('pack'));
+  const locked = (id) => !!PACK.on && !(PACK.free || []).includes(id) && !owned();
+  function startNew() { if (locked(caseId)) { ui.ov = 'pack'; TEL.track('pack_view', { case: caseId, from: 'start' }); return render(); } s = E.newGame(caseId); s.wall0 = Date.now(); TEL.track('shift_start', { case: caseId, attempt: ((prof.done || {})[caseId] || 0) + 1, shifts_done: prof.runs.length }); ui.view = 'handoff'; ui.hFresh = true; ui.intro = C().intro && !seen('intro:' + caseId) ? 0 : null; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
   function resume() { const g = E.store.load(); if (!g) return startNew(); s = g; caseId = g.caseId; E.useCase(caseId); TEL.track('shift_resume', { case: caseId, game_min: Math.round(s.t), view: s.view || 'station' }); ui.view = s.view || 'station'; ui.ov = null; render(true); }
   function goView(v) { ui.view = v; s.view = v; ui.caption = null; save(); render(true); }
 
@@ -198,6 +202,11 @@
     if (L.xp) { R0.total += L.xp; R0.after += L.xp; R0.lvAfter = RW.level(R0.after); prof.xp = R0.after; }
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
     TEL.track('shift_complete', { case: s.caseId, score: d.overall, rating: d.rating, stars: s.reward.stars, ended_early: s.t < C().length - 5, game_min: Math.round(s.t), wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null, good_calls: d.judg.filter((j) => j.delta > 0).length, misses: d.judg.filter((j) => j.delta < 0).length, poor_outcomes: d.outcomes.filter((o) => o.tone === 'bad').length, hints_used: (C().novaCredits || 3) - s.nova, attempt: prof.done[s.caseId] });
+    if (CL) CL.recordRun({ case_id: s.caseId, score: d.overall, stars: s.reward.stars, minutes: s.t,
+      domains: d.dom.filter((x) => x.score !== null).map((x) => ({ id: x.id, score: x.score })),
+      steps: CJ.score(d.judg).filter((x) => x.score !== null).map((x) => ({ id: x.id, score: x.score })),
+      misses: d.judg.filter((j) => j.delta < 0).map((j) => ({ key: j.key, text: j.text, step: CJ.step(j), pid: j.pid || null })),
+      outcomes: d.outcomes.map((o) => ({ id: o.id, tone: o.tone })) });
     prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
     ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; ui.reflected = false; ui.fb = {}; render(true);
   }
@@ -229,7 +238,7 @@
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
       const prev = i ? done(CASES[i - 1]).length : 1;
       const stn = (prof.stars || {})[id] || 0;
-      return `<button class="rung" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b>${esc(k.title)}</b><span>${esc(k.card)}</span></span><span class="rg-l">${esc(k.level.replace('Specialty: ', ''))}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${best !== null ? `Best ${best}` : prev ? 'Not played' : 'After ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
+      return `<button class="rung ${locked(id) ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b>${esc(k.title)}</b><span>${esc(k.card)}</span></span><span class="rg-l">${esc(k.level.replace('Specialty: ', ''))}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${locked(id) ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'After ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
     };
     const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
@@ -241,7 +250,7 @@
           <h1>${esc(c.hero.head)}</h1>
           <p class="lede">${esc(c.hero.lede)}</p>
           <div class="cta">
-            ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
+            ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : locked(caseId) ? `<button class="btn btn-primary btn-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>${saved ? `<button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : ''}` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
           <p class="home-meta">${c.patients.length} patients, about ${c.minutes || 15} minutes to play. Your progress saves as you go.</p>
         </div>
@@ -255,7 +264,7 @@
         <h2 class="sched-h">Shifts</h2>
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map(rung).join('')}
-          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>Not built yet</b><span>ED, ICU, step-down, labor and delivery.</span></span></div>
+          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>Not built yet</b><span>ED, ICU, labor and delivery.</span></span></div>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>Original clinical content for education. Not a substitute for clinical instruction.${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
@@ -849,7 +858,37 @@
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
           <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}${CJ ? `<span class="cj-tag"> · ${esc(CJ.STEPS.find((x) => x[0] === CJ.step(j))[1])}</span>` : ''}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p><button class="rpt-btn" data-act="rpt" data-k="${esc(j.key || '')}" data-t="${j.t}" aria-label="Report a problem with this feedback">Report a problem</button></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
         </section>
-      </div>${fbCard()}</div></main>`;
+      </div>${ngnHTML()}${fbCard()}</div></main>`;
+  }
+
+  /* ------------ NCLEX-style practice items ------------ */
+  const STEPNAME = (id) => (CJ ? (CJ.STEPS.find((x) => x[0] === id) || [])[1] : '') || '';
+  function ngnHTML() {
+    if (!NG || !s) return ''; const its = NG.items(s.caseId); if (!its.length) return '';
+    const done = prof.ngn || {};
+    return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">Three questions in the formats the Next Generation NCLEX uses, built from this shift's patients.</p></div>
+      <ol class="ngn-list">${its.map((it, i) => { const d = done[it.id]; return `<li><button class="ngn-row" data-act="ngn-open" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc">${d ? `${d.score} of ${d.max}` : 'Not tried'}</span></button></li>`; }).join('')}</ol></section>`;
+  }
+  function ovNgn() {
+    const its = NG.items(s.caseId), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked;
+    const mark = (ok, on) => (!ck ? '' : ok ? ' right' : on ? ' wrong' : '');
+    let body = `<p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
+    if (it.type === 'bowtie') {
+      const col = (k, lab, g, multi) => `<div class="bt-col bt-${k}"><h4>${lab}</h4>${g.opts.map((o, i) => { const on = multi ? (a[k] || []).includes(i) : a[k] === i, ok = multi ? g.ans.includes(i) : g.ans === i; return `<button class="nb-opt${on ? ' on' : ''}${mark(ok, on)}" data-act="ngn-pick" data-k="${k}" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</div>`;
+      body += `<div class="bowtie">${col('a', 'Actions to take (choose 2)', it.actions, true)}${col('c', 'Most likely condition (choose 1)', it.cond, false)}${col('p', 'Parameters to monitor (choose 2)', it.params, true)}</div>`;
+    } else if (it.type === 'matrix') {
+      body += `<div class="tbl-wrap"><table class="ngn-mx"><thead><tr><th></th>${it.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((r, ri) => `<tr><td class="wrap">${esc(r.t)}${ck ? `<small class="muted ngn-why">${esc(r.why)}</small>` : ''}</td>${it.cols.map((c, ci) => { const on = (a.r || [])[ri] === ci; return `<td><button class="nb-cell${on ? ' on' : ''}${mark(r.ans === ci, on)}" data-act="ngn-pick" data-k="r" data-row="${ri}" data-v="${ci}" aria-pressed="${on}" aria-label="${esc(c)}" ${ck ? 'disabled' : ''}>${on ? '●' : ''}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+    } else if (it.type === 'sata') {
+      body += `<div class="ngn-opts">${it.opts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-opt sq${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join('')}</div>`;
+    } else if (it.type === 'highlight') {
+      body += `<p class="ngn-note">${it.parts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-hl${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join(' ')}</p>`;
+    } else if (it.type === 'cloze') {
+      let k = 0; body += `<p class="ngn-cloze">${it.parts.map((p) => { if (typeof p === 'string') return esc(p); const bi = k++; return `<span class="ngn-blank">${p.opts.map((o, oi) => { const on = (a.d || [])[bi] === oi; return `<button class="nb-chip${on ? ' on' : ''}${mark(p.ans === oi, on)}" data-act="ngn-pick" data-k="d" data-row="${bi}" data-v="${oi}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</span>`; }).join('')}</p>`;
+    }
+    if (ck) { const sc = NG.score(it, a), mx = NG.max(it); body += `<div class="ngn-res ${sc === mx ? 'full' : sc ? 'part' : 'none'}"><b>${sc} of ${mx} points</b><p>${esc(it.why)}</p><small class="muted">${it.type === 'sata' || it.type === 'highlight' ? 'Scored plus or minus: each wrong choice cancels a right one.' : 'Scored zero or one for each part.'}</small></div>`; }
+    const last = q.i === its.length - 1;
+    const foot = !ck ? `<button class="btn btn-primary" data-act="ngn-check" ${NG.complete(it, a) ? '' : 'disabled data-why="Answer every part first."'}>Check answer</button>` : last ? `<button class="btn btn-primary" data-act="close">Done</button>` : `<button class="btn btn-primary" data-act="ngn-go" data-i="${q.i + 1}">Next question</button>`;
+    return sheet(`Question ${q.i + 1} of ${its.length}: ${esc(NG.TYPE[it.type])}`, body, foot, { wide: true, label: 'Practice question' });
   }
 
   /* ------------ beta feedback ------------ */
@@ -905,7 +944,49 @@
       <p class="muted" style="font-size:.85rem">Your email is used only to sign you in. <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></p>`,
       `<button class="btn" data-act="close">Not now</button><button class="btn btn-primary" data-act="acct-send" ${a.busy ? 'aria-disabled="true" data-why="Sending…"' : ''}>${a.busy ? 'Sending…' : 'Email me a link'}</button>`, { label: 'Save your progress' });
   }
+  /* Your class: a student joins an instructor's class with a code, so the instructor sees their results. */
+  function ovClass() {
+    const st = CL.status() || {}, c = ui.cls || (ui.cls = {});
+    const teach = location.protocol.startsWith('http') ? '<p class="muted" style="font-size:.85rem">Teaching? <a href="/teach/" target="_blank" rel="noopener">Open the instructor dashboard</a> to make a class and get a code.</p>' : '';
+    if (st.state !== 'in') return sheet('Your class', `<p style="margin-top:0">If your instructor gave you a class code, join here and they'll see how your shifts and practice questions go: scores by skill and NCLEX step, and the decisions to rethink. Nobody else sees them.</p>
+      <p>Sign in first, so your results are tied to you and not to this device.</p>${teach}`,
+      `<button class="btn" data-act="close">Not now</button><button class="btn btn-primary" data-act="account">Sign in</button>`, { label: 'Your class' });
+    if (!c.list && !c.loading) { c.loading = true; CL.myClasses().then((L) => { c.list = L; c.loading = false; render(); }).catch((e) => { c.list = []; c.loading = false; c.err = e.message; render(); }); }
+    const L = c.list || [];
+    const rows = c.loading ? '<p class="muted">Loading your classes…</p>' : L.length ? `<ul class="cls-list">${L.map((k) => `<li><span><b>${esc(k.name || 'Class')}</b><br><small class="muted">Code ${esc(k.code || '')} · your instructor sees you as ${esc(k.as)}${k.pack ? ' · all shifts included' : ''}</small></span><button class="btn" data-act="cls-leave" data-id="${esc(k.id)}">Leave</button></li>`).join('')}</ul>` : '';
+    return sheet('Your class', `${L.length ? '' : '<p style="margin-top:0">Join with the code your instructor gave you. They\'ll see your shift scores by skill and NCLEX step, the decisions to rethink, and your practice-question results. Nobody else sees them.</p>'}${rows}
+      <label class="fb-l" for="cls-code">${L.length ? 'Join another class' : 'Class code'}</label>
+      <input id="cls-code" class="fb-t acct-in cls-code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" data-bind="cls.code" value="${esc(c.code || '')}" placeholder="ABC234">
+      <label class="fb-l" for="cls-name">Your name, as your instructor should see it</label>
+      <input id="cls-name" class="fb-t acct-in" autocomplete="name" maxlength="60" data-bind="cls.name" value="${esc(c.name || '')}" placeholder="First and last name">
+      ${c.err ? `<p class="acct-err" role="alert">${esc(c.err)}</p>` : ''}${c.ok ? `<p class="cls-ok" role="status">${esc(c.ok)}</p>` : ''}
+      <p class="muted" style="font-size:.85rem">Results from shifts you've already played on this device go too.</p>${teach}`,
+      `<button class="btn" data-act="close">Done</button><button class="btn btn-primary" data-act="cls-join" ${c.busy ? 'aria-disabled="true" data-why="Joining…"' : ''}>${c.busy ? 'Joining…' : 'Join class'}</button>`, { label: 'Your class' });
+  }
+  function ovPack() {
+    const lockedIds = CASES.filter((id) => !(PACK.free || []).includes(id)), freeN = CASES.length - lockedIds.length;
+    const st = CL ? CL.status() || {} : {}, w = ui.packWait;
+    if (owned()) return sheet('Shift pack unlocked', `<p style="margin-top:0">Every shift is open${CL.owns('pack') === 'class' ? ', through your class' : ''}. Thanks for supporting The Shift.</p>`, `<button class="btn btn-primary" data-act="close">Play</button>`, { label: 'Shift pack' });
+    if (w) return sheet('Finishing your purchase', `<p style="margin-top:0">${w === 'slow' ? 'Your payment went through, but the unlock hasn\'t reached your account yet. It usually takes a few seconds. Check again in a minute; if it still doesn\'t show, email us and we\'ll sort it out.' : 'Checking with your account…'}</p>`,
+      `<button class="btn" data-act="close">Close</button><button class="btn btn-primary" data-act="pack-check">Check again</button>`, { label: 'Shift pack' });
+    const list = `<ul class="pack-list">${lockedIds.map((id) => { const k = E.getCase(id); return `<li><b>${esc(k.title)}</b><small>${esc(k.level.replace('Specialty: ', ''))} · ${esc(k.card)}</small></li>`; }).join('')}</ul>`;
+    const intro = `<p style="margin-top:0">${freeN} shifts are free to play as much as you like. The shift pack opens the other ${lockedIds.length}, and every shift we add after this, for one payment of <b>${esc(PACK.price || '')}</b>. No subscription.</p>${list}`;
+    const school = CL ? '<p class="muted" style="font-size:.9rem">Is your school paying? <button class="acct-link" data-act="cls">Join your class</button> with the code from your instructor and every shift opens.</p>' : '';
+    if (!CL) return sheet('The shift pack', intro + '<p class="muted">Buying the pack needs the online version of The Shift.</p>', `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Shift pack' });
+    if (st.state !== 'in') return sheet('The shift pack', intro + '<p>Sign in first, so the pack belongs to your account and opens on every device you use.</p>' + school,
+      `<button class="btn" data-act="close">Not now</button><button class="btn btn-primary" data-act="account">Sign in to buy</button>`, { label: 'Shift pack' });
+    return sheet('The shift pack', intro + school + `<p class="muted" style="font-size:.85rem">Payment is handled by Stripe. Already bought it? <button class="acct-link" data-act="pack-check">Check again</button></p>`,
+      `<button class="btn" data-act="close">Not now</button>${PACK.checkoutUrl ? `<button class="btn btn-primary" data-act="pack-buy">Unlock for ${esc(PACK.price || '')}</button>` : '<button class="btn btn-primary" aria-disabled="true" data-why="Purchases open soon.">Coming soon</button>'}`, { label: 'Shift pack' });
+  }
   /* After a cloud sync, pick up the merged progress (and a newer shift from another device, if this one has none open). */
+  /* Back from Stripe: the webhook writes the purchase; poll the account until it shows. */
+  function packPoll(n) {
+    CL.checkOwns().catch(() => {}).then(() => {
+      if (owned()) { ui.packWait = null; TEL.track('pack_unlocked', {}); if (ui.ov === 'pack' || !ui.ov) ui.ov = 'pack'; render(); return; }
+      if (n > 1) return setTimeout(() => packPoll(n - 1), 2000);
+      ui.packWait = 'slow'; ui.ov = 'pack'; render();
+    });
+  }
   function fromCloud() {
     prof = E.store.profile(); applySettings();
     if (!s || s.ended) { const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); } }
@@ -1035,7 +1116,7 @@
       <div class="chart-b">${b}</div></aside>`;
   }
 
-  const PREP = { vitals: ['Take vital signs', 4], apical: ['Count apical pulse and BP', 2], pain: ['Assess pain and sedation', 2], bg: ['Check glucose', 3], intake: ['Check breakfast tray', 1], ciwa: ['Score CIWA-Ar', 4], strip: ['Look at the monitor strip', 1] };
+  const PREP = { vitals: ['Take vital signs', 4], apical: ['Count apical pulse and BP', 2], pain: ['Assess pain and sedation', 2], bg: ['Check glucose', 3], intake: ['Check breakfast tray', 1], ciwa: ['Score CIWA-Ar', 4], strip: ['Look at the monitor strip', 1], labs: ['Review the morning labs', 2] };
   function ovMed() {
     const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id], Ax = A();
     const checks = m.checks ? m.checks(s, P, Ax) : [];
@@ -1060,7 +1141,7 @@
       else {
         if (!m.prn) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
         if (refuse) foot += `<button class="btn btn-primary" data-act="med-declined">Offer again later <span style="font-weight:400;opacity:.8">2 min</span></button>`;
-        else foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">Hold to give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''}</span> <span style="font-weight:400;opacity:.8">5 min</span></button>`;
+        else foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${m.infusion ? 'Hold to set the pump' : `Hold to give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''}`}</span> <span style="font-weight:400;opacity:.8">5 min</span></button>`;
       }
     }
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
@@ -1214,7 +1295,7 @@
     const inShift = s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief';
     return sheet('Menu', `<div class="menu-list">
       <button class="btn" data-act="help">How it plays</button><button class="btn" data-act="settings">Settings</button>
-      ${CL ? `<button class="btn" data-act="account">${CL.user() ? 'Your account' : 'Save your progress across devices'}</button>` : ''}
+      ${CL ? `<button class="btn" data-act="account">${CL.user() ? 'Your account' : 'Save your progress across devices'}</button><button class="btn" data-act="cls">Your class</button>` : ''}
       <button class="btn" data-act="rpt">Send feedback or report a problem</button>
       ${RV ? '<button class="btn" data-act="review">Clinical review</button>' : ''}
       ${ui.installEvt ? '<button class="btn" data-act="install">Install The Shift on this device</button>' : iosInstallable() ? '<button class="btn" data-act="install-ios">Add The Shift to your home screen</button>' : ''}
@@ -1330,7 +1411,10 @@
     else if (ov === 'floor' && ui.fl && s) h += ovFloor();
     else if (ov === 'health') h += ovHealth();
     else if (ov === 'report') h += ovReport();
+    else if (ov === 'ngn' && ui.ngn && s && NG) h += ovNgn();
     else if (ov === 'account' && CL) h += ovAccount();
+    else if (ov === 'class' && CL) h += ovClass();
+    else if (ov === 'pack') h += ovPack();
     else if (ov === 'review' && RV) h += ovReviewInfo();
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
@@ -1482,7 +1566,7 @@
   const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(s.t - mins)} · ${mins} min` : E.clock(s.t) }; };
   const handlers = {
     'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'home'; ui.ov = null; render(); },
-    new() { if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
+    new() { if (locked(caseId)) return startNew(); if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
     'new-yes'() { E.store.clear(); startNew(); },
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
     restart() { ui.confirm = { title: 'Restart this shift?', text: `You'll go back to ${E.clock(0)} report. Progress in this shift is lost.`, ok: 'Restart', act: 'new-yes', danger: true }; ui.ov = 'confirm'; render(); },
@@ -1530,6 +1614,24 @@
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
     'med-holdask'() { ui.med.holding = true; render(); },
+    'ngn-open'(el) { ui.ngn = { i: +el.dataset.i || 0, a: {}, checked: false }; ui.ov = 'ngn'; render(); },
+    'ngn-go'(el) { ui.ngn = { i: +el.dataset.i, a: {}, checked: false }; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    'ngn-pick'(el) {
+      const q = ui.ngn, it = NG.items(s.caseId)[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
+      if (k === 'c') q.a.c = v;
+      else if (k === 'a' || k === 'p') { const L = q.a[k] = q.a[k] || []; const at = L.indexOf(v); if (at >= 0) L.splice(at, 1); else { L.push(v); if (L.length > 2) L.shift(); } }
+      else if (k === 'r' || k === 'd') { const L = q.a[k] = q.a[k] || []; L[+el.dataset.row] = v; }
+      else { const L = q.a.s = q.a.s || []; const at = L.indexOf(v); if (at >= 0) L.splice(at, 1); else L.push(v); }
+      render();
+    },
+    'ngn-check'() {
+      const q = ui.ngn, it = NG.items(s.caseId)[q.i]; if (!NG.complete(it, q.a)) return; q.checked = true;
+      const sc = NG.score(it, q.a), mx = NG.max(it); prof.ngn = prof.ngn || {}; const prev = prof.ngn[it.id];
+      prof.ngn[it.id] = { score: Math.max(sc, prev ? prev.score : 0), max: mx, last: sc, at: Date.now() }; E.store.saveProfile(prof);
+      TEL.track('ngn_item', { case: s.caseId, item: it.id, type: it.type, step: it.step, score: sc, max: mx });
+      if (CL) CL.recordNgn(s.caseId, it, sc, mx);
+      render();
+    },
     prep(el) {
       const d = def(s.loc), P = s.p[d.id], p = el.dataset.p;
       if (p === 'vitals') doAssess('vitals', false);
@@ -1616,6 +1718,25 @@
     'install-ios'(el) { TEL.track('install_prompt', { outcome: 'ios_help' }); hint(el, 'In Safari, tap the Share button, then Add to Home Screen.'); },
     by(el) { ui.byCj = el.dataset.v === 'cj'; if (ui.byCj && !ui.byCjSeen) { ui.byCjSeen = true; TEL.track('debrief_steps_view', { case: s ? s.caseId : caseId }); } render(); },
     review() { ui.ov = 'review'; TEL.track('review_info', { case: caseId }); render(); },
+    pack() { ui.ov = 'pack'; TEL.track('pack_view', { case: caseId, from: 'home' }); render(); },
+    'pack-buy'() {
+      const u = CL && CL.user(); if (!u || !PACK.checkoutUrl) return;
+      TEL.track('pack_checkout', { case: caseId });
+      const url = new URL(PACK.checkoutUrl); url.searchParams.set('client_reference_id', u.id); if (u.email) url.searchParams.set('prefilled_email', u.email);
+      location.href = url.toString();
+    },
+    'pack-check'() { if (!CL) return; ui.packWait = ui.packWait || 'checking'; render(); packPoll(1); },
+    cls() { ui.cls = { code: '', name: (ui.cls && ui.cls.name) || '' }; ui.ov = 'class'; TEL.track('class_open', {}); render(); },
+    'cls-join'() {
+      const c = ui.cls || (ui.cls = {}), code = (c.code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, ''), name = (c.name || '').trim();
+      c.ok = null;
+      if (code.length < 4) { c.err = 'Enter the class code from your instructor.'; return render(); }
+      if (!name) { c.err = 'Add your name, so your instructor knows who you are.'; return render(); }
+      c.err = null; c.busy = true; render();
+      CL.join(code, name).then((k) => { c.busy = false; c.code = ''; c.list = null; c.ok = `You're in ${k && k.name ? k.name : 'the class'}.${k && k.pack ? ' Every shift is open to you.' : ''}`; render(); })
+        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : 'Couldn\'t join. Check your connection and try again.'; render(); });
+    },
+    'cls-leave'(el) { const c = ui.cls || (ui.cls = {}); CL.leave(el.dataset.id).then(() => { c.list = null; c.ok = 'You left the class.'; render(); }).catch(() => { c.err = 'Couldn\'t leave the class. Try again.'; render(); }); },
     account() { ui.acct = { email: (ui.acct && ui.acct.email) || '' }; ui.ov = 'account'; render(); },
     'acct-send'() {
       const a = ui.acct || (ui.acct = {}), email = (a.email || '').trim();
@@ -1814,12 +1935,12 @@
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, cancelHold, true));
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
     document.addEventListener('keydown', onKey);
-    document.addEventListener('input', (e) => { const b = e.target && e.target.dataset && e.target.dataset.bind; if (!b) return; const v = e.target.value; if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? !!(v.trim() || (ui.fb && ui.fb.pay)) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = 'Answer one of the two first.'; } } });
+    document.addEventListener('input', (e) => { const b = e.target && e.target.dataset && e.target.dataset.bind; if (!b) return; const v = e.target.value; if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } else if (b === 'cls.code' || b === 'cls.name') { ui.cls = ui.cls || {}; ui.cls[b.slice(4)] = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? !!(v.trim() || (ui.fb && ui.fb.pay)) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = 'Answer one of the two first.'; } } });
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
     ui.view = 'home'; safe('boot', () => render(true));
-    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }); }
+    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }); }
     addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
     addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });
     TEL.track('app_open', { has_save: !!(s && !s.ended), shifts_done: prof.runs.length, standalone: standalone() });

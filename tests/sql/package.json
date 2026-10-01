@@ -1,0 +1,7 @@
+{
+  "name": "the-shift-sql-tests",
+  "private": true,
+  "type": "module",
+  "description": "Runs supabase/*.sql against an in-memory Postgres (PGlite) and checks the row level security policies. npm install, then node policies.mjs",
+  "dependencies": { "@electric-sql/pglite": "0.5.8" }
+}

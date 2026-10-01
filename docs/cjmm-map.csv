@@ -86,7 +86,7 @@ step,skill_area,points,decision,key,where
 "Take action",comm,-1,"The psychiatrist never heard about Marcus's dystonic reaction.","405-norep",src/case-adolpsych1.js:720
 "Take action",safety,-3,"Kayla's disclosure of abuse was never reported.","407-noreport",src/case-adolpsych1.js:721
 "Take action",comm,-2,"Eli's possible acetaminophen overdose never reached the psychiatrist.","409-norep",src/case-adolpsych1.js:722
-"Take action",comm,-2,"Eli's critical results came back and nobody called them in.","409-nofollow",src/case-adolpsych1.js:723
+"Take action",comm,-2,"Eli's critical results came back and sat in the chart.","409-nofollow",src/case-adolpsych1.js:723
 "Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-adolpsych1.js:727
 "Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-adolpsych1.js:728
 "Prioritize hypotheses",priority,2,"You chose to see Marcus first.","rank-first",src/case-adolpsych1.js:768
@@ -544,29 +544,116 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,2,"You chose to see Bob first.","rank-first",src/case-psych1.js:865
 "Prioritize hypotheses",priority,1,"You chose to see Daniel first.","rank-first",src/case-psych1.js:866
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Bob and Daniel.","rank-first",src/case-psych1.js:867
-"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:389
-"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:390
-"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:391
-"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:422
-"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:439
-"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:463
-"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:465
-"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:476
-"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:477
-"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:478
-"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:479
-"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:549
-"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:550
-"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:551
-"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:562
-"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:563
-"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:564
-"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:570
-"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:575
-"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1419
-"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1426
-"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1512
-"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1553
-"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1576
-"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1587
-"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1588
+"Recognize cues",assess,1,"You looked at Mrs. Mendes's rhythm yourself.","601-strip",src/case-stepdown1.js:67
+"Recognize cues",assess,2,"You read Mrs. Mendes's echo as soon as it was available.","601-echo",src/case-stepdown1.js:68
+"Take action",safety,1,"You positioned Mrs. Mendes to breathe.","601-position",src/case-stepdown1.js:69
+"Evaluate outcomes",judgment,2,"You reassessed Mrs. Mendes after the medication change.","601-reassess",src/case-stepdown1.js:70
+"Take action",meds,2,"You stopped Mrs. Mendes's diltiazem.","601-stop",src/case-stepdown1.js:83
+"Take action",meds,1,"You stopped the diltiazem for an SBP under 90.","601-stop",src/case-stepdown1.js:84
+"Generate solutions",judgment,0,"You stopped the diltiazem without a reason you could name yet.","601-stop",src/case-stepdown1.js:85
+"Generate solutions",judgment,varies,"You left the diltiazem at ${P.dilt} mg/h.","601-hold-rate",src/case-stepdown1.js:88
+"Take action",meds,varies,"You increased Mrs. Mendes's diltiazem to ${P.dilt} mg/h.","601-up",src/case-stepdown1.js:90
+"Take action",meds,-1,"You started amiodarone with the diltiazem still running.","601-amio-dilt",src/case-stepdown1.js:98
+"Take action",meds,1,"You started amiodarone after stopping the diltiazem.","601-amio",src/case-stepdown1.js:98
+"Take action",meds,1,"You gave Mrs. Mendes's IV furosemide.","601-lasix",src/case-stepdown1.js:104
+"Generate solutions",meds,-1,"You held Mrs. Mendes's anticoagulant without a reason.","601-apix-hold",src/case-stepdown1.js:106
+"Analyze cues",judgment,varies,"You asked to keep titrating Mrs. Mendes's diltiazem.","601-sbar-up",src/case-stepdown1.js:128
+"Take action",comm,varies,"You called about Mrs. Mendes's echo and her heart failure on diltiazem.","601-sbar",src/case-stepdown1.js:132
+"Take action",safety,1,"You placed a second large-bore IV and sent the type and screen.","603-ivs",src/case-stepdown1.js:208
+"Evaluate outcomes",judgment,2,"You reassessed Mr. Okoro after the bolus.","603-reassess",src/case-stepdown1.js:209
+"Generate solutions",meds,-2,"You held Mr. Okoro's aspirin on the morning of his stent.","603-asa-hold",src/case-stepdown1.js:212
+"Take action",meds,-1,"You gave ticagrelor with signs of a bleed you hadn't reported.","603-tica",src/case-stepdown1.js:216
+"Take action",meds,1,"You gave ticagrelor after the cardiologist weighed the bleed against the stent.","603-tica",src/case-stepdown1.js:216
+"Generate solutions",meds,varies,"You held Mr. Okoro's ticagrelor yourself.","603-tica-hold",src/case-stepdown1.js:217
+"Take action",meds,-2,"You gave metoprolol with an SBP of ${v.SBP}.","603-meto",src/case-stepdown1.js:221
+"Take action",judgment,-2,"You treated Mr. Okoro's new back pain with morphine without working it up.","603-morph",src/case-stepdown1.js:226
+"Analyze cues",judgment,-2,"You called Mr. Okoro's back pain positional.","603-sbar-pain",src/case-stepdown1.js:250
+"Take action",comm,varies,"You called about a possible retroperitoneal bleed in Mr. Okoro.","603-sbar",src/case-stepdown1.js:254
+"Evaluate outcomes",assess,2,"You reviewed Mrs. Price's full morning labs, with the trend.","605-labs",src/case-stepdown1.js:320
+"Evaluate outcomes",judgment,1,"You rechecked Mrs. Price's foot after the change in treatment.","605-reassess",src/case-stepdown1.js:321
+"Take action",meds,-1,"You decreased Mrs. Price's heparin by 2 units/kg/h.","605-nomo",src/case-stepdown1.js:334
+"Take action",meds,-2,"You left Mrs. Price's heparin unchanged with an aPTT of 104.","605-nomo",src/case-stepdown1.js:335
+"Take action",meds,-3,"You bolused and increased Mrs. Price's heparin with an aPTT of 104.","605-nomo",src/case-stepdown1.js:336
+"Take action",meds,-2,"You started argatroban with heparin still running.","605-arga-hep",src/case-stepdown1.js:343
+"Take action",meds,1,"You started argatroban after stopping the heparin.","605-arga",src/case-stepdown1.js:343
+"Take action",meds,-2,"You flushed Mrs. Price's line with heparin after suspecting HIT.","605-flush",src/case-stepdown1.js:347
+"Generate solutions",meds,varies,"You held the heparin flush${P.labsRead ? ' and used saline' : ''}.","605-flush-hold",src/case-stepdown1.js:348
+"Take action",comm,0,"You called about Mrs. Price's aPTT.","605-sbar-nomo",src/case-stepdown1.js:368
+"Take action",comm,varies,"You called about suspected HIT in Mrs. Price.","605-sbar",src/case-stepdown1.js:371
+"Recognize cues",assess,1,"You measured Mr. Lindqvist's QT yourself.","607-strip",src/case-stepdown1.js:435
+"Recognize cues",assess,1,"You checked Mr. Lindqvist's orthostatics safely.","607-ortho",src/case-stepdown1.js:436
+"Take action",meds,varies,"You started the electrolyte protocol for Mr. Lindqvist's potassium${s.t <= 90 ? ' early' : ''}.","607-kcl",src/case-stepdown1.js:439
+"Take action",meds,varies,"You started magnesium for Mr. Lindqvist.","607-mag",src/case-stepdown1.js:440
+"Take action",meds,-3,"You gave Mr. Lindqvist citalopram 40 mg with a QTc over 500.","607-cital",src/case-stepdown1.js:444
+"Generate solutions",meds,2,"You held Mr. Lindqvist's citalopram and flagged it.","607-cital-hold",src/case-stepdown1.js:445
+"Take action",meds,-2,"You gave furosemide with a potassium of 3.2.","607-lasix",src/case-stepdown1.js:450
+"Generate solutions",meds,1,"You held furosemide for a potassium under 3.5.","607-lasix-hold",src/case-stepdown1.js:451
+"Take action",meds,-2,"You gave ondansetron with a QTc over 500.","607-ond",src/case-stepdown1.js:456
+"Analyze cues",judgment,-1,"You asked to give ondansetron to a patient with a QTc over 500.","607-sbar-ond",src/case-stepdown1.js:478
+"Take action",comm,varies,"You called about Mr. Lindqvist's long QT.","607-sbar",src/case-stepdown1.js:483
+"Take action",comm,1,"You acknowledged Mrs. Mendes's fear and told her what was happening.","601-talk",src/case-stepdown1.js:503
+"Take action",comm,-1,"You told Mrs. Mendes atrial fibrillation isn't dangerous.","601-talk",src/case-stepdown1.js:504
+"Take action",safety,2,"You kept Mr. Okoro flat and helped him void safely.","603-flat",src/case-stepdown1.js:512
+"Take action",safety,-2,"You let Mr. Okoro sit up two hours after his sheath came out.","603-flat",src/case-stepdown1.js:513
+"Take action",comm,0,"You enforced bed rest without explaining it.","603-flat",src/case-stepdown1.js:514
+"Recognize cues",assess,2,"You assessed Mr. Okoro's new back pain before treating it.","603-painq",src/case-stepdown1.js:520
+"Analyze cues",judgment,-2,"You attributed Mr. Okoro's new back pain to positioning.","603-painq",src/case-stepdown1.js:521
+"Take action",comm,2,"You took Mrs. Price's observation seriously.","605-talk",src/case-stepdown1.js:528
+"Take action",comm,-2,"You brushed off Mrs. Price's concern about her platelets.","605-talk",src/case-stepdown1.js:529
+"Recognize cues",assess,2,"You took a medication history from Mr. Lindqvist.","607-talk",src/case-stepdown1.js:537
+"Take action",judgment,-1,"You put Mr. Lindqvist's syncope down to dehydration.","607-talk",src/case-stepdown1.js:538
+"Take action",safety,-3,"Mr. Lindqvist went into torsades de pointes.","607-tors",src/case-stepdown1.js:557
+"Take action",safety,-3,"Mrs. Mendes went into flash pulmonary edema.","601-icu",src/case-stepdown1.js:559
+"Take action",safety,-3,"Mrs. Price developed an arterial clot from HIT.","605-clot",src/case-stepdown1.js:561
+"Recognize cues",comm,1,"You read back the critical aPTT.","605-readback",src/case-stepdown1.js:568
+"Take action",safety,2,"You kept Mr. Okoro flat after his sheath removal.","603-flat",src/case-stepdown1.js:569
+"Take action",safety,-2,"You let Mr. Okoro onto the commode two hours after sheath removal.","603-flat",src/case-stepdown1.js:570
+"Take action",safety,-1,"You raised Mr. Okoro's head of bed to 60 degrees.","603-flat",src/case-stepdown1.js:571
+"Take action",judgment,-2,"You put Mr. Okoro's new back pain down to positioning.","603-dismiss",src/case-stepdown1.js:572
+"Recognize cues",assess,2,"You went to look at Mr. Lindqvist instead of calling the alarms artifact.","607-alarm",src/case-stepdown1.js:573
+"Recognize cues",judgment,-2,"You called Mr. Lindqvist's alarms artifact without looking.","607-alarm",src/case-stepdown1.js:574
+"Generate solutions",deleg,-1,"You asked the CNA to do a post-cath groin and pulse check.","deleg-groin",src/case-stepdown1.js:589
+"Generate solutions",deleg,-2,"You asked the CNA to titrate a drip.","deleg-pump",src/case-stepdown1.js:590
+"Generate solutions",deleg,1,"You had Benny help Mr. Okoro void while flat.","deleg-urinal",src/case-stepdown1.js:591
+"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the CNA.","'deleg-good-' + task.id",src/case-stepdown1.js:594
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-stepdown1.js:622
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-stepdown1.js:623
+"Take action",comm,-2,"Mrs. Mendes's EF of 25% never reached the provider.","601-norep",src/case-stepdown1.js:626
+"Take action",meds,-2,"The order to stop Mrs. Mendes's diltiazem was never carried out.","601-notstopped",src/case-stepdown1.js:627
+"Take action",comm,-3,"Mr. Okoro's bleeding signs never reached the provider.","603-norep",src/case-stepdown1.js:628
+"Take action",meds,-2,"Mrs. Price's heparin kept running after you saw her platelets fall.","605-hit-missed",src/case-stepdown1.js:629
+"Take action",meds,-2,"Mrs. Price's aPTT of 104 was never acted on.","605-noadj",src/case-stepdown1.js:630
+"Take action",meds,-2,"Mr. Lindqvist's electrolyte protocol was never started.","607-noprotocol",src/case-stepdown1.js:631
+"Take action",comm,-1,"The provider never heard about Mr. Lindqvist's QTc over 500.","607-norep",src/case-stepdown1.js:632
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-stepdown1.js:636
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-stepdown1.js:637
+"Prioritize hypotheses",priority,2,"You chose to see Mrs. Mendes first.","rank-first",src/case-stepdown1.js:674
+"Prioritize hypotheses",priority,1,"You chose to see Mr. Okoro first.","rank-first",src/case-stepdown1.js:675
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Mrs. Mendes and Mr. Okoro.","rank-first",src/case-stepdown1.js:676
+"Take action",safety,-3,"Mr. Okoro went into hemorrhagic shock from a retroperitoneal bleed.","603-shock",src/case-stepdown1.js:697
+"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:436
+"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:437
+"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:438
+"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:469
+"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:486
+"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:510
+"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:512
+"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:523
+"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:524
+"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:525
+"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:526
+"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:596
+"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:597
+"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:598
+"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:609
+"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:610
+"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:611
+"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:617
+"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:622
+"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1505
+"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1512
+"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1598
+"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1657
+"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1680
+"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1691
+"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1692

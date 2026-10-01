@@ -23,6 +23,7 @@ window.Shift = window.Shift || {};
     'medsurg-4w-3': { key: 'kai', name: 'Kai', role: 'Oncoming RN', look: L('#D8A37C', '#BA855E', '#9A564A', '#D68A70', '#2C1D12', 'short', '#1B1410', 'teal') },
     'psych-3e-1': { key: 'owen', name: 'Owen', role: 'Oncoming RN', look: L('#C79470', '#A87652', '#8E5244', '#C98468', '#2A1B10', 'curls', '#20150F', 'grey', ['beard']) },
     'psych-4n-1': { key: 'marco', name: 'Marco', role: 'Night RN', look: L('#D6A47E', '#B88660', '#9A5648', '#D48A70', '#2A1C12', 'short', '#1A1310', 'navy', ['goatee']) },
+    'stepdown-6e-1': { key: 'ari', name: 'Ari', role: 'Oncoming RN', look: L('#E2B48E', '#C49670', '#A0594C', '#DC8E74', '#3A2616', 'short', '#2A1C14', 'teal', ['studs']) },
     'peds-5s-1': { key: 'june', name: 'June', role: 'Night RN', look: L('#EFCCAF', '#D4AA8C', '#B66A60', '#EE9C88', '#3C2A1E', 'long', '#1E1712', 'wine') },
   };
   // Staff for a case: receiving units, plus the oncoming nurse (reusing a character from another shift if we have one).
@@ -312,13 +313,59 @@ window.Shift = window.Shift || {};
       later: 'Three days on pediatrics until his liver tests turned around, then back to 4 North. A suicide attempt with an unknown ingestion should get an acetaminophen level, whatever the patient says.',
     }),
   };
+  AFTER['stepdown-6e-1'] = {
+    '601': (s, P, A, at) => ({
+      unit: 'CCU', nurse: 'icu', emergent: true,
+      event: `Flash pulmonary edema at ${A.clock(at)}: SpO₂ 82%, crackles to the apices. New EF 25% on this morning's echo; diltiazem ran until the rapid response.`,
+      extra: [{ label: 'LVEF 25%: no diltiazem or verapamil', key: true }, { label: `Diltiazem ${P.dilt} mg/h until the rapid response`, key: true }, { label: 'On apixaban for new AF', key: false }],
+      course: [
+        { at: 0, st: 'crit', text: 'BiPAP 12/6, FiO₂ 60%. Furosemide 80 mg IV. Amiodarone bolus going in.' },
+        { at: 70, st: 'serious', text: 'Off BiPAP to 4 L. 1.4 L of urine. Rate 108, still in AF.' },
+        { at: 170, st: 'improving', text: 'Rate in the 90s on amiodarone. Asked whether her son can visit tonight.' },
+      ],
+      later: 'Two days in the CCU, a week in the hospital, home on rate control, a heart failure regimen and anticoagulation. Diltiazem is a negative inotrope; with an EF of 25% it made her failure worse. The echo was the cue.',
+    }),
+    '603': (s, P, A, at) => ({
+      unit: 'IR', nurse: 'icu', emergent: true,
+      event: `Hemorrhagic shock from a right retroperitoneal bleed at ${A.clock(at)}: BP 72/40, HR 132. Femoral access at 04:30 with a high first stick.`,
+      extra: [{ label: 'Drug-eluting stent to the RCA at 04:30: aspirin and ticagrelor', key: true }, { label: 'Groin site soft with no hematoma: the bleed is behind it', key: true }, { label: 'Drives the 51 bus', key: false }],
+      course: [
+        { at: 0, st: 'crit', text: 'Two units of blood running. CT: large right retroperitoneal hematoma with active extravasation.' },
+        { at: 60, st: 'serious', text: 'Covered stent placed in the right external iliac. Pressure 104/62 after a third unit.' },
+        { at: 150, st: 'improving', text: 'In the CCU, HR 88. Asked whether the bus company will hold his route.' },
+      ],
+      later: 'Four days in the hospital and three units of blood. A retroperitoneal bleed after femoral access shows up as back or flank pain, a rising heart rate and a falling pressure, usually with a normal-looking groin.',
+    }),
+    '605': (s, P, A, at) => ({
+      unit: 'IR', nurse: 'icu', emergent: true,
+      event: `Acute left lower-limb ischemia at ${A.clock(at)}: white, pulseless foot. Platelets 98 from 230 on day 5 of heparin; heparin still running.`,
+      extra: [{ label: 'Suspected HIT: no heparin of any kind, including flushes', key: true }, { label: 'Bilateral PEs, needs a non-heparin anticoagulant', key: true }],
+      course: [
+        { at: 0, st: 'serious', text: 'In IR. Heparin stopped, argatroban started. Catheter-directed thrombectomy of the popliteal artery.' },
+        { at: 80, st: 'serious', text: 'Foot pink, pulses by Doppler. PF4 antibody strongly positive.' },
+        { at: 170, st: 'improving', text: 'Back on the floor tomorrow. Asked for her crossword.' },
+      ],
+      later: 'She kept her foot. Heparin went on her allergy list for life. HIT causes clots, not bleeding: a platelet drop of more than half, 5 to 10 days into heparin, means stop all heparin and start something else.',
+    }),
+    '607': (s, P, A, at) => ({
+      unit: 'CCU', nurse: 'icu', emergent: true,
+      event: `Torsades de pointes at ${A.clock(at)}, pulseless, defibrillated once. QTc ${Math.round(452 + (4 - P.kv) * 45 + (2.1 - P.mg) * 45 + (P.cital ? 25 : 0) + (P.ond ? 15 : 0))}, K ${P.kv.toFixed(1)}, Mg ${P.mg.toFixed(1)}.`,
+      extra: [{ label: 'No QT-prolonging drugs: citalopram, ondansetron', key: true }, { label: 'Keep K over 4 and Mg over 2', key: true }],
+      course: [
+        { at: 0, st: 'crit', text: 'Magnesium 2 g given in the code, another 2 g running. Potassium being replaced IV.' },
+        { at: 90, st: 'serious', text: 'No more runs. QTc 488. Temporary pacing pads on.' },
+        { at: 170, st: 'improving', text: 'Sang a few bars for the CCU nurse. QTc 470.' },
+      ],
+      later: 'Three days in the CCU. Low potassium and magnesium, a doubled SSRI and an antiemetic each lengthened his QT a little; together they were enough. The electrolyte protocol and two held doses were all available at 09:00.',
+    }),
+  };
   function spec(s, A, d, P, at) {
     const f = (AFTER[s.caseId] || {})[d.id];
     const base = f ? f(s, P, A, at) : { unit: P.icu ? 'ICU' : 'another unit', nurse: 'icu', emergent: !!P.icu, event: P.goneText || 'Transferred off the unit.', course: [{ at: 0, st: P.icu ? 'crit' : 'stable', text: P.goneText || 'Transferred.' }], later: '' };
     return Object.assign({ handoff: true, note: true, push: 50, extra: [], family: null }, base);
   }
   const outOf = (P) => P.icu || P.gone;
-  const where = (u) => ({ ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', Pediatrics: 'the pediatric floor', PACU: 'PACU' }[u] || 'the ' + u);
+  const where = (u) => ({ CCU: 'the CCU', IR: 'interventional radiology', ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', Pediatrics: 'the pediatric floor', PACU: 'PACU' }[u] || 'the ' + u);
   function entryAt(P, dt) { const c = P.out.spec.course; let i = 0; c.forEach((e, k) => { if (e.at <= dt) i = k; }); return i; }
 
   /* ---------- unit flavor: rounding, call lights, report noise ---------- */

@@ -2,6 +2,36 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 9 — October 1, 2026 (branch `next-four`, built on `house-style`)
+
+### Done
+- **Instructor dashboard** at `/teach/` (`site/teach.html`). An instructor signs in with an email link, makes a class and gets a 6-character code. Students join in the game (**Menu → Your class**) with the code and the name the instructor should see. The dashboard shows how many have played, the class's average by NCLEX clinical judgment step and by skill (latest attempt per student), a roster with each student's best score per shift, each student's attempts with the decisions they missed, the most-missed decisions across the class, practice-question results (first try, lowest first), a filter by shift, and a CSV download. Students can leave; instructors can remove a student.
+  - Every finished shift and practice question is saved to the player's account as a result (`results`, `ngn_results`). Results played before signing in wait on the device and upload at sign-in, so a student who joins mid-semester brings their earlier shifts.
+  - `supabase/classes-and-pack.sql`: the tables, row level security (instructors read only their own students' results; students read only their own; nobody can write a purchase), and the two functions for making and joining a class. `tests/sql/policies.mjs` runs it on a real Postgres (PGlite) and checks 13 rules.
+- **Shift 7: Days on 6 East** (cardiac step-down, 07:00–12:00). A-fib with RVR on a diltiazem drip with an echo that comes back EF 25% (diltiazem has to go; amiodarone instead), a post-cath retroperitoneal bleed that shows up as back pain, a heparin drip with an aPTT of 104 and platelets halved (hold, HIT, argatroban, and the heparin flush is heparin too), and a QTc creeping up from low K and Mg plus citalopram and ondansetron, ending in torsades if missed. Telemetry strips on the room monitor, transfers to CCU and IR, review page `/review/stepdown-6e-1/`. `tests/stepdown.py`: a careful run gets four good outcomes; skipping ahead gets four bad ones.
+- **NCLEX-style practice questions** (`src/ngn.js`). Three after every debrief, one per shift for each of bowtie, matrix, select-all, highlight and drop-down, built from that shift's patients. Scored the NCSBN way (0/1 for bowtie, matrix and drop-down; +/- for select-all and highlight). Results save to the profile and, signed in, to the instructor's dashboard. `tests/ngn.py` checks every item's key scores full marks.
+- **The shift pack** (`config.pack`, off by default). Three shifts free (Days on 4 West, Evenings on 4 West, Days on 3 East); the other four, and every shift added later, unlock with one payment. Locked shifts still show on the schedule and can be previewed; starting one offers the pack. Buying needs an account, so the purchase follows the player to every device. Payment is a Stripe Payment Link; `supabase/functions/stripe-webhook` checks Stripe's signature and records the purchase (and removes it on a refund). A class can carry a school license (`classes.pack`), which unlocks every shift for its students. `tests/pack.py` covers all of it with a stand-in for Stripe and Supabase.
+- Privacy page: what an instructor can see, and that Stripe handles payment.
+- `tests/teach.py`, `tests/pack.py` and a shared Supabase stand-in (`tests/standin.py`) that applies the same row level security as the SQL. Full suite clean.
+
+### Needs Nick
+1. **Supabase → SQL Editor:** run `supabase/classes-and-pack.sql` (safe to run again).
+2. **Supabase → Authentication → URL Configuration → Redirect URLs:** add `https://the-shift-claude-rework.vercel.app/teach/` (the preview wildcard already covers previews).
+3. **Try it:** open `/teach/`, make a class, then join it from the game on your phone with a different email and play a shift.
+4. **The shift pack**, when you want to charge (Stripe test mode first):
+   - Stripe → Product catalog: add "The Shift: shift pack", one-time price. Then Payment Links → New, after payment "Don't show confirmation page" → redirect to `https://the-shift-claude-rework.vercel.app/play/?pack=thanks`.
+   - Install the Supabase CLI, then `supabase link --project-ref omcorltahsnnmpifefpm`, `supabase functions deploy stripe-webhook --no-verify-jwt`, and `supabase secrets set STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_...`. The Stripe keys and the Supabase service role key stay there: never in `src/`.
+   - Stripe → Developers → Webhooks: endpoint `https://omcorltahsnnmpifefpm.supabase.co/functions/v1/stripe-webhook`, events `checkout.session.completed` and `charge.refunded`. Copy its signing secret into the `STRIPE_WEBHOOK_SECRET` above.
+   - In `src/config.js`: set `pack.checkoutUrl` to the Payment Link, set `price`, pick the free shifts, set `on: true`, rebuild, commit.
+   - School license: in the Table Editor, set `pack` to true on that school's class.
+5. Clinical review of Shift 7 and the 21 practice questions (each has a rationale on its answer screen).
+6. Merge `next-four` (it includes `house-style`): https://github.com/nforell/TheShiftClaudeRework/compare/main...next-four
+
+### Up next
+1. L&D/postpartum, ED triage and an LPN-scope shift (toward 12–15 for the pack).
+2. More practice questions per shift, and a practice-only mode from the home screen.
+3. Instructor extras when someone asks: assign a shift with a due date, compare two classes.
+
 ## Session 8 — October 1, 2026 (branch `house-style`, built on `visual-polish`)
 
 Goal: stop the game from looking AI-made. The direction: make it look like a hospital, not like an app.
