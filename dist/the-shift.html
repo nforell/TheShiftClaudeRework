@@ -9449,7 +9449,20 @@ window.Shift = window.Shift || {};
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
-  const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  /* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
+     plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
+  const LAW = [
+    [/\bWIC 5150\b/g, '72-hour involuntary hold'], [/\bWIC 5250\b/g, 'extended involuntary certification'],
+    [/\ba 5150\b/g, 'a 72-hour hold'], [/\b5150 hold\b/g, '72-hour hold'], [/\b5150\b/g, '72-hour hold'],
+    [/\ba 5250\b/g, 'an extended certification'], [/\bthe 5250\b/g, 'the extended certification'], [/^5250\b/g, 'Extended certification'], [/\b5250\b/g, 'extended certification'],
+    [/\bthe hearing is usually within a day\b/g, 'the hearing timeline depends on the state'],
+    [/\bRiese petition\b/g, 'petition for court-ordered medication'], [/ ?\(Riese\)/g, ''], [/\bRiese\b/g, 'capacity hearing'],
+    [/\bLPS conservatorship\b/g, 'mental health conservatorship'],
+    [/\billegal in California\b/g, 'illegal in most states'], [/\bCalifornia law protects\b/g, 'Privacy law protects'], [/ \(36 hours in California\)/g, ' (the deadline varies by state)'],
+  ];
+  const LAWHIT = /5150|5250|Riese|LPS|California/;
+  const lawText = (x) => { if (!LAWHIT.test(x) || ((prof && prof.settings) || {}).law !== 'general') return x; LAW.forEach(([re, to]) => { x = x.replace(re, to); }); return x; };
+  const esc = (x) => lawText(String(x == null ? '' : x)).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => document.querySelector(sel);
   const ICON = {
     msg: '<svg class="ico" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4"/></svg>',
@@ -10660,6 +10673,7 @@ window.Shift = window.Shift || {};
       <div class="setrow"><span>Motion</span>${seg('motion', [['full', 'Full'], ['reduced', 'Reduced']])}</div>
       <div class="setrow"><span>Graphics<small class="set-sub">${FM.lite && (st.gfx || 'auto') === 'auto' ? 'Auto switched to Lite on this device' : 'Lite keeps things smooth on older computers'}</small></span>${seg('gfx', [['auto', 'Auto'], ['full', 'Full'], ['lite', 'Lite']])}</div>
       <div class="setrow"><span>Health check<small class="set-sub">Speed, memory and the last error, for troubleshooting</small></span><button class="btn" data-act="health">Open</button></div>
+      <div class="setrow"><span>Psych law<small class="set-sub">The psych shift is written to California law. General US uses plain terms that hold in most states.</small></span>${seg('law', [['ca', 'California'], ['general', 'General US']])}</div>
       <div class="setrow"><span>Decision feedback</span>${seg('feedback', [['now', 'Right away'], ['debrief', 'At the debrief']])}</div>
       <div class="setrow"><span>Music</span>${seg('music', [['on', 'On'], ['off', 'Off']])}</div>
       <div class="setrow"><span>Sound effects and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>
@@ -11255,7 +11269,7 @@ window.Shift = window.Shift || {};
     // Where people stop: the last screen of an unfinished shift when the page goes away.
     addEventListener('pagehide', () => { if (s && !s.ended && ui.view !== 'home') TEL.track('shift_left', { case: s.caseId, game_min: Math.round(s.t), view: ui.view, ov: ui.ov || '', wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null }); TEL.flush(true); });
   }
-  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF };
+  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF, _law: lawText };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.Shift);
 
