@@ -1494,6 +1494,56 @@ table.health td{white-space:normal}
 .pack-list li{padding:.55rem 0;border-bottom:1px solid var(--grid);display:grid;gap:.1rem}
 .pack-list small{color:var(--ink-2);font-size:.85rem}
 .sheet-b a{color:var(--teal)}
+
+/* Helpers in the header: Nova and the aide, as people you can tap */
+.helpers{display:inline-flex;gap:.3rem;align-items:center}
+.hb{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;padding:.15rem .6rem .15rem .2rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.hb:hover{border-color:var(--teal)}
+.hb-f{position:relative;width:34px;height:34px;flex:none;border-radius:50%;background:var(--surface-2,var(--bg));overflow:hidden;border:1px solid var(--line)}
+.hb-f svg{width:100%;height:100%;display:block}
+.hb-n{position:absolute;right:-1px;bottom:-1px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--teal);color:var(--teal-ink);font:700 .62rem/15px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.hb-n.free{min-width:10px;width:10px;height:10px;padding:0;background:var(--good)}
+.hb-n.busy{background:var(--amber)}
+.hb-f{overflow:visible}.hb-f svg{border-radius:50%}
+.hb-t{display:grid;line-height:1.1}
+.hb-t b{font-size:.84rem;font-weight:700}
+.hb-t small{font-size:.72rem;color:var(--ink-2);white-space:nowrap}
+@media (max-width:1100px){.hb-t small{display:none}}
+@media (max-width:860px){.hb-t{display:none}.hb{padding:.15rem;border-radius:50%;min-width:44px;justify-content:center}}
+
+/* Talk bubble in the room scene, by the patient */
+.talk-bub{position:absolute;z-index:2;right:calc(50% + clamp(62px,7vw,105px));top:28%;display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.45rem .8rem .45rem .6rem;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;background:var(--surface);color:var(--ink);font:600 .9rem/1.1 var(--sans);cursor:pointer;box-shadow:0 2px 0 rgba(28,35,48,.18);max-width:44%}
+.talk-bub .ai{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+.talk-bub span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.talk-bub:hover,.talk-bub.on{background:var(--ink);color:var(--surface)}
+.talk-bub.wants{border-color:var(--teal);background:var(--teal);color:var(--teal-ink)}
+.talk-bub.wants i{position:absolute;left:-4px;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--band-yellow,#F2C94C);box-shadow:0 0 0 2px var(--surface);animation:bubPing 1.6s ease-out infinite}
+@keyframes bubPing{0%{transform:scale(.8)}50%{transform:scale(1.15)}100%{transform:scale(.8)}}
+@media (prefers-reduced-motion:reduce){.talk-bub.wants i{animation:none}}
+[data-motion="reduced"] .talk-bub.wants i{animation:none}
+@media (max-width:760px){.talk-bub{right:auto;left:10px;top:12px;max-width:calc(100% - 20px);font-size:.84rem;padding:.4rem .65rem .4rem .5rem;border-radius:18px 18px 18px 4px}.talk-bub.wants i{left:auto;right:-4px}}
+
+/* Station: say what it is */
+.st-intro{margin:0 0 .7rem;padding:.1rem 0 .1rem}
+.st-intro h1{font-family:var(--sign);font-weight:600;font-size:1.55rem;line-height:1.1;margin:0}
+.st-intro p{margin:.2rem 0 0;color:var(--ink-2);font-size:.92rem;max-width:62rem}
+.st-intro p b{color:var(--ink);font-weight:600}
+@media (max-width:640px){.st-intro .long{display:none}.st-intro h1{font-size:1.3rem}.st-intro p{font-size:.86rem}}
+.tools .btn.has-sug{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+
+/* Aide: suggestions first, everything else folded */
+.dl-who{margin:0 0 .8rem;color:var(--ink-2);font-size:.92rem}
+.dl-sug h4,.dl-board h4{margin:.2rem 0 .4rem}
+.dl-s{display:flex;width:100%;align-items:center;justify-content:space-between;gap:.8rem;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:var(--r);padding:.6rem .7rem;margin:0 0 .4rem;cursor:pointer;min-height:52px}
+.dl-s:hover{border-color:var(--teal)}
+.dl-s .dl-l{display:grid}.dl-s small{color:var(--ink-2);font-size:.82rem}
+.dl-go{font-weight:700;color:var(--teal);white-space:nowrap}
+.dl-fine{font-size:.84rem;color:var(--ink-2);margin:.3rem 0 .8rem}
+.dl-all{border-top:1px solid var(--line);margin-top:.4rem}
+.dl-all>summary{cursor:pointer;padding:.75rem 0;font-weight:600;list-style-position:inside}
+.dl-all>summary small{font-weight:400;color:var(--ink-2);margin-left:.4rem}
+.dl-task{padding:.6rem 0;border-bottom:1px solid var(--line)}.dl-tl{font-weight:600;margin-bottom:.35rem}
+.nova-what{margin:0 0 .7rem;font-size:.95rem}
 </style></head>
 <body><div id="app"></div>
 <script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "2d9cf75743", "medsurg-4w-1": "46da1f9eda", "medsurg-4w-2": "bf7b914856", "medsurg-4w-3": "55312ca0a8", "peds-5s-1": "ba8c723472", "psych-3e-1": "5d2e601e0e", "stepdown-6e-1": "0dcdc41d11"};
@@ -12070,6 +12120,29 @@ window.Shift = window.Shift || {};
     ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; ui.reflected = false; ui.fb = {}; render(true);
   }
 
+  /* Your helpers, always one tap away: Nova (tips) and the aide (delegation). Faces, so they read as people. */
+  function helpers() {
+    const busy = s.deleg.filter((x) => !x.done).length, sug = aideSuggest().length;
+    return `<span class="helpers" role="group" aria-label="Your team">
+      <button class="hb" data-act="nova" aria-label="Ask Nova, your charge nurse, for a tip. ${s.nova} tip${s.nova === 1 ? '' : 's'} left"><span class="hb-f">${face('nova')}<i class="hb-n">${s.nova}</i></span><span class="hb-t"><b>Ask Nova</b><small>${s.nova ? `Tips · ${s.nova} left` : 'No tips left'}</small></span></button>
+      <button class="hb" data-act="delegate" aria-label="Ask ${esc(cna().name)}, your ${esc(cna().role)}. ${busy ? `${busy} task${busy === 1 ? '' : 's'} in progress` : 'Free'}${sug ? `, ${sug} suggestion${sug === 1 ? '' : 's'}` : ''}"><span class="hb-f">${face(C().cna)}<i class="hb-n ${busy ? 'busy' : 'free'}">${busy || ''}</i></span><span class="hb-t"><b>Ask ${esc(cna().name)}</b><small>${busy ? `Busy · ${busy} task${busy === 1 ? '' : 's'}` : sug ? `Free · ${sug} idea${sug === 1 ? '' : 's'}` : 'Free'}</small></span></button>
+    </span>`;
+  }
+  /* What the aide offers to take: routine, in-scope work that's due soon, matched from the unit's due list, plus
+     vitals on anyone with an old set. The player still decides; the full list (including things an aide can't do)
+     stays one tap further down. */
+  const AIDE_MATCH = { vitals: /vital/i, bg: /glucose|sugar|\bBG\b|fingerstick/i, intake: /intake|breakfast/i, io: /intake and output|I&O|diaper/i, weigh: /weigh|weight/i, turn: /turn|reposition/i, walk: /walk|ambulat/i, ortho: /orthostatic/i, tray: /tray/i, meal: /meal|breakfast/i };
+  function aideSuggest() {
+    if (!s || !C().delegation) return [];
+    const tasks = C().delegation.tasks.filter((t) => (!t.avail || t.avail(s)) && AIDE_MATCH[t.id]);
+    const busy = (id, pid) => s.deleg.some((x) => !x.done && x.id === id && x.pid === pid);
+    const ok = (t, pid) => t.rooms.includes(pid) && here(def(pid)) && !gone(s.p[pid]) && !busy(t.id, pid);
+    const out = [], seen = new Set(), add = (t, pid, why, at) => { const k = t.id + ':' + pid; if (seen.has(k) || !ok(t, pid)) return; seen.add(k); out.push({ t, pid, why, at }); };
+    dueList().filter((x) => x.pid && !/^[A-Z][a-z]+:/.test(x.text) && x.t <= s.t + 60).forEach((x) => { tasks.forEach((t) => { if (AIDE_MATCH[t.id].test(x.text)) add(t, x.pid, `${x.late ? 'Overdue' : 'Due'} ${E.clock(x.t)}`, x.t); }); });
+    const vt = tasks.find((t) => t.id === 'vitals');
+    if (vt) pts().forEach((d) => { const v = A().lastVitals(d.id); if (v && s.t - v.t >= 180) add(vt, d.id, `Last set ${E.clock(v.t)}`, v.t + 240); });
+    return out.sort((a, b) => a.at - b.at).slice(0, 3);
+  }
   /* ------------ header ------------ */
   function header() {
     const unread = s.inbox.filter((m) => !m.read).length;
@@ -12078,7 +12151,7 @@ window.Shift = window.Shift || {};
       <button class="mark" data-act="menu" aria-label="The Shift menu">The Shift</button>
       <div class="where">${loc}</div>
       <button class="icon-btn roster-btn" data-act="roster" aria-label="Your patients: who is who"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.4 0 4.3 1.4 5 4.3"/></svg><span class="nova-l">Patients</span></button>
-      ${ui.view !== 'handoff' ? `<button class="icon-btn" data-act="nova" aria-label="Ask the charge nurse, ${s.nova} credits left"><span class="dots" aria-hidden="true">${Array.from({ length: C().novaCredits || 3 }, (_, i) => i).map((i) => `<i class="${i < s.nova ? 'on' : ''}"></i>`).join('')}</span><span class="nova-l" aria-hidden="true">Nova</span></button>
+      ${ui.view !== 'handoff' ? `${helpers()}
       ${(() => { const m = RW.mult(s.streak || 0); return `<button class="xp ${m > 1 ? 'hot' : ''}" data-act="calls" aria-label="Care XP ${fmtN(s.xp || 0)}${m > 1 ? `, streak times ${m}` : ''}. Your shift so far">${ICON.xp}<b>${fmtN(s.xp || 0)}</b><b class="xp-k">${(s.xp || 0) >= 10000 ? ((s.xp || 0) / 1000).toFixed(0) + 'k' : fmtN(s.xp || 0)}</b>${m > 1 ? `<span class="fl">${ICON.flame}×${m}</span>` : ''}</button>`; })()}
       <button class="icon-btn" data-act="inbox" aria-label="Messages, ${unread} unread">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ''}</button>` : ''}
       <div class="clock ${ui.adv ? 'bump' : ''}" role="timer" aria-live="off" aria-label="Shift time ${E.clock(s.t)}">${E.clock(s.t)}<small>ends ${E.clock(C().length)}</small>${ui.adv ? `<span class="adv" aria-hidden="true">+${ui.adv} min</span>` : ''}</div>
@@ -12206,7 +12279,7 @@ window.Shift = window.Shift || {};
   function ptStrip() {
     const cur = ui.view === 'room' ? s.loc : 'station';
     return `<nav class="pstrip" aria-label="Station and patients"><div class="pstrip-in">
-      <button class="ps ps-st ${cur === 'station' ? 'on' : ''}" data-act="${cur === 'station' ? 'here' : 'back'}" ${cur === 'station' ? 'aria-current="page"' : ''}><span class="ps-top"><b>Station</b></span><small>Board and phone</small></button>
+      <button class="ps ps-st ${cur === 'station' ? 'on' : ''}" data-act="${cur === 'station' ? 'here' : 'back'}" ${cur === 'station' ? 'aria-current="page"' : ''}><span class="ps-top"><b>Nurses' station</b></span><small>Home base: plan, phone, help</small></button>
       ${C().patients.map((d) => {
         if (!here(d)) return `<button class="ps pend" data-act="pending" data-pid="${d.id}"><span class="ps-top"><b>${d.room}</b></span><small>Arriving ${E.clock(d.arrives)}</small></button>`;
         const P = s.p[d.id], g = gone(P), light = !g && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read));
@@ -12306,6 +12379,7 @@ window.Shift = window.Shift || {};
     const pending = C().patients.filter((d) => !here(d));
     const due = dueList();
     return `<main>
+      <div class="st-intro"><h1>Nurses' station</h1><p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>Tap a door or a patient to walk to their room.</b></p></div>
       ${cmdBar()}
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
@@ -12324,7 +12398,7 @@ window.Shift = window.Shift || {};
         <aside class="side">
           ${phone(8)}
           <div class="tools">
-            <button class="btn" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}</small></button>
+            ${(() => { const n = aideSuggest().length; return `<button class="btn ${n ? 'has-sug' : ''}" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>${n ? `${n} thing${n === 1 ? '' : 's'} ${esc(cna().name)} can take now` : `Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}`}</small></button>`; })()}
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
             ${s.t >= C().length - 60 ? (() => { const L = pts().filter((x) => !gone(s.p[x.id])), n = L.filter((x) => s.report && s.report[x.id]).length; return `<button class="btn ${n < L.length ? 'btn-primary' : ''}" data-act="report" style="grid-column:1/-1"><b>${n < L.length ? `Give report to ${esc(oncoming().name)}` : `Report given to ${esc(oncoming().name)}`}</b><small>${n} of ${L.length} patients · 2 min each</small></button>`; })() : ''}
             ${s.t >= C().length - 30 ? `<button class="btn ${pts().filter((x) => !gone(s.p[x.id])).every((x) => s.report && s.report[x.id]) ? 'btn-primary' : ''}" data-act="endask" style="grid-column:1/-1"><b>End shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
@@ -12526,7 +12600,8 @@ window.Shift = window.Shift || {};
         ${sceneSvg}
         <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
           <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
-          <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Station</button></div></div>
+          <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
+        ${(() => { const w = cnt.talk[1] === 'due'; return `<button class="talk-bub ${w ? 'wants' : ''} ${ui.dock === 'talk' ? 'on' : ''}" data-act="dock" data-id="talk" aria-label="${w ? `${esc(d.short)} wants to talk. ` : ''}Talk with ${esc(d.short)}">${AI.talk}<span>${w ? `${esc(d.short)} wants to talk` : `Talk with ${esc(d.short)}`}</span>${w ? '<i aria-hidden="true"></i>' : ''}</button>`; })()}
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
       ${looks.length ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
@@ -12874,8 +12949,10 @@ window.Shift = window.Shift || {};
   /* Coach tips: shown once, anchored to the thing they describe. */
   const COACH = {
     station: [
+      { sel: '.st-intro', text: 'This is the nurses\' station, your home base. You start here and come back here between rooms to plan, read the phone and get help.' },
       { sel: () => `.door[data-pid="${(s.answers.rank || [])[0]}"]`, alt: '.door[data-act="goto"]', text: 'You picked this room first. Tap the door, or a name below, to walk in. The clock only moves when you act.' },
       { sel: '.phone', text: () => `Your unit phone. ${cna().name}, the lab, pharmacy and the doctors reach you here. Some messages need an answer.` },
+      { sel: '.helpers', text: () => `Your team, always up here. Nova gives tips when you're stuck. ${cna().name}, your ${/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase()}, can take routine work like vitals off your plate: tap ${cna().name} to see what's worth handing off.` },
       { sel: '.skip', text: 'Caught up? Skip ahead. The clock runs until something needs you, then stops. Care XP, your streak and four shift goals sit up top.' },
     ],
     /* The first room is a guided walk: each "do" step waits for the player to actually do it. */
@@ -12885,7 +12962,7 @@ window.Shift = window.Shift || {};
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
       { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
       { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
-      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
+      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap the speech bubble by the bed. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
   };
@@ -13027,20 +13104,26 @@ window.Shift = window.Shift || {};
 
   function ovDeleg() {
     const tasks = C().delegation.tasks.filter((t) => !t.avail || t.avail(s));
-    const active = s.deleg.filter((x) => !x.done);
+    const active = s.deleg.filter((x) => !x.done), sug = aideSuggest(), nm = esc(cna().name);
     const note = C().delegation.note ? C().delegation.note(s) : '';
-    const body = `${note ? `<p class="deleg-note">${esc(note)}</p>` : ''}${!tasks.length ? '<p class="empty" style="padding:0">Nothing to hand off right now.</p>' : ''}${ui.delegMsg ? `<div class="reply" style="margin-bottom:1rem">${face(C().cna)}<p class="voice" style="margin:0">${esc(ui.delegMsg)}</p></div>${reviewHTML(ui.delegReview, 'Delegation, reviewed')}` : ''}
-      ${(() => { const fin = s.deleg.filter((x) => x.done).slice(-4).reverse(); const lab = (x) => C().delegation.tasks.find((t) => t.id === x.id).label; if (!active.length && !fin.length) return ''; return `<div class="dl-board">${active.length ? `<h4>${esc(cna().name)} is working on</h4><ul>${active.map((x) => `<li class="dl-row ${ui.delegNew === x.id + ':' + x.pid + ':' + x.at ? 'sent' : ''}"><span class="dl-l"><b>${esc(lab(x))}</b><small>${x.pid} ${esc(def(x.pid).short)} · back about ${E.clock(x.due)}</small></span><span class="dl-bar" aria-hidden="true"><i style="width:${Math.min(100, Math.max(6, (s.t - x.at) / Math.max(1, x.due - x.at) * 100)).toFixed(0)}%"></i></span></li>`).join('')}</ul>` : ''}${fin.length ? `<h4>Finished</h4><ul>${fin.map((x) => `<li class="dl-row fin"><span class="gcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg></span><span class="dl-l"><s>${esc(lab(x))}</s><small>${x.pid} ${esc(def(x.pid).short)} · done ${E.clock(x.due)}</small></span></li>`).join('')}</ul>` : ''}</div>`; })()}
-      ${tasks.map((t) => `<div style="padding:.6rem 0;border-bottom:1px solid var(--line)"><div style="font-weight:600;margin-bottom:.35rem">${esc(t.label)}</div><div class="prep">${t.rooms.filter((r) => here(def(r)) && !gone(s.p[r])).map((r) => `<button class="btn" data-act="deleg" data-t="${t.id}" data-pid="${r}">${r} ${esc(def(r).short)}</button>`).join('')}</div></div>`).join('')}`;
-    return sheet(`Ask ${esc(cna().name)}`, body, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: face(C().cna), label: `Delegate to ${cna().name}, ${cna().role}` });
+    const lab = (x) => C().delegation.tasks.find((t) => t.id === x.id).label;
+    const fin = s.deleg.filter((x) => x.done).slice(-3).reverse();
+    const board = active.length || fin.length ? `<div class="dl-board">${active.length ? `<h4>${nm} is working on</h4><ul>${active.map((x) => `<li class="dl-row ${ui.delegNew === x.id + ':' + x.pid + ':' + x.at ? 'sent' : ''}"><span class="dl-l"><b>${esc(lab(x))}</b><small>${x.pid} ${esc(def(x.pid).short)} · back about ${E.clock(x.due)}</small></span><span class="dl-bar" aria-hidden="true"><i style="width:${Math.min(100, Math.max(6, (s.t - x.at) / Math.max(1, x.due - x.at) * 100)).toFixed(0)}%"></i></span></li>`).join('')}</ul>` : ''}${fin.length ? `<h4>Finished</h4><ul>${fin.map((x) => `<li class="dl-row fin"><span class="gcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg></span><span class="dl-l"><s>${esc(lab(x))}</s><small>${x.pid} ${esc(def(x.pid).short)} · done ${E.clock(x.due)}</small></span></li>`).join('')}</ul>` : ''}</div>` : '';
+    const offer = sug.length ? `<div class="dl-sug"><h4>${nm} suggests</h4>${sug.map((x) => `<button class="dl-s" data-act="deleg" data-t="${x.t.id}" data-pid="${x.pid}"><span class="dl-l"><b>${esc(x.t.label)}</b><small>${x.pid} ${esc(def(x.pid).short)} · ${esc(x.why)}</small></span><span class="dl-go">Ask</span></button>`).join('')}<p class="dl-fine">${nm} offers what's coming due. You decide who's stable enough to hand off.</p></div>`
+      : `<p class="dl-fine" style="margin-top:0">"Nothing coming due that I can take. Need something?"</p>`;
+    const all = `<details class="dl-all" ${sug.length ? '' : 'open'}><summary>Ask ${nm} for something else <small>${tasks.length} options</small></summary>${tasks.map((t) => `<div class="dl-task"><div class="dl-tl">${esc(t.label)}</div><div class="prep">${t.rooms.filter((r) => here(def(r)) && !gone(s.p[r])).map((r) => `<button class="btn" data-act="deleg" data-t="${t.id}" data-pid="${r}">${r} ${esc(def(r).short)}</button>`).join('')}</div></div>`).join('')}</details>`;
+    const body = `${ui.delegMsg ? `<div class="reply" style="margin-bottom:1rem">${face(C().cna)}<p class="voice" style="margin:0">${esc(ui.delegMsg)}</p></div>${reviewHTML(ui.delegReview, 'Delegation, reviewed')}` : `<p class="dl-who">${nm} is your ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}: collecting data and helping with care, like vitals, weights, walks and baths. Assessing, teaching, meds and judgment calls stay with you.</p>`}
+      ${note ? `<p class="deleg-note">${esc(note)}</p>` : ''}${board}${tasks.length ? offer + all : '<p class="empty" style="padding:0">Nothing to hand off right now.</p>'}`;
+    return sheet(`Ask ${nm}`, body, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: face(C().cna), label: `Delegate to ${cna().name}, ${cna().role}` });
   }
 
   function ovNova() {
     const body = `<div class="nova-card">${face('nova')}<div>
-      ${ui.nova ? `<p class="dlg-text">"${esc(ui.nova)}"</p>` : `<p class="dlg-text">"You've got ${s.nova} question${s.nova === 1 ? '' : 's'} left on me today. I won't hand you answers, but I'll point you somewhere useful."</p>`}
+      ${ui.nova ? `<p class="dlg-text">"${esc(ui.nova)}"</p>` : `<p class="nova-what"><b>Nova is your charge nurse.</b> Stuck, or not sure what matters most right now? Ask her for a tip. She looks at your whole assignment and tells you where she'd look next: which patient, and what to check. She won't make the call for you. Tips don't lower your score.</p>
+      <p class="dlg-text">"${s.nova ? `You've got ${s.nova} tip${s.nova === 1 ? '' : 's'} left on me today. Use them when you're stuck.` : 'That\'s all my tips for today. You\'ve got this.'}"</p>`}
       ${s.novaLog.length > (ui.nova ? 1 : 0) ? `<details><summary class="muted">Earlier from Nova</summary>${s.novaLog.slice(0, ui.nova ? -1 : undefined).map((n) => `<p class="voice muted">${E.clock(n.t)}: ${esc(n.text)}</p>`).join('')}</details>` : ''}
     </div></div>`;
-    const foot = `<button class="btn" data-act="close">Close</button>${!ui.nova && s.nova > 0 ? `<button class="btn btn-primary" data-act="nova-ask">Ask for a nudge (1 of ${s.nova})</button>` : ''}`;
+    const foot = `<button class="btn" data-act="close">Close</button>${!ui.nova && s.nova > 0 ? `<button class="btn btn-primary" data-act="nova-ask">Get a tip <span style="font-weight:400;opacity:.8">${s.nova} left</span></button>` : ''}`;
     return sheet('Nova Reyes, charge nurse', body, foot, { label: 'Ask Nova' });
   }
 

@@ -22,7 +22,7 @@ with cf.ThreadPoolExecutor(3) as ex:
             for pr in probs[:4]: print(f"::error title={j[0]} {j[1]}px {j[2]}::{pr[:300]}")   # shows on the GitHub check
 print(subprocess.run([sys.executable, str(ROOT / 'tests' / 'soak.py')], capture_output=True, text=True).stdout.strip().splitlines()[-1])
 # Analytics, feedback and signup end to end; then the installable app and offline play.
-for extra in ('telemetry.py', 'pwa.py', 'cloud.py', 'review.py', 'guide.py', 'law.py', 'teen.py', 'stepdown.py', 'ngn.py', 'teach.py', 'pack.py'):
+for extra in ('telemetry.py', 'pwa.py', 'cloud.py', 'review.py', 'guide.py', 'law.py', 'teen.py', 'stepdown.py', 'ngn.py', 'teach.py', 'pack.py', 'clarity.py'):
     r = subprocess.run([sys.executable, str(ROOT / 'tests' / extra)], capture_output=True, text=True)
     print((r.stdout.strip().splitlines() or [r.stderr.strip()[-300:]])[-1])
     if r.returncode:

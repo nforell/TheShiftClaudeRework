@@ -1481,3 +1481,53 @@ table.health td{white-space:normal}
 .pack-list li{padding:.55rem 0;border-bottom:1px solid var(--grid);display:grid;gap:.1rem}
 .pack-list small{color:var(--ink-2);font-size:.85rem}
 .sheet-b a{color:var(--teal)}
+
+/* Helpers in the header: Nova and the aide, as people you can tap */
+.helpers{display:inline-flex;gap:.3rem;align-items:center}
+.hb{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;padding:.15rem .6rem .15rem .2rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.hb:hover{border-color:var(--teal)}
+.hb-f{position:relative;width:34px;height:34px;flex:none;border-radius:50%;background:var(--surface-2,var(--bg));overflow:hidden;border:1px solid var(--line)}
+.hb-f svg{width:100%;height:100%;display:block}
+.hb-n{position:absolute;right:-1px;bottom:-1px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--teal);color:var(--teal-ink);font:700 .62rem/15px var(--sans);font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.hb-n.free{min-width:10px;width:10px;height:10px;padding:0;background:var(--good)}
+.hb-n.busy{background:var(--amber)}
+.hb-f{overflow:visible}.hb-f svg{border-radius:50%}
+.hb-t{display:grid;line-height:1.1}
+.hb-t b{font-size:.84rem;font-weight:700}
+.hb-t small{font-size:.72rem;color:var(--ink-2);white-space:nowrap}
+@media (max-width:1100px){.hb-t small{display:none}}
+@media (max-width:860px){.hb-t{display:none}.hb{padding:.15rem;border-radius:50%;min-width:44px;justify-content:center}}
+
+/* Talk bubble in the room scene, by the patient */
+.talk-bub{position:absolute;z-index:2;right:calc(50% + clamp(62px,7vw,105px));top:28%;display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.45rem .8rem .45rem .6rem;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;background:var(--surface);color:var(--ink);font:600 .9rem/1.1 var(--sans);cursor:pointer;box-shadow:0 2px 0 rgba(28,35,48,.18);max-width:44%}
+.talk-bub .ai{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+.talk-bub span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.talk-bub:hover,.talk-bub.on{background:var(--ink);color:var(--surface)}
+.talk-bub.wants{border-color:var(--teal);background:var(--teal);color:var(--teal-ink)}
+.talk-bub.wants i{position:absolute;left:-4px;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--band-yellow,#F2C94C);box-shadow:0 0 0 2px var(--surface);animation:bubPing 1.6s ease-out infinite}
+@keyframes bubPing{0%{transform:scale(.8)}50%{transform:scale(1.15)}100%{transform:scale(.8)}}
+@media (prefers-reduced-motion:reduce){.talk-bub.wants i{animation:none}}
+[data-motion="reduced"] .talk-bub.wants i{animation:none}
+@media (max-width:760px){.talk-bub{right:auto;left:10px;top:12px;max-width:calc(100% - 20px);font-size:.84rem;padding:.4rem .65rem .4rem .5rem;border-radius:18px 18px 18px 4px}.talk-bub.wants i{left:auto;right:-4px}}
+
+/* Station: say what it is */
+.st-intro{margin:0 0 .7rem;padding:.1rem 0 .1rem}
+.st-intro h1{font-family:var(--sign);font-weight:600;font-size:1.55rem;line-height:1.1;margin:0}
+.st-intro p{margin:.2rem 0 0;color:var(--ink-2);font-size:.92rem;max-width:62rem}
+.st-intro p b{color:var(--ink);font-weight:600}
+@media (max-width:640px){.st-intro .long{display:none}.st-intro h1{font-size:1.3rem}.st-intro p{font-size:.86rem}}
+.tools .btn.has-sug{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+
+/* Aide: suggestions first, everything else folded */
+.dl-who{margin:0 0 .8rem;color:var(--ink-2);font-size:.92rem}
+.dl-sug h4,.dl-board h4{margin:.2rem 0 .4rem}
+.dl-s{display:flex;width:100%;align-items:center;justify-content:space-between;gap:.8rem;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:var(--r);padding:.6rem .7rem;margin:0 0 .4rem;cursor:pointer;min-height:52px}
+.dl-s:hover{border-color:var(--teal)}
+.dl-s .dl-l{display:grid}.dl-s small{color:var(--ink-2);font-size:.82rem}
+.dl-go{font-weight:700;color:var(--teal);white-space:nowrap}
+.dl-fine{font-size:.84rem;color:var(--ink-2);margin:.3rem 0 .8rem}
+.dl-all{border-top:1px solid var(--line);margin-top:.4rem}
+.dl-all>summary{cursor:pointer;padding:.75rem 0;font-weight:600;list-style-position:inside}
+.dl-all>summary small{font-weight:400;color:var(--ink-2);margin-left:.4rem}
+.dl-task{padding:.6rem 0;border-bottom:1px solid var(--line)}.dl-tl{font-weight:600;margin-bottom:.35rem}
+.nova-what{margin:0 0 .7rem;font-size:.95rem}

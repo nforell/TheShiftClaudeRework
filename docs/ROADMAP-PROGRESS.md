@@ -2,6 +2,20 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 10 — October 1, 2026 (branch `clarity-pass`, built on `next-four`)
+
+From the first outside player's notes.
+
+### Done
+- **Talking to the patient** is now a speech bubble in the room, by the bed: "Talk with Mr. Bell", or "Mr. Bell wants to talk" (filled, with a dot) when they do. It opens the Talk tab.
+- **Nova** is in the header as a face with "Ask Nova · Tips · 3 left" instead of three dots. Her sheet says what she's for (where she'd look next, not the answer) and that tips don't lower your score. The button reads "Get a tip".
+- **The aide** (Luis, Andre, etc.) is in the header next to Nova, on every screen, with a status: free, busy with N tasks, or how many things they can take. Their sheet now leads with at most three suggestions in the aide's voice (things coming due that are within their scope: vitals, sugars, intake, weights, walks, plus vitals on anyone with an old set), each one tap to send. Everything else, including the things an aide can't do, is folded under "Ask for something else", so the scope-of-practice traps still exist. A line says what an aide can and can't do. The player still decides who's stable enough to hand off.
+- **The station** is called "Nurses' station: home base" in the tab bar, has a heading and one line saying what it's for, and the room button says "Back to station". The first-time tips now start with what the station is, and include the team in the header.
+- New `tests/clarity.py` (every shift, phone and desktop). Full suite clean.
+
+### Needs Nick
+- Put the build in front of the same player and see if these four land.
+
 ## Session 9 — October 1, 2026 (branch `next-four`, built on `house-style`)
 
 ### Done
