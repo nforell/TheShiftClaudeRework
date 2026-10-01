@@ -101,7 +101,7 @@ with sync_playwright() as p:
     H('filter', k='bad'); A('debrief-bad', scroll=False)
     jk=st("(()=>{const j=s.judg[0];return j?[j.key||'',String(j.t)]:null})()")
     if jk: H('rpt', k=jk[0], t=jk[1]); A('report-decision'); H('rpt-why', v='clinical'); A('report-decision-picked', scroll=False); close()
-    H('fb-pay', v='maybe'); A('debrief-feedback')
+    H('fb-pay', v='maybe'); A('debrief-feedback'); H('by', v='cj'); A('debrief-steps'); H('by', v='skill')
     H('awards'); A('awards')
     for tb in ['lessons','floor','units']: H('aw-tab', k=tb); A('awards-'+tb)
     H('aw-back'); A('home-after')

@@ -1370,6 +1370,12 @@ table.health td{white-space:normal}
 .rp-q{margin:0 0 .9rem;padding:.6rem .8rem;border-left:3px solid var(--line);background:var(--surface-2);border-radius:0 var(--r) var(--r) 0}
 .rp-q b{display:block}.rp-q span{display:block;margin-top:.2rem;color:var(--ink-2);font-family:var(--serif)}
 .rp-why{display:flex;flex-wrap:wrap;gap:.4rem}
+
+/* score view toggle: skills or NCLEX clinical judgment steps */
+.by-h{display:flex;align-items:center;justify-content:space-between;gap:.5rem 1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.by-h .seg button{min-height:36px;font-size:.85rem;padding:.25em .75em}
+.by-n{font-size:.85rem;margin:-.3rem 0 .8rem}
+.moments .cj-tag{font-weight:600;color:var(--ink-2);letter-spacing:0}
 </style></head>
 <body><div id="app"></div>
 <script>/* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
@@ -1635,6 +1641,53 @@ window.Shift = window.Shift || {};
 
   S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, clock, clamp, store, DOMAINS, cases };
 })(window.Shift);
+
+/* The Shift — NCSBN Clinical Judgment Measurement Model (CJMM).
+   Every scored decision is filed under one of the six steps the Next Generation NCLEX tests, so the debrief can
+   show students and educators where judgment broke down, not just which skill area.
+   Steps are assigned by rules on each decision's key, domain and wording. A decision can be pinned to a step
+   with OVERRIDE (key → step id); docs/cjmm-map.csv lists every decision and its step for clinical review. */
+(function (S) {
+  const STEPS = [
+    ['cues', 'Recognize cues', 'Notice what matters in the data: assessments, vitals, labs, what the patient says.'],
+    ['analyze', 'Analyze cues', 'Connect the cues to what could be going on.'],
+    ['hypo', 'Prioritize hypotheses', 'Rank what is most urgent and most likely.'],
+    ['solve', 'Generate solutions', 'Decide what should and shouldn\'t be done: hold, clarify, plan, choose who does it.'],
+    ['act', 'Take action', 'Do it: give, treat, protect, escalate, teach.'],
+    ['eval', 'Evaluate outcomes', 'Check whether it worked, and follow through.'],
+  ];
+  const OVERRIDE = {
+    // 'key': 'step',   e.g. '305-ortho': 'cues'
+  };
+  const EVAL = /\b(re-?check|re-?assess|re-?scor|re-?scan|re-?evaluat|did it work|follow(?:ed)?[ -]?up|after treating|after (?:the |her |his )?(?:dose|insulin|treatment|transfusion|bolus|naloxone|juice)|repeat (?:level|glucose|potassium|labs?|vitals|score|sodium|lithium|CIWA)|trend|through the first|still on .* at handoff|watched .* through|kept checking|came back to|post-?(?:transfusion|dose)|response to|whether .* worked)/i;
+  const CUES = /^(?:You )?(?:checked|assessed|looked|listened|noticed|caught|scanned|counted|weighed|examined|took (?:a |her |his |their )?(?:full )?(?:set of )?vitals|asked .* about|spotted|saw|read|reviewed|verified|confirmed|measured|palpated|auscultated|did (?:a |the )?(?:neuro|skin|full)|got (?:a |the )?(?:full|current|fresh))\b|without (?:a |any )?current|without (?:checking|scanning|assessing|looking|a (?:pain|sedation|neuro|heart rate|glucose|blood pressure))|without (?:a |any )?baseline|learned .*(?:baseline|history)|went unrecognized|went unnoticed|nobody noticed|missed (?:the |her |his )?(?:cue|sign|change|finding)|never assessed|unseen\b/i;
+  const ANALYZE = /\b(connected|linked|recognized|put together|tied|pushed back on|saw through|treat(?:ed)? .* instead of (?:its |the )?cause|label|bias|explained the|pattern|dressed up|not (?:just|a) |medicate .* calm|thought it was|mistook|as (?:a |an )?(?:stomach bug|anxiety|behavior))\b/i;
+  const HYPO = /\b(first|ahead of|before (?:the |anyone|other)|priority|prioritiz|rank|most urgent|who needs you)\b/i;
+  const SOLVE = /\b(held|hold|clarif|questioned the order|asked for (?:a |an )?(?:order|new order|change)|refused to|declined to|didn'?t give|chose not|waited (?:for|until)|stopped .* (?:before|without)|restarted .* before|delegat|asked (?:the |your )?(?:CNA|aide|tech|sitter)|put .* on 1:1 with|kept .* (?:NPO|supine|upright)|plan)\b/i;
+  function step(j) {
+    if (!j) return 'act';
+    const k = j.key || '', t = j.text || '';
+    if (OVERRIDE[k]) return OVERRIDE[k];
+    if (/^rank-|-rank\b|^prio/.test(k) || j.domain === 'priority') return 'hypo';
+    if (j.domain === 'deleg') return 'solve';
+    if (/-(re(check|assess|scan|eval)|prn-?eval|eval|follow|fu|upd)\b|^prn-/.test(k) || EVAL.test(t)) return 'eval';
+    if (CUES.test(t) || (j.domain === 'assess' && !/^You (gave|started|treated|called|told)/.test(t))) return 'cues';
+    if (ANALYZE.test(t) || (j.domain === 'judgment' && /\b(sbar|bias|recog)\b/i.test(k))) return 'analyze';
+    if (HYPO.test(t) && /\b(saw|see|chose|put .* first|ranked)\b/i.test(t)) return 'hypo';
+    if (SOLVE.test(t) || /-hold\b|-clar/.test(k)) return 'solve';
+    if (j.domain === 'judgment') return /^You (gave|started|treated|stopped|let|kept|sat|put|moved|called|asked)/.test(t) ? 'act' : 'analyze';
+    return 'act';
+  }
+  /* Scored like the skill domains in the engine, so the two views agree. */
+  function score(judg) {
+    return STEPS.map(([id, label, what]) => {
+      const js = judg.filter((j) => step(j) === id);
+      const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0), bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
+      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - bad * 9))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+    });
+  }
+  S.cjmm = { STEPS, OVERRIDE, step, score };
+})(window.Shift = window.Shift || {});
 
 /* The Shift — the rest of the shift. Unit-wide work that every case gets for free:
    following patients after they leave, hourly rounding, call lights, PRN reassessment,
@@ -9209,7 +9262,7 @@ window.Shift = window.Shift || {};
 
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
@@ -10035,14 +10088,15 @@ window.Shift = window.Shift || {};
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
-        <section aria-labelledby="dh"><h2 id="dh" style="margin-bottom:.8rem">By skill</h2>
-          ${d.dom.map((x) => `<div class="meter"><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
+        <section aria-labelledby="dh"><div class="by-h"><h2 id="dh">${ui.byCj ? 'By NCLEX step' : 'By skill'}</h2>${CJ ? `<div class="seg" role="group" aria-label="Score by"><button data-act="by" data-v="skill" aria-pressed="${!ui.byCj}">Skills</button><button data-act="by" data-v="cj" aria-pressed="${!!ui.byCj}">NCLEX steps</button></div>` : ''}</div>
+          ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one.</p>' : ''}
+          ${(ui.byCj && CJ ? CJ.score(d.judg) : d.dom).map((x) => `<div class="meter"${x.what ? ` title="${esc(x.what)}"` : ''}><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(next.level)}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(next.level)})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
-          <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p><button class="rpt-btn" data-act="rpt" data-k="${esc(j.key || '')}" data-t="${j.t}" aria-label="Report a problem with this feedback">Report a problem</button></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
+          <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}${CJ ? `<span class="cj-tag"> · ${esc(CJ.STEPS.find((x) => x[0] === CJ.step(j))[1])}</span>` : ''}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p><button class="rpt-btn" data-act="rpt" data-k="${esc(j.key || '')}" data-t="${j.t}" aria-label="Report a problem with this feedback">Report a problem</button></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
         </section>
       </div>${fbCard()}</div></main>`;
   }
@@ -10753,6 +10807,7 @@ window.Shift = window.Shift || {};
     health() { ui.ov = 'health'; render(); },
     install() { const ev = ui.installEvt; if (!ev) return; ui.installEvt = null; ui.ov = null; render(); try { ev.prompt(); ev.userChoice.then((c) => TEL.track('install_prompt', { outcome: c && c.outcome })).catch(() => {}); } catch (e) { /* prompt already used */ } },
     'install-ios'(el) { TEL.track('install_prompt', { outcome: 'ios_help' }); hint(el, 'In Safari, tap the Share button, then Add to Home Screen.'); },
+    by(el) { ui.byCj = el.dataset.v === 'cj'; if (ui.byCj && !ui.byCjSeen) { ui.byCjSeen = true; TEL.track('debrief_steps_view', { case: s ? s.caseId : caseId }); } render(); },
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
     'fb-send'() { const f = ui.fb || {}; if (!f.note && !f.pay) return; const d = s && s.ended ? E.debrief(s) : null; f.sent = TEL.feedback('debrief', Object.assign(fbWhere(), { would_pay: f.pay || '', note: (f.note || '').trim(), score: d ? d.overall : null })); render(); },

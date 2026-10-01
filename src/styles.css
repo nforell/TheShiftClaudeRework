@@ -1357,3 +1357,9 @@ table.health td{white-space:normal}
 .rp-q{margin:0 0 .9rem;padding:.6rem .8rem;border-left:3px solid var(--line);background:var(--surface-2);border-radius:0 var(--r) var(--r) 0}
 .rp-q b{display:block}.rp-q span{display:block;margin-top:.2rem;color:var(--ink-2);font-family:var(--serif)}
 .rp-why{display:flex;flex-wrap:wrap;gap:.4rem}
+
+/* score view toggle: skills or NCLEX clinical judgment steps */
+.by-h{display:flex;align-items:center;justify-content:space-between;gap:.5rem 1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.by-h .seg button{min-height:36px;font-size:.85rem;padding:.25em .75em}
+.by-n{font-size:.85rem;margin:-.3rem 0 .8rem}
+.moments .cj-tag{font-weight:600;color:var(--ink-2);letter-spacing:0}
