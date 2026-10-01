@@ -8,12 +8,12 @@ sys.path.insert(0, str(ROOT / 'tests'))
 from fonts import fontroute
 from playwright.sync_api import sync_playwright
 GAME = (ROOT / 'dist' / 'the-shift.html').as_uri(); fails = []
-TOK = re.compile(r'\b(5150|5250|Riese|LPS)\b|California')
+TOK = re.compile(r'\b(5150|5250|5585|Riese|LPS)\b|California')
 def check(ok, what):
     print(('ok   ' if ok else 'FAIL ') + what)
     if not ok: fails.append(what)
 lits = []
-for f in ['src/case-psych1.js', 'src/stories/psych1.js', 'src/flow.js', 'src/case-peds1.js']:
+for f in ['src/case-psych1.js', 'src/stories/psych1.js', 'src/case-adolpsych1.js', 'src/stories/adolpsych1.js', 'src/flow.js', 'src/case-peds1.js']:
     src = (ROOT / f).read_text()
     body = src.split('*/', 1)[1] if src.lstrip().startswith('/*') else src   # skip the header comment
     for m in re.finditer(r"'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`", body):

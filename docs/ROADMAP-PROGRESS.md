@@ -2,22 +2,35 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 6 — October 1, 2026 (branch `teen-psych-shift`, built on `psych-law-setting`)
+
+### Done
+- **New shift: Group chat** (Specialty: Teen psych, 4 North, 15:00–20:00). `src/case-adolpsych1.js`, `src/stories/adolpsych1.js`.
+  - 401 Ella, 15: anorexia, refeeding day 4. Phosphorus, potassium and magnesium all under the call thresholds at 16:00; replace, keep feeding, recheck at 19:00. Blind weights, supervised dinner and the hour after, compensatory exercise.
+  - 403 Jordan, 16, they/them: self-harm precautions, a skin check day shift missed, fresh cuts after a call with dad, a plastic shard in a shoe, peer contagion in the dayroom, and a call from dad where you must not out them.
+  - 405 Marcus, 14: acute dystonia an hour after his first-ever haloperidol, called "faking" by staff. Diphenhydramine IM, airway check, reassess, report; untreated, it reaches his airway.
+  - 407 Kayla, 16: asks you to promise secrecy, then discloses abuse by her mom's partner, who is on tonight's visitor list. Mandated report yourself, change the visitor list, don't tip him off.
+  - 409 Eli, 17 (admission at 15:45): "medically cleared" with no acetaminophen level; an empty bottle in his hoodie, and he told Jordan. Ask directly, stat labs, call back with results, transfer for N-acetylcysteine. The admission order set's acetaminophen PRN is a trap.
+  - Five things score **Evaluate outcomes** (recheck, reassess, follow-up on results, check back after a report, recheck wounds and the coping plan).
+  - Wired everywhere: home screen, landing page (six shifts), clinical review page `/review/psych-4n-1/`, transfer follow-ups, oncoming nurse (Marco), psych-law General US wording (adds 5585). New `tests/teen.py` plays it twice: a careful run gets all five good outcomes and Evaluate outcomes 100; a run that only skips ahead sees every emergency happen. Full suite clean.
+
+### Needs Nick
+- Merge `teen-psych-shift` (includes the guided first room and psych law setting): https://github.com/nforell/TheShiftClaudeRework/compare/main...teen-psych-shift
+- Play it once as a psych RN and use **Report a problem** on anything that rings false. Then send `/review/psych-4n-1/` to an adolescent psych nurse.
+- The content leans on California law for minors (parent-consent admissions, 5585 holds, 36-hour written CPS report). The General US setting covers the hold wording.
+
+### Up next
+1. Telemetry/step-down shift (A-fib with RVR, heparin titration, post-cath bleed).
+2. L&D/postpartum, ED triage, LPN-scope shift.
+
 ## Session 5 — October 1, 2026 (branch `psych-law-setting`, built on `guided-first-room`)
 
 ### Done
 - **Psych law setting.** Settings → Psych law: **California** (default, the original wording) or **General US**, which swaps 5150, 5250, Riese, LPS and California-only lines for plain terms that hold in most states (72-hour involuntary hold, extended involuntary certification, petition for court-ordered medication, mental health conservatorship; the peds mandated-report deadline becomes "varies by state"). It's applied at display time, so the content stays written once and the clinical review pages keep the California source. New `tests/law.py` checks every California-specific string and plays the psych shift in both modes.
 
 ### Needs Nick
-- Merge `psych-law-setting` (it includes the guided first room, so merging this one is enough): https://github.com/nforell/TheShiftClaudeRework/compare/main...psych-law-setting
 - Sanity-check the General US wording as a psych RN; it's in `src/ui.js` under `LAW`.
 
-### Up next
-New shifts. Every new case should score Evaluate outcomes (only 7 of ~500 decisions do today). Candidate units, in suggested order:
-1. Second psych shift: adolescent unit (your specialty; schools have few psych placements).
-2. Med-surg step-down/telemetry: chest pain, new A-fib with RVR, heparin titration, a post-cath bleed.
-3. L&D/postpartum: postpartum hemorrhage, preeclampsia on magnesium, newborn hypoglycemia.
-4. ED triage: ESI levels with a waiting room that changes.
-5. LPN-scope shift for the PN audience.
 
 ## Session 4 — October 1, 2026 (branch `guided-first-room`)
 

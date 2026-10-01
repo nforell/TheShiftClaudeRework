@@ -22,6 +22,7 @@ window.Shift = window.Shift || {};
     'medsurg-4w-2': { key: 'dana' },
     'medsurg-4w-3': { key: 'kai', name: 'Kai', role: 'Oncoming RN', look: L('#D8A37C', '#BA855E', '#9A564A', '#D68A70', '#2C1D12', 'short', '#1B1410', 'teal') },
     'psych-3e-1': { key: 'owen', name: 'Owen', role: 'Oncoming RN', look: L('#C79470', '#A87652', '#8E5244', '#C98468', '#2A1B10', 'curls', '#20150F', 'grey', ['beard']) },
+    'psych-4n-1': { key: 'marco', name: 'Marco', role: 'Night RN', look: L('#D6A47E', '#B88660', '#9A5648', '#D48A70', '#2A1C12', 'short', '#1A1310', 'navy', ['goatee']) },
     'peds-5s-1': { key: 'june', name: 'June', role: 'Night RN', look: L('#EFCCAF', '#D4AA8C', '#B66A60', '#EE9C88', '#3C2A1E', 'long', '#1E1712', 'wine') },
   };
   // Staff for a case: receiving units, plus the oncoming nurse (reusing a character from another shift if we have one).
@@ -267,13 +268,57 @@ window.Shift = window.Shift || {};
       }),
     },
   };
+  AFTER['psych-4n-1'] = {
+    '401': (s, P, A, at) => ({
+      unit: 'Pediatrics', nurse: 'med', emergent: true,
+      event: `Refeeding syndrome: phosphorus ${P.phos.toFixed(1)}, irregular pulse, leg weakness. Transferred to the pediatric floor at ${A.clock(at)} for a cardiac monitor and IV phosphorus.`,
+      extra: [{ label: 'Anorexia nervosa, refeeding day 4: keep feeding, replace electrolytes, labs every 6 hours', key: true }, { label: 'Blind weights; supervised meals and an hour after; no exercise', key: true }],
+      course: [
+        { at: 0, st: 'serious', text: 'On a monitor. IV sodium phosphate running. Frequent PVCs, no runs.' },
+        { at: 80, st: 'serious', text: 'Phosphorus 1.9. Fewer extra beats. Still weak standing.' },
+        { at: 170, st: 'improving', text: 'Phosphorus 2.4. Ate most of a supervised snack, crying.' },
+      ],
+      later: 'Four days on pediatrics. Refeeding syndrome peaks in the first week: the protocol checks phosphorus, potassium and magnesium twice a day so the call comes before the heart notices.',
+    }),
+    '403': (s, P, A, at) => ({
+      unit: 'ED', nurse: 'ed', emergent: true,
+      event: `Self-harm on the unit at ${A.clock(at)}, deeper than this afternoon's. Sent to the ED for sutures.`,
+      extra: [{ label: 'On self-harm precautions; second episode today; object was a piece of tray plastic', key: true }, { label: 'Uses Jordan, they/them; father does not know: do not share with family', key: true }],
+      course: [
+        { at: 0, st: 'stable', text: 'In the ED with a sitter. Laceration being irrigated.' },
+        { at: 60, st: 'stable', text: 'Eleven sutures. Psychiatry will take them back to 4 North on 1:1.' },
+      ],
+      later: 'Back on 4 North that night on 1:1. A skin check at 15:00 and a room search would have found the object before it was used twice.',
+    }),
+    '405': (s, P, A, at) => ({
+      unit: 'ED', nurse: 'ed', emergent: true,
+      event: `Acute dystonia reaching his airway: stridor and a locked jaw at ${A.clock(at)}, after first-ever haloperidol at 14:30.`,
+      extra: [{ label: 'Haloperidol 5 mg IM at 14:30, no anticholinergic given', key: true }, { label: 'Allergy: haloperidol (acute dystonia)', key: true }],
+      course: [
+        { at: 0, st: 'serious', text: 'IV diphenhydramine given. Stridor easing. Airway watched closely.' },
+        { at: 60, st: 'stable', text: 'Neck and jaw loose. Drowsy. Scheduled anticholinergic started.' },
+      ],
+      later: 'Back on 4 North by morning. Dystonia after a first dose of haloperidol in a young male is common and reversible; left untreated, it can reach the airway.',
+    }),
+    '409': (s, P, A, at) => ({
+      unit: 'Pediatrics', nurse: 'med', emergent: false,
+      event: `Acetaminophen hepatotoxicity: about 30 extra-strength tablets yesterday morning, not disclosed in the ED. AST 1,180, INR 1.6. Transferred at ${A.clock(at)} for IV N-acetylcysteine.`,
+      extra: [{ label: 'On a 5585 for suicide risk: sitter at all times, belongings searched', key: true }, { label: 'Disclosed the ingestion to a peer and then to his nurse', key: false }],
+      course: [
+        { at: 0, st: 'serious', text: 'N-acetylcysteine running. Sitter at the bedside. Nauseous.' },
+        { at: 90, st: 'serious', text: 'AST 1,420, INR 1.7. Still rising, as expected on the first day.' },
+        { at: 170, st: 'improving', text: 'INR steady. Ate crackers. Asked if his mom could bring his bass.' },
+      ],
+      later: 'Three days on pediatrics until his liver tests turned around, then back to 4 North. A suicide attempt with an unknown ingestion should get an acetaminophen level, whatever the patient says.',
+    }),
+  };
   function spec(s, A, d, P, at) {
     const f = (AFTER[s.caseId] || {})[d.id];
     const base = f ? f(s, P, A, at) : { unit: P.icu ? 'ICU' : 'another unit', nurse: 'icu', emergent: !!P.icu, event: P.goneText || 'Transferred off the unit.', course: [{ at: 0, st: P.icu ? 'crit' : 'stable', text: P.goneText || 'Transferred.' }], later: '' };
     return Object.assign({ handoff: true, note: true, push: 50, extra: [], family: null }, base);
   }
   const outOf = (P) => P.icu || P.gone;
-  const where = (u) => ({ ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', PACU: 'PACU' }[u] || 'the ' + u);
+  const where = (u) => ({ ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', Pediatrics: 'the pediatric floor', PACU: 'PACU' }[u] || 'the ' + u);
   function entryAt(P, dt) { const c = P.out.spec.course; let i = 0; c.forEach((e, k) => { if (e.at <= dt) i = k; }); return i; }
 
   /* ---------- unit flavor: rounding, call lights, report noise ---------- */
@@ -307,7 +352,7 @@ window.Shift = window.Shift || {};
     psych: ['What was on TV in the dayroom', 'Every q15 check since the start of the shift, one by one', 'What they ate for breakfast', 'That they seem "manipulative"'],
     peds: ['Their favorite cartoon', 'Every vital sign since the start of the shift, in order', 'Which popsicle flavor they picked', 'A guess about how the parents get along'],
   };
-  const NOBELL = { 'peds-5s-1': ['507'], 'psych-3e-1': ['301'] };
+  const NOBELL = { 'peds-5s-1': ['507'], 'psych-3e-1': ['301'], 'psych-4n-1': ['409'] };
   const noBell = (s, d, P) => (NOBELL[s.caseId] || []).includes(d.id) || P.oneToOne || P.secluded || P.restrained || P.callLight;
   const touched = (P) => Math.max(P.touchAt === undefined ? -999 : P.touchAt, P.roundAt === undefined ? -999 : P.roundAt, -30);
   const cnaKey = (c) => c.cna || 'luis';

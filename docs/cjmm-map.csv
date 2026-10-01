@@ -1,4 +1,97 @@
 step,skill_area,points,decision,key,where
+"Recognize cues",assess,1,"You checked Ella's orthostatic vital signs.","401-ortho",src/case-adolpsych1.js:66
+"Recognize cues",assess,2,"You read Ella's afternoon labs against the notify parameters in her orders.","401-labs",src/case-adolpsych1.js:69
+"Take action",safety,1,"You redirected Ella's compensatory exercise without shaming her.","401-redirect",src/case-adolpsych1.js:71
+"Generate solutions",meds,-2,"You held Ella's phosphate supplement.","401-kphos-hold",src/case-adolpsych1.js:82
+"Take action",meds,2,"You gave Ella's electrolyte replacement promptly.","401-repl",src/case-adolpsych1.js:88
+"Analyze cues",judgment,-2,"You suggested holding Ella's meals for a low phosphorus.","401-sbar-hold",src/case-adolpsych1.js:110
+"Take action",comm,varies,"You called Dr. Adeyemi with Ella's refeeding labs.","401-sbar",src/case-adolpsych1.js:115
+"Take action",safety,1,"You cared for Jordan's wounds matter-of-factly.","403-wound",src/case-adolpsych1.js:185
+"Take action",safety,2,"You searched Jordan's room and removed what they'd used.","403-search",src/case-adolpsych1.js:189
+"Take action",safety,2,"You increased Jordan's observation after new self-harm.","403-one",src/case-adolpsych1.js:191
+"Analyze cues",judgment,0,"You increased Jordan's observation without knowing why yet.","403-one",src/case-adolpsych1.js:191
+"Evaluate outcomes",judgment,1,"You rechecked Jordan's wounds and their coping plan later in the shift.","403-plan",src/case-adolpsych1.js:194
+"Take action",meds,varies,"You offered Jordan hydroxyzine for anxiety.","403-hydrox",src/case-adolpsych1.js:198
+"Analyze cues",judgment,-2,"You suggested punishing Jordan for self-harm.","403-sbar-privs",src/case-adolpsych1.js:220
+"Take action",comm,varies,"You reported Jordan's new self-harm to the psychiatrist.","403-sbar",src/case-adolpsych1.js:225
+"Recognize cues",assess,varies,"You did Marcus's post-IM check${s.t <= 45 ? ' on time' : ', late'}.","405-postim",src/case-adolpsych1.js:288
+"Recognize cues",safety,1,"You checked Marcus's airway during his dystonia.","405-airway",src/case-adolpsych1.js:289
+"Take action",safety,-3,"You secluded Marcus during an acute dystonic reaction.","405-seclude",src/case-adolpsych1.js:290
+"Evaluate outcomes",judgment,2,"You reassessed Marcus after the diphenhydramine.","405-reassess",src/case-adolpsych1.js:291
+"Take action",meds,-1,"You gave Marcus diphenhydramine without signs of dystonia.","405-dph",src/case-adolpsych1.js:298
+"Take action",meds,2,"You treated Marcus's acute dystonia with diphenhydramine.","405-dph",src/case-adolpsych1.js:298
+"Take action",meds,-3,"You gave Marcus more haloperidol.","405-halo",src/case-adolpsych1.js:304
+"Analyze cues",judgment,-2,"You asked for more haloperidol for Marcus's dystonia.","405-sbar-more",src/case-adolpsych1.js:325
+"Take action",comm,1,"You called about Marcus's dystonia.","405-sbar",src/case-adolpsych1.js:329
+"Take action",comm,2,"You reported Marcus's dystonic reaction and its treatment.","405-sbar",src/case-adolpsych1.js:330
+"Take action",safety,2,"You made a mandated report for Kayla.","407-cps",src/case-adolpsych1.js:386
+"Evaluate outcomes",judgment,1,"You checked back in with Kayla after the report.","407-checkback",src/case-adolpsych1.js:387
+"Analyze cues",judgment,-2,"You suggested questioning Kayla's mother yourself.","407-sbar-mom",src/case-adolpsych1.js:410
+"Take action",comm,1,"You told the psychiatrist about Kayla's disclosure.","407-sbar",src/case-adolpsych1.js:414
+"Take action",comm,2,"You told the psychiatrist about Kayla's disclosure and your report.","407-sbar",src/case-adolpsych1.js:415
+"Recognize cues",assess,varies,"You did Eli's admission assessment and a thorough belongings search.","409-admit",src/case-adolpsych1.js:470
+"Evaluate outcomes",judgment,2,"You followed up with the psychiatrist on Eli's stat results.","409-results",src/case-adolpsych1.js:502
+"Take action",comm,varies,"You reported a possible acetaminophen overdose in Eli.","409-sbar",src/case-adolpsych1.js:509
+"Generate solutions",comm,2,"You held the line on blind weights and asked about the feeling instead.","401-weight",src/case-adolpsych1.js:536
+"Take action",comm,-2,"You told Ella her weight went up.","401-weight",src/case-adolpsych1.js:537
+"Take action",comm,-2,"You commented on Ella's body.","401-weight",src/case-adolpsych1.js:538
+"Take action",comm,2,"You protected Jordan's name and pronouns from being shared without their consent.","403-name",src/case-adolpsych1.js:545
+"Take action",comm,-2,"You told Jordan their dad has a right to know about their gender identity.","403-name",src/case-adolpsych1.js:546
+"Take action",comm,-1,"You pushed Jordan to come out to their dad.","403-name",src/case-adolpsych1.js:547
+"Take action",comm,2,"You believed Marcus and named what was happening.","405-talk",src/case-adolpsych1.js:561
+"Analyze cues",judgment,-3,"You told Marcus he was faking an acute dystonic reaction.","405-talk",src/case-adolpsych1.js:562
+"Take action",comm,2,"You were honest with Kayla about what you could keep secret, before she told you.","407-promise",src/case-adolpsych1.js:575
+"Take action",comm,-3,"You promised Kayla secrecy.","407-promise",src/case-adolpsych1.js:576
+"Take action",comm,-1,"You put off what Kayla wanted to tell you.","407-defer",src/case-adolpsych1.js:577
+"Take action",comm,2,"You believed Kayla and told her what happens next.","407-resp",src/case-adolpsych1.js:580
+"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:581
+"Take action",comm,-2,"You questioned whether Kayla was telling the truth.","407-resp",src/case-adolpsych1.js:582
+"Generate solutions",comm,1,"You owned the broken promise and told Kayla the plan.","407-resp",src/case-adolpsych1.js:585
+"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:586
+"Recognize cues",assess,2,"You asked Eli directly about any ingestion.","409-ask",src/case-adolpsych1.js:597
+"Analyze cues",judgment,-1,"You accepted ""carsick.""","409-ask",src/case-adolpsych1.js:598
+"Recognize cues",assess,-1,"Tasha found Jordan's fresh cuts before a nurse did.","403-late",src/case-adolpsych1.js:615
+"Take action",safety,-3,"Jordan self-harmed again on the unit, more deeply.","403-second",src/case-adolpsych1.js:621
+"Take action",safety,-3,"Marcus's dystonia reached his airway.","405-airway-fail",src/case-adolpsych1.js:622
+"Take action",safety,-3,"Ella developed symptomatic refeeding syndrome.","401-out",src/case-adolpsych1.js:624
+"Take action",comm,2,"You updated Jordan's father without outing them, and routed the hard news to the psychiatrist.","403-dad",src/case-adolpsych1.js:639
+"Take action",comm,-2,"You outed Jordan to their father.","403-dad",src/case-adolpsych1.js:640
+"Generate solutions",comm,-1,"You refused to tell Jordan's father anything.","403-dad",src/case-adolpsych1.js:641
+"Take action",safety,1,"You supervised Ella's dinner yourself.","401-meal",src/case-adolpsych1.js:642
+"Generate solutions",deleg,1,"You had Tasha supervise Ella's dinner and the hour after.","401-meal",src/case-adolpsych1.js:643
+"Take action",safety,-2,"You left Ella alone with her dinner tray.","401-meal",src/case-adolpsych1.js:644
+"Take action",safety,1,"You kept Ella's post-meal observation in place.","401-post",src/case-adolpsych1.js:645
+"Take action",safety,-1,"You let Ella use the bathroom alone right after dinner.","401-post",src/case-adolpsych1.js:646
+"Take action",comm,2,"You thanked Jordan for telling, and took it seriously.","409-peer",src/case-adolpsych1.js:647
+"Analyze cues",judgment,-2,"You dismissed a peer's report that Eli overdosed.","409-peer",src/case-adolpsych1.js:648
+"Take action",comm,-1,"You asked Jordan to monitor another patient.","409-peer",src/case-adolpsych1.js:649
+"Take action",safety,2,"You handled self-harm talk in the dayroom privately and calmly.","403-contagion",src/case-adolpsych1.js:650
+"Take action",safety,-1,"You called out self-harm talk in front of the whole dayroom.","403-contagion",src/case-adolpsych1.js:651
+"Take action",safety,-2,"You let self-harm details spread on the unit.","403-contagion",src/case-adolpsych1.js:652
+"Take action",safety,1,"You kept Rick off the unit without tipping him off.","407-visit",src/case-adolpsych1.js:653
+"Take action",safety,-3,"You let the man Kayla named visit her.","407-visit",src/case-adolpsych1.js:654
+"Take action",safety,-3,"You told Rick what Kayla disclosed.","407-visit",src/case-adolpsych1.js:655
+"Generate solutions",deleg,-1,"You asked the mental health worker to do a skin check alone.","deleg-skin",src/case-adolpsych1.js:672
+"Generate solutions",deleg,-1,"You asked the mental health worker to find out what's happening at Kayla's home.","deleg-talk",src/case-adolpsych1.js:673
+"Generate solutions",deleg,-2,"You asked the mental health worker to give an injection.","deleg-meds",src/case-adolpsych1.js:674
+"Generate solutions",deleg,1,"You put Tasha on line-of-sight with Jordan.","deleg-one",src/case-adolpsych1.js:675
+"Generate solutions",deleg,1,"You had Tasha sit near Kayla's door during visiting hours.","deleg-sit",src/case-adolpsych1.js:676
+"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the mental health worker.","'deleg-good-' + task.id",src/case-adolpsych1.js:679
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-adolpsych1.js:709
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-adolpsych1.js:712
+"Take action",comm,-2,"Ella's refeeding labs never reached the psychiatrist.","401-norep",src/case-adolpsych1.js:716
+"Recognize cues",assess,-2,"Jordan's skin check was never done by a nurse.","403-noskin",src/case-adolpsych1.js:717
+"Take action",comm,-1,"Jordan's new self-harm never reached the psychiatrist.","403-norep",src/case-adolpsych1.js:718
+"Take action",meds,-2,"Marcus's dystonia was never treated.","405-untreated",src/case-adolpsych1.js:719
+"Take action",comm,-1,"The psychiatrist never heard about Marcus's dystonic reaction.","405-norep",src/case-adolpsych1.js:720
+"Take action",safety,-3,"Kayla's disclosure of abuse was never reported.","407-noreport",src/case-adolpsych1.js:721
+"Take action",comm,-2,"Eli's possible acetaminophen overdose never reached the psychiatrist.","409-norep",src/case-adolpsych1.js:722
+"Take action",comm,-2,"Eli's critical results came back and nobody called them in.","409-nofollow",src/case-adolpsych1.js:723
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-adolpsych1.js:727
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-adolpsych1.js:728
+"Prioritize hypotheses",priority,2,"You chose to see Marcus first.","rank-first",src/case-adolpsych1.js:768
+"Prioritize hypotheses",priority,1,"You chose to see Jordan first.","rank-first",src/case-adolpsych1.js:769
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Marcus and Jordan.","rank-first",src/case-adolpsych1.js:770
 "Evaluate outcomes",judgment,1,"You reassessed Mr. Bell's pain and sedation after his oxycodone.","412-reassess",src/case-medsurg1.js:80
 "Take action",safety,1,"You got Mr. Bell using his incentive spirometer with a splinting pillow.","412-is",src/case-medsurg1.js:96
 "Recognize cues",safety,-1,"You got Mr. Bell up for his first walk without checking orthostatic vital signs.","412-walk-blind",src/case-medsurg1.js:111
@@ -451,29 +544,29 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,2,"You chose to see Bob first.","rank-first",src/case-psych1.js:865
 "Prioritize hypotheses",priority,1,"You chose to see Daniel first.","rank-first",src/case-psych1.js:866
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Bob and Daniel.","rank-first",src/case-psych1.js:867
-"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:344
-"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:345
-"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:346
-"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:377
-"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:394
-"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:418
-"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:420
-"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:431
-"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:432
-"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:433
-"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:434
-"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:504
-"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:505
-"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:506
-"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:517
-"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:518
-"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:519
-"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:525
-"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:530
-"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1351
-"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1358
-"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1444
-"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1485
-"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1508
-"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1519
-"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1520
+"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:389
+"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:390
+"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:391
+"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:422
+"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:439
+"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:463
+"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:465
+"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:476
+"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:477
+"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:478
+"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:479
+"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:549
+"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:550
+"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:551
+"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:562
+"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:563
+"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:564
+"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:570
+"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:575
+"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1419
+"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1426
+"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1512
+"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1553
+"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1576
+"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1587
+"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1588
