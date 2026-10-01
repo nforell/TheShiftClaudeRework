@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Clinical review — The Shift</title>
+<meta name="theme-color" content="#1E6B63">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E6B63'/%3E%3Cpath d='M8 36h12l5-12 8 22 6-14 4 4h13' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4EBE8;--surface:#F7F9F8;--surface-2:#EDF2F0;--ink:#152E2B;--ink-2:#4B625D;--line:#C6D2CE;--teal:#1E6B63;--teal-ink:#fff;--red:#B3342B;--red-bg:#F8E1DE;--good:#2B7249;--good-bg:#E0F0E6;--amber:#A96C0E;--amber-bg:#FBEFD6;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D171A;--surface:#132227;--surface-2:#18292F;--ink:#E1EBE7;--ink-2:#9DB2AC;--line:#2B3F45;--teal:#5DBBAE;--teal-ink:#08201d;--red:#F0766B;--red-bg:#3b1d1b;--good:#72c692;--good-bg:#16301f;--amber:#E9AE4E;--amber-bg:#35291a}}
+:root[data-theme="dark"]{--bg:#0D171A;--surface:#132227;--surface-2:#18292F;--ink:#E1EBE7;--ink-2:#9DB2AC;--line:#2B3F45;--teal:#5DBBAE;--teal-ink:#08201d;--red:#F0766B;--red-bg:#3b1d1b;--good:#72c692;--good-bg:#16301f;--amber:#E9AE4E;--amber-bg:#35291a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+main{max-width:52rem;margin:0 auto;padding:clamp(1.2rem,5vw,3rem) 16px calc(5rem + env(safe-area-inset-bottom))}
+a{color:var(--teal)}
+.home{font-family:var(--serif);font-weight:600;font-size:1.1rem;color:var(--ink);text-decoration:none}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.1;letter-spacing:-.02em;margin:1.6rem 0 .3rem}
+h2{font-size:1.15rem;margin:2.4rem 0 .6rem}
+h3{font-size:1rem;margin:0}
+p{margin:.5rem 0}
+.muted{color:var(--ink-2)}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem .6rem;margin-top:.6rem}
+.chip{display:inline-flex;align-items:center;padding:.15em .6em;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--surface-2);border:1px solid var(--line)}
+.chip.awaiting{background:var(--amber-bg);border-color:transparent;color:var(--amber)}
+.chip.reviewed{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.chip.changed{background:var(--red-bg);border-color:transparent;color:var(--red)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin:.8rem 0}
+.how ol{margin:.4rem 0 0;padding-left:1.2rem}.how li{margin:.2rem 0}
+label{display:block;font-weight:600;font-size:.9rem;margin:.7rem 0 .25rem}
+input[type=text],input[type=email],textarea,select{width:100%;min-height:44px;padding:.5em .7em;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:5rem;resize:vertical}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:0 1rem}
+details.pt{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:.6rem 0}
+details.pt>summary{cursor:pointer;padding:.85rem 1rem;font-weight:600;list-style-position:inside}
+details.pt>div{padding:0 1rem 1rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:.4rem 0}
+th,td{text-align:left;vertical-align:top;padding:.35rem .5rem .35rem 0;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--ink-2);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.scroll{overflow-x:auto}
+ul.plain{margin:.3rem 0;padding-left:1.1rem}
+.dec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:.85rem 1rem;margin:.6rem 0}
+.dec.pos{border-left-color:var(--good)}.dec.neg{border-left-color:var(--red)}
+.dec .top{display:flex;flex-wrap:wrap;gap:.3rem .5rem;align-items:center;font-size:.78rem;color:var(--ink-2);font-weight:600}
+.pts{font-weight:700;padding:.05em .45em;border-radius:4px;background:var(--surface-2)}
+.pos .pts{color:var(--good);background:var(--good-bg)}.neg .pts{color:var(--red);background:var(--red-bg)}
+.dec b{display:block;margin:.35rem 0 .15rem;font-size:1rem}
+.dec .why{font-family:var(--serif);color:var(--ink-2);margin:0}
+.dec .src{font-size:.75rem;color:var(--ink-2);margin-top:.35rem}
+.verdict{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+.verdict button{min-height:40px;padding:.35em .9em;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:.9rem;cursor:pointer}
+.verdict button[aria-pressed="true"][data-v="ok"]{background:var(--good);border-color:var(--good);color:var(--teal-ink)}
+.verdict button[aria-pressed="true"][data-v="fix"]{background:var(--red);border-color:var(--red);color:var(--teal-ink)}
+.verdict button[aria-pressed="true"][data-v="unsure"]{background:var(--amber);border-color:var(--amber);color:var(--teal-ink)}
+.dec textarea{margin-top:.5rem;min-height:3.6rem}
+.opt{padding:.4rem 0;border-bottom:1px solid var(--line);font-size:.92rem}.opt:last-child{border:0}
+.opt i{font-style:normal;font-weight:700;font-size:.75rem;padding:.05em .4em;border-radius:4px;margin-right:.4rem;background:var(--surface-2)}
+.bar{position:sticky;top:0;z-index:5;margin:0 -16px;padding:.6rem 16px;background:var(--bg);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:.6rem;font-size:.9rem}
+.bar .prog{display:block;flex:1;min-width:4rem;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;max-width:12rem}.bar .prog i{display:block;height:100%;background:var(--teal)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.55em 1.2em;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn-primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+.check{display:flex;gap:.6rem;align-items:flex-start;font-weight:500;margin-top:1rem}
+.check input{width:1.2rem;height:1.2rem;margin-top:.2rem;flex:none}
+.msg{margin-top:.8rem;font-weight:600}.msg.err{color:var(--red)}.msg.ok{color:var(--good)}
+pre{white-space:pre-wrap;background:var(--surface-2);border-radius:8px;padding:.8rem;font-size:.8rem;max-height:18rem;overflow:auto}
+.shifts a{display:block;text-decoration:none;color:inherit}
+.shifts .card:hover{border-color:var(--ink-2)}
+</style>
+</head>
+<body>
+<main id="app"><p class="muted">Loading…</p></main>
+<!--SCRIPTS-->
+<script>
+(() => {
+  const S = window.Shift, E = S.engine, CJ = S.cjmm, RV = S.review, TEL = S.tel, ALL = window.REVIEW_DECISIONS || {};
+  const app = document.getElementById('app');
+  const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const IDS = Object.keys(ALL);
+  const id = window.REVIEW_CASE || null;
+  const step = (d) => { const k = CJ.step({ key: d.key, domain: d.domain, text: d.text }); return (CJ.STEPS.find((x) => x[0] === k) || [])[1] || ''; };
+  const AREA = Object.fromEntries(E.DOMAINS);
+
+  if (!id) {   // index: pick a shift
+    app.innerHTML = `<a class="home" href="/">The Shift</a><h1>Clinical review</h1>
+      <p class="muted">Every patient, order and scored decision in each shift, laid out for a clinician to check. Pick the shift that matches your experience. A full review takes about an hour; you can stop and come back.</p>
+      <div class="shifts">${IDS.map((k) => { const c = E.getCase(k), st = RV.status(k); return `<a href="/review/${k}/"><div class="card"><div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap"><h3>${esc(c.title)} · ${esc(c.level)}</h3><span class="chip ${st.state}">${esc(st.label)}</span></div><p class="muted" style="margin:.3rem 0 0">${esc(c.unit)} · ${c.patients.length} patients · ${ALL[k].length} scored decisions</p></div></a>`; }).join('')}</div>`;
+    return;
+  }
+
+  const c = E.getCase(id), st = RV.status(id), hash = RV.hash(id), decs = ALL[id] || [];
+  const kind = S.floor.kindOf(c), RN = { med: 'Bri', psych: 'Noor', peds: 'Hana' }[kind];
+  const calls = S.floor.POOL.filter((x) => x.k.includes(kind));
+  const fill = (t) => String(t || '').replace(/\{rn\}/g, RN);
+  const KEY = 'theshift.review.' + id;
+  let R = {}; try { R = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { R = {}; }
+  R.marks = R.marks || {}; R.notes = R.notes || {};
+  const saveDraft = () => { try { localStorage.setItem(KEY, JSON.stringify(R)); } catch (e) { /* storage off: still works for this visit */ } };
+  const clock = (t) => { const m = (c.start || 420) + Math.round(t); return String(Math.floor(((m % 1440) + 1440) % 1440 / 60)).padStart(2, '0') + ':' + String(((m % 60) + 60) % 60).padStart(2, '0'); };
+
+  // One stable id per item to review: decisions by source position and branch, floor calls by id.
+  const items = [];
+  decs.forEach((d, i) => { d.rid = `d${d.line}.${i}`; items.push(d.rid); });
+  calls.forEach((x) => items.push('f-' + x.id));
+
+  const verdict = (rid) => `<div class="verdict" role="group" aria-label="Your verdict">${[['ok', 'Accurate'], ['fix', 'Needs change'], ['unsure', 'Not sure']].map(([v, l]) => `<button type="button" data-rid="${rid}" data-v="${v}" aria-pressed="${R.marks[rid] === v}">${l}</button>`).join('')}</div>
+    <textarea data-note="${rid}" placeholder="What should it say instead? A source helps." ${R.marks[rid] === 'fix' || R.notes[rid] ? '' : 'hidden'} aria-label="Your comment">${esc(R.notes[rid] || '')}</textarea>`;
+  const decHTML = (d) => { const p = typeof d.points === 'number' ? d.points : null; return `<div class="dec ${p > 0 ? 'pos' : p < 0 ? 'neg' : ''}"><div class="top"><span class="pts">${p === null ? 'Points vary' : (p > 0 ? '+' : '') + p}</span><span>${esc(AREA[d.domain] || d.domain)}</span><span>· ${esc(step(d))}</span></div>
+    <b>${esc(d.text)}</b><p class="why">${esc(d.why)}</p><div class="src">${esc(d.file)}:${d.line} · ${esc(d.key)}</div>${verdict(d.rid)}</div>`; };
+
+  const ptHTML = (p) => {
+    const labs = (p.labs || []).map((l) => `<tr><td>${esc(l.name)}</td><td>${esc(l.val)} ${esc(l.unit)}${l.flag ? ` <b>${esc(l.flag)}</b>` : ''}</td><td>${esc(l.ref)}</td></tr>`).join('');
+    const meds = (p.meds || []).map((m) => `<tr><td>${esc(m.name)}</td><td>${esc([m.dose, m.route].filter(Boolean).join(' '))}</td><td>${esc(m.freq || '')}${m.prn ? ' (PRN)' : ''}${m.param ? `<br><span class="muted">${esc(m.param)}</span>` : ''}</td></tr>`).join('');
+    const orders = (p.orders || []).map((o) => `<li>${esc(o.text)}</li>`).join('');
+    const rep = (p.report || []).map((r) => `<li>${esc(r.text)}${r.key ? ' <span class="chip">key cue</span>' : ''}</li>`).join('');
+    return `<details class="pt"><summary>${esc(p.room)} · ${esc(p.name)}, ${esc(typeof p.age === 'number' ? p.age : p.age)}${esc(p.sex || '')} · ${esc(p.dx)}${p.arrives ? ` · admitted ${clock(p.arrives)}` : ''}</summary><div>
+      <p>${esc(p.reason || '')}</p>${p.bio ? `<p class="muted">${esc(p.bio)}</p>` : ''}
+      <div class="grid2"><p><b>Allergies</b><br>${esc(p.allergies)}</p><p><b>Code status</b><br>${esc(p.code)}</p>${p.weight ? `<p><b>Weight</b><br>${esc(p.weight)}</p>` : ''}${p.legal ? `<p><b>Legal status</b><br>${esc(p.legal)}</p>` : ''}</div>
+      ${(p.hx || []).length ? `<h3 style="margin-top:.6rem">History</h3><ul class="plain">${p.hx.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
+      ${rep ? `<h3 style="margin-top:.6rem">Report from the outgoing nurse</h3><ul class="plain">${rep}</ul>` : ''}
+      ${labs ? `<h3 style="margin-top:.6rem">Labs</h3><div class="scroll"><table><tr><th>Test</th><th>Result</th><th>Reference</th></tr>${labs}</table></div>` : ''}
+      ${meds ? `<h3 style="margin-top:.6rem">Medications</h3><div class="scroll"><table><tr><th>Drug</th><th>Dose</th><th>When</th></tr>${meds}</table></div>` : ''}
+      ${orders ? `<h3 style="margin-top:.6rem">Orders</h3><ul class="plain">${orders}</ul>` : ''}</div></details>`;
+  };
+
+  const byPt = {}; decs.forEach((d) => { const k = d.pid && c.patients.some((p) => p.id === d.pid) ? d.pid : '_'; (byPt[k] = byPt[k] || []).push(d); });
+  const grp = c.patients.filter((p) => byPt[p.id]).map((p) => `<h3 style="margin:1.4rem 0 .2rem">${esc(p.room)} · ${esc(p.short || p.name)}</h3>${byPt[p.id].map(decHTML).join('')}`).join('')
+    + (byPt._ ? `<h3 style="margin:1.4rem 0 .2rem">Across the shift</h3><p class="muted" style="margin:0">Report, prioritization, delegation and end-of-shift checks that apply to any patient.</p>${byPt._.map(decHTML).join('')}` : '');
+  const callHTML = calls.map((x) => `<div class="dec"><div class="top"><span>Floor call · ${esc(AREA[x.dom] || x.dom)}</span></div><b>${esc(x.title)}</b>
+      <p class="why">${esc(fill(x.text))} ${esc(fill(x.q))}</p>
+      <div style="margin-top:.4rem">${x.opts.map((o) => `<div class="opt"><i>${o.v === 2 ? 'Best' : o.v === 1 ? 'OK' : o.v === 0 ? 'Wrong' : 'Unsafe'}</i>${esc(fill(o.t))}<div class="muted" style="font-family:var(--serif)">${esc(fill(o.fb))}</div></div>`).join('')}</div>${verdict('f-' + x.id)}</div>`).join('');
+
+  app.innerHTML = `<a class="home" href="/review/">The Shift · Clinical review</a>
+    <h1>${esc(c.title)}</h1>
+    <p class="muted" style="margin:0">${esc(c.unit)} · ${esc(c.level)} · ${clock(0)} to ${clock(c.length)}</p>
+    <div class="meta"><span class="chip ${st.state}">${esc(st.label)}</span><span class="chip">Content version ${esc(hash || 'local')}</span><span class="chip">${decs.length} scored decisions · ${calls.length} floor calls</span></div>
+    ${st.r.reviewers.length ? `<p class="muted">Reviewed by ${st.r.reviewers.map((r) => esc(`${r.name}, ${r.credentials}`)).join('; ')}.</p>` : ''}
+    <div class="card how"><h3>How to review</h3><ol>
+      <li><a href="/play/" target="_blank" rel="noopener">Play the shift once</a> (about 20 minutes), so you know how decisions come up.</li>
+      <li>Skim the patients below: these are the facts the game is built on.</li>
+      <li>For each scored decision, mark <b>Accurate</b>, <b>Needs change</b> or <b>Not sure</b>. Say what's wrong when something needs changing.</li>
+      <li>Add any references you'd cite, then send. Your answers save in this browser as you go.</li></ol>
+      <p class="muted" style="margin-bottom:0">This is an educational simulation, not a clinical protocol. Judge it against what a safe, current nursing standard of care would teach a new nurse.</p></div>
+    <div class="bar"><span id="count"></span><span class="prog" aria-hidden="true"><i id="progbar"></i></span><a class="btn" href="#send" style="min-height:38px">Send</a></div>
+    <h2>About you</h2>
+    <div class="grid2"><div><label for="rv-name">Name</label><input id="rv-name" type="text" autocomplete="name" data-f="name" value="${esc(R.name || '')}"></div>
+      <div><label for="rv-cred">Credentials</label><input id="rv-cred" type="text" placeholder="RN, MSN, PharmD…" data-f="cred" value="${esc(R.cred || '')}"></div>
+      <div><label for="rv-role">Current role and specialty</label><input id="rv-role" type="text" placeholder="Psych RN, 6 years; nurse educator…" data-f="role" value="${esc(R.role || '')}"></div>
+      <div><label for="rv-email">Email</label><input id="rv-email" type="email" autocomplete="email" data-f="email" value="${esc(R.email || '')}"></div></div>
+    <h2>Patients</h2>${c.patients.map(ptHTML).join('')}
+    <h2>Scored decisions</h2><p class="muted">What earns or costs points, and the reason the debrief gives the player.</p>${grp}
+    ${calls.length ? `<h2>Floor calls</h2><p class="muted">Short timed decisions from the rest of the unit. A shift draws up to five of these.</p>${callHTML}` : ''}
+    <h2 id="send">Send your review</h2>
+    <label for="rv-refs">References you'd cite</label><textarea id="rv-refs" data-f="refs" placeholder="Guidelines, policies or textbooks that support or contradict the content">${esc(R.refs || '')}</textarea>
+    <label for="rv-overall">Anything else</label><textarea id="rv-overall" data-f="overall" placeholder="Missing cues, unrealistic timing, things a new grad would get wrong here">${esc(R.overall || '')}</textarea>
+    <label class="check"><input type="checkbox" id="rv-ok" ${R.signoff ? 'checked' : ''}><span>With the changes I marked, this shift is clinically accurate for nursing education, and I'm happy to be named as a reviewer.</span></label>
+    <div class="row"><button class="btn btn-primary" id="rv-send" type="button">Send review</button><button class="btn" id="rv-copy" type="button">Copy as text</button></div>
+    <div class="msg" id="rv-msg" role="status" aria-live="polite"></div><pre id="rv-text" hidden></pre>`;
+
+  const count = () => { const n = items.filter((k) => R.marks[k]).length; document.getElementById('count').textContent = `${n} of ${items.length} reviewed`; document.getElementById('progbar').style.width = Math.round((n / Math.max(1, items.length)) * 100) + '%'; };
+  count();
+  app.addEventListener('click', (e) => {
+    const b = e.target.closest('.verdict button'); if (!b) return;
+    const rid = b.dataset.rid, v = R.marks[rid] === b.dataset.v ? null : b.dataset.v;
+    if (v) R.marks[rid] = v; else delete R.marks[rid];
+    b.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.v === v)));
+    const ta = b.parentElement.nextElementSibling; if (ta) { ta.hidden = v !== 'fix' && v !== 'unsure' && !R.notes[rid]; if (v === 'fix' && !R.notes[rid]) ta.focus(); }
+    saveDraft(); count();
+  });
+  app.addEventListener('input', (e) => { const t = e.target; if (t.dataset.note) { R.notes[t.dataset.note] = t.value; saveDraft(); } else if (t.dataset.f) { R[t.dataset.f] = t.value; saveDraft(); } });
+  document.getElementById('rv-ok').addEventListener('change', (e) => { R.signoff = e.target.checked; saveDraft(); });
+
+  function asText() {
+    const lab = { ok: 'ACCURATE', fix: 'NEEDS CHANGE', unsure: 'NOT SURE' };
+    const lines = [`Clinical review: ${c.title} (${id}), content version ${hash}`, `Reviewer: ${R.name || ''}, ${R.cred || ''} · ${R.role || ''} · ${R.email || ''}`, `Sign-off: ${R.signoff ? 'yes' : 'no'}`, `Reviewed ${items.filter((k) => R.marks[k]).length} of ${items.length}`, ''];
+    decs.forEach((d) => { if (R.marks[d.rid] && R.marks[d.rid] !== 'ok' || R.notes[d.rid]) lines.push(`[${lab[R.marks[d.rid]] || 'NOTE'}] ${d.text} (${d.key}, ${d.file}:${d.line})${R.notes[d.rid] ? '\n  → ' + R.notes[d.rid] : ''}`); });
+    calls.forEach((x) => { const k = 'f-' + x.id; if (R.marks[k] && R.marks[k] !== 'ok' || R.notes[k]) lines.push(`[${lab[R.marks[k]] || 'NOTE'}] Floor call: ${x.title} (${x.id})${R.notes[k] ? '\n  → ' + R.notes[k] : ''}`); });
+    if (R.refs) lines.push('', 'References:', R.refs); if (R.overall) lines.push('', 'Other comments:', R.overall);
+    return lines.join('\n');
+  }
+  const msg = (t, cls) => { const m = document.getElementById('rv-msg'); m.className = 'msg ' + (cls || ''); m.textContent = t; };
+  document.getElementById('rv-send').addEventListener('click', () => {
+    if (!R.name || !R.cred) { msg('Add your name and credentials first, so the review can be credited.', 'err'); document.getElementById(R.name ? 'rv-cred' : 'rv-name').focus(); return; }
+    if (!items.some((k) => R.marks[k])) { msg('Mark at least one decision first.', 'err'); return; }
+    const flagged = Object.entries(R.marks).filter(([, v]) => v !== 'ok').map(([k, v]) => ({ id: k, v, note: R.notes[k] || '' }));
+    const res = TEL && TEL.configured && TEL.configured() && /^https:/.test(location.protocol)
+      ? TEL.feedback('clinical_review', { case: id, content_hash: hash, reviewer: R.name, credentials: R.cred, role: R.role || '', reviewer_email: R.email || '', signoff: !!R.signoff, reviewed: items.filter((k) => R.marks[k]).length, of: items.length, accurate: Object.values(R.marks).filter((v) => v === 'ok').length, flagged: JSON.stringify(flagged).slice(0, 60000), references: R.refs || '', comments: R.overall || '', text: asText().slice(0, 60000) })
+      : null;
+    if (res === 'sent') { msg('Sent. Thank you — every flagged item gets looked at, and you\'ll hear back by email.', 'ok'); return; }
+    const pre = document.getElementById('rv-text'); pre.textContent = asText(); pre.hidden = false;
+    try { navigator.clipboard.writeText(asText()); } catch (e) { /* select the text instead */ }
+    location.href = `mailto:${(S.config || {}).feedbackEmail || ''}?subject=${encodeURIComponent('Clinical review: ' + c.title)}&body=${encodeURIComponent('My review is below (also copied to the clipboard; paste it here if it got cut off).\n\n' + asText().slice(0, 1500))}`;
+    msg('Your email app should open. The full review is copied: paste it into the email if it got cut off.', 'ok');
+  });
+  document.getElementById('rv-copy').addEventListener('click', () => { const pre = document.getElementById('rv-text'); pre.textContent = asText(); pre.hidden = false; try { navigator.clipboard.writeText(asText()); msg('Copied.', 'ok'); } catch (e) { msg('Select the text below to copy it.'); } });
+  if (TEL) TEL.track('review_open', { case: id });
+})();
+</script>
+</body>
+</html>

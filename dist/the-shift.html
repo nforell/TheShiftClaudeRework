@@ -1381,9 +1381,18 @@ table.health td{white-space:normal}
 .acct-link{margin-left:.4rem;padding:.2rem 0;min-height:32px;border:0;background:none;color:var(--teal);font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-size:inherit}
 .acct-in{min-height:46px}
 .acct-err{color:var(--red);font-size:.9rem;margin:.5rem 0 0}
+
+/* clinical review */
+.rv-row{padding:.8rem 0;border-top:1px solid var(--line)}
+.rv-h{display:flex;justify-content:space-between;align-items:center;gap:.4rem .8rem;flex-wrap:wrap}
+.rv-row p{margin:.35rem 0 0;font-size:.9rem;color:var(--ink-2)}
+.rv-refs{margin:.35rem 0 0;padding-left:1.1rem;font-size:.85rem}
+.rv-go{display:inline-block;margin-top:.4rem;font-size:.9rem;font-weight:600;color:var(--teal);padding:.3rem 0;min-height:32px}
+.acct-link.rv-awaiting,.acct-link.rv-changed{color:var(--ink-2)}
 </style></head>
 <body><div id="app"></div>
-<script>/* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
+<script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"medsurg-4w-1": "d67eef2625", "medsurg-4w-2": "014fa6171d", "medsurg-4w-3": "9a687b606d", "peds-5s-1": "f3435d08ad", "psych-3e-1": "cfebecc689"};
+/* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
    posthogKey: the project API key from PostHog (Project settings → Project API key, starts with "phc_").
    It is a public, write-only key; it's safe in the page. Leave it empty and nothing is ever sent:
    events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
@@ -1830,6 +1839,35 @@ window.Shift = window.Shift || {};
     });
   }
   S.cjmm = { STEPS, OVERRIDE, step, score };
+})(window.Shift = window.Shift || {});
+
+/* The Shift — clinical review record.
+   Who reviewed each shift, against which version of its content, and what they cited. This is what the game shows
+   players under "Clinical review", so only put people here who actually signed off.
+
+   To record a sign-off (after a reviewer submits /review/<shift>/):
+     1. Add them to that shift's `reviewers`: { name, credentials, role, date: 'YYYY-MM-DD' }.
+     2. Set `hash` to the content hash shown on their submission (it's also printed on the review page).
+     3. Add any references they cite to `references`: { text, url }.
+   If the shift's content changes after that, the game shows "Updated since review" until it's reviewed again.
+   The build fills in Shift.reviewHashes with each shift's current content hash. */
+(function (S) {
+  const CASES = {
+    'medsurg-4w-1': { reviewers: [], hash: '', references: [] },
+    'medsurg-4w-2': { reviewers: [], hash: '', references: [] },
+    'medsurg-4w-3': { reviewers: [], hash: '', references: [] },
+    'psych-3e-1': { reviewers: [], hash: '', references: [] },
+    'peds-5s-1': { reviewers: [], hash: '', references: [] },
+  };
+  const now = (id) => (S.reviewHashes || {})[id] || '';
+  /* awaiting: nobody has signed off yet · reviewed: signed off on this exact content · changed: signed off on an older version */
+  function status(id) {
+    const r = CASES[id];
+    if (!r || !r.reviewers.length) return { state: 'awaiting', label: 'Awaiting clinical review', r: r || { reviewers: [], references: [] } };
+    if (r.hash && now(id) && r.hash !== now(id)) return { state: 'changed', label: 'Updated since its last review', r };
+    return { state: 'reviewed', label: 'Clinically reviewed', r };
+  }
+  S.review = { CASES, status, hash: now };
 })(window.Shift = window.Shift || {});
 
 /* The Shift — the rest of the shift. Unit-wide work that every case gets for free:
@@ -9405,7 +9443,7 @@ window.Shift = window.Shift || {};
 
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, CL = S.cloud && S.cloud.on() ? S.cloud : null;
+  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'psych-3e-1', 'peds-5s-1'];
   let caseId = CASES[0];
@@ -9650,7 +9688,7 @@ window.Shift = window.Shift || {};
           <div class="rung locked"><b>More specialty units</b><span>ED, ICU, labor and delivery.</span><small>Coming later</small></div>
         </div>
         ${careerHTML()}
-        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>Original clinical content for education. Not a substitute for clinical instruction.</span></div>
+        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>Original clinical content for education. Not a substitute for clinical instruction.${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
       </div>
     </div>`;
   }
@@ -10267,6 +10305,18 @@ window.Shift = window.Shift || {};
   }
   const standalone = () => !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
   const iosInstallable = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && /^https:/.test(location.protocol) && !standalone();
+  /* Who checked the clinical content of each shift, and against which version. */
+  function ovReviewInfo() {
+    const web = /^https?:$/.test(location.protocol);
+    const rows = CASES.map((id) => { const k = E.getCase(id), st = RV.status(id), r = st.r;
+      return `<div class="rv-row"><div class="rv-h"><b>${esc(k.title)}</b><span class="chip ${st.state === 'reviewed' ? 'ok' : st.state === 'changed' ? 'alert' : 'warn'}">${esc(st.label)}</span></div>
+        ${r.reviewers.length ? `<p>${r.reviewers.map((x) => `${esc(x.name)}, ${esc(x.credentials)}${x.role ? ` (${esc(x.role)})` : ''}${x.date ? `, ${esc(x.date)}` : ''}`).join('; ')}</p>` : ''}
+        ${r.references.length ? `<ul class="rv-refs">${r.references.map((x) => `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.text)}</a>` : esc(x.text)}</li>`).join('')}</ul>` : ''}
+        ${web ? `<a class="rv-go" href="/review/${id}/" target="_blank" rel="noopener">${st.state === 'reviewed' ? 'See what was reviewed' : 'Review this shift'}</a>` : ''}</div>`; }).join('');
+    return sheet('Clinical review', `<p style="margin-top:0">Every shift is written by a working psych RN. Before a shift is marked reviewed, a licensed clinician checks every patient, order and scored decision in it, and signs off on that exact version. If the content changes later, it says so here until it's checked again.</p>
+      ${web ? '<p class="muted">Are you a nurse, educator or pharmacist? You can review a shift: it takes about an hour, and reviewers are credited here.</p>' : ''}${rows}`,
+      `<button class="btn btn-primary" data-act="close">Done</button>`, { label: 'Clinical review', wide: true });
+  }
   function ovAccount() {
     const st = CL.status() || {}, a = ui.acct || (ui.acct = {});
     if (st.state === 'in') {
@@ -10581,6 +10631,7 @@ window.Shift = window.Shift || {};
       <button class="btn" data-act="help">How it plays</button><button class="btn" data-act="settings">Settings</button>
       ${CL ? `<button class="btn" data-act="account">${CL.user() ? 'Your account' : 'Save your progress across devices'}</button>` : ''}
       <button class="btn" data-act="rpt">Send feedback or report a problem</button>
+      ${RV ? '<button class="btn" data-act="review">Clinical review</button>' : ''}
       ${ui.installEvt ? '<button class="btn" data-act="install">Install The Shift on this device</button>' : iosInstallable() ? '<button class="btn" data-act="install-ios">Add The Shift to your home screen</button>' : ''}
       ${inShift && s.t >= 15 ? '<button class="btn" data-act="endask">End the shift early and see debrief</button>' : ''}
       ${inShift ? '<button class="btn btn-danger" data-act="restart">Restart this shift</button>' : ''}
@@ -10694,6 +10745,7 @@ window.Shift = window.Shift || {};
     else if (ov === 'health') h += ovHealth();
     else if (ov === 'report') h += ovReport();
     else if (ov === 'account' && CL) h += ovAccount();
+    else if (ov === 'review' && RV) h += ovReviewInfo();
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
@@ -10977,6 +11029,7 @@ window.Shift = window.Shift || {};
     install() { const ev = ui.installEvt; if (!ev) return; ui.installEvt = null; ui.ov = null; render(); try { ev.prompt(); ev.userChoice.then((c) => TEL.track('install_prompt', { outcome: c && c.outcome })).catch(() => {}); } catch (e) { /* prompt already used */ } },
     'install-ios'(el) { TEL.track('install_prompt', { outcome: 'ios_help' }); hint(el, 'In Safari, tap the Share button, then Add to Home Screen.'); },
     by(el) { ui.byCj = el.dataset.v === 'cj'; if (ui.byCj && !ui.byCjSeen) { ui.byCjSeen = true; TEL.track('debrief_steps_view', { case: s ? s.caseId : caseId }); } render(); },
+    review() { ui.ov = 'review'; TEL.track('review_info', { case: caseId }); render(); },
     account() { ui.acct = { email: (ui.acct && ui.acct.email) || '' }; ui.ov = 'account'; render(); },
     'acct-send'() {
       const a = ui.acct || (ui.acct = {}), email = (a.email || '').trim();
@@ -11180,7 +11233,7 @@ window.Shift = window.Shift || {};
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
     ui.view = 'home'; safe('boot', () => render(true));
-    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (linked && CL.user()) setTimeout(() => hint(document.querySelector('.acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }); }
+    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }); }
     addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
     addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });
     TEL.track('app_open', { has_save: !!(s && !s.ended), shifts_done: prof.runs.length, standalone: standalone() });

@@ -1,7 +1,15 @@
 import pathlib
 src=pathlib.Path(__file__).parent/'src'
 css=(src/'styles.css').read_text()
-js=''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/peds1.js','rig.js','art.js','ui.js'])
+# Clinical review: each shift's content hash (its case file + story file), so the game can tell a reviewed shift
+# from one that changed after review. See src/review.js and docs/CLINICAL-REVIEW.md.
+import hashlib, json, sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent / 'tools'))
+import decisions as DEC
+CF = DEC.case_files()
+hashes = {cid: hashlib.sha256(b''.join(f.read_bytes() for f in fs)).hexdigest()[:10] for cid, fs in CF.items()}
+pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.dumps(hashes) + ';\n'
+js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/peds1.js','rig.js','art.js','ui.js'])
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -34,6 +42,16 @@ ver=re.search(r"version: '([^']+)'", (src/'config.js').read_text()).group(1)
 (dist/'sw.js').write_text((root/'site'/'sw.js').read_text().replace('__VERSION__', ver))
 (dist/'manifest.webmanifest').write_text((root/'site'/'manifest.webmanifest').read_text())
 shutil.copytree(root/'site'/'icons', dist/'icons', dirs_exist_ok=True)
+# Clinical review pages: /review/ lists the shifts, /review/<shift>/ is the reviewer's checklist.
+LOGIC=['config.js','telemetry.js','engine.js','cjmm.js','review.js','flow.js','floor.js','reward.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-peds1.js']
+logic='<script>'+pre+''.join((src/f).read_text()+'\n' for f in LOGIC)+'</script>'
+common=DEC.find([src/'flow.js'])   # call lights, transfers, PRN follow-up, report: scored on every shift
+decs={cid: DEC.find(fs)+common for cid, fs in CF.items()}
+rv=(root/'site'/'review.html').read_text().replace('<!--SCRIPTS-->', logic+'<script>window.REVIEW_DECISIONS='+json.dumps(decs).replace('</','<\\/')+';</script>')
+(dist/'review').mkdir(exist_ok=True); (dist/'review'/'index.html').write_text(rv)
+for cid in CF:
+    (dist/'review'/cid).mkdir(exist_ok=True)
+    (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 shutil.copytree(root/'site'/'assets', dist/'assets', dirs_exist_ok=True)
 print(len(html))

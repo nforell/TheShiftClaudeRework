@@ -73,7 +73,7 @@ with sync_playwright() as p:
 
     # Device A: play, then ask for a link.
     A = device('A'); play(A, 'medsurg-4w-1')
-    check(A.locator('.acct-link').inner_text() == 'Save your progress', 'home offers to save progress')
+    check(A.locator('[data-act=account].acct-link').inner_text() == 'Save your progress', 'home offers to save progress')
     H(A, 'account'); A.fill('#acct-email', 'nope'); H(A, 'acct-send'); A.wait_for_timeout(100)
     check(A.locator('.acct-err').count() == 1, 'rejects a bad email')
     A.fill('#acct-email', 'nurse@example.com'); H(A, 'acct-send'); A.wait_for_timeout(400)
@@ -83,7 +83,7 @@ with sync_playwright() as p:
     # The link brings them back signed in; local progress uploads.
     signin(A, 't1')
     check('access_token' not in A.url, 'tokens removed from the address bar')
-    check(A.evaluate("!!Shift.cloud.user()") and A.locator('.acct-link').inner_text() == 'Saved to your account', 'signed in after the link')
+    check(A.evaluate("!!Shift.cloud.user()") and A.locator('[data-act=account].acct-link').inner_text() == 'Saved to your account', 'signed in after the link')
     row = db['rows'].get('u1') or {}
     check([r['caseId'] for r in row.get('profile', {}).get('runs', [])] == ['medsurg-4w-1'], 'first sign-in uploads this device\'s progress')
 
@@ -119,7 +119,7 @@ with sync_playwright() as p:
 
     # Not configured: no account UI at all.
     E = b.new_page(); E.goto((DIST / 'the-shift.html').as_uri()); E.wait_for_timeout(300)
-    check(E.locator('.acct-link').count() == 0, 'no account button when opened from a file')
+    check(E.locator('[data-act=account]').count() == 0, 'no account button when opened from a file')
     check(not errs, 'no page errors' + (': ' + errs[0][:200] if errs else ''))
     b.close()
 print('CLOUD ' + ('FAILED ' + str(len(fails)) if fails else 'CLEAN'))
