@@ -2,6 +2,26 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 3 — October 1, 2026 (branch `clinical-review`)
+
+Sessions 1–2 merged to `main` (PR #1) and live.
+
+### Done
+- **Clinical review workflow** (`src/review.js`, `site/review.html`, `tools/decisions.py`, guide in `docs/CLINICAL-REVIEW.md`).
+  - `/review/` and `/review/<shift>/`: a reviewer checklist with every patient (history, report, labs, meds, orders), every scored decision (points, skill, NCLEX step, rationale, source line), the unit's floor calls, and Accurate / Needs change / Not sure with comments. Drafts save in the reviewer's browser. Submissions go to PostHog as `feedback` with `kind = clinical_review` (email fallback), stamped with the shift's content version.
+  - Each shift has a content hash computed at build time. The game shows **Awaiting clinical review**, **Clinically reviewed** (with reviewer names and references), or **Updated since its last review** if content changed after sign-off. Entry points: home screen footer and Menu → Clinical review.
+  - New `tests/review.py`; full suite clean.
+
+### Needs Nick
+- Recruit reviewers (table in `docs/CLINICAL-REVIEW.md`) and send them `https://the-shift-claude-rework.vercel.app/review/<shift>/`. You're a credentialed psych RN, so you could review Quiet voices yourself, but an outside reviewer carries more weight with schools.
+- Merge `clinical-review`: https://github.com/nforell/TheShiftClaudeRework/compare/main...clinical-review
+- Reviews only arrive in PostHog once the PostHog key is in `src/config.js`; until then they come by email.
+
+### Up next
+1. Guided first room (60 seconds) for pre-licensure students.
+2. Jurisdiction setting for psych law.
+3. New shifts that score Evaluate outcomes.
+
 ## Session 2 — September 30, 2026 (same branch)
 
 ### Done
@@ -12,7 +32,6 @@ Where the work from the business plan stands. Newest session first. The next ses
 ### Needs Nick
 - Before inviting many testers: Supabase's built-in email sender is only for light testing and is heavily rate-limited. Connect a real email sender (Authentication → Emails → SMTP; Resend has a free tier) before a big beta push.
 - Still worth doing once: sign in on a second device and check your shifts appear there.
-- Merge `beta-instrumentation` into `main`: https://github.com/nforell/TheShiftClaudeRework/compare/main...beta-instrumentation
 
 ### Up next
 Clinical review workflow, then the guided first room (see the list below; item 1 is done).

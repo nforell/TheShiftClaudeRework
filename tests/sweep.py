@@ -50,7 +50,7 @@ with sync_playwright() as p:
     H('h-done'); A('rank'); H('rk', i='0', d='1'); A('rank-moved', scroll=False); H('rank-peek', pid=st("Shift.ui._ui.rank[0]")); A('rank-peek'); H('rank-submit'); A('rank-done'); H('rank-go')
     A('station')
     H('roster'); A('roster'); close(); H('calls'); A('progress'); close(); H('inbox'); A('inbox'); close()
-    H('delegate'); A('deleg'); close(); H('callpick'); A('sbar-pick'); close(); H('nova'); A('nova'); close(); H('menu'); A('menu'); close(); H('rpt'); A('report-general'); H('rpt-why', v='bug'); A('report-general-picked', scroll=False); close()
+    H('delegate'); A('deleg'); close(); H('callpick'); A('sbar-pick'); close(); H('nova'); A('nova'); close(); H('menu'); A('menu'); close(); H('review'); A('review-info'); close(); H('rpt'); A('report-general'); H('rpt-why', v='bug'); A('report-general-picked', scroll=False); close()
     pids=st("Object.keys(s.p).filter(k=>{const d=Shift.engine.api(s).def(k);return !d.arrives})")
     pid=pids[0]
     H('chart', pid=pid)
