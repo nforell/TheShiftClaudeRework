@@ -2,6 +2,18 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 8 — October 1, 2026 (branch `human-characters`, built on `visual-polish`)
+
+### Done
+- **More human characters** (`src/rig.js`, app-wide; every case's character specs work unchanged).
+  - Proportions: oval heads with cheekbones and a jaw that tapers to the chin (square or soft per character), eyes on the midline one eye-width apart, brows, nose and mouth in facial thirds, ears from brow to nose, a real neck, sloped shoulders. Children keep rounder faces and larger eyes.
+  - Faces: almond eyes with the lids covering the top and bottom of the iris, iris gradients, lash lines, lid creases, eye sockets; shaped brows; a nose with a shaded bridge, lit tip and nostril wings; real lips (upper, lower, a highlight), teeth in an open smile, smile lines; soft gradient shading lit from the upper left. Beards, mustaches, glasses, cannulas and earrings refit to the new face. Collars per outfit (V-neck scrubs, gown, crew neck, hoodie, flannel and blouse collars, coat lapels).
+  - Animation: blinks close fast and open slowly; the eyes move first and the head turns after them, with the face shifting across the skull and the ears the other way, so turns read as a real head; layered idle sway; smiles lift the cheeks and narrow the eyes; the nostrils flare with labored breathing (a new clinical cue).
+- Full suite clean.
+
+### Needs Nick
+- Merge `human-characters` (includes `visual-polish` and everything before it): https://github.com/nforell/TheShiftClaudeRework/compare/main...human-characters
+
 ## Session 7 — October 1, 2026 (branch `visual-polish`, built on `teen-psych-shift`)
 
 ### Done
