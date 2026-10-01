@@ -1341,3 +1341,19 @@ table.health td{white-space:normal}
 .xpop.bond b{color:var(--bond)}
 .outs:has(.st-epi){grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));column-gap:1.2rem}
 .out .st-epi p{color:var(--ink);font-size:.95rem}
+
+/* beta feedback */
+.fbk{margin:2rem 0 1rem;padding:1.2rem;border:1px solid var(--line);border-radius:10px;background:var(--surface);max-width:46rem}
+.fbk h2{margin-bottom:.2rem}
+.fbk.sent{border-color:var(--good);background:var(--good-bg)}
+.fb-l{display:block;font-weight:600;font-size:.92rem;margin:.9rem 0 .35rem}
+.fb-t{width:100%;min-height:5.5rem;padding:.6rem .7rem;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink);font:inherit;resize:vertical}
+.fb-t:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.fb-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;margin-top:.4rem}
+.fb-row .fb-l{margin:.5rem 0}
+.fb-f{display:flex;justify-content:flex-end;margin-top:1rem}
+.rpt-btn{margin-top:.35rem;padding:.35rem 0;min-height:32px;border:0;background:none;color:var(--ink-2);font-size:.8rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.rpt-btn:hover{color:var(--ink)}
+.rp-q{margin:0 0 .9rem;padding:.6rem .8rem;border-left:3px solid var(--line);background:var(--surface-2);border-radius:0 var(--r) var(--r) 0}
+.rp-q b{display:block}.rp-q span{display:block;margin-top:.2rem;color:var(--ink-2);font-family:var(--serif)}
+.rp-why{display:flex;flex-wrap:wrap;gap:.4rem}
