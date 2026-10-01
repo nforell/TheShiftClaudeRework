@@ -2,6 +2,33 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 5 — October 1, 2026 (branch `psych-law-setting`, built on `guided-first-room`)
+
+### Done
+- **Psych law setting.** Settings → Psych law: **California** (default, the original wording) or **General US**, which swaps 5150, 5250, Riese, LPS and California-only lines for plain terms that hold in most states (72-hour involuntary hold, extended involuntary certification, petition for court-ordered medication, mental health conservatorship; the peds mandated-report deadline becomes "varies by state"). It's applied at display time, so the content stays written once and the clinical review pages keep the California source. New `tests/law.py` checks every California-specific string and plays the psych shift in both modes.
+
+### Needs Nick
+- Merge `psych-law-setting` (it includes the guided first room, so merging this one is enough): https://github.com/nforell/TheShiftClaudeRework/compare/main...psych-law-setting
+- Sanity-check the General US wording as a psych RN; it's in `src/ui.js` under `LAW`.
+
+### Up next
+New shifts. Every new case should score Evaluate outcomes (only 7 of ~500 decisions do today). Candidate units, in suggested order:
+1. Second psych shift: adolescent unit (your specialty; schools have few psych placements).
+2. Med-surg step-down/telemetry: chest pain, new A-fib with RVR, heparin titration, a post-cath bleed.
+3. L&D/postpartum: postpartum hemorrhage, preeclampsia on magnesium, newborn hypoglycemia.
+4. ED triage: ESI levels with a waiting room that changes.
+5. LPN-scope shift for the PN audience.
+
+## Session 4 — October 1, 2026 (branch `guided-first-room`)
+
+`clinical-review` merged to `main` and live.
+
+### Done
+- **Guided first room.** The first time a player walks into a room, a seven-step tour has them do it, not read about it: look at the patient (free, no clock), open Assess, take vitals (see the minutes it costs), read their findings against report, open the chart, then a pointer to care/meds/talk and Nova. "Do it" steps advance only when the player does the action; Skip tour ends it for good. Telemetry: `tour_start`, `tour_step`, `tour_done`, `tour_skip`, so PostHog shows where new players drop out. New `tests/guide.py` (phone and desktop). Full suite clean (it now takes about 6 minutes).
+
+### Needs Nick
+- To see the tour yourself: Menu → Settings → Intro and tips → Show them again, then start a shift.
+
 ## Session 3 — October 1, 2026 (branch `clinical-review`)
 
 Sessions 1–2 merged to `main` (PR #1) and live.
@@ -14,13 +41,9 @@ Sessions 1–2 merged to `main` (PR #1) and live.
 
 ### Needs Nick
 - Recruit reviewers (table in `docs/CLINICAL-REVIEW.md`) and send them `https://the-shift-claude-rework.vercel.app/review/<shift>/`. You're a credentialed psych RN, so you could review Quiet voices yourself, but an outside reviewer carries more weight with schools.
-- Merge `clinical-review`: https://github.com/nforell/TheShiftClaudeRework/compare/main...clinical-review
 - Reviews only arrive in PostHog once the PostHog key is in `src/config.js`; until then they come by email.
 
-### Up next
-1. Guided first room (60 seconds) for pre-licensure students.
-2. Jurisdiction setting for psych law.
-3. New shifts that score Evaluate outcomes.
+
 
 ## Session 2 — September 30, 2026 (same branch)
 
