@@ -141,6 +141,17 @@ Goal: stop the game from looking AI-made. The direction: make it look like a hos
 ### Needs Nick
 - To see the tour yourself: Menu → Settings → Intro and tips → Show them again, then start a shift.
 
+## Session 4 — October 1, 2026 (branch `pacing-pass`)
+
+### Done
+- **Pacing and forgiveness.** Missed scheduled doses fold into one lesson per patient (−2 for one, −3 for two, −4 for three or more) instead of −2 each. In each skill (and each NCLEX step), misses past the first three points count half, so one bad stretch doesn't zero a domain. Later doses in the same med pass take 2 minutes, not 5. The shift assessment goes overdue at the same time as the "Everyone seen" goal (90 minutes), not at 60.
+- **Stuck players.** Station headline is now "Work waiting in N rooms" with the task count and overdue count underneath, instead of a big "15 things need you". Pharmacy-held doses never sit at the top of the list and say what they're waiting on; the med sheet names the action that unblocks them. Tasks a case didn't route to a tab are now routed by matching the action, and the action is highlighted when you arrive. A 45-second idle pointer (station and room). Free Nova check-ins when you fall behind (max two, don't use tips, don't affect the Solo badge). A caught-up station suggests who to look at next. Skip-ahead no longer calls a half hour "quiet" when work is overdue.
+- **UI.** Triage card: "Show report" no longer runs into the diagnosis; a wrong first pick reads amber, not red. Debrief no longer says you "ended early" when you ended in the last 30 minutes (when the End shift button appears). Larger tap area on the logo/menu button.
+- New `tests/pacing.py` (every shift); in `run_all.py` and CI.
+
+### Needs Nick
+- Play Days on 4 West once on your phone and see if the 09:00 med pass still feels like too much for an Orientation shift. If it does, the next lever is moving a few 09:00 meds to 10:00 in the case file.
+
 ## Session 3 — October 1, 2026 (branch `clinical-review`)
 
 Sessions 1–2 merged to `main` (PR #1) and live.
