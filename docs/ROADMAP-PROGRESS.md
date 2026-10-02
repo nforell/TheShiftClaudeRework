@@ -2,6 +2,29 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 11 — October 1, 2026 (branch `psych-documentation`, built on `clarity-pass`)
+
+Nick's ask: on the psych units, lean into the documentation and justification that seclusion, restraint and emergency IM medication require, including the provider's in-person check.
+
+### Done
+- **A new way to chart: signed notes.** Any intervention can now open a structured note the nurse signs. Every box is a claim, and the case checks each claim against what actually happened that shift. A note gets credit for being specific (the behavior, not a label), complete (what was tried first, the order, the face-to-face, the checks) and true. Charting anything that didn't happen (a check never done, a measure never tried, a face-to-face before the doctor came) is scored as falsification, and the review names exactly what was false. Signed notes go into the patient's chart.
+- **3 East, Jasmine (manic, on a 5250):** seclusion and the emergency IM now come with everything they require, modeled on CMS 42 CFR 482.13(e) and California Health & Safety Code 1180:
+  - A provider order for each episode (a call made just before counts). A hold to give the IM is a restraint and starts the same clock.
+  - **The one-hour face-to-face:** call Dr. Iyer; she comes in about 15 minutes, examines Jasmine and charts her evaluation. If an hour passes without it, it's scored and Nova calls you on it.
+  - Continuous observation set up at once (scored; if nobody's assigned, Nova catches it).
+  - A charted check at least every 15 minutes in seclusion (breathing, behavior, injury, water, bathroom), scored on any gap.
+  - Release when she's safe, not on a timer.
+  - Post-IM check (vitals, sedation, breathing, stiffness) within 30 minutes.
+  - Two notes: the **seclusion and restraint note** (what was used, the specific behavior, what was tried, order/face-to-face/observation/checks, release criteria; the wrong choices include "when the order runs out", "when she apologizes" and "when she takes her meds") and the **emergency medication note** (why it was an emergency, whether oral came first, that the hold was a restraint, who was told, her response, and that her right to refuse non-emergency meds survives; no Riese ruling).
+  - A **debrief** with her afterward, written into her plan.
+  - All of it shows on the Brain due list with times, and Nova has hints for it. If the team has to take her down without you, the order and the observer are handled, but the face-to-face call, the checks and both notes are still yours.
+- **4 North, Marcus (14):** report now mentions it took three staff to hold him for the 14:30 haloperidol. The day RN's note charts the IM but not the hold as a restraint, has no face-to-face, and says nothing about his mom. Reviewing the record finds all three. Then: call Dr. Adeyemi for the face-to-face (due by 15:30; she charts it and warns it's his first antipsychotic), ask Ben, who was there, to chart the hold before he leaves (charting it yourself from report is scored as charting what you didn't witness), and call his mom (who mentions an uncle whose neck "locked up" on one of those). Missing any of it is scored at the end. The unit policy order spells out the minors' rules (2-hour orders for ages 9 to 17).
+- New `tests/restraint.py` plays it five ways: Jasmine by the book with an IM, by the book with seclusion, with every shortcut (no observer, no face-to-face, a vague and false note with a coercive release), and Marcus caught or missed. `tests/teen.py` careful run updated. `docs/cjmm-map.csv` regenerated. Full suite clean.
+
+### Needs Nick
+- Clinical and regulatory review, ideally by someone who's charted a lot of seclusion: the timing (1-hour face-to-face, 15-minute checks, 4-hour adult and 2-hour minor orders), whether your units let a trained RN do the face-to-face, the parent-notification policy for minors, and the exact wording of the note options. The rules live in `src/case-psych1.js` (`startEp` and the notes) and `src/case-adolpsych1.js` (405).
+- Both psych shifts now show "changed since review" on the clinical review page, as they should.
+
 ## Session 10 — October 1, 2026 (branch `clarity-pass`, built on `next-four`)
 
 From the first outside player's notes.

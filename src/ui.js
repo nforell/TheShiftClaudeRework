@@ -1219,7 +1219,7 @@
     const d = def(pid), P = s.p[pid], Ax = A();
     if (ui.sbar.reply) return sheet(esc(prov().name), `<div class="reply">${face(C().provider)}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>${reviewHTML(ui.sbar.review, 'Your call, reviewed')}`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
     const items = d.sbar.items(s, P, Ax);
-    const reqs0 = d.sbar.requests || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
+    const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(s, s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
@@ -1242,6 +1242,18 @@
     const body = `${ui.delegMsg ? `<div class="reply" style="margin-bottom:1rem">${face(C().cna)}<p class="voice" style="margin:0">${esc(ui.delegMsg)}</p></div>${reviewHTML(ui.delegReview, 'Delegation, reviewed')}` : `<p class="dl-who">${nm} is your ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}: collecting data and helping with care, like vitals, weights, walks and baths. Assessing, teaching, meds and judgment calls stay with you.</p>`}
       ${note ? `<p class="deleg-note">${esc(note)}</p>` : ''}${board}${tasks.length ? offer + all : '<p class="empty" style="padding:0">Nothing to hand off right now.</p>'}`;
     return sheet(`Ask ${nm}`, body, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: face(C().cna), label: `Delegate to ${cna().name}, ${cna().role}` });
+  }
+
+  /* Charting a restrictive intervention: a structured note the nurse signs. Every box is a claim; the case checks
+     each claim against what actually happened this shift, so the note has to be specific, complete and true. */
+  function ovDoc() {
+    const q = ui.doc, d = def(q.pid), P = s.p[q.pid], x = d.interventions.find((i) => i.id === q.id);
+    if (q.done) return sheet(q.done.title, `<div class="doc-paper"><div class="doc-hd"><b>${esc(q.done.title)}</b><span>${esc(d.name)} · ${d.room} · ${E.clock(q.done.t)} · signed: you, RN</span></div><p>${esc(q.done.text)}</p></div>${reviewHTML(q.done.review, 'Your note, reviewed')}`,
+      `<button class="btn btn-primary" data-act="close">Done</button>`, { label: q.done.title, wide: true });
+    const f = x.form(s, P, A());
+    const body = `${f.intro ? `<p class="doc-intro">${esc(f.intro)}</p>` : ''}${f.sections.map((sec) => { const pick = q.a[sec.id] || []; const o = mixOrder(sec.opts.length, q.id + sec.id); return `<fieldset class="doc-sec"><legend>${esc(sec.q)}</legend>${sec.hint ? `<p class="doc-hint">${esc(sec.hint)}</p>` : ''}${o.map((i) => sec.opts[i]).map((op) => `<label class="opt"><input type="${sec.one ? 'radio' : 'checkbox'}" name="doc-${sec.id}" data-act="doc-pick" data-s="${sec.id}" data-o="${op.id}" ${pick.includes(op.id) ? 'checked' : ''}><span>${esc(op.label)}</span></label>`).join('')}</fieldset>`; }).join('')}`;
+    const ready = f.sections.every((sec) => (q.a[sec.id] || []).length);
+    return sheet(f.title, body, `<button class="btn" data-act="close">Not yet</button><button class="btn btn-primary" data-act="doc-sign" ${ready ? '' : 'aria-disabled="true" data-why="Answer every section first."'}>Sign the note <span style="font-weight:400;opacity:.8">${x.cost} min</span></button>`, { label: f.title, wide: true });
   }
 
   function ovNova() {
@@ -1462,6 +1474,7 @@
     else if (ov === 'med') h += ovMed();
     else if (ov === 'sbar') h += ovSbar();
     else if (ov === 'deleg') h += ovDeleg();
+    else if (ov === 'doc' && ui.doc) h += ovDoc();
     else if (ov === 'nova') h += ovNova();
     else if (ov === 'dialog') h += ovDialog();
     else if (ov === 'inbox') h += ovInbox();
@@ -1679,7 +1692,7 @@
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
-    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
     poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
@@ -1765,6 +1778,21 @@
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov().name}. "${reply}"`, 'info');
       });
       if (s.ended) return; ui.sbar.reply = reply; ui.sbar.review = judgSince(j0, pid); reviewSound(ui.sbar.review); stamp(`Called ${prov().name}`, 6); render();
+    },
+    'doc-pick'(el) {
+      const q = ui.doc; if (!q || q.done) return; const d = def(q.pid), x = d.interventions.find((i) => i.id === q.id), sec = x.form(s, s.p[q.pid], A()).sections.find((z) => z.id === el.dataset.s);
+      const L = q.a[sec.id] = q.a[sec.id] || [], o = el.dataset.o;
+      if (sec.one) q.a[sec.id] = [o]; else { const i = L.indexOf(o); if (i >= 0) L.splice(i, 1); else L.push(o); }
+      render();
+    },
+    'doc-sign'() {
+      const q = ui.doc; if (!q || q.done) return; const d = def(q.pid), P = s.p[q.pid], x = d.interventions.find((i) => i.id === q.id), f = x.form(s, P, A());
+      if (!f.sections.every((sec) => (q.a[sec.id] || []).length)) return;
+      const j0 = s.judg.length, t0 = s.t; let text = '';
+      doAct(x.label, x.cost, (Ax) => { text = x.sign(s, P, Ax, q.a) || ''; Ax.note(q.pid, 'You (RN)', text); return f.title + ' signed.'; });
+      if (s.ended) return;
+      ui.doc = { pid: q.pid, id: q.id, done: { title: f.title, text, t: t0, review: judgSince(j0).filter((j) => /note/.test(j.key || '')) } };
+      reviewSound(ui.doc.done.review); TEL.track('doc_sign', { case: s.caseId, doc: q.id }); ui.ov = 'doc'; render();
     },
     delegate() { ui.ov = 'deleg'; ui.delegMsg = null; ui.delegReview = null; render(); },
     deleg(el) { const t = C().delegation.tasks.find((x) => x.id === el.dataset.t); let msg = ''; const n0 = s.deleg.length, j0 = s.judg.length; spend(1, (Ax) => { msg = C().delegation.start(t, el.dataset.pid, s, Ax); }); if (s.ended) return; ui.delegMsg = msg; ui.delegReview = judgSince(j0).filter((j) => /^deleg/.test(j.key || '')); reviewSound(ui.delegReview); const nx = s.deleg[s.deleg.length - 1]; ui.delegNew = s.deleg.length > n0 ? nx.id + ':' + nx.pid + ':' + nx.at : null; ui.ov = 'deleg'; stamp(`${cna().name} is on it`, 1); render(); },
@@ -1888,7 +1916,7 @@
      None of it says whether the choice was right: that stays in the debrief. */
   const SELECT = new Set(['aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
-  const COMMIT = new Set(['away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
+  const COMMIT = new Set(['doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit', 'away-fam-pick': 'select' };           // answers that advance the scene
   const JUST = new Set(['away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);

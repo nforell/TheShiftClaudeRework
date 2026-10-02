@@ -254,12 +254,13 @@
     hx: [`ADHD since age 7, on methylphenidate`, `Explosive outbursts most days for two years`, `Never had an antipsychotic before today`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `52 kg`,
     lines: [`None`], mobility: `Independent`, diet: `Regular`,
-    init: { dys: 0, postIM: false, airway: false, dphAt: null, reassessed: false, reported: false, secl: false, haloAgain: null, believed: null, icu: false, gone: false },
+    init: { dys: 0, postIM: false, airway: false, dphAt: null, reassessed: false, reported: false, secl: false, haloAgain: null, believed: null, icu: false, gone: false, docRev: null, f2fCalled: null, f2fAt: null, momCalled: null, benAsked: null, selfCharted: false },
     nightVitals: { T: 36.9, HR: 82, SBP: 114, DBP: 68, RR: 16, SpO2: 99, O2: 'Room air', pain: 0 },
     labs: [{ name: 'Urine tox', val: 'Negative', unit: '', ref: '', flag: '', t: -2000 }],
     orders: [
       { t: -30, text: `Haloperidol 5 mg IM once, given 14:30 for imminent danger (threw a chair at staff after verbal de-escalation and an oral PRN were refused).` },
       { t: -30, text: `After any IM antipsychotic: vital signs, sedation and airway check every 15 minutes for the first hour, then every hour for 4 hours.` },
+      { t: -5000, text: `Unit policy, minors: seclusion or restraint only for imminent danger, after less restrictive measures fail. Each episode needs a provider order (ages 9 to 17: up to 2 hours), a face-to-face evaluation by the provider within 1 hour, a restraint or seclusion record by the nurse who was there, and prompt notification of the parent or guardian. A hold to give an injection is a restraint.` },
       { t: -2000, text: `Methylphenidate ER 36 mg PO daily at 08:00. Diphenhydramine 50 mg IM or PO once as needed for acute dystonia or other movement side effects; notify psychiatrist. Haloperidol 5 mg IM once as needed for imminent danger.` },
     ],
     notes: [
@@ -269,6 +270,7 @@
     report: [
       { text: `Marcus Webb, 14, DMDD and ADHD. Punched through a window at home.`, key: false },
       { text: `He threw a chair at 2:20. We gave him haloperidol 5 IM at 2:30. He's been asleep since.`, key: true },
+      { text: `Took three of us to hold him for the shot. He fought it.`, key: true },
       { text: `His mom said he's never had Haldol before.`, key: true },
       { text: `His post-shot checks are hourly now. Next one's at 3:30.`, key: true },
       { text: `He's been testing staff all day. Loves to get a reaction out of you.`, key: false },
@@ -286,6 +288,15 @@
     },
     interventions: [
       { id: 'postim', label: 'Post-IM check: vitals, sedation, airway', cost: 4, avail: (s, P) => !P.postIM, run(s, P, A) { P.postIM = true; A.judge('405-postim', 'assess', s.t <= 45 ? 1 : 0, `You did Marcus's post-IM check${s.t <= 45 ? ' on time' : ', late'}.`, `After emergency IM medication, the checks are scheduled for a reason: oversedation, airway, and movement side effects show up in the first hours.`, '405'); const v = A.vitals('405'); return P.dys > 0 ? `HR ${v.HR}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}%. Awake. And: ${dysTxt(P.dys)}.` : `HR ${v.HR}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}%. Rousable, oriented, airway clear. Normal movements so far.`; } },
+      { id: 'docrev', label: 'Review the 14:30 emergency medication record', cost: 3, avail: (s, P) => P.docRev === null,
+        run(s, P, A) { P.docRev = s.t; A.judge('405-docrev', 'judgment', 1, `You checked the 14:30 emergency medication record for Marcus.`, `When you take over a patient who was held or medicated in an emergency, check the record is complete: it's your patient now, and the one-hour clock may still be running.`, '405');
+          return `The reason is charted: he threw a chair at staff after verbal de-escalation and an oral PRN were refused. But the three-person hold isn't charted as a restraint. There's no face-to-face evaluation; for a 14:30 hold it's due by 15:30. And nothing says his mom was told.`; } },
+      { id: 'ben', label: `Ask Ben (day RN) to chart the 14:30 hold as a restraint before he leaves`, cost: 2, avail: (s, P) => P.docRev !== null && P.benAsked === null && !P.selfCharted && s.t <= 45,
+        run(s, P, A) { P.benAsked = s.t; A.judge('405-ben', 'comm', 1, `You asked Ben to chart the hold he was part of.`, `The restraint record comes from someone who was there: who held, how, for how long, any injury, and when it ended. Report gives you the story; it doesn't let you chart it as your own observation.`, '405'); A.note('405', 'Ben, day RN', `Late entry for 14:28. Three-person standing hold (Ben RN, Tasha MHW, security officer Dale) for haloperidol 5 mg IM, left thigh, after he threw a chair at staff; verbal de-escalation and oral PRN refused first. Hold about 90 seconds, ended when the injection was given. No injuries to patient or staff. Charted as a restraint episode.`); return `Ben groans, then nods. "You're right. It was a hold. I'll do it now, before I go." Five minutes later his late entry is in.`; } },
+      { id: 'selfchart', label: 'Chart the 14:30 hold yourself, from report', cost: 4, avail: (s, P) => P.docRev !== null && P.benAsked === null && !P.selfCharted,
+        run(s, P, A) { P.selfCharted = true; A.judge('405-selfchart', 'comm', -1, `You charted a restraint you didn't witness.`, `You weren't there. The nurse who was part of the hold documents it; you can make sure they do. If they've gone home, they call in a late entry.`, '405'); return 'You write it up from what Ben told you in report. It reads fine. It just isn\'t yours to write.'; } },
+      { id: 'mom', label: 'Call his mom: tell her about the hold and the medication', cost: 5, avail: (s, P) => P.docRev !== null && P.momCalled === null,
+        run(s, P, A) { P.momCalled = s.t; A.judge('405-mom', 'comm', 1, `You told Marcus's mom about the hold and the emergency medication.`, `For a minor, the parent or guardian hears about any restraint, seclusion or emergency medication promptly, from the unit, not from their kid days later.`, '405'); return `Ms. Webb is quiet, then: "He's never had that kind before. Is he okay?" You tell her he's sleeping and being checked often. "His uncle had a reaction to one of those once. His neck locked up." You write it down.`; } },
       { id: 'airway', label: 'Check airway and swallowing: listen for stridor', cost: 2, avail: (s, P) => P.dys > 0 && P.dphAt === null && !P.airway, run(s, P, A) { P.airway = true; A.judge('405-airway', 'safety', 1, `You checked Marcus's airway during his dystonia.`, `Dystonia can reach the throat. Stridor or trouble swallowing makes it an airway emergency.`, '405'); return P.dys >= 2.5 ? `A thin stridor on inspiration. He can't swallow. This is getting into his airway.` : `No stridor yet. He's swallowing with effort.`; } },
       { id: 'seclude', label: 'Seclusion: he\'s acting out for attention', cost: 6, avail: (s, P) => P.dys > 0 && P.dphAt === null && !P.secl, run(s, P, A) { P.secl = true; A.judge('405-seclude', 'safety', -3, `You secluded Marcus during an acute dystonic reaction.`, `He wasn't a danger; he was having a known, treatable side effect, alone and frightened. Seclusion is only for imminent danger, and this delayed the antidote.`, '405'); return `Staff walk him to the seclusion room. He's crying, head twisted, trying to tell you something through a clenched jaw.`; } },
       { id: 'reassess', label: 'Reassess him after the diphenhydramine', cost: 3, avail: (s, P) => P.dphAt !== null && !P.reassessed && s.t - P.dphAt >= 15, run(s, P, A) { P.reassessed = true; A.judge('405-reassess', 'judgment', 2, `You reassessed Marcus after the diphenhydramine.`, `Did it work? IM diphenhydramine should loosen dystonia within about 15 to 30 minutes. It can come back as the dose wears off, which is why the plan needs a scheduled dose too.`, '405'); return `Neck straight, eyes moving freely, swallowing fine. Drowsy. "Is it going to happen again?" Reasonable question.`; } },
@@ -316,12 +327,14 @@
           { id: 'dino', label: 'Loves dinosaurs', key: false, need: true },
         ];
       },
-      requests: [
+      requests: (s, P) => [
         { id: 'eps', label: 'He had an acute dystonic reaction to the haloperidol. Can we schedule an anticholinergic for the next 48 hours and avoid more haloperidol?' },
         { id: 'more', label: 'He\'s acting out again. Can I give another dose of haloperidol?' },
+        ...(P.docRev !== null && P.f2fCalled === null ? [{ id: 'f2f', label: 'He was held by three staff for the 14:30 IM. That hold was a restraint: he needs an order for it and your face-to-face, by 15:30.' }] : []),
         { id: 'fyi', label: 'Just keeping you updated.' },
       ],
       respond(s, P, A, picked, req) {
+        if (req === 'f2f') { P.f2fCalled = s.t; A.judge('405-sbar-f2f', 'comm', s.t <= 25 ? 2 : 1, `You called Dr. Adeyemi for the face-to-face after Marcus's hold.`, `A hold to give medication is a restraint. The provider has to see him in person within one hour of it starting, even after it's over.`, '405'); return s.t <= 30 ? `You're right, nobody called me. I'm on the unit; I'll see him in ten minutes.` : `That's past the hour already. I'll see him now and document why it's late.`; }
         if (req === 'more') { A.judge('405-sbar-more', 'judgment', -2, `You asked for more haloperidol for Marcus's dystonia.`, `Twisting, a fixed gaze and a locked jaw after a first dose of haloperidol aren't behavior. They're the side effect.`, '405'); return `Describe exactly what he's doing. That sounds like dystonia, not agitation. Give the diphenhydramine.`; }
         if (!picked.includes('dys') && !picked.includes('dph')) return `Okay. Is anything new since the shot?`;
         P.reported = true;
@@ -607,6 +620,10 @@
   const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'tasha-hi', when: (s) => s.t >= 3, run(s, A) { A.msg({ from: 'tasha', text: `Hey. I've got checks on the hall. 405 is still sleeping off the shot. 403 hasn't come out of their room since the phone call. 407 keeps asking me what time visiting is.`, replies: [{ label: 'Open tasks for Tasha', act: 'delegate' }] }); } },
+    { id: 'mar-f2f', when: (s) => { const P = s.p['405']; return P.f2fCalled !== null && P.f2fAt === null && s.t >= P.f2fCalled + 10; }, run(s, A) { const P = s.p['405']; P.f2fAt = s.t; const ok = s.t <= 30;
+      A.judge('405-f2f', 'safety', ok ? 1 : 0, ok ? `Marcus had his face-to-face evaluation within the hour.` : `Marcus's face-to-face came after the one-hour limit.`, `The face-to-face looks at the situation, his reaction to the hold and the drug, his physical condition, and any injury from being held.`, '405');
+      A.note('405', 'Dr. Adeyemi', `Face-to-face evaluation at ${clock(s.t)} for the 14:28 three-person hold and haloperidol 5 mg IM. Drowsy, rousable, no injury from the hold, airway normal. Imminent danger has resolved; no further restraint indicated. First antipsychotic exposure: watch for dystonia.`);
+      A.msg({ from: 'adeyemi', pid: '405', text: `Saw Marcus for the face-to-face. Drowsy, no injuries, nothing else needed. It's his first antipsychotic, so watch for stiffness or a twisted neck.` }); } },
     { id: 'mar-dys', when: (s) => s.t >= 40 && s.p['405'].dys > 0 && s.p['405'].dphAt === null, run(s, A) { A.msg({ from: 'tasha', pid: '405', text: `405 is doing a weird thing with his neck. Head all twisted, eyes rolled up, says he can't stop it. Honestly I think he's messing with us after the shot. He's been testing all day.`, replies: [{ label: 'Go to 405', act: 'goto', pid: '405' }] }); } },
     { id: 'eli-arrive', when: (s) => s.t >= 45, run(s, A) { const P = s.p['409']; P.arrived = true; P.vit.push({ t: s.t, by: 'ED RN', T: 37.4, HR: 102, SBP: 118, DBP: 70, RR: 16, SpO2: 99, O2: 'Room air', pain: 4 }); A.msg({ from: 'tasha', pid: '409', text: `New admit from the ED is in 409. Eli Novak, 17. Quiet. Says he's carsick. His bag's on the bed, not searched yet.`, replies: [{ label: 'Go to 409', act: 'goto', pid: '409' }] }); } },
     { id: 'ella-labs', when: (s) => s.t >= 60, run(s, A) { const P = s.p['401']; A.addLab('401', { name: 'Phosphorus', val: +P.phos.toFixed(1), unit: 'mg/dL', ref: '3.0–4.5', flag: 'L' }); A.addLab('401', { name: 'Potassium', val: 3.3, unit: 'mmol/L', ref: '3.5–5.0', flag: 'L' }); A.addLab('401', { name: 'Magnesium', val: 1.6, unit: 'mg/dL', ref: '1.7–2.4', flag: 'L' }); A.msg({ from: 'lab', pid: '401', text: `Afternoon refeeding labs resulted for 401 Marsh.` }); } },
@@ -689,6 +706,7 @@
   /* ---------- Nova ---------- */
   function novaHint(s, A) {
     const E1 = s.p['401'], Jo = s.p['403'], M = s.p['405'], K = s.p['407'], El = s.p['409'];
+    if (M.docRev === null && s.t < 30) return `Report said it took three people to hold someone for his shot. What does the chart call that hold, and what's due because of it?`;
     if (!M.icu && M.dys > 0 && M.dphAt === null) return `Somebody's being called a faker an hour after his first-ever dose of an old-school antipsychotic. What does that med do to young muscles?`;
     if (El.arrived && !El.gone && !El.reported && (El.admits || El.bottle || El.peerTold)) return `"Medically cleared" is only as good as the tests they sent. Which one didn't they send for 409?`;
     if (!E1.gone && s.t >= 60 && !E1.reported) return `Someone's afternoon labs came back. Her orders have a list of numbers that mean "call." Did any of hers make the list?`;
@@ -716,6 +734,12 @@
     if (!E1.reported && !E1.gone && s.t >= 90) A.judge('401-norep', 'comm', -2, `Ella's refeeding labs never reached the psychiatrist.`, `Her orders listed the numbers that mean "call." All three were under them at 16:00.`, '401');
     if (!Jo.skinChecked && !Jo.gone) A.judge('403-noskin', 'assess', -2, `Jordan's skin check was never done by a nurse.`, `On self-harm precautions, check the skin every shift.`, '403');
     if (Jo.cutsFound && !Jo.reported && !Jo.gone) A.judge('403-norep', 'comm', -1, `Jordan's new self-harm never reached the psychiatrist.`, `New self-harm on the unit changes the plan, and the team plans together.`, '403');
+    if (M.docRev === null) A.judge('405-docrev-miss', 'judgment', -1, `Nobody caught that Marcus's 14:30 hold was never charted as a restraint.`, `He was held by three staff for an injection. That's a restraint: it needed a restraint record, a face-to-face evaluation within the hour, and a call to his parent. Report told you about the hold; the chart didn't.`, '405');
+    else {
+      if (M.f2fAt === null && !M.icu) A.judge('405-f2f-none', 'safety', -2, `Marcus never had a face-to-face evaluation after his hold.`, `Every restraint for violent behavior needs an in-person provider evaluation within one hour. Late is better than never; never is a citation.`, '405');
+      if (M.momCalled === null) A.judge('405-mom-none', 'comm', -1, `Marcus's mom was never told about the hold or the emergency medication.`, `Parents of minors are notified promptly of restraint, seclusion or emergency medication.`, '405');
+      if (M.benAsked === null && !M.selfCharted) A.judge('405-hold-uncharted', 'comm', -1, `The 14:30 hold was never charted as a restraint.`, `A hold to give medication against someone's will is a restraint. The nurse who was there documents it.`, '405');
+    }
     if (!M.icu && M.dys > 0 && M.dphAt === null) A.judge('405-untreated', 'meds', -2, `Marcus's dystonia was never treated.`, `The antidote was on his PRN list the whole shift.`, '405');
     if (M.dphAt !== null && !M.reported && !M.icu) A.judge('405-norep', 'comm', -1, `The psychiatrist never heard about Marcus's dystonic reaction.`, `Haloperidol is still a PRN on his chart. The next nurse could give it again.`, '405');
     if (K.disclosed && !K.reported) A.judge('407-noreport', 'safety', -3, `Kayla's disclosure of abuse was never reported.`, `A mandated reporter who hears a disclosure has a personal duty to report it. Telling the team doesn't replace it.`, '407');
@@ -753,6 +777,8 @@
       const out = [], E1 = s.p['401'], Jo = s.p['403'], M = s.p['405'], K = s.p['407'], El = s.p['409'];
       if (!Jo.skinChecked && !Jo.gone) out.push({ t: 0, late: s.t > 30, text: '403 Skin check (missed on days)' });
       if (!M.postIM && !M.icu) out.push({ t: 30, late: s.t > 45, text: '405 Post-IM check: vitals, sedation, airway' });
+      if (M.docRev !== null && M.f2fAt === null && !M.icu) out.push({ t: 30, late: s.t > 30, text: M.f2fCalled === null ? '405 Face-to-face for the 14:30 hold: call Dr. Adeyemi (due 15:30)' : '405 Dr. Adeyemi coming for the face-to-face' });
+      if (M.docRev !== null && M.momCalled === null && !M.icu) out.push({ t: M.docRev, late: false, text: '405 Tell his mom about the hold and the IM' });
       if (s.t < 45) out.push({ t: 45, late: false, text: '409 Admission arriving from the ED' });
       if (El.arrived && El.admitted === null && !El.gone) out.push({ t: 45, late: s.t > 90, text: '409 Admission assessment, skin check, belongings search' });
       if (s.t < 60) out.push({ t: 60, late: false, text: '401 Afternoon refeeding labs resulting' });
