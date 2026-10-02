@@ -30,6 +30,12 @@ These run on every unit, from `src/flow.js`:
 - **Rewards** (`src/reward.js`). Care XP for on-time work and good calls, a streak multiplier (×1.5 to ×3) that anything overdue resets, four shift goals, stars at 58/72/85, a nine-level career ladder and ten badges, all saved to the profile.
 - **Achievements.** From the home screen or the debrief: 12 bronze/silver/gold skill tracks (lifetime good calls per domain, lessons fixed, floor calls collected, shifts, stars), 15 milestones, a per-unit summary, and the **lesson log**. Every call to rethink from a finished shift is logged with its reason; replaying that shift without repeating it marks it fixed (+60 XP). Floor-call lessons are fixed by answering that call correctly later.
 
+## Terms of use
+`src/terms.json` is the single source for the terms and disclaimer. The game asks every player to agree before their first shift (and again whenever `version` changes); the build also publishes it at `/terms/`. Have a lawyer review it before selling the game.
+
+## Clinical updates
+What changed in content, and why, is logged in [docs/CLINICAL-UPDATES.md](docs/CLINICAL-UPDATES.md).
+
 ## Beta instrumentation
 Analytics, in-game feedback, the landing-page signup and the installable app are set up in `src/config.js` and `src/telemetry.js`. Paste a PostHog project key into `src/config.js` to start receiving data; until then nothing is sent. The debrief can score by skill or by the six NCSBN clinical judgment steps (`src/cjmm.js`, review map in `docs/cjmm-map.csv`). Progress and what's next: [docs/ROADMAP-PROGRESS.md](docs/ROADMAP-PROGRESS.md).
 

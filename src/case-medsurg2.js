@@ -197,7 +197,7 @@
       { name: 'Ethanol level (admission)', val: 'Negative', unit: '', ref: '', flag: '', t: -1100 },
     ],
     orders: [
-      { t: -1100, text: 'NPO. Lactated Ringer\'s at 150 mL/h; change to D5 ½NS with 20 mEq KCl at 16:00.' },
+      { t: -1100, text: 'NPO for now (nausea, pain 6). Reassess daily for early oral feeding as tolerated. Lactated Ringer\'s at 150 mL/h; change to D5 ½NS with 20 mEq KCl at 16:00.' },
       { t: -1100, text: 'Thiamine 100 mg IV daily. Give thiamine before any dextrose-containing fluid.' },
       { t: -1100, text: 'CIWA-Ar every 4 h, every 1 h if score is 10 or more. Lorazepam per protocol: CIWA 10–15, 1 mg IV; CIWA 16 or more, 2 mg IV. Reassess 1 h after each dose. Call if more than 4 mg in 1 h.' },
       { t: -1100, text: 'Hydromorphone 0.5 mg IV every 3 h as needed for pain 4–10. Pantoprazole 40 mg IV daily. Seizure precautions if CIWA 16 or more.' },
@@ -241,14 +241,14 @@
         id: 'dex', label: 'Change IV fluid to D5 ½NS + 20 KCl (ordered for 16:00)', cost: 3, avail: (s, P) => s.t >= 50 && P.dexAt === null,
         run(s, P, A) {
           P.dexAt = s.t;
-          if (P.thiaAt === null) A.judge('423-dex', 'meds', -2, 'You started dextrose fluid before Mr. Tran\'s thiamine.', 'Thiamine-depleted patients who get glucose first can be tipped into Wernicke\'s encephalopathy: confusion, ataxia, eye movement problems. Thiamine first, then dextrose.', '423');
+          if (P.thiaAt === null) A.judge('423-dex', 'meds', -2, 'You started dextrose fluid before Mr. Tran\'s thiamine.', 'In heavy drinkers, thiamine stores run low, and glucose metabolism burns through what\'s left. Giving thiamine before a scheduled dextrose infusion protects against Wernicke\'s encephalopathy (confusion, ataxia, eye movement problems). The one exception: never delay glucose for a patient who is hypoglycemic. Give both.', '423');
           else A.judge('423-dex', 'meds', 1, 'You gave thiamine before switching Mr. Tran to dextrose fluid.', 'Glucose metabolism burns thiamine. Replacing it first protects against Wernicke\'s encephalopathy.', '423');
           return 'D5 ½NS with 20 mEq KCl running at 150 mL/h.';
         },
       },
       {
         id: 'tray', label: 'Remove the dinner tray (he is NPO)', cost: 1, avail: (s, P) => P.trayIn && !P.trayGone && !P.ate,
-        run(s, P, A) { P.trayGone = true; A.judge('423-tray', 'safety', 1, 'You caught a dinner tray delivered to an NPO patient.', 'Eating stimulates the pancreas. In acute pancreatitis that means more pain and inflammation. Check the diet order against what shows up.', '423'); return 'Tray back to the cart. You call dietary to flag his NPO order. "Aw, man. That smelled good."'; },
+        run(s, P, A) { P.trayGone = true; A.judge('423-tray', 'safety', 1, 'You caught a dinner tray delivered to an NPO patient.', 'The diet order says NPO, so a full tray is a dietary error. Current guidelines favor early oral feeding in mild pancreatitis once pain and nausea are settling, but that is the provider\'s call to make on rounds, not a tray that shows up by mistake. Check the diet order against what arrives, and ask about advancing his diet if he\'s hungry.', '423'); return 'Tray back to the cart. You call dietary to flag his NPO order. "Aw, man. That smelled good."'; },
       },
       {
         id: 'seiz', label: 'Seizure precautions: pad rails, suction set up, bed low', cost: 3, avail: (s, P) => !P.seizPrec,
@@ -356,7 +356,7 @@
       { name: 'Type and crossmatch', val: 'O positive, antibody screen negative. 2 units crossmatched.', unit: '', ref: '', flag: '', t: -80 },
     ],
     orders: [
-      { t: -80, text: 'Transfuse 2 units packed red blood cells, each over 2 hours. Vital signs before, at 15 minutes, and after each unit.' },
+      { t: -80, text: 'Transfuse 1 unit packed red blood cells over 2 hours, then recheck hemoglobin. Second unit crossmatched: give if Hgb stays under 7 or she bleeds again. Vital signs before, at 15 minutes, and after each unit.' },
       { t: -500, text: 'Pantoprazole 8 mg/h IV infusion. Clear liquids. Hemoglobin every 6 h.' },
       { t: -500, text: 'Acetaminophen 650 mg PO every 6 h as needed for pain. Hold apixaban.' },
       { t: -2000, text: 'Ibuprofen 400 mg PO every 6 h as needed for arthritis pain (home medication, admission reconciliation).' },
@@ -369,7 +369,7 @@
     report: [
       { text: 'Bea Nakamura, 79, upper GI bleed from an ulcer. Scoped this morning, they clipped it. DNR, but she wants blood and fluids.', key: false },
       { text: 'Hemoglobin 6.9, down from 8.4. Heart rate\'s been 100 to 105, pressure around 100.', key: true },
-      { text: 'Two units ordered. Blood bank says the first one is ready around 15:20.', key: true },
+      { text: 'One unit ordered, a second one crossmatched if she needs it. Blood bank says the first is ready around 15:20.', key: true },
       { text: 'She had a black tarry stool at 13:30 and she\'s dizzy when she sits up. Commode only.', key: true },
       { text: 'She\'s hard of hearing on the left. Talk to her right side.', key: false },
       { text: 'She taught piano for 50 years. Ask her about her students.', key: false },
@@ -570,7 +570,7 @@
     },
     interventions: [
       { id: 'strip', label: 'Look at his monitor strip', cost: 1, run(s, P, A) { P.stripAt = s.t; const k = darnellK(s, P); if (k >= 6.2) A.judge('427-strip', 'assess', 1, 'You looked at Mr. Brooks\'s rhythm strip in the context of his potassium.', 'Peaked T waves are the earliest ECG sign of hyperkalemia. The monitor is an assessment tool, not wallpaper.', '427'); return k >= 6.2 ? 'Tall, narrow, tented T waves in every beat. Rate 76, sinus.' : 'Normal sinus rhythm, normal T waves.'; } },
-      { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const g = darnellBG(s, P); P.bgAt = s.t; P.lastBG = g; P.bgs.push({ t: s.t, val: g, by: 'You' }); if (P.insAt !== null && s.t - P.insAt >= 30 && s.t - P.insAt <= 130) A.judge('427-bg', 'judgment', 1, 'You checked Mr. Brooks\'s glucose after IV insulin.', 'IV insulin shifts potassium into cells and glucose with it. In kidney failure insulin lasts longer, so hypoglycemia can come 1 to 3 hours later.', '427'); return `Glucose ${g} mg/dL.${g < 70 ? ' Low.' : ''}`; } },
+      { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const g = darnellBG(s, P); P.bgAt = s.t; P.lastBG = g; P.bgs.push({ t: s.t, val: g, by: 'You' }); if (P.insAt !== null && s.t - P.insAt >= 30 && s.t - P.insAt <= 130) A.judge('427-bg', 'judgment', 1, 'You checked Mr. Brooks\'s glucose after IV insulin.', 'IV insulin shifts potassium into cells and glucose with it. In kidney failure insulin lasts longer, so hypoglycemia can come 1 to 3 hours later. Patients with kidney failure or a starting glucose under about 125 are at highest risk, which is why many protocols lower the insulin dose or add a dextrose infusion for them.', '427'); return `Glucose ${g} mg/dL.${g < 70 ? ' Low.' : ''}`; } },
       { id: 'tray', label: 'Swap the dinner tray for a renal-diet tray', cost: 3, avail: (s, P) => P.trayIn && !P.traySwapped && !P.ate, run(s, P, A) { P.traySwapped = true; A.judge('427-tray', 'safety', 1, 'You caught a high-potassium dinner tray for a hyperkalemic patient.', 'Bananas, orange juice and potatoes are loaded with potassium. Diet orders get mixed up; the nurse at the bedside is the last check.', '427'); return 'Dietary sends up a renal tray: chicken, rice, green beans, apple juice. "Man. I was looking forward to that banana."'; } },
       { id: 'juice', label: 'Give 4 oz apple juice (15 g fast carbs)', cost: 2, avail: (s, P) => darnellBG(s, P) < 70 && (P.juiceAt === null || s.t - P.juiceAt > 20), urgent: true, run(s, P, A) { P.juiceAt = s.t; A.judge('427-juice', 'safety', 2, 'You treated Mr. Brooks\'s low glucose with apple juice.', 'Apple juice is a low-potassium fast carb. Orange juice would have fixed the glucose and fed the hyperkalemia.', '427'); return 'He drinks the apple juice. Recheck in 15 minutes.'; } },
     ],
@@ -589,7 +589,7 @@
       },
       {
         id: '427-ins', name: 'Insulin regular + dextrose 50%', dose: '10 units + 25 g', route: 'IV', freq: 'Once', prn: true, available: (s, P) => P.hkOrders, block: (s, P) => P.insAt !== null ? 'Given at ' + clock(P.insAt) + '.' : null,
-        checks: (s, P) => [{ label: 'Glucose before', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 60) }, { label: 'After', value: 'Glucose every hour for 4 hours (kidney failure prolongs insulin)', ok: null }],
+        checks: (s, P) => [{ label: 'Glucose before', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 60) }, { label: 'After', value: 'Glucose every hour for 4 hours (kidney failure prolongs insulin)', ok: null }, { label: 'Hypoglycemia risk', value: 'High: CKD 4, glucose under 125. Many protocols use 5 units or add a dextrose infusion here.', ok: null }],
         give(s, P, A) { P.insAt = s.t; if (!recent(s, P.bgAt, 60)) A.judge('427-ins-bg', 'assess', -1, 'You gave IV insulin without a baseline glucose.', 'You need the starting number to judge the drop that follows.', '427'); return 'Regular insulin 10 units IV, then dextrose 50% 25 g IV. Potassium shifts into cells over 15 to 30 minutes. Glucose checks every hour.'; },
       },
       {
@@ -700,7 +700,7 @@
           P.checklistAt = s.t;
           const hcg = s.t >= 130;
           if (hcg) P.hcgSeen = true;
-          const it = [['Consent signed', P.consentAt !== null], ['NPO since midnight, nothing since arrival', !P.tea], ['ID and allergy bands on', P.bands], ['Pre-op antibiotic safe for her allergy, due on call', P.abxChanged || P.abxGiven === 'safe'], ['hCG resulted', hcg], ['Admission assessment done', P.admitted !== null]];
+          const it = [['Consent signed', P.consentAt !== null], ['NPO: nothing by mouth since arrival', !P.tea], ['ID and allergy bands on', P.bands], ['Pre-op antibiotic safe for her allergy, due on call', P.abxChanged || P.abxGiven === 'safe'], ['hCG resulted', hcg], ['Admission assessment done', P.admitted !== null]];
           return it.map(([l, ok]) => (ok ? '✓ ' : '✗ ') + l).join('. ') + '.' + (hcg ? ' hCG: negative.' : '');
         },
       },
@@ -859,7 +859,7 @@
     { id: 'linh', when: (s) => s.t >= 110, run(s, A) { A.msg({ from: 'linh', pid: '423', text: 'Kevin\'s mother, Linh, on line 2: "Is my son drinking again? What is wrong with him? Nobody tells me anything."', replies: [{ label: '"I can\'t share details without his permission. I\'ll tell him you called and ask if he wants to talk."', act: 'linh-good' }, { label: '"He\'s here for pancreatitis from drinking."', act: 'linh-bad' }, { label: '"He\'s fine, don\'t worry."', act: 'linh-fine' }] }); } },
     { id: 'trays', when: (s) => s.t >= 120, run(s, A) { s.p['423'].trayIn = true; s.p['427'].trayIn = true; A.log(null, 'Dinner trays are out.', 'ambient'); } },
     { id: 'hcg', when: (s) => s.t >= 130, run(s, A) { A.addLab('429', { name: 'Serum hCG', val: 'Negative (< 5)', unit: 'mIU/mL', ref: '', flag: '' }); } },
-    { id: 'kev-eat', when: (s) => s.t >= 165 && s.p['423'].trayIn && !s.p['423'].trayGone, run(s, A) { const P = s.p['423']; P.ate = true; A.judge('423-ate', 'safety', -1, 'Mr. Tran ate a dinner tray while NPO for pancreatitis.', 'Food stimulates pancreatic enzymes. The tray should have been caught at delivery.', '423'); A.msg({ from: 'luis', pid: '423', text: '423 ate half his dinner. Wasn\'t he NPO? He says his stomach is worse.' }); } },
+    { id: 'kev-eat', when: (s) => s.t >= 165 && s.p['423'].trayIn && !s.p['423'].trayGone, run(s, A) { const P = s.p['423']; P.ate = true; A.judge('423-ate', 'safety', -1, 'Mr. Tran ate a dinner tray while his order said NPO.', 'Early feeding is often fine in mild pancreatitis, but he still had pain and nausea and the order said NPO. A tray that doesn\'t match the diet order should be caught at delivery, and a hungry patient is a reason to ask the provider, not to let it slide.', '423'); A.msg({ from: 'luis', pid: '423', text: '423 ate half his dinner. Wasn\'t he NPO? He says his stomach is worse.' }); } },
     { id: 'dar-eat', when: (s) => s.t >= 165 && s.p['427'].trayIn && !s.p['427'].traySwapped, run(s, A) { const P = s.p['427']; P.ate = true; A.judge('427-ate', 'safety', -1, 'Mr. Brooks ate a banana and orange juice with a potassium over 6.', 'The dinner tray violated his renal diet. Diet errors happen; the bedside check catches them.', '427'); } },
     { id: 'tea', when: (s) => s.t >= 160 && !s.p['429'].momTaught && !s.p['429'].gone, run(s, A) { const P = s.p['429']; P.tea = s.t; A.msg({ from: 'luis', pid: '429', text: 'FYI, 429\'s mom gave her some tea from a thermos. Is she allowed?' }); } },
     { id: 'morales-1', when: (s) => s.t >= 150, run(s, A) { A.msg({ from: 'morales', pid: '429', text: 'Dr. Morales, surgery: heading to 429 in 15 minutes to consent Ms. Hassan.' }); } },

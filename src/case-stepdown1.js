@@ -31,7 +31,7 @@
     nightVitals: { T: 36.8, HR: 136, SBP: 100, DBP: 64, RR: 22, SpO2: 94, O2: '2 L nasal cannula', pain: 0 },
     labs: [
       { name: 'BNP', val: 1840, unit: 'pg/mL', ref: 'under 100', flag: 'H', t: -420 },
-      { name: 'Troponin I', val: 0.04, unit: 'ng/mL', ref: 'under 0.04', flag: '', t: -420 },
+      { name: 'hs-Troponin I', val: 12, unit: 'ng/L', ref: 'under 16 (women)', flag: '', t: -420 },
       { name: 'Potassium', val: 4.1, unit: 'mmol/L', ref: '3.5–5.0', flag: '', t: -60 },
       { name: 'TSH', val: 2.1, unit: 'mIU/L', ref: '0.4–4.0', flag: '', t: -420 },
       { name: 'Echocardiogram', val: 'Done 06:10, reading pending', unit: '', ref: '', flag: '', t: -50 },
@@ -164,7 +164,7 @@
     labs: [
       { name: 'Hemoglobin', val: 13.8, unit: 'g/dL', ref: '13.5–17.5', flag: '', t: -120 },
       { name: 'Platelets', val: 246, unit: 'K/µL', ref: '150–400', flag: '', t: -120 },
-      { name: 'Troponin I (peak)', val: 18.6, unit: 'ng/mL', ref: 'under 0.04', flag: 'H', t: -60 },
+      { name: 'hs-Troponin I (peak)', val: '18,600', unit: 'ng/L', ref: 'under 34 (men)', flag: 'H', t: -60 },
       { name: 'Creatinine', val: 1.0, unit: 'mg/dL', ref: '0.7–1.3', flag: '', t: -120 },
     ],
     orders: [

@@ -303,7 +303,7 @@
     orders: [
       { t: -420, text: 'DKA protocol: regular insulin infusion 0.1 units/kg/h (6 units/h). Point-of-care glucose every hour.' },
       { t: -420, text: 'When glucose < 250 mg/dL: change fluids to D5 ½NS at 150 mL/h and reduce insulin to 0.05 units/kg/h (3 units/h).' },
-      { t: -420, text: 'Potassium protocol: K 3.3–5.2, give KCl 20 mEq IV per liter of fluid. K < 3.3: HOLD insulin, give KCl 40 mEq IV, recheck in 2 h. BMP every 2 h.' },
+      { t: -420, text: 'Potassium protocol: K 3.5–5.0, give KCl 20 mEq IV per liter of fluid. K < 3.5: HOLD insulin, give KCl 40 mEq IV, recheck in 2 h. BMP every 2 h.' },
       { t: -420, text: 'When anion gap ≤ 12: give insulin glargine subQ, continue the infusion for 2 h after, then stop. NPO until gap closes.' },
     ],
     notes: [
@@ -344,15 +344,15 @@
         },
       },
       {
-        id: 'pause', label: 'Pause the insulin infusion (protocol: K < 3.3)', cost: 1, avail: (s, P) => P.dripOn && !P.paused,
+        id: 'pause', label: 'Pause the insulin infusion (protocol: K < 3.5)', cost: 1, avail: (s, P) => P.dripOn && !P.paused,
         run(s, P, A) {
           P.paused = true;
-          if (!P.kLow) A.judge('435-pause-bad', 'judgment', -2, 'You paused Ms. Sorensen\'s insulin without a low potassium.', 'Every minute off the drip is a minute the acidosis isn\'t being treated. The protocol only holds insulin for K under 3.3.', '435');
-          else A.judge('435-pause', 'safety', 2, 'You held the insulin infusion for a potassium under 3.3.', 'Insulin drives potassium into cells. Running it with a K of 3.1 invites a dangerous arrhythmia. Replace first, then restart.', '435');
+          if (!P.kLow) A.judge('435-pause-bad', 'judgment', -2, 'You paused Ms. Sorensen\'s insulin without a low potassium.', 'Every minute off the drip is a minute the acidosis isn\'t being treated. The protocol only holds insulin for K under 3.5.', '435');
+          else A.judge('435-pause', 'safety', 2, 'You held the insulin infusion for a potassium under 3.5.', 'Insulin drives potassium into cells. Running it with a K of 3.1 invites a dangerous arrhythmia. Replace first, then restart. (The 2024 ADA consensus on hyperglycemic crises raised the hold threshold from 3.3 to 3.5.)', '435');
           return 'Insulin infusion paused.';
         },
       },
-      { id: 'resume', label: 'Resume the insulin infusion', cost: 1, avail: (s, P) => P.dripOn && P.paused, run(s, P, A) { if (P.K < 3.3) A.judge('435-resume-early', 'safety', -1, 'You restarted insulin before her potassium was replaced.', 'Give the KCl and let it run before you restart the drip.', '435'); P.paused = false; return 'Insulin infusion running again.'; } },
+      { id: 'resume', label: 'Resume the insulin infusion', cost: 1, avail: (s, P) => P.dripOn && P.paused, run(s, P, A) { if (P.K < 3.5) A.judge('435-resume-early', 'safety', -1, 'You restarted insulin before her potassium was replaced.', 'Give the KCl and let it run before you restart the drip.', '435'); P.paused = false; return 'Insulin infusion running again.'; } },
       {
         id: 'stop', label: 'Stop the insulin infusion', cost: 1, avail: (s, P) => P.dripOn,
         run(s, P, A) {
@@ -368,13 +368,13 @@
     meds: [
       { id: '435-drip', name: 'Insulin regular infusion', dose: '0.1 units/kg/h', route: 'IV', freq: 'Continuous, per DKA protocol', initStatus: 'given', givenNote: 'Running since 16:30' },
       {
-        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'IV', freq: 'Per liter, protocol for K 3.3–5.2', due: 0,
+        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'IV', freq: 'Per liter, protocol for K 3.5–5.0', due: 0,
         checks: (s, P) => [{ label: 'Potassium', value: '3.6 at 22:00', ok: true }, { label: 'Urine output', value: 'Adequate, 1,650 mL since admission', ok: true }, { label: 'Rate', value: 'No faster than 10 mEq/h peripherally', ok: null }],
         give(s, P, A) { P.kclAt = s.t; if (s.t > 60) A.judge('435-kcl-late', 'time', -1, 'Ms. Sorensen\'s protocol potassium went in late.', 'Insulin keeps pulling potassium down. Replacement has to keep pace.', '435'); return 'KCl 20 mEq added to the running liter, infusing over 2 h.'; },
         hold(s, P, A) { A.judge('435-kcl-hold', 'meds', -2, 'You held the protocol potassium on an insulin drip.', 'Her K was 3.6 and falling with every hour of insulin.', '435'); return 'Held.'; },
       },
       {
-        id: '435-kcl2', name: 'Potassium chloride (low-K protocol)', dose: '40 mEq', route: 'IV', freq: 'Once, K < 3.3', prn: true, available: (s, P) => P.kLow, block: (s, P) => (P.kclLowAt !== null ? 'Given at ' + clock(P.kclLowAt) + '.' : null),
+        id: '435-kcl2', name: 'Potassium chloride (low-K protocol)', dose: '40 mEq', route: 'IV', freq: 'Once, K < 3.5', prn: true, available: (s, P) => P.kLow, block: (s, P) => (P.kclLowAt !== null ? 'Given at ' + clock(P.kclLowAt) + '.' : null),
         checks: () => [{ label: 'Potassium', value: '3.1 (low)', ok: true }, { label: 'Insulin', value: 'Hold while replacing', ok: null }],
         give(s, P, A) { P.kclLowAt = s.t; P.kclAt = s.t; A.judge('435-kcl2', 'meds', 1, 'You replaced Ms. Sorensen\'s low potassium.', 'Replace, recheck, then restart the insulin.', '435'); return 'KCl 40 mEq IV infusing over 4 h via pump.'; },
       },
@@ -391,7 +391,7 @@
         const kLab = P.labs.filter((l) => l.name === 'Potassium').pop();
         return [
           { id: 'bg', label: P.bgAt !== null && P.bgAt >= 0 ? `Glucose ${P.lastBG} at ${clock(P.bgAt)}` : 'Glucose', key: true, need: P.bgAt >= 0, lock: 'Check her glucose' },
-          { id: 'k', label: `Potassium ${kLab.val}${P.kLow ? ' (below 3.3)' : ''}`, key: P.kLow, need: true },
+          { id: 'k', label: `Potassium ${kLab.val}${P.kLow ? ' (below 3.5)' : ''}`, key: P.kLow, need: true },
           { id: 'gap', label: P.gapClosed ? 'Anion gap 11, bicarb 18: closed' : 'Anion gap 18 at 22:00', key: P.gapClosed, need: true },
           { id: 'dex', label: P.dex ? `On D5 ½NS since ${clock(P.dexAt)}` : 'Still on normal saline', key: false, need: true },
           { id: 'hungry', label: 'Hungry, asking to eat', key: false, need: true },
@@ -486,7 +486,7 @@
           P.alert = s.t;
           A.judge('437-alert', 'judgment', s.t - P.found <= 10 ? 2 : 1, 'You called a stroke alert for Mr. Delgado.', 'Time is brain: about 1.9 million neurons a minute. The alert starts the CT, the labs and the clock at once.', '437');
           A.addOrder('437', 'Stroke alert. CT head without contrast STAT. Labetalol 10 mg IV for SBP > 185 or DBP > 110. NPO. Neuro checks every 15 min.');
-          return `The stroke team is here in four minutes. "When was he last known well?" You tell them ${clock(P.lastNormal)}. "His pressure has to be under 185/110 before we can even think about alteplase."`;
+          return `The stroke team is here in four minutes. "When was he last known well?" You tell them ${clock(P.lastNormal)}. "His pressure has to be under 185/110 before we can even think about thrombolytics."`;
         },
       },
     ],
@@ -508,12 +508,12 @@
       {
         id: '437-labe', name: 'Labetalol', dose: '10 mg', route: 'IV', freq: 'For SBP > 185 or DBP > 110', prn: true, available: (s, P) => P.alert !== null, block: (s, P) => (P.labeAt !== null ? 'Given at ' + clock(P.labeAt) + '.' : null),
         checks: (s, P, A) => { const v = A.vitals('437'); return [{ label: 'BP now', value: `${v.SBP}/${v.DBP}`, ok: v.SBP > 185 }, { label: 'HR', value: `${v.HR}`, ok: v.HR >= 60 }]; },
-        give(s, P, A) { P.labeAt = s.t; A.judge('437-labe', 'meds', 1, 'You brought Mr. Delgado\'s BP under the alteplase threshold.', 'Alteplase needs BP under 185/110 before it starts and under 180/105 after. The nurse gets it there.', '437'); return 'Labetalol 10 mg IV over 2 minutes. BP 176/98 on recheck.'; },
+        give(s, P, A) { P.labeAt = s.t; A.judge('437-labe', 'meds', 1, 'You brought Mr. Delgado\'s BP under the thrombolytic threshold.', 'Thrombolytics (tenecteplase or alteplase) need BP under 185/110 before they start and under 180/105 for 24 hours after. The nurse gets it there.', '437'); return 'Labetalol 10 mg IV over 2 minutes. BP 176/98 on recheck.'; },
       },
       {
-        id: '437-tpa', name: 'Alteplase', dose: '0.9 mg/kg (76 mg)', route: 'IV', freq: '10% bolus, rest over 60 min', prn: true, available: (s, P) => P.eligible === true, block: (s, P) => (P.tpa !== null ? 'Started at ' + clock(P.tpa) + '.' : null),
+        id: '437-tpa', name: 'Tenecteplase', dose: '0.25 mg/kg (21 mg)', route: 'IV', freq: 'Single bolus over 5 seconds', prn: true, available: (s, P) => P.eligible === true, block: (s, P) => (P.tpa !== null ? 'Started at ' + clock(P.tpa) + '.' : null),
         checks: () => [{ label: 'CT', value: 'No hemorrhage', ok: true }, { label: 'BP', value: 'Under 185/110 after labetalol', ok: true }, { label: 'Window', value: 'Within 4.5 h of last known well', ok: true }],
-        give(s, P, A) { P.tpa = s.t; A.judge('437-tpa', 'judgment', 2, 'Alteplase went in for Mr. Delgado inside the window.', 'Every step you did fast (finding him, the alert, glucose, BP) came off the clock. Neuro checks every 15 minutes now.', '437'); return 'Alteplase bolus given, infusion running. Neuro checks every 15 minutes, BP every 15.'; },
+        give(s, P, A) { P.tpa = s.t; A.judge('437-tpa', 'judgment', 2, 'Tenecteplase went in for Mr. Delgado inside the window.', 'Every step you did fast (finding him, the alert, glucose, BP) came off the clock. Tenecteplase is now preferred at many stroke centers over alteplase: same window, one bolus instead of an hour-long infusion. Neuro checks every 15 minutes now.', '437'); return 'Tenecteplase 21 mg IV bolus given, two-nurse verified. Neuro checks and BP every 15 minutes.'; },
       },
       { id: '437-cef', name: 'Ceftriaxone', dose: '1 g', route: 'IV', freq: 'Daily at 10:00', later: '10:00' },
     ],
@@ -542,17 +542,17 @@
     scene: (s, P) => ({ iv: P.tpa !== null ? 'running' : 'lock', o2: 2, tray: 'none', flowers: true, night: true }),
     clues: (s, P) => ({
       flowers: 'A paper cup with a tomato seedling in it. A card: "Get home soon, Papi. The garden misses you. Lupe."',
-      iv: P.tpa !== null ? 'Alteplase infusing.' : 'Saline lock, left hand.',
+      iv: P.tpa !== null ? 'Tenecteplase given. Saline flush running behind it.' : 'Saline lock, left hand.',
       o2: 'Nasal cannula at 2 L.',
     }),
     rig: (s, P) => (stroke(P) ? { facial: P.tpa !== null && s.t - P.tpa > 40 ? .5 : 1, confused: true } : {}),
     status: (s, P) => (stroke(P) && P.found !== null && P.alert === null ? 'urgent' : stroke(P) ? 'watch' : 'stable'),
     outcome(s, P) {
       if (!stroke(P)) return { tone: 'good', title: 'Stable', text: 'Resting.' };
-      if (P.tpa !== null) return { tone: P.poGiven ? 'mixed' : 'good', title: 'Stroke, treated in the window', text: `Alteplase at ${clock(P.tpa)}, last known well ${clock(P.lastNormal)}. His arm was lifting again by 04:00.` + (P.poGiven ? ' He did choke on an oral med first.' : '') };
-      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'He wasn\'t checked between 21:00 and Nova\'s walk-by. Out of the alteplase window; he\'s going to IR for a possible thrombectomy.' };
-      if (P.eligible === false) return { tone: 'mixed', title: 'Stroke, outside the alteplase window', text: `Last known well was ${clock(P.lastNormal)}. A midnight neuro check would have moved that time forward and kept the window open.` };
-      return { tone: 'mixed', title: 'Stroke, workup incomplete', text: 'Symptoms found, but the alteplase decision never got made.' };
+      if (P.tpa !== null) return { tone: P.poGiven ? 'mixed' : 'good', title: 'Stroke, treated in the window', text: `Tenecteplase at ${clock(P.tpa)}, last known well ${clock(P.lastNormal)}. His arm was lifting again by 04:00.` + (P.poGiven ? ' He did choke on an oral med first.' : '') };
+      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'He wasn\'t checked between 21:00 and Nova\'s walk-by. Out of the thrombolytic window; he\'s going to IR for a possible thrombectomy.' };
+      if (P.eligible === false) return { tone: 'mixed', title: 'Stroke, outside the thrombolytic window', text: `Last known well was ${clock(P.lastNormal)}. A midnight neuro check would have moved that time forward and kept the window open.` };
+      return { tone: 'mixed', title: 'Stroke, workup incomplete', text: 'Symptoms found, but the thrombolytic decision never got made.' };
     },
   };
 
@@ -733,7 +733,7 @@
     { id: 'stroke', when: (s) => s.t >= 95, run(s, A) { s.p['437'].onset = s.t; } },
     { id: 'dee-437', when: (s) => s.t >= 116 && stroke(s.p['437']) && s.p['437'].found === null, run(s, A) { A.msg({ from: 'dee', pid: '437', text: 'Before they pull me: 437\'s words were mushy when I did his vitals just now, and his right hand kept dropping the cup. He says he\'s fine.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
     { id: 'dee-float', when: (s) => s.t >= 120, run(s, A) { A.msg({ from: 'dee', urgent: true, text: 'They just floated me to the ED. I\'m so sorry. You\'ve got the whole hall. Nova says she\'ll help when she can.' }); } },
-    { id: 'k-recheck', when: (s) => s.t >= 120, run(s, A) { const P = s.p['435'], k = +P.K.toFixed(1); A.addLab('435', { name: 'Potassium', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k < 3.5 ? 'L' : '' }); if (k < 3.3) { P.kLow = true; A.msg({ from: 'lab', pid: '435', urgent: true, text: `435 Sorensen potassium ${k.toFixed(1)}. DKA protocol: hold insulin for K under 3.3.`, replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } else A.msg({ from: 'lab', pid: '435', text: `435 Sorensen BMP: potassium ${k.toFixed(1)}, anion gap 14. Closing.` }); } },
+    { id: 'k-recheck', when: (s) => s.t >= 120, run(s, A) { const P = s.p['435'], k = +P.K.toFixed(1); A.addLab('435', { name: 'Potassium', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k < 3.5 ? 'L' : '' }); if (k < 3.5) { P.kLow = true; A.msg({ from: 'lab', pid: '435', urgent: true, text: `435 Sorensen potassium ${k.toFixed(1)}. DKA protocol: hold insulin for K under 3.5.`, replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } else A.msg({ from: 'lab', pid: '435', text: `435 Sorensen BMP: potassium ${k.toFixed(1)}, anion gap 14. Closing.` }); } },
     { id: 'duplex', when: (s) => s.p['433'].duplexAt !== null && s.t >= s.p['433'].duplexAt + 35, run(s, A) { const P = s.p['433']; P.dvt = true; P.hepOrdered = true; A.addLab('433', { name: 'Venous duplex, right leg', val: 'Occlusive DVT, right popliteal and femoral veins', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'us', pid: '433', text: 'Ultrasound: 433 Brandt has an occlusive DVT in the right popliteal and femoral veins. Heparin order is in.', replies: [{ label: 'Go to 433', act: 'goto', pid: '433' }] }); } },
     { id: 'pe', when: (s) => { const P = s.p['433']; return P.pe === null && !P.icu && ((s.t >= 150 && !(P.hepAt !== null && P.hepAt < 150)) || (P.early && s.t >= P.early)); }, run(s, A) { const P = s.p['433']; P.pe = s.t; P.callLight = true; A.msg({ from: 'nova', pid: '433', urgent: true, text: '433\'s call light. He says he can\'t breathe and his chest hurts. He looks gray.', replies: [{ label: 'Go to 433', act: 'goto', pid: '433' }] }); } },
     { id: 'pe-icu', when: (s) => { const P = s.p['433']; return P.pe !== null && !P.icu && peSev(s, P) >= 1.35; }, run(s, A) { const P = s.p['433']; P.icu = true; A.judge('433-icu', 'safety', -3, 'Mr. Brandt\'s PE progressed to shock before anyone escalated.', 'Sudden dyspnea, tachycardia and hypoxia in a high-risk patient needs oxygen and a rapid response in minutes, not after the next round.', '433'); A.msg({ from: 'nova', pid: '433', urgent: true, text: 'Rapid response in 433. BP 78 systolic, sat 81%. They\'re taking him to the ICU.' }); } },
@@ -744,8 +744,8 @@
     { id: 'rebound', when: (s) => { const P = s.p['435']; return P.dripOffAt !== null && !P.rebound && (P.glarAt === null || P.dripOffAt - P.glarAt < 120) && s.t >= P.dripOffAt + 45; }, run(s, A) { const P = s.p['435']; P.rebound = true; A.addLab('435', { name: 'Anion gap', val: 19, unit: 'mmol/L', ref: '8–12', flag: 'H' }); A.msg({ from: 'lab', pid: '435', urgent: true, text: '435 Sorensen BMP: glucose 318, anion gap 19. The gap has reopened.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'bg-late', when: (s) => { const P = s.p['435']; const last = P.bgs.length ? P.bgs[P.bgs.length - 1].t : -60; return P.dripOn && s.t - last > 85; }, run(s, A) { A.judge('435-bg-late', 'time', -1, 'Ms. Sorensen\'s hourly glucose checks slipped.', 'On an insulin infusion, the hourly glucose is the steering wheel. Miss one and you\'re driving blind.', '435'); A.msg({ from: 'nova', pid: '435', text: '435\'s glucose is overdue. She\'s on a drip.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'ct', when: (s) => { const P = s.p['437']; return P.alert !== null && P.ct === null && s.t >= P.alert + 20; }, run(s, A) { const P = s.p['437']; P.ct = s.t; A.addLab('437', { name: 'CT head without contrast', val: 'No hemorrhage. No early ischemic changes.', unit: '', ref: '', flag: '' }); A.msg({ from: 'stroke', pid: '437', text: 'CT head on 437: no bleed.' }); } },
-    { id: 'tpa-wait', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && (P.labeAt === null || P.bgAt === null) && s.t >= P.ct + 4; }, run(s, A) { A.msg({ from: 'stroke', pid: '437', urgent: true, text: 'We can\'t decide on alteplase for 437 yet. We need a glucose and a BP under 185/110.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
-    { id: 'tpa', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && P.labeAt !== null && P.bgAt !== null; }, run(s, A) { const P = s.p['437'], win = P.lastNormal + 270; P.eligible = s.t <= win; A.msg({ from: 'stroke', pid: '437', urgent: P.eligible, text: P.eligible ? `No bleed, BP under 185/110, glucose 132, last known well ${clock(P.lastNormal)}. He\'s inside the window. Start alteplase now.` : `Last known well was ${clock(P.lastNormal)}, more than 4.5 hours ago. He\'s outside the alteplase window. We\'re calling IR about thrombectomy.`, replies: P.eligible ? [{ label: 'Go to 437', act: 'goto', pid: '437' }] : null }); } },
+    { id: 'tpa-wait', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && (P.labeAt === null || P.bgAt === null) && s.t >= P.ct + 4; }, run(s, A) { A.msg({ from: 'stroke', pid: '437', urgent: true, text: 'We can\'t decide on thrombolytics for 437 yet. We need a glucose and a BP under 185/110.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
+    { id: 'tpa', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && P.labeAt !== null && P.bgAt !== null; }, run(s, A) { const P = s.p['437'], win = P.lastNormal + 270; P.eligible = s.t <= win; A.msg({ from: 'stroke', pid: '437', urgent: P.eligible, text: P.eligible ? `No bleed, BP under 185/110, glucose 132, last known well ${clock(P.lastNormal)}. He\'s inside the window. Give tenecteplase now.` : `Last known well was ${clock(P.lastNormal)}, more than 4.5 hours ago. He\'s outside the thrombolytic window. We\'re calling IR about thrombectomy.`, replies: P.eligible ? [{ label: 'Go to 437', act: 'goto', pid: '437' }] : null }); } },
     { id: 'nova-437', when: (s) => { const P = s.p['437']; return stroke(P) && P.found === null && s.t >= 175; }, run(s, A) { const P = s.p['437']; P.found = s.t; P.missed = true; A.judge('437-missed', 'assess', -3, 'Mr. Delgado\'s stroke went unnoticed for over an hour.', 'At night, patients don\'t call you when they have a stroke. Hourly rounding and scheduled neuro checks are how it gets found in time.', '437'); A.msg({ from: 'nova', pid: '437', urgent: true, text: 'I just walked past 437. His face is drooping and he can\'t lift his right arm. When did anyone last see him?', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
     { id: 'dot-fall', when: (s) => { const P = s.p['431']; return s.t >= 200 && !P.fell && dotAg(s, P) > 1.1 && !P.fallPrec && !P.sitter; }, run(s, A) { const P = s.p['431']; P.fell = true; A.judge('431-fell', 'safety', -3, 'Mrs. Pruitt fell trying to get to the bathroom.', 'Delirium, a fresh hip repair, no fall precautions, and a bladder no one checked. Every one of those was fixable.', '431'); A.msg({ from: 'nova', pid: '431', urgent: true, text: '431 is on the floor next to her bed. She was trying to get to the bathroom. She\'s crying about her hip.', replies: [{ label: 'Go to 431', act: 'goto', pid: '431' }] }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to report. Go look at everyone one more time. At 4 a.m., the quiet ones are the ones to worry about.' }); } },
@@ -790,7 +790,7 @@
     if (stroke(F) && F.found === null) return 'Someone\'s face may have changed since the last time anyone looked. Who haven\'t you laid eyes on since midnight?';
     if (stroke(F) && F.alert === null) return 'Face, arm, speech. Who do you call, and what\'s the one time they\'ll ask you for?';
     if (F.alert !== null && F.eligible === null && (F.labeAt === null || F.bgAt === null)) return 'The stroke team is waiting on two things from you before they can decide. What are they?';
-    if (K.kLow && !K.paused) return 'Insulin drives potassium into cells. What does the protocol say to do with a K under 3.3?';
+    if (K.kLow && !K.paused) return 'Insulin drives potassium into cells. What does the protocol say to do with a K under 3.5?';
     if (K.dripOn && K.bg < 250 && !K.dex) return 'Her sugar is dropping faster than her acid is clearing. What does the protocol add at 250?';
     if (K.glarAt !== null && K.dripOn && s.t - K.glarAt < 120) return 'She wants the drip off. How long does glargine take to start working?';
     if (D.cathAt === null && dotAg(s, D) > .5) return 'An 84-year-old who keeps saying she needs the bathroom. When did she last actually go?';

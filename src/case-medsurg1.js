@@ -511,7 +511,7 @@
           P.pharmAsked = true;
           if (!P.allergyInfo) return 'Omar, pharmacy: "I need to know what the penicillin reaction was and whether she\'s had a cephalosporin before. Can you find out? Until then I can\'t verify it."';
           P.abxAvail = s.t + 15;
-          A.judge('416-pharm', 'comm', 2, 'You clarified Mrs. Whitfield\'s allergy with her daughter and closed the loop with pharmacy.', 'A childhood rash to penicillin and a tolerated cephalosporin since then makes ceftriaxone low risk. Every hour of delayed antibiotics in sepsis raises mortality. The fastest path was a phone call, not a note.', '416');
+          A.judge('416-pharm', 'comm', 2, 'You clarified Mrs. Whitfield\'s allergy with her daughter and closed the loop with pharmacy.', 'A childhood rash to penicillin and a tolerated cephalosporin since then makes ceftriaxone low risk. Current allergy guidance goes further: cross-reactivity between penicillins and third-generation cephalosporins like ceftriaxone is very low, so most penicillin allergy labels shouldn\'t delay one. Every hour of delayed antibiotics in sepsis raises mortality. The fastest path was a phone call, not a note.', '416');
           return 'Omar: "Childhood rash, tolerated Keflex. That works. Verifying now. It\'ll be in the tube station in 15."';
         },
       },
@@ -539,8 +539,8 @@
         checks: (s, P) => [{ label: 'Allergy', value: P.allergyInfo ? 'Penicillin: childhood rash. Tolerated cephalexin in 2024.' : 'Penicillin, reaction unknown', ok: P.allergyInfo ? true : null }],
         give(s, P, A) {
           P.abxAt = s.t;
-          if (s.t <= 150) A.judge('416-abx-time', 'time', 1, 'Mrs. Whitfield\'s first antibiotic dose went in by mid-morning.', 'In suspected sepsis, antibiotics within an hour of recognition is the standard. It started 6 hours after admission because of the allergy hold.', '416');
-          else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality. The block was a phone call to her daughter.', '416');
+          if (s.t <= 150) A.judge('416-abx-time', 'time', 1, 'Mrs. Whitfield\'s first antibiotic dose went in by mid-morning.', 'Surviving Sepsis guidance: antibiotics within 1 hour when sepsis is probable or shock is present, and within 3 hours when sepsis is possible without shock. Her dose started 6 hours after admission because of the allergy hold.', '416');
+          else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality, and current guidance wants the first dose within 1 to 3 hours of recognition. The block was a phone call to her daughter.', '416');
           return 'Ceftriaxone 1 g IV over 30 minutes. Watching for any reaction.';
         },
       },
@@ -652,6 +652,7 @@
       { t: -2800, text: 'Potassium chloride 20 mEq PO daily. Apixaban 5 mg PO twice daily.' },
     ],
     notes: [
+      { t: -1500, author: 'Cardiology consult', text: 'HFrEF, EF 30%, not yet on full guideline-directed therapy. Diurese first. Once euvolemic with stable K and creatinine: add an SGLT2 inhibitor and spironolactone, and plan to switch losartan to sacubitril/valsartan before discharge. Metoprolol succinate dose limited by slow AF.' },
       { t: -30, author: 'Dana, night RN', text: 'Slept on 3 pillows. Weight up 0.6 kg from yesterday. Rosa brought food from home; I talked with her and she said "he has to eat something he likes." HR 50s to 60s in AFib overnight. K 3.3, day team to address. 350 mL urine after the 21:00 furosemide.' },
     ],
     io: { intake: 'PO 1,900 mL yesterday (limit 1,500)', output: 'Urine 1,450 mL yesterday' },
@@ -844,7 +845,7 @@
     { id: 'or-sob', when: (s) => s.p['418'].fl >= 63, run(s, A) { s.p['418'].overload = true; A.msg({ from: 'rosa', pid: '418', urgent: true, text: 'Call light 418. Rosa: "He can\'t catch his breath! Please come."', replies: [{ label: 'Go to 418', act: 'goto', pid: '418' }] }); } },
     { id: 'ok-hypo', when: (s) => s.p['414'].prandAt !== null && okaforBG(s, s.p['414']) < 62, run(s, A) { const P = s.p['414']; P.hypo = true; P.hypoAt = s.t; A.msg({ from: 'luis', pid: '414', urgent: true, text: 'Mrs. Okafor in 414 is sweaty and shaky. She says she feels "off."', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'ok-severe', when: (s) => s.p['414'].hypo && !s.p['414'].hypoResolved && s.p['414'].juiceAt === null && s.t - s.p['414'].hypoAt >= 25, run(s, A) { s.p['414'].hypoSevere = true; A.judge('414-untreated', 'safety', -2, 'Mrs. Okafor\'s hypoglycemia went untreated for 25 minutes.', 'Shaky, sweaty and anxious on insulin is hypoglycemia until proven otherwise. Check, treat, recheck, and don\'t let it wait behind routine tasks.', '414'); A.msg({ from: 'luis', pid: '414', urgent: true, text: '414 isn\'t making sense. She\'s slurring. I checked her sugar: 36.', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
-    { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 2 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
+    { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 4 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : v >= 2 ? `416 lactate ${v} mmol/L, elevated. Sepsis protocol: notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
     { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.' }); } },
     { id: 'wh-drowsy', when: (s) => { const P = s.p['416']; return !P.escalated && !P.icu && P.sev >= 40; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: 'Heads up: 416 is a lot sleepier than she was at 7, and she didn\'t touch her breakfast. Her face looks flushed.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
     { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
@@ -937,7 +938,7 @@
       const re = W.vit.some((v) => v.t >= W.bolusAt + 20 && v.t <= W.bolusAt + 120);
       A.judge('416-evaluate', 'judgment', re ? 1 : -1, re ? 'You rechecked Mrs. Whitfield\'s vitals after her bolus.' : 'You didn\'t recheck Mrs. Whitfield\'s vitals after her bolus.', 'Fluid is a treatment with an expected response. Reassessing BP, HR and mentation tells you whether she needs more or a vasopressor.', '416');
     }
-    if (W.lactResult !== null && W.lactResult >= 2 && !W.lactReported) A.judge('416-lact-unreported', 'comm', -1, 'The critical lactate on Mrs. Whitfield wasn\'t reported to the provider.', 'Critical values need to reach the provider promptly, read back and documented.', '416');
+    if (W.lactResult !== null && W.lactResult >= 2 && !W.lactReported) A.judge('416-lact-unreported', 'comm', -1, 'The elevated lactate on Mrs. Whitfield wasn\'t reported to the provider.', 'A lactate over 2 in suspected sepsis means poor perfusion and changes the plan: more fluid, a repeat lactate, closer monitoring. Over 4 is a critical value. Either way it has to reach the provider promptly.', '416');
     const R = s.p['418'];
     if (R.metoHeld && !R.notifiedMeto) A.judge('418-hold-notify', 'comm', -1, 'You held Mr. Ortiz\'s metoprolol but didn\'t tell the provider.', 'A held cardiac medication changes the plan. The provider needs to know to adjust the dose.', '418');
     const keys = []; A.c.patients.forEach((d) => d.report.forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
