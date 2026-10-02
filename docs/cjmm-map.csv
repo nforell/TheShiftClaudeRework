@@ -14,84 +14,93 @@ step,skill_area,points,decision,key,where
 "Take action",meds,varies,"You offered Jordan hydroxyzine for anxiety.","403-hydrox",src/case-adolpsych1.js:198
 "Analyze cues",judgment,-2,"You suggested punishing Jordan for self-harm.","403-sbar-privs",src/case-adolpsych1.js:220
 "Take action",comm,varies,"You reported Jordan's new self-harm to the psychiatrist.","403-sbar",src/case-adolpsych1.js:225
-"Recognize cues",assess,varies,"You did Marcus's post-IM check${s.t <= 45 ? ' on time' : ', late'}.","405-postim",src/case-adolpsych1.js:288
-"Recognize cues",safety,1,"You checked Marcus's airway during his dystonia.","405-airway",src/case-adolpsych1.js:289
-"Take action",safety,-3,"You secluded Marcus during an acute dystonic reaction.","405-seclude",src/case-adolpsych1.js:290
-"Evaluate outcomes",judgment,2,"You reassessed Marcus after the diphenhydramine.","405-reassess",src/case-adolpsych1.js:291
-"Take action",meds,-1,"You gave Marcus diphenhydramine without signs of dystonia.","405-dph",src/case-adolpsych1.js:298
-"Take action",meds,2,"You treated Marcus's acute dystonia with diphenhydramine.","405-dph",src/case-adolpsych1.js:298
-"Take action",meds,-3,"You gave Marcus more haloperidol.","405-halo",src/case-adolpsych1.js:304
-"Analyze cues",judgment,-2,"You asked for more haloperidol for Marcus's dystonia.","405-sbar-more",src/case-adolpsych1.js:325
-"Take action",comm,1,"You called about Marcus's dystonia.","405-sbar",src/case-adolpsych1.js:329
-"Take action",comm,2,"You reported Marcus's dystonic reaction and its treatment.","405-sbar",src/case-adolpsych1.js:330
-"Take action",safety,2,"You made a mandated report for Kayla.","407-cps",src/case-adolpsych1.js:386
-"Evaluate outcomes",judgment,1,"You checked back in with Kayla after the report.","407-checkback",src/case-adolpsych1.js:387
-"Analyze cues",judgment,-2,"You suggested questioning Kayla's mother yourself.","407-sbar-mom",src/case-adolpsych1.js:410
-"Take action",comm,1,"You told the psychiatrist about Kayla's disclosure.","407-sbar",src/case-adolpsych1.js:414
-"Take action",comm,2,"You told the psychiatrist about Kayla's disclosure and your report.","407-sbar",src/case-adolpsych1.js:415
-"Recognize cues",assess,varies,"You did Eli's admission assessment and a thorough belongings search.","409-admit",src/case-adolpsych1.js:470
-"Evaluate outcomes",judgment,2,"You followed up with the psychiatrist on Eli's stat results.","409-results",src/case-adolpsych1.js:502
-"Take action",comm,varies,"You reported a possible acetaminophen overdose in Eli.","409-sbar",src/case-adolpsych1.js:509
-"Generate solutions",comm,2,"You held the line on blind weights and asked about the feeling instead.","401-weight",src/case-adolpsych1.js:536
-"Take action",comm,-2,"You told Ella her weight went up.","401-weight",src/case-adolpsych1.js:537
-"Take action",comm,-2,"You commented on Ella's body.","401-weight",src/case-adolpsych1.js:538
-"Take action",comm,2,"You protected Jordan's name and pronouns from being shared without their consent.","403-name",src/case-adolpsych1.js:545
-"Take action",comm,-2,"You told Jordan their dad has a right to know about their gender identity.","403-name",src/case-adolpsych1.js:546
-"Take action",comm,-1,"You pushed Jordan to come out to their dad.","403-name",src/case-adolpsych1.js:547
-"Take action",comm,2,"You believed Marcus and named what was happening.","405-talk",src/case-adolpsych1.js:561
-"Analyze cues",judgment,-3,"You told Marcus he was faking an acute dystonic reaction.","405-talk",src/case-adolpsych1.js:562
-"Take action",comm,2,"You were honest with Kayla about what you could keep secret, before she told you.","407-promise",src/case-adolpsych1.js:575
-"Take action",comm,-3,"You promised Kayla secrecy.","407-promise",src/case-adolpsych1.js:576
-"Take action",comm,-1,"You put off what Kayla wanted to tell you.","407-defer",src/case-adolpsych1.js:577
-"Take action",comm,2,"You believed Kayla and told her what happens next.","407-resp",src/case-adolpsych1.js:580
-"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:581
-"Take action",comm,-2,"You questioned whether Kayla was telling the truth.","407-resp",src/case-adolpsych1.js:582
-"Generate solutions",comm,1,"You owned the broken promise and told Kayla the plan.","407-resp",src/case-adolpsych1.js:585
-"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:586
-"Recognize cues",assess,2,"You asked Eli directly about any ingestion.","409-ask",src/case-adolpsych1.js:597
-"Analyze cues",judgment,-1,"You accepted ""carsick.""","409-ask",src/case-adolpsych1.js:598
-"Recognize cues",assess,-1,"Tasha found Jordan's fresh cuts before a nurse did.","403-late",src/case-adolpsych1.js:615
-"Take action",safety,-3,"Jordan self-harmed again on the unit, more deeply.","403-second",src/case-adolpsych1.js:621
-"Take action",safety,-3,"Marcus's dystonia reached his airway.","405-airway-fail",src/case-adolpsych1.js:622
-"Take action",safety,-3,"Ella developed symptomatic refeeding syndrome.","401-out",src/case-adolpsych1.js:624
-"Take action",comm,2,"You updated Jordan's father without outing them, and routed the hard news to the psychiatrist.","403-dad",src/case-adolpsych1.js:639
-"Take action",comm,-2,"You outed Jordan to their father.","403-dad",src/case-adolpsych1.js:640
-"Generate solutions",comm,-1,"You refused to tell Jordan's father anything.","403-dad",src/case-adolpsych1.js:641
-"Take action",safety,1,"You supervised Ella's dinner yourself.","401-meal",src/case-adolpsych1.js:642
-"Generate solutions",deleg,1,"You had Tasha supervise Ella's dinner and the hour after.","401-meal",src/case-adolpsych1.js:643
-"Take action",safety,-2,"You left Ella alone with her dinner tray.","401-meal",src/case-adolpsych1.js:644
-"Take action",safety,1,"You kept Ella's post-meal observation in place.","401-post",src/case-adolpsych1.js:645
-"Take action",safety,-1,"You let Ella use the bathroom alone right after dinner.","401-post",src/case-adolpsych1.js:646
-"Take action",comm,2,"You thanked Jordan for telling, and took it seriously.","409-peer",src/case-adolpsych1.js:647
-"Analyze cues",judgment,-2,"You dismissed a peer's report that Eli overdosed.","409-peer",src/case-adolpsych1.js:648
-"Take action",comm,-1,"You asked Jordan to monitor another patient.","409-peer",src/case-adolpsych1.js:649
-"Take action",safety,2,"You handled self-harm talk in the dayroom privately and calmly.","403-contagion",src/case-adolpsych1.js:650
-"Take action",safety,-1,"You called out self-harm talk in front of the whole dayroom.","403-contagion",src/case-adolpsych1.js:651
-"Take action",safety,-2,"You let self-harm details spread on the unit.","403-contagion",src/case-adolpsych1.js:652
-"Take action",safety,1,"You kept Rick off the unit without tipping him off.","407-visit",src/case-adolpsych1.js:653
-"Take action",safety,-3,"You let the man Kayla named visit her.","407-visit",src/case-adolpsych1.js:654
-"Take action",safety,-3,"You told Rick what Kayla disclosed.","407-visit",src/case-adolpsych1.js:655
-"Generate solutions",deleg,-1,"You asked the mental health worker to do a skin check alone.","deleg-skin",src/case-adolpsych1.js:672
-"Generate solutions",deleg,-1,"You asked the mental health worker to find out what's happening at Kayla's home.","deleg-talk",src/case-adolpsych1.js:673
-"Generate solutions",deleg,-2,"You asked the mental health worker to give an injection.","deleg-meds",src/case-adolpsych1.js:674
-"Generate solutions",deleg,1,"You put Tasha on line-of-sight with Jordan.","deleg-one",src/case-adolpsych1.js:675
-"Generate solutions",deleg,1,"You had Tasha sit near Kayla's door during visiting hours.","deleg-sit",src/case-adolpsych1.js:676
-"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the mental health worker.","'deleg-good-' + task.id",src/case-adolpsych1.js:679
-"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-adolpsych1.js:709
-"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-adolpsych1.js:712
-"Take action",comm,-2,"Ella's refeeding labs never reached the psychiatrist.","401-norep",src/case-adolpsych1.js:716
-"Recognize cues",assess,-2,"Jordan's skin check was never done by a nurse.","403-noskin",src/case-adolpsych1.js:717
-"Take action",comm,-1,"Jordan's new self-harm never reached the psychiatrist.","403-norep",src/case-adolpsych1.js:718
-"Take action",meds,-2,"Marcus's dystonia was never treated.","405-untreated",src/case-adolpsych1.js:719
-"Take action",comm,-1,"The psychiatrist never heard about Marcus's dystonic reaction.","405-norep",src/case-adolpsych1.js:720
-"Take action",safety,-3,"Kayla's disclosure of abuse was never reported.","407-noreport",src/case-adolpsych1.js:721
-"Take action",comm,-2,"Eli's possible acetaminophen overdose never reached the psychiatrist.","409-norep",src/case-adolpsych1.js:722
-"Take action",comm,-2,"Eli's critical results came back and sat in the chart.","409-nofollow",src/case-adolpsych1.js:723
-"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-adolpsych1.js:727
-"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-adolpsych1.js:728
-"Prioritize hypotheses",priority,2,"You chose to see Marcus first.","rank-first",src/case-adolpsych1.js:768
-"Prioritize hypotheses",priority,1,"You chose to see Jordan first.","rank-first",src/case-adolpsych1.js:769
-"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Marcus and Jordan.","rank-first",src/case-adolpsych1.js:770
+"Recognize cues",assess,varies,"You did Marcus's post-IM check${s.t <= 45 ? ' on time' : ', late'}.","405-postim",src/case-adolpsych1.js:290
+"Recognize cues",judgment,1,"You checked the 14:30 emergency medication record for Marcus.","405-docrev",src/case-adolpsych1.js:292
+"Generate solutions",comm,1,"You asked Ben to chart the hold he was part of.","405-ben",src/case-adolpsych1.js:295
+"Take action",comm,-1,"You charted a restraint you didn't witness.","405-selfchart",src/case-adolpsych1.js:297
+"Generate solutions",comm,1,"You told Marcus's mom about the hold and the emergency medication.","405-mom",src/case-adolpsych1.js:299
+"Recognize cues",safety,1,"You checked Marcus's airway during his dystonia.","405-airway",src/case-adolpsych1.js:300
+"Take action",safety,-3,"You secluded Marcus during an acute dystonic reaction.","405-seclude",src/case-adolpsych1.js:301
+"Evaluate outcomes",judgment,2,"You reassessed Marcus after the diphenhydramine.","405-reassess",src/case-adolpsych1.js:302
+"Take action",meds,-1,"You gave Marcus diphenhydramine without signs of dystonia.","405-dph",src/case-adolpsych1.js:309
+"Take action",meds,2,"You treated Marcus's acute dystonia with diphenhydramine.","405-dph",src/case-adolpsych1.js:309
+"Take action",meds,-3,"You gave Marcus more haloperidol.","405-halo",src/case-adolpsych1.js:315
+"Generate solutions",comm,varies,"You called Dr. Adeyemi for the face-to-face after Marcus's hold.","405-sbar-f2f",src/case-adolpsych1.js:337
+"Analyze cues",judgment,-2,"You asked for more haloperidol for Marcus's dystonia.","405-sbar-more",src/case-adolpsych1.js:338
+"Take action",comm,1,"You called about Marcus's dystonia.","405-sbar",src/case-adolpsych1.js:342
+"Take action",comm,2,"You reported Marcus's dystonic reaction and its treatment.","405-sbar",src/case-adolpsych1.js:343
+"Take action",safety,2,"You made a mandated report for Kayla.","407-cps",src/case-adolpsych1.js:399
+"Evaluate outcomes",judgment,1,"You checked back in with Kayla after the report.","407-checkback",src/case-adolpsych1.js:400
+"Analyze cues",judgment,-2,"You suggested questioning Kayla's mother yourself.","407-sbar-mom",src/case-adolpsych1.js:423
+"Take action",comm,1,"You told the psychiatrist about Kayla's disclosure.","407-sbar",src/case-adolpsych1.js:427
+"Take action",comm,2,"You told the psychiatrist about Kayla's disclosure and your report.","407-sbar",src/case-adolpsych1.js:428
+"Recognize cues",assess,varies,"You did Eli's admission assessment and a thorough belongings search.","409-admit",src/case-adolpsych1.js:483
+"Evaluate outcomes",judgment,2,"You followed up with the psychiatrist on Eli's stat results.","409-results",src/case-adolpsych1.js:515
+"Take action",comm,varies,"You reported a possible acetaminophen overdose in Eli.","409-sbar",src/case-adolpsych1.js:522
+"Generate solutions",comm,2,"You held the line on blind weights and asked about the feeling instead.","401-weight",src/case-adolpsych1.js:549
+"Take action",comm,-2,"You told Ella her weight went up.","401-weight",src/case-adolpsych1.js:550
+"Take action",comm,-2,"You commented on Ella's body.","401-weight",src/case-adolpsych1.js:551
+"Take action",comm,2,"You protected Jordan's name and pronouns from being shared without their consent.","403-name",src/case-adolpsych1.js:558
+"Take action",comm,-2,"You told Jordan their dad has a right to know about their gender identity.","403-name",src/case-adolpsych1.js:559
+"Take action",comm,-1,"You pushed Jordan to come out to their dad.","403-name",src/case-adolpsych1.js:560
+"Take action",comm,2,"You believed Marcus and named what was happening.","405-talk",src/case-adolpsych1.js:574
+"Analyze cues",judgment,-3,"You told Marcus he was faking an acute dystonic reaction.","405-talk",src/case-adolpsych1.js:575
+"Take action",comm,2,"You were honest with Kayla about what you could keep secret, before she told you.","407-promise",src/case-adolpsych1.js:588
+"Take action",comm,-3,"You promised Kayla secrecy.","407-promise",src/case-adolpsych1.js:589
+"Take action",comm,-1,"You put off what Kayla wanted to tell you.","407-defer",src/case-adolpsych1.js:590
+"Take action",comm,2,"You believed Kayla and told her what happens next.","407-resp",src/case-adolpsych1.js:593
+"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:594
+"Take action",comm,-2,"You questioned whether Kayla was telling the truth.","407-resp",src/case-adolpsych1.js:595
+"Generate solutions",comm,1,"You owned the broken promise and told Kayla the plan.","407-resp",src/case-adolpsych1.js:598
+"Take action",comm,-1,"You questioned Kayla for details.","407-resp",src/case-adolpsych1.js:599
+"Recognize cues",assess,2,"You asked Eli directly about any ingestion.","409-ask",src/case-adolpsych1.js:610
+"Analyze cues",judgment,-1,"You accepted ""carsick.""","409-ask",src/case-adolpsych1.js:611
+"Recognize cues",assess,-1,"Tasha found Jordan's fresh cuts before a nurse did.","403-late",src/case-adolpsych1.js:632
+"Take action",safety,-3,"Jordan self-harmed again on the unit, more deeply.","403-second",src/case-adolpsych1.js:638
+"Take action",safety,-3,"Marcus's dystonia reached his airway.","405-airway-fail",src/case-adolpsych1.js:639
+"Take action",safety,-3,"Ella developed symptomatic refeeding syndrome.","401-out",src/case-adolpsych1.js:641
+"Take action",comm,2,"You updated Jordan's father without outing them, and routed the hard news to the psychiatrist.","403-dad",src/case-adolpsych1.js:656
+"Take action",comm,-2,"You outed Jordan to their father.","403-dad",src/case-adolpsych1.js:657
+"Generate solutions",comm,-1,"You refused to tell Jordan's father anything.","403-dad",src/case-adolpsych1.js:658
+"Take action",safety,1,"You supervised Ella's dinner yourself.","401-meal",src/case-adolpsych1.js:659
+"Generate solutions",deleg,1,"You had Tasha supervise Ella's dinner and the hour after.","401-meal",src/case-adolpsych1.js:660
+"Take action",safety,-2,"You left Ella alone with her dinner tray.","401-meal",src/case-adolpsych1.js:661
+"Take action",safety,1,"You kept Ella's post-meal observation in place.","401-post",src/case-adolpsych1.js:662
+"Take action",safety,-1,"You let Ella use the bathroom alone right after dinner.","401-post",src/case-adolpsych1.js:663
+"Take action",comm,2,"You thanked Jordan for telling, and took it seriously.","409-peer",src/case-adolpsych1.js:664
+"Analyze cues",judgment,-2,"You dismissed a peer's report that Eli overdosed.","409-peer",src/case-adolpsych1.js:665
+"Take action",comm,-1,"You asked Jordan to monitor another patient.","409-peer",src/case-adolpsych1.js:666
+"Take action",safety,2,"You handled self-harm talk in the dayroom privately and calmly.","403-contagion",src/case-adolpsych1.js:667
+"Take action",safety,-1,"You called out self-harm talk in front of the whole dayroom.","403-contagion",src/case-adolpsych1.js:668
+"Take action",safety,-2,"You let self-harm details spread on the unit.","403-contagion",src/case-adolpsych1.js:669
+"Take action",safety,1,"You kept Rick off the unit without tipping him off.","407-visit",src/case-adolpsych1.js:670
+"Take action",safety,-3,"You let the man Kayla named visit her.","407-visit",src/case-adolpsych1.js:671
+"Take action",safety,-3,"You told Rick what Kayla disclosed.","407-visit",src/case-adolpsych1.js:672
+"Generate solutions",deleg,-1,"You asked the mental health worker to do a skin check alone.","deleg-skin",src/case-adolpsych1.js:689
+"Generate solutions",deleg,-1,"You asked the mental health worker to find out what's happening at Kayla's home.","deleg-talk",src/case-adolpsych1.js:690
+"Generate solutions",deleg,-2,"You asked the mental health worker to give an injection.","deleg-meds",src/case-adolpsych1.js:691
+"Generate solutions",deleg,1,"You put Tasha on line-of-sight with Jordan.","deleg-one",src/case-adolpsych1.js:692
+"Generate solutions",deleg,1,"You had Tasha sit near Kayla's door during visiting hours.","deleg-sit",src/case-adolpsych1.js:693
+"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the mental health worker.","'deleg-good-' + task.id",src/case-adolpsych1.js:696
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-adolpsych1.js:727
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-adolpsych1.js:730
+"Take action",comm,-2,"Ella's refeeding labs never reached the psychiatrist.","401-norep",src/case-adolpsych1.js:734
+"Recognize cues",assess,-2,"Jordan's skin check was never done by a nurse.","403-noskin",src/case-adolpsych1.js:735
+"Take action",comm,-1,"Jordan's new self-harm never reached the psychiatrist.","403-norep",src/case-adolpsych1.js:736
+"Recognize cues",judgment,-1,"Nobody caught that Marcus's 14:30 hold was never charted as a restraint.","405-docrev-miss",src/case-adolpsych1.js:737
+"Generate solutions",safety,-2,"Marcus never had a face-to-face evaluation after his hold.","405-f2f-none",src/case-adolpsych1.js:739
+"Generate solutions",comm,-1,"Marcus's mom was never told about the hold or the emergency medication.","405-mom-none",src/case-adolpsych1.js:740
+"Generate solutions",comm,-1,"The 14:30 hold was never charted as a restraint.","405-hold-uncharted",src/case-adolpsych1.js:741
+"Take action",meds,-2,"Marcus's dystonia was never treated.","405-untreated",src/case-adolpsych1.js:743
+"Take action",comm,-1,"The psychiatrist never heard about Marcus's dystonic reaction.","405-norep",src/case-adolpsych1.js:744
+"Take action",safety,-3,"Kayla's disclosure of abuse was never reported.","407-noreport",src/case-adolpsych1.js:745
+"Take action",comm,-2,"Eli's possible acetaminophen overdose never reached the psychiatrist.","409-norep",src/case-adolpsych1.js:746
+"Take action",comm,-2,"Eli's critical results came back and sat in the chart.","409-nofollow",src/case-adolpsych1.js:747
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-adolpsych1.js:751
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-adolpsych1.js:752
+"Prioritize hypotheses",priority,2,"You chose to see Marcus first.","rank-first",src/case-adolpsych1.js:794
+"Prioritize hypotheses",priority,1,"You chose to see Jordan first.","rank-first",src/case-adolpsych1.js:795
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Marcus and Jordan.","rank-first",src/case-adolpsych1.js:796
 "Evaluate outcomes",judgment,1,"You reassessed Mr. Bell's pain and sedation after his oxycodone.","412-reassess",src/case-medsurg1.js:80
 "Take action",safety,1,"You got Mr. Bell using his incentive spirometer with a splinting pillow.","412-is",src/case-medsurg1.js:96
 "Recognize cues",safety,-1,"You got Mr. Bell up for his first walk without checking orthostatic vital signs.","412-walk-blind",src/case-medsurg1.js:111
@@ -444,106 +453,134 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,2,"You chose to see Mateo first.","rank-first",src/case-peds1.js:694
 "Prioritize hypotheses",priority,1,"You chose to see Zoe first.","rank-first",src/case-peds1.js:695
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Mateo.","rank-first",src/case-peds1.js:696
-"Recognize cues",assess,2,"You completed a structured suicide risk screen on Daniel.","301-cssrs",src/case-psych1.js:66
-"Recognize cues",assess,1,"You screened Daniel and read the behavior item, not just his denials.","301-cssrs",src/case-psych1.js:68
-"Take action",safety,2,"You searched Daniel's room and found a hidden ligature.","301-search",src/case-psych1.js:76
-"Take action",safety,2,"You put Daniel on 1:1 observation.","301-one",src/case-psych1.js:84
-"Take action",judgment,0,"You started 1:1 observation on Daniel without a clear reason yet.","301-one",src/case-psych1.js:85
-"Take action",meds,-1,"You gave Daniel an as-needed anxiolytic he didn't need.","301-hydrox",src/case-psych1.js:96
-"Analyze cues",judgment,-2,"You told the psychiatrist Daniel looked ready to go home.","301-sbar-dc",src/case-psych1.js:122
-"Take action",comm,2,"You gave the psychiatrist the whole picture on Daniel.","301-sbar",src/case-psych1.js:127
-"Take action",comm,0,"You raised a concern about Daniel without the evidence behind it.","301-sbar-thin",src/case-psych1.js:130
-"Analyze cues",judgment,-1,"You asked to medicate Daniel's calm.","301-sbar-prn",src/case-psych1.js:131
-"Take action",safety,0,"You used seclusion for Jasmine after less restrictive measures failed.","303-seclude",src/case-psych1.js:207
-"Take action",safety,-3,"You secluded Jasmine when she wasn't an imminent danger.","303-seclude",src/case-psych1.js:208
-"Take action",safety,1,"You released Jasmine from seclusion once she was safe.","303-release",src/case-psych1.js:213
-"Generate solutions",meds,-1,"You held Jasmine's lithium without a reason.","303-li-hold",src/case-psych1.js:221
-"Generate solutions",meds,-1,"You held Jasmine's olanzapine without a reason.","303-olz-hold",src/case-psych1.js:228
-"Take action",meds,-1,"You gave Jasmine an agitation PRN when she wasn't agitated.","303-odt",src/case-psych1.js:237
-"Take action",meds,2,"You offered Jasmine oral PRN medication before things got dangerous.","303-odt",src/case-psych1.js:238
-"Take action",meds,-3,"You gave Jasmine emergency IM medication when she wasn't an imminent danger.","303-im",src/case-psych1.js:249
-"Take action",meds,1,"You gave Jasmine emergency medication when she was an imminent danger.","303-im",src/case-psych1.js:250
-"Take action",comm,1,"You escalated Jasmine's imminent danger with what you'd tried.","303-sbar-em",src/case-psych1.js:277
-"Analyze cues",judgment,-2,"You asked for restrictive measures before Jasmine was an imminent danger.","303-sbar-restrict",src/case-psych1.js:278
-"Analyze cues",comm,2,"You connected Jasmine's escalation to a subtherapeutic lithium level.","303-sbar",src/case-psych1.js:283
-"Recognize cues",assess,1,"You checked Bob's orthostatic vitals.","305-ortho",src/case-psych1.js:351
-"Take action",safety,1,"You put Bob on fall precautions.","305-fall",src/case-psych1.js:353
-"Take action",meds,-3,"You gave Bob lithium while he was showing signs of lithium toxicity.","305-li",src/case-psych1.js:359
-"Generate solutions",meds,2,"You held Bob's lithium.","305-li-hold",src/case-psych1.js:360
-"Take action",meds,-2,"You gave Bob his thiazide diuretic while he was dehydrated and lithium-toxic.","305-hctz",src/case-psych1.js:365
-"Generate solutions",meds,1,"You held Bob's hydrochlorothiazide.","305-hctz-hold",src/case-psych1.js:366
-"Take action",meds,-2,"You gave Bob ibuprofen with a toxic lithium level.","305-ibu",src/case-psych1.js:368
-"Take action",meds,1,"You treated Bob's back pain with acetaminophen instead of ibuprofen.","305-apap",src/case-psych1.js:369
-"Take action",comm,varies,"You called the psychiatrist about Bob's critical lithium level.","305-sbar",src/case-psych1.js:396
-"Analyze cues",judgment,1,"You offered Miguel sealed food.","307-sealed",src/case-psych1.js:459
-"Take action",safety,1,"You found the charger cord after the visit.","307-bag-late",src/case-psych1.js:460
-"Take action",meds,2,"Miguel took his risperidone voluntarily.","307-risp",src/case-psych1.js:469
-"Generate solutions",meds,-1,"You held Miguel's risperidone when he was willing to take it.","307-risp-hold",src/case-psych1.js:470
-"Take action",meds,1,"You documented Miguel's refusal instead of pushing.","307-risp-ref",src/case-psych1.js:470
-"Generate solutions",meds,-1,"You held Miguel's risperidone with the wrong reason.","307-risp-hold",src/case-psych1.js:470
-"Take action",meds,2,"Miguel took his risperidone after you offered it again, his way.","307-risp",src/case-psych1.js:476
-"Analyze cues",judgment,-3,"You asked to hide Miguel's medication in his food.","307-sbar-covert",src/case-psych1.js:499
-"Analyze cues",judgment,-2,"You asked to force Miguel's medication outside an emergency.","307-sbar-im",src/case-psych1.js:500
-"Take action",comm,1,"You updated the psychiatrist on Miguel's medication.","307-sbar-r",src/case-psych1.js:503
-"Take action",comm,2,"You raised a capacity question about Miguel's refusals.","307-sbar",src/case-psych1.js:505
-"Take action",comm,1,"You reported what's working with Miguel.","307-sbar",src/case-psych1.js:508
-"Recognize cues",assess,1,"You got Linda's protocol weight.","309-weigh",src/case-psych1.js:579
-"Take action",safety,2,"You started Linda's fluid restriction per protocol.","309-restrict",src/case-psych1.js:583
-"Take action",safety,1,"You started Linda's fluid restriction.","309-restrict",src/case-psych1.js:583
-"Generate solutions",meds,0,"You held Linda's clozapine to clarify with the psychiatrist.","309-cloz-hold",src/case-psych1.js:589
-"Generate solutions",meds,-2,"You held Linda's clozapine.","309-cloz-hold",src/case-psych1.js:589
-"Take action",meds,1,"You treated Linda's constipation.","309-peg",src/case-psych1.js:591
-"Take action",comm,1,"You flagged Linda's constipation on clozapine.","309-sbar-bm",src/case-psych1.js:615
-"Analyze cues",judgment,-1,"You asked to treat Linda's headache instead of its cause.","309-sbar-prn",src/case-psych1.js:616
-"Take action",comm,1,"You reported Linda's critical sodium.","309-sbar",src/case-psych1.js:621
-"Take action",comm,2,"You reported Linda's water intoxication with the numbers.","309-sbar",src/case-psych1.js:622
-"Recognize cues",assess,2,"You asked Daniel directly about suicide, and named what you'd noticed.","301-ask",src/case-psych1.js:648
-"Recognize cues",assess,-1,"You asked Daniel about suicide in a way that invited ""no.""","301-ask",src/case-psych1.js:650
-"Generate solutions",safety,-3,"You offered to keep Daniel's suicide plan secret in exchange for a promise.","301-tell",src/case-psych1.js:657
-"Take action",comm,1,"You joined Jasmine's energy to a concrete, kind limit.","303-talk",src/case-psych1.js:663
-"Take action",comm,-1,"You argued with Jasmine's grandiosity.","303-talk",src/case-psych1.js:664
-"Take action",comm,-1,"You fed Jasmine's mania with enthusiasm.","303-talk",src/case-psych1.js:665
-"Take action",safety,2,"You de-escalated Jasmine with space, a calm voice and a real choice.","303-deesc",src/case-psych1.js:671
-"Take action",safety,-2,"You threatened Jasmine with seclusion.","303-deesc",src/case-psych1.js:672
-"Take action",safety,-1,"You touched Jasmine while she was escalated.","303-deesc",src/case-psych1.js:673
-"Take action",comm,1,"You explained to Bob why you were holding his meds.","305-talk",src/case-psych1.js:680
-"Take action",comm,2,"You validated Miguel's fear without agreeing with the delusion.","307-talk",src/case-psych1.js:688
-"Take action",comm,-1,"You argued with Miguel's delusion.","307-talk",src/case-psych1.js:689
-"Take action",comm,1,"You offered Miguel control over how his medication reaches him.","307-offer",src/case-psych1.js:696
-"Take action",comm,2,"You protected Miguel's confidentiality and still made room for his mother.","307-ana",src/case-psych1.js:703
-"Take action",comm,-2,"You shared Miguel's diagnosis with his mother without his consent.","307-ana",src/case-psych1.js:704
-"Take action",comm,-1,"You shut Ana out entirely.","307-ana",src/case-psych1.js:705
-"Take action",comm,2,"You made Linda a partner in her fluid restriction.","309-talk",src/case-psych1.js:713
-"Take action",safety,varies,"Jasmine's agitation reached a crisis that needed a team takedown.","303-emerg",src/case-psych1.js:733
-"Take action",safety,-1,"Ana went in to visit without her bag being checked.","307-bag-miss",src/case-psych1.js:735
-"Take action",safety,-1,"A phone charger cord sat in 307 for 40 minutes.","307-charger",src/case-psych1.js:736
-"Take action",safety,-3,"Daniel attempted suicide on the unit between 15-minute checks.","301-attempt",src/case-psych1.js:738
-"Take action",safety,-3,"Bob seized from lithium toxicity.","305-seize",src/case-psych1.js:741
-"Take action",safety,-3,"Linda seized from water intoxication.","309-seize",src/case-psych1.js:743
-"Recognize cues",comm,1,"You read back Bob's critical lithium level.","305-readback",src/case-psych1.js:749
-"Recognize cues",comm,2,"You listened to Daniel's sister without confirming he was a patient.","301-grace",src/case-psych1.js:750
-"Recognize cues",comm,-2,"You confirmed Daniel was a patient and shared his condition without a release.","301-grace",src/case-psych1.js:751
-"Take action",comm,-1,"You ended the call without hearing what Daniel's sister knew.","301-grace",src/case-psych1.js:752
-"Take action",judgment,2,"You stopped covert medication for Miguel.","307-covert",src/case-psych1.js:753
-"Take action",meds,-3,"You approved hiding Miguel's medication in his juice.","307-covert",src/case-psych1.js:754
-"Recognize cues",safety,2,"You checked Ana's bag before the visit.","307-bag",src/case-psych1.js:755
-"Recognize cues",safety,-2,"You sent Ana in without checking her bag.","307-bag",src/case-psych1.js:756
-"Generate solutions",deleg,-1,"You asked the mental health worker to assess suicide risk.","deleg-risk",src/case-psych1.js:775
-"Generate solutions",deleg,-2,"You asked the mental health worker to give medication.","deleg-prn",src/case-psych1.js:776
-"Generate solutions",deleg,1,"You put Andre on 1:1 with Daniel.","deleg-one",src/case-psych1.js:777
-"Generate solutions",deleg,1,"You had Andre supervise Linda's fluids.","deleg-fluids",src/case-psych1.js:780
-"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the mental health worker.","'deleg-good-' + task.id",src/case-psych1.js:782
-"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-psych1.js:813
-"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-psych1.js:816
-"Take action",comm,-2,"Bob's critical lithium level never reached the psychiatrist.","305-norep",src/case-psych1.js:820
-"Take action",comm,-2,"The psychiatrist decided Daniel's discharge without hearing what nursing saw.","301-norep",src/case-psych1.js:821
-"Recognize cues",assess,-1,"Linda's protocol weight was never done.","309-noweigh",src/case-psych1.js:822
-"Take action",comm,-1,"Miguel's medication refusals never reached the psychiatrist.","307-norep",src/case-psych1.js:823
-"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-psych1.js:827
-"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-psych1.js:828
-"Prioritize hypotheses",priority,2,"You chose to see Bob first.","rank-first",src/case-psych1.js:865
-"Prioritize hypotheses",priority,1,"You chose to see Daniel first.","rank-first",src/case-psych1.js:866
-"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Bob and Daniel.","rank-first",src/case-psych1.js:867
+"Evaluate outcomes",safety,1,"You checked on Jasmine at least every 15 minutes in seclusion.","303-checks",src/case-psych1.js:35
+"Evaluate outcomes",safety,-2,"Jasmine went ${g} minutes in seclusion without a charted check.","303-checks",src/case-psych1.js:36
+"Analyze cues",judgment,1,"Your note names the specific behavior that made it an emergency.","key + '-beh'",src/case-psych1.js:48
+"Analyze cues",judgment,-2,"Your note doesn't describe a danger.","key + '-beh'",src/case-psych1.js:49
+"Take action",comm,-1,"You charted ""agitated, combative and noncompliant.""","key + '-label'",src/case-psych1.js:50
+"Recognize cues",assess,2,"You completed a structured suicide risk screen on Daniel.","301-cssrs",src/case-psych1.js:108
+"Recognize cues",assess,1,"You screened Daniel and read the behavior item, not just his denials.","301-cssrs",src/case-psych1.js:110
+"Take action",safety,2,"You searched Daniel's room and found a hidden ligature.","301-search",src/case-psych1.js:118
+"Take action",safety,2,"You put Daniel on 1:1 observation.","301-one",src/case-psych1.js:126
+"Take action",judgment,0,"You started 1:1 observation on Daniel without a clear reason yet.","301-one",src/case-psych1.js:127
+"Take action",meds,-1,"You gave Daniel an as-needed anxiolytic he didn't need.","301-hydrox",src/case-psych1.js:138
+"Analyze cues",judgment,-2,"You told the psychiatrist Daniel looked ready to go home.","301-sbar-dc",src/case-psych1.js:164
+"Take action",comm,2,"You gave the psychiatrist the whole picture on Daniel.","301-sbar",src/case-psych1.js:169
+"Take action",comm,0,"You raised a concern about Daniel without the evidence behind it.","301-sbar-thin",src/case-psych1.js:172
+"Analyze cues",judgment,-1,"You asked to medicate Daniel's calm.","301-sbar-prn",src/case-psych1.js:173
+"Take action",safety,0,"You used seclusion for Jasmine after less restrictive measures failed.","303-seclude",src/case-psych1.js:250
+"Take action",safety,-3,"You secluded Jasmine when she wasn't an imminent danger.","303-seclude",src/case-psych1.js:251
+"Take action",safety,1,"You released Jasmine from seclusion once she was safe.","303-release",src/case-psych1.js:256
+"Generate solutions",safety,varies,"You set up continuous observation for Jasmine${s.t - P.ep.seclStart <= 12 ? '' : ', late'}.","303-obs",src/case-psych1.js:258
+"Evaluate outcomes",assess,varies,"You checked Jasmine after the IM${s.t - P.im <= 45 ? '' : ', late'}.","303-postim",src/case-psych1.js:262
+"Evaluate outcomes",comm,2,"You debriefed with Jasmine after the seclusion or hold.","303-debrief",src/case-psych1.js:264
+"Take action",comm,0,"Your note leaves out some of what you tried first.","303-note-tried",src/case-psych1.js:291
+"Take action",comm,1,"Your note lists the less restrictive measures you tried.","303-note-tried",src/case-psych1.js:292
+"Take action",safety,1,"Your note sets the right release criteria.","303-note-release",src/case-psych1.js:294
+"Take action",safety,-1,"Your note ties release to the order running out.","303-note-release",src/case-psych1.js:295
+"Generate solutions",safety,-1,"Your note continues the hold until she cooperates.","303-note-release",src/case-psych1.js:296
+"Analyze cues",judgment,-2,"Your note claims things that didn't happen: ${[...new Set(lies)].join('; ')}.","303-note-true",src/case-psych1.js:298
+"Analyze cues",judgment,1,"Everything in your note happened.","303-note-true",src/case-psych1.js:299
+"Take action",meds,-2,"Your note says she got IM medication because she refused her scheduled meds.","303-imnote-po",src/case-psych1.js:319
+"Take action",meds,1,"Your note says whether oral medication came first.","303-imnote-po",src/case-psych1.js:321
+"Generate solutions",judgment,1,"You charted the hold for the injection as a restraint.","303-imnote-hold",src/case-psych1.js:322
+"Generate solutions",judgment,-1,"Your note says no restraint was used.","303-imnote-hold",src/case-psych1.js:323
+"Analyze cues",judgment,1,"Your note keeps her right to refuse.","303-imnote-rights",src/case-psych1.js:327
+"Analyze cues",judgment,-2,"Your note claims things that didn't happen: ${[...new Set(lies)].join('; ')}.","303-imnote-true",src/case-psych1.js:329
+"Analyze cues",judgment,1,"Your emergency medication note matches what happened.","303-imnote-true",src/case-psych1.js:330
+"Generate solutions",meds,-1,"You held Jasmine's lithium without a reason.","303-li-hold",src/case-psych1.js:340
+"Generate solutions",meds,-1,"You held Jasmine's olanzapine without a reason.","303-olz-hold",src/case-psych1.js:347
+"Take action",meds,-1,"You gave Jasmine an agitation PRN when she wasn't agitated.","303-odt",src/case-psych1.js:357
+"Take action",meds,2,"You offered Jasmine oral PRN medication before things got dangerous.","303-odt",src/case-psych1.js:358
+"Take action",meds,-3,"You gave Jasmine emergency IM medication when she wasn't an imminent danger.","303-im",src/case-psych1.js:369
+"Take action",meds,1,"You gave Jasmine emergency medication when she was an imminent danger.","303-im",src/case-psych1.js:370
+"Take action",comm,varies,"You called Dr. Iyer for the order and the face-to-face.","303-sbar-f2f",src/case-psych1.js:400
+"Take action",comm,1,"You escalated Jasmine's imminent danger with what you'd tried.","303-sbar-em",src/case-psych1.js:404
+"Analyze cues",judgment,-2,"You asked for restrictive measures before Jasmine was an imminent danger.","303-sbar-restrict",src/case-psych1.js:405
+"Analyze cues",comm,2,"You connected Jasmine's escalation to a subtherapeutic lithium level.","303-sbar",src/case-psych1.js:410
+"Recognize cues",assess,1,"You checked Bob's orthostatic vitals.","305-ortho",src/case-psych1.js:478
+"Take action",safety,1,"You put Bob on fall precautions.","305-fall",src/case-psych1.js:480
+"Take action",meds,-3,"You gave Bob lithium while he was showing signs of lithium toxicity.","305-li",src/case-psych1.js:486
+"Generate solutions",meds,2,"You held Bob's lithium.","305-li-hold",src/case-psych1.js:487
+"Take action",meds,-2,"You gave Bob his thiazide diuretic while he was dehydrated and lithium-toxic.","305-hctz",src/case-psych1.js:492
+"Generate solutions",meds,1,"You held Bob's hydrochlorothiazide.","305-hctz-hold",src/case-psych1.js:493
+"Take action",meds,-2,"You gave Bob ibuprofen with a toxic lithium level.","305-ibu",src/case-psych1.js:495
+"Take action",meds,1,"You treated Bob's back pain with acetaminophen instead of ibuprofen.","305-apap",src/case-psych1.js:496
+"Take action",comm,varies,"You called the psychiatrist about Bob's critical lithium level.","305-sbar",src/case-psych1.js:523
+"Analyze cues",judgment,1,"You offered Miguel sealed food.","307-sealed",src/case-psych1.js:586
+"Take action",safety,1,"You found the charger cord after the visit.","307-bag-late",src/case-psych1.js:587
+"Take action",meds,2,"Miguel took his risperidone voluntarily.","307-risp",src/case-psych1.js:596
+"Generate solutions",meds,-1,"You held Miguel's risperidone when he was willing to take it.","307-risp-hold",src/case-psych1.js:597
+"Take action",meds,1,"You documented Miguel's refusal instead of pushing.","307-risp-ref",src/case-psych1.js:597
+"Generate solutions",meds,-1,"You held Miguel's risperidone with the wrong reason.","307-risp-hold",src/case-psych1.js:597
+"Take action",meds,2,"Miguel took his risperidone after you offered it again, his way.","307-risp",src/case-psych1.js:603
+"Analyze cues",judgment,-3,"You asked to hide Miguel's medication in his food.","307-sbar-covert",src/case-psych1.js:626
+"Analyze cues",judgment,-2,"You asked to force Miguel's medication outside an emergency.","307-sbar-im",src/case-psych1.js:627
+"Take action",comm,1,"You updated the psychiatrist on Miguel's medication.","307-sbar-r",src/case-psych1.js:630
+"Take action",comm,2,"You raised a capacity question about Miguel's refusals.","307-sbar",src/case-psych1.js:632
+"Take action",comm,1,"You reported what's working with Miguel.","307-sbar",src/case-psych1.js:635
+"Recognize cues",assess,1,"You got Linda's protocol weight.","309-weigh",src/case-psych1.js:706
+"Take action",safety,2,"You started Linda's fluid restriction per protocol.","309-restrict",src/case-psych1.js:710
+"Take action",safety,1,"You started Linda's fluid restriction.","309-restrict",src/case-psych1.js:710
+"Generate solutions",meds,0,"You held Linda's clozapine to clarify with the psychiatrist.","309-cloz-hold",src/case-psych1.js:716
+"Generate solutions",meds,-2,"You held Linda's clozapine.","309-cloz-hold",src/case-psych1.js:716
+"Take action",meds,1,"You treated Linda's constipation.","309-peg",src/case-psych1.js:718
+"Take action",comm,1,"You flagged Linda's constipation on clozapine.","309-sbar-bm",src/case-psych1.js:742
+"Analyze cues",judgment,-1,"You asked to treat Linda's headache instead of its cause.","309-sbar-prn",src/case-psych1.js:743
+"Take action",comm,1,"You reported Linda's critical sodium.","309-sbar",src/case-psych1.js:748
+"Take action",comm,2,"You reported Linda's water intoxication with the numbers.","309-sbar",src/case-psych1.js:749
+"Recognize cues",assess,2,"You asked Daniel directly about suicide, and named what you'd noticed.","301-ask",src/case-psych1.js:775
+"Recognize cues",assess,-1,"You asked Daniel about suicide in a way that invited ""no.""","301-ask",src/case-psych1.js:777
+"Generate solutions",safety,-3,"You offered to keep Daniel's suicide plan secret in exchange for a promise.","301-tell",src/case-psych1.js:784
+"Take action",comm,1,"You joined Jasmine's energy to a concrete, kind limit.","303-talk",src/case-psych1.js:790
+"Take action",comm,-1,"You argued with Jasmine's grandiosity.","303-talk",src/case-psych1.js:791
+"Take action",comm,-1,"You fed Jasmine's mania with enthusiasm.","303-talk",src/case-psych1.js:792
+"Take action",safety,2,"You de-escalated Jasmine with space, a calm voice and a real choice.","303-deesc",src/case-psych1.js:798
+"Take action",safety,-2,"You threatened Jasmine with seclusion.","303-deesc",src/case-psych1.js:799
+"Take action",safety,-1,"You touched Jasmine while she was escalated.","303-deesc",src/case-psych1.js:800
+"Take action",comm,1,"You explained to Bob why you were holding his meds.","305-talk",src/case-psych1.js:807
+"Take action",comm,2,"You validated Miguel's fear without agreeing with the delusion.","307-talk",src/case-psych1.js:815
+"Take action",comm,-1,"You argued with Miguel's delusion.","307-talk",src/case-psych1.js:816
+"Take action",comm,1,"You offered Miguel control over how his medication reaches him.","307-offer",src/case-psych1.js:823
+"Take action",comm,2,"You protected Miguel's confidentiality and still made room for his mother.","307-ana",src/case-psych1.js:830
+"Take action",comm,-2,"You shared Miguel's diagnosis with his mother without his consent.","307-ana",src/case-psych1.js:831
+"Take action",comm,-1,"You shut Ana out entirely.","307-ana",src/case-psych1.js:832
+"Take action",comm,2,"You made Linda a partner in her fluid restriction.","309-talk",src/case-psych1.js:840
+"Take action",safety,varies,"Jasmine's agitation reached a crisis that needed a team takedown.","303-emerg",src/case-psych1.js:860
+"Take action",safety,-2,"An hour went by without Jasmine's face-to-face evaluation.","303-f2f-miss",src/case-psych1.js:866
+"Generate solutions",safety,-2,"Jasmine was in seclusion with nobody assigned to watch her.","303-obs-miss",src/case-psych1.js:869
+"Take action",safety,-1,"Ana went in to visit without her bag being checked.","307-bag-miss",src/case-psych1.js:872
+"Take action",safety,-1,"A phone charger cord sat in 307 for 40 minutes.","307-charger",src/case-psych1.js:873
+"Take action",safety,-3,"Daniel attempted suicide on the unit between 15-minute checks.","301-attempt",src/case-psych1.js:875
+"Take action",safety,-3,"Bob seized from lithium toxicity.","305-seize",src/case-psych1.js:878
+"Take action",safety,-3,"Linda seized from water intoxication.","309-seize",src/case-psych1.js:880
+"Recognize cues",comm,1,"You read back Bob's critical lithium level.","305-readback",src/case-psych1.js:886
+"Recognize cues",comm,2,"You listened to Daniel's sister without confirming he was a patient.","301-grace",src/case-psych1.js:887
+"Recognize cues",comm,-2,"You confirmed Daniel was a patient and shared his condition without a release.","301-grace",src/case-psych1.js:888
+"Take action",comm,-1,"You ended the call without hearing what Daniel's sister knew.","301-grace",src/case-psych1.js:889
+"Take action",judgment,2,"You stopped covert medication for Miguel.","307-covert",src/case-psych1.js:890
+"Take action",meds,-3,"You approved hiding Miguel's medication in his juice.","307-covert",src/case-psych1.js:891
+"Recognize cues",safety,2,"You checked Ana's bag before the visit.","307-bag",src/case-psych1.js:892
+"Recognize cues",safety,-2,"You sent Ana in without checking her bag.","307-bag",src/case-psych1.js:893
+"Generate solutions",deleg,-1,"You asked the mental health worker to assess suicide risk.","deleg-risk",src/case-psych1.js:912
+"Generate solutions",deleg,-2,"You asked the mental health worker to give medication.","deleg-prn",src/case-psych1.js:913
+"Generate solutions",deleg,1,"You put Andre on 1:1 with Daniel.","deleg-one",src/case-psych1.js:914
+"Generate solutions",deleg,1,"You had Andre supervise Linda's fluids.","deleg-fluids",src/case-psych1.js:918
+"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the mental health worker.","'deleg-good-' + task.id",src/case-psych1.js:920
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-psych1.js:953
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-psych1.js:956
+"Take action",comm,-2,"Bob's critical lithium level never reached the psychiatrist.","305-norep",src/case-psych1.js:960
+"Take action",comm,-2,"The psychiatrist decided Daniel's discharge without hearing what nursing saw.","301-norep",src/case-psych1.js:961
+"Recognize cues",assess,-1,"Linda's protocol weight was never done.","309-noweigh",src/case-psych1.js:962
+"Take action",comm,-2,"Jasmine's seclusion or restraint was never charted.","303-note-none",src/case-psych1.js:966
+"Take action",comm,-2,"Jasmine's emergency medication was never charted with its justification.","303-imnote-none",src/case-psych1.js:967
+"Evaluate outcomes",assess,-1,"Nobody checked Jasmine after her IM haloperidol and lorazepam.","303-postim-none",src/case-psych1.js:968
+"Take action",comm,-1,"Miguel's medication refusals never reached the psychiatrist.","307-norep",src/case-psych1.js:970
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-psych1.js:974
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-psych1.js:975
+"Prioritize hypotheses",priority,2,"You chose to see Bob first.","rank-first",src/case-psych1.js:1018
+"Prioritize hypotheses",priority,1,"You chose to see Daniel first.","rank-first",src/case-psych1.js:1019
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Bob and Daniel.","rank-first",src/case-psych1.js:1020
 "Recognize cues",assess,1,"You looked at Mrs. Mendes's rhythm yourself.","601-strip",src/case-stepdown1.js:67
 "Recognize cues",assess,2,"You read Mrs. Mendes's echo as soon as it was available.","601-echo",src/case-stepdown1.js:68
 "Take action",safety,1,"You positioned Mrs. Mendes to breathe.","601-position",src/case-stepdown1.js:69
@@ -650,10 +687,10 @@ step,skill_area,points,decision,key,where
 "Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:611
 "Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:617
 "Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:622
-"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1505
-"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1512
-"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1598
-"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1657
-"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1680
-"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1691
-"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1692
+"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:1590
+"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:1597
+"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:1683
+"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:1742
+"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:1765
+"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:1776
+"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:1777

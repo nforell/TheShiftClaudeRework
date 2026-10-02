@@ -9,6 +9,48 @@
   const J = (key, dom, d, text, why, pid) => (s, A) => A.judge(key, dom, d, text, why, pid);
   const andreBusy = (s) => { const D = s.p['301']; return D.oneToOne && !D.gone && (D.floatAt === null || s.t < D.floatAt); };
 
+
+  /* ---------- Seclusion, restraint and emergency medication: the rules that come with them ----------
+     Modeled on CMS 42 CFR 482.13(e) and California Health & Safety Code 1180: imminent danger only, after less
+     restrictive measures; a provider order for each episode; a face-to-face evaluation within one hour; continuous
+     observation; checks every 15 minutes; release as soon as the danger ends; a hold to give an injection is a
+     restraint; and a debrief afterward. The notes are checked claim by claim against what really happened. */
+  function startEp(s, P, kind) {
+    if (!P.ep) P.ep = { at: s.t, kinds: [], ordered: null, f2fCalled: null, f2fAt: null, obs: null, seclStart: null, seclEnd: null, checks: [], note: false, imNote: false, debrief: false, late: false, gapJudged: false, obsMiss: false };
+    if (!P.ep.kinds.includes(kind)) P.ep.kinds.push(kind);
+    if (kind === 'secl' && P.ep.seclStart === null) P.ep.seclStart = s.t;
+    // An order the psychiatrist gave on the phone just before ("I'll be up for the face-to-face") covers this episode.
+    if (P.orderSecl !== null && s.t - P.orderSecl <= 30 && P.ep.ordered === null) { P.ep.ordered = P.orderSecl; P.ep.f2fCalled = P.orderSecl; }
+    return P.ep;
+  }
+  function maxGap(P, until) {
+    const e = P.ep; if (!e || e.seclStart === null) return 0;
+    const ts = [e.seclStart].concat(e.checks.filter((t) => t >= e.seclStart && t <= until), [until]);
+    let g = 0; for (let i = 1; i < ts.length; i++) g = Math.max(g, ts[i] - ts[i - 1]);
+    return g;
+  }
+  function judgeGaps(s, P, A, until) {
+    const e = P.ep; if (!e || e.seclStart === null || e.gapJudged) return; e.gapJudged = true;
+    const g = maxGap(P, until);
+    if (g <= 20 && e.checks.length) A.judge('303-checks', 'safety', 1, 'You checked on Jasmine at least every 15 minutes in seclusion.', 'Breathing, behavior, injuries, water and the bathroom, every 15 minutes and charted: that\'s what keeps seclusion from becoming neglect.', '303');
+    else A.judge('303-checks', 'safety', -2, `Jasmine went ${g} minutes in seclusion without a charted check.`, 'Someone in seclusion gets continuous observation and a documented check at least every 15 minutes: breathing, behavior, injury, fluids, toileting. People have died in seclusion rooms between checks.', '303');
+  }
+  const BEH = [
+    { id: 'tray', label: 'Threw a food tray and swung her fists at staff who came within reach', ok: (P) => (P.peak || 0) >= 2.6, specific: true },
+    { id: 'chair', label: 'Kicked a chair across the dayroom; stood inches from staff with her fists clenched', ok: (P) => (P.peak || 0) >= 2, specific: true },
+    { id: 'agit', label: 'Agitated, combative and noncompliant', ok: () => true, vague: true },
+    { id: 'loud', label: 'Loud and intrusive: taking peers\' food and singing at them', ok: (P) => (P.peak || 0) >= 1, notDanger: true },
+    { id: 'refuse', label: 'Refused redirection and refused her morning medication', ok: () => true, notDanger: true },
+  ];
+  function judgeBehavior(P, A, picked, key) {
+    const B = BEH.filter((b) => picked.includes(b.id)), lies = B.filter((b) => !b.ok(P)).map((b) => b.label.toLowerCase());
+    const spec = B.filter((b) => b.specific && b.ok(P));
+    if (spec.length) A.judge(key + '-beh', 'judgment', 1, 'Your note names the specific behavior that made it an emergency.', 'What she did, in words anyone could picture. That is the justification; everything else in the note hangs on it.', '303');
+    else A.judge(key + '-beh', 'judgment', -2, 'Your note doesn\'t describe a danger.', 'Loud, intrusive or refusing medication is not imminent danger. If the note can\'t show what she did that was dangerous, the record says she was secluded or medicated without legal grounds.', '303');
+    if (picked.includes('agit')) A.judge(key + '-label', 'comm', -1, 'You charted "agitated, combative and noncompliant."', 'Labels aren\'t observations. "Combative" could mean anything; "swung her fists at staff" means one thing. Chart the behavior, not the adjective.', '303');
+    return lies;
+  }
+
   /* ---------- 301 Daniel Ahn: depression after an overdose; sudden calm on the day his hold ends ---------- */
   const risky = (P) => P.disclosed || P.searched || P.letterSeen || P.headSeen || P.graceInfo;
   const dan = {
@@ -161,7 +203,7 @@
     hx: ['Bipolar I, diagnosed at 21; one prior hospitalization', 'Punched a wall last week (hand X-ray negative)', 'No substance use per tox screen'],
     allergies: 'No known drug allergies', code: 'Full code', weight: '63 kg',
     lines: ['None'], mobility: 'Independent', diet: 'Regular, finger foods offered',
-    init: { esc: .4, tried: false, quietUntil: -1, medsAt: null, prnAt: null, im: null, secluded: false, crisisAt: null, emerg: false, adjusted: false, stim: 0, agreed: false },
+    init: { esc: .4, tried: false, quietUntil: -1, medsAt: null, prnAt: null, im: null, secluded: false, crisisAt: null, emerg: false, adjusted: false, stim: 0, agreed: false, peak: .4, tq: false, tw: false, tv: false, poOffered: false, orderSecl: null, mdNotified: null, postIM: null, ep: null },
     nightVitals: { T: 37.0, HR: 98, SBP: 126, DBP: 80, RR: 18, SpO2: 99, O2: 'Room air', pain: 0 },
     labs: [
       { name: 'Lithium level (trough)', val: 0.6, unit: 'mmol/L', ref: '0.8–1.2 for acute mania', flag: 'L', t: -1400 },
@@ -173,7 +215,7 @@
       { t: -5760, text: 'WIC 5250 (danger to others, grave disability) certified Monday. She has not been found to lack capacity: she may refuse non-emergency medication.' },
       { t: -5760, text: 'Lithium 600 mg PO twice daily (08:00, 20:00). Olanzapine 10 mg PO daily at 08:00.' },
       { t: -5760, text: 'Agitation: olanzapine ODT 5 mg PO every 6 h as needed, offer first. If imminent danger and PO refused: haloperidol 5 mg + lorazepam 2 mg IM once, notify psychiatrist.' },
-      { t: -5760, text: 'Unit policy: seclusion or restraint only for imminent danger after less restrictive measures fail. Each episode needs a new provider order (no standing or PRN orders) and a face-to-face evaluation within 1 hour.' },
+      { t: -5760, text: 'Unit policy: seclusion or restraint only for imminent danger to self or others, after less restrictive measures fail, never for convenience, punishment or to make someone take medication. Each episode needs a provider order (no standing or PRN orders; adults up to 4 hours), a face-to-face evaluation by the provider within 1 hour, continuous observation, a documented check every 15 minutes, release as soon as the danger ends, and a debrief with the patient. A hold to give an injection is a restraint.' },
     ],
     notes: [
       { t: -90, author: 'Priya, night RN', text: 'Awake all night drawing, singing, knocking on doors. Redirectable until about 04:00, then increasingly irritable. Argued with 307 over the TV at 22:00. Took nothing PRN.' },
@@ -198,19 +240,96 @@
       gi: () => 'Hasn\'t sat for a meal in two days. Drinks coffee when she can get it. Voiding.',
     },
     interventions: [
-      { id: 'quiet', label: 'Offer the quiet room: door open, her choice', cost: 5, avail: (s, P) => !P.secluded, run(s, P) { P.tried = true; if (P.esc >= 2.6) return 'She\'s too far gone to hear the offer. "Don\'t TELL me where to go!"'; P.esc = Math.max(0, P.esc - .9); P.quietUntil = s.t + 45; return 'You lower your voice and make it her choice. She stomps in and flops on the beanbag. The dim light helps; ten minutes later she\'s drawing again, quieter.'; } },
-      { id: 'walk', label: 'Walk the hall with her, low voice, fewer words', cost: 6, avail: (s, P) => !P.secluded, run(s, P) { P.tried = true; if (P.esc >= 2.6) return 'She won\'t walk with anyone. She\'s looking for something to throw.'; P.esc = Math.max(0, P.esc - .6); return 'Three laps. You match her pace and say little. By the third lap she\'s walking, not marching.'; } },
+      { id: 'quiet', label: 'Offer the quiet room: door open, her choice', cost: 5, avail: (s, P) => !P.secluded, run(s, P) { P.tried = true; P.tq = true; if (P.esc >= 2.6) return 'She\'s too far gone to hear the offer. "Don\'t TELL me where to go!"'; P.esc = Math.max(0, P.esc - .9); P.quietUntil = s.t + 45; return 'You lower your voice and make it her choice. She stomps in and flops on the beanbag. The dim light helps; ten minutes later she\'s drawing again, quieter.'; } },
+      { id: 'walk', label: 'Walk the hall with her, low voice, fewer words', cost: 6, avail: (s, P) => !P.secluded, run(s, P) { P.tried = true; P.tw = true; if (P.esc >= 2.6) return 'She won\'t walk with anyone. She\'s looking for something to throw.'; P.esc = Math.max(0, P.esc - .6); return 'Three laps. You match her pace and say little. By the third lap she\'s walking, not marching.'; } },
       {
         id: 'seclude', label: 'Place her in seclusion', cost: 6, avail: (s, P) => !P.secluded && P.esc >= 1.2,
         run(s, P, A) {
           P.secluded = true; P.seclAt = s.t; P.seclOk = P.esc >= 2.6 && P.tried;
+          startEp(s, P, 'secl');
           if (P.esc >= 2.6 && P.tried) A.judge('303-seclude', 'safety', 0, 'You used seclusion for Jasmine after less restrictive measures failed.', 'Imminent danger, less restrictive options tried: seclusion can be the right last resort. It needs an order within the hour, a face-to-face evaluation, continuous observation, and release as soon as she\'s safe.', '303');
           else A.judge('303-seclude', 'safety', -3, 'You secluded Jasmine when she wasn\'t an imminent danger.', 'Seclusion is legal only for imminent danger, and only after less restrictive measures fail. Loud, irritable and intrusive is not imminent danger. It\'s a reason to lower the stimulation.', '303');
           P.esc = Math.max(0, P.esc - (P.esc >= 2.6 ? 1 : -.3));
-          return 'Security and staff walk her to the seclusion room. The door closes. She screams, then pounds on the window.';
+          return 'Security and staff walk her to the seclusion room. The door closes. She screams, then pounds on the window. From now: an order, someone watching her every second, a check every 15 minutes, and Dr. Iyer\'s face-to-face within the hour.';
         },
       },
-      { id: 'release', label: 'Release her from seclusion', cost: 2, avail: (s, P) => P.secluded, run(s, P, A) { P.secluded = false; if (P.esc < 2) A.judge('303-release', 'safety', 1, 'You released Jasmine from seclusion once she was safe.', 'Seclusion ends as soon as the danger does, not at a set time.', '303'); return 'Door open. She walks out slowly, arms crossed.'; } },
+      { id: 'release', label: 'Release her from seclusion', cost: 2, avail: (s, P) => P.secluded, run(s, P, A) { P.secluded = false; if (P.ep) { P.ep.seclEnd = s.t; judgeGaps(s, P, A, s.t); } if (P.esc < 2) A.judge('303-release', 'safety', 1, 'You released Jasmine from seclusion once she was safe.', 'Seclusion ends as soon as the danger does, not at a set time.', '303'); return 'Door open. She walks out slowly, arms crossed.'; } },
+      { id: 'obs', label: 'Put a staff member at the seclusion room door: continuous observation', cost: 1, avail: (s, P) => P.secluded && P.ep && P.ep.obs === null,
+        run(s, P, A) { P.ep.obs = s.t; A.judge('303-obs', 'safety', s.t - P.ep.seclStart <= 12 ? 1 : 0, `You set up continuous observation for Jasmine${s.t - P.ep.seclStart <= 12 ? '' : ', late'}.`, 'Seclusion means a trained person watching, in person or on camera, every second, not a glance on 15-minute rounds.', '303'); return 'Nova sends Marco from 3 West to sit at the window with the observation sheet. Eyes on her the whole time.'; } },
+      { id: 'scheck', label: 'Seclusion check: breathing, behavior, injuries; offer water and the bathroom', cost: 2, avail: (s, P) => P.secluded && P.ep,
+        run(s, P) { P.ep.checks.push(s.t); P.k.behAt = s.t; return P.esc >= 1.6 ? 'Pacing, shouting at the door. Breathing fine, no injuries you can see. She knocks the water cup out of the slot. You tell her what it takes to come out: calm and safe for 15 minutes.' : 'Sitting on the mat, knees up, crying quietly. Breathing easy, no injuries. She drinks a cup of water and asks for the bathroom; you take her, with staff. "When can I come out?" You tell her: when she\'s calm and safe for 15 minutes. That\'s close now.'; } },
+      { id: 'postim', label: 'Post-IM check: vital signs, sedation, breathing, stiffness', cost: 3, avail: (s, P) => P.im !== null && P.postIM === null,
+        run(s, P, A) { P.postIM = s.t; const v = A.recordVitals('303', 'You'); A.judge('303-postim', 'assess', s.t - P.im <= 45 ? 1 : 0, `You checked Jasmine after the IM${s.t - P.im <= 45 ? '' : ', late'}.`, 'Haloperidol and lorazepam together: watch breathing and sedation (lorazepam), blood pressure, and stiffness or a twisted neck (haloperidol). First check within 30 minutes, then per policy.', '303'); return `Asleep, rouses to her name and drifts off again. RR ${v.RR}, SpO₂ ${v.SpO2}%, BP ${v.SBP}/${v.DBP}, HR ${v.HR}. Neck and jaw loose, no abnormal movements.`; } },
+      { id: 'debrief', label: 'Debrief with Jasmine: what led up to it, what helped, what she wants next time', cost: 8, avail: (s, P) => P.ep && !P.ep.debrief && !P.secluded && P.esc < 1.6 && (P.im === null || s.t - P.im >= 75),
+        run(s, P, A) { P.ep.debrief = true; P.esc = Math.max(0, P.esc - .3); A.judge('303-debrief', 'comm', 2, 'You debriefed with Jasmine after the seclusion or hold.', 'A debrief, ideally within 24 hours, asks what led up to it, what could have stopped it, and what she wants staff to do next time, and it goes in her plan. It\'s required, and it\'s how the next one is prevented.', '303'); A.note('303', 'You (RN)', 'Debrief with patient after the restrictive intervention: identified triggers (crowded dayroom, TV, feeling stared at); prefers to be offered the quiet room and the ODT early, by name, before she is shouting. Added to her safety plan.'); return 'She\'s quiet, a little embarrassed. "Everybody was staring and the TV was so LOUD." What would help next time? "Say my name and ask about the quiet room before I\'m yelling. And the dissolving pill. Not the shot." You write it into her plan, in her words.'; } },
+      { id: 'snote', label: 'Chart the seclusion and restraint note', cost: 6, avail: (s, P) => P.ep && !P.ep.note,
+        form(s, P) {
+          const e = P.ep, secl = e.seclStart !== null;
+          return { title: 'Seclusion and restraint note', intro: 'Every box you check is a claim in her legal record. Chart what you saw and did, specifically. If it didn\'t happen, leave it out.',
+            sections: [
+              { id: 'type', q: 'What was used', opts: [{ id: 'secl', label: 'Seclusion (locked room)' }, { id: 'hold', label: 'Physical hold by staff, to give an injection' }, { id: 'mech', label: 'Mechanical restraints' }] },
+              { id: 'beh', q: 'The behavior that made it necessary', hint: 'Specific and observed. What did she do?', opts: BEH.map((b) => ({ id: b.id, label: b.label })) },
+              { id: 'tried', q: 'Less restrictive measures tried first', opts: [{ id: 'quiet', label: 'Offered the quiet room, her choice' }, { id: 'walk', label: 'Walked the hall with her, low voice' }, { id: 'verbal', label: 'Verbal de-escalation: space, open hands, choices' }, { id: 'prn', label: 'Offered oral PRN (olanzapine ODT)' }, { id: 'none', label: 'None: the danger came on too fast to try anything' }] },
+              { id: 'mon', q: 'Order, evaluation and monitoring', opts: [{ id: 'order', label: 'Provider order for this episode' }, { id: 'f2f', label: 'Face-to-face evaluation by Dr. Iyer within 1 hour' }, { id: 'obs', label: 'Continuous observation by staff' }, { id: 'q15', label: 'Checks at least every 15 minutes: breathing, behavior, injury; water and bathroom offered' }, { id: 'nonem', label: 'None of these yet' }] },
+              secl ? { id: 'rel', q: 'Release criteria, explained to her', one: true, opts: [{ id: 'calm', label: 'Calm, safe and able to talk with staff for 15 minutes' }, { id: 'time', label: 'When the 4-hour order runs out' }, { id: 'sorry', label: 'When she apologizes to staff' }, { id: 'meds', label: 'When she agrees to take her medication' }] }
+                : { id: 'rel', q: 'When the hold ended', one: true, opts: [{ id: 'inj', label: 'As soon as the injection was in: under two minutes' }, { id: 'calm2', label: 'When she stopped struggling and agreed to cooperate' }] },
+            ] };
+        },
+        sign(s, P, A, a) {
+          const e = P.ep; e.note = true;
+          const until = P.secluded ? s.t : (e.seclEnd || s.t);
+          const truth = {
+            secl: e.seclStart !== null, hold: e.kinds.includes('hold'), mech: false,
+            quiet: P.tq, walk: P.tw, verbal: P.tv, prn: P.prnAt !== null || P.poOffered,
+            order: e.ordered !== null, f2f: e.f2fAt !== null && e.f2fAt - e.at <= 60, obs: e.obs !== null, q15: e.seclStart !== null && e.checks.length > 0 && maxGap(P, until) <= 20,
+          };
+          truth.none = !(truth.quiet || truth.walk || truth.verbal || truth.prn); truth.nonem = !(truth.order || truth.f2f || truth.obs || truth.q15);
+          const L = { secl: 'seclusion', hold: 'a physical hold', mech: 'mechanical restraints', quiet: 'the quiet room', walk: 'a walk', verbal: 'verbal de-escalation', prn: 'an oral PRN', none: 'that nothing could be tried', order: 'a provider order', f2f: 'a face-to-face within the hour', obs: 'continuous observation', q15: 'checks every 15 minutes', nonem: 'that none of it was done' };
+          const lies = judgeBehavior(P, A, a.beh, '303-note');
+          ['type', 'tried', 'mon'].forEach((k) => (a[k] || []).forEach((id) => { if (!truth[id]) lies.push(L[id]); }));
+          const missed = ['quiet', 'walk', 'verbal', 'prn'].filter((id) => truth[id] && !(a.tried || []).includes(id));
+          if (!truth.none && missed.length && !lies.length) A.judge('303-note-tried', 'comm', 0, 'Your note leaves out some of what you tried first.', 'The less restrictive steps are the legal defense of the restrictive one. You did them; chart them all.', '303');
+          else if (!truth.none && !missed.length) A.judge('303-note-tried', 'comm', 1, 'Your note lists the less restrictive measures you tried.', 'This is the part surveyors look for first: proof that seclusion or a hold was the last resort.', '303');
+          const r = (a.rel || [])[0];
+          if (r === 'calm' || r === 'inj') A.judge('303-note-release', 'safety', 1, 'Your note sets the right release criteria.', truth.secl ? 'Release is tied to behavior, not time: calm and safe, then out. And she was told what it would take.' : 'A hold to give an injection lasts as long as the injection and no longer.', '303');
+          else if (r === 'time') A.judge('303-note-release', 'safety', -1, 'Your note ties release to the order running out.', 'Four hours is the maximum an adult order can run, not a sentence. Seclusion ends when the danger does.', '303');
+          else if (r === 'calm2') A.judge('303-note-release', 'safety', -1, 'Your note continues the hold until she cooperates.', 'Holding someone until they "cooperate" turns a two-minute hold into restraint for compliance. The hold ends when the injection is in.', '303');
+          else A.judge('303-note-release', 'safety', -2, r === 'sorry' ? 'Your note makes an apology the condition for release.' : 'Your note makes taking medication the condition for release.', 'Seclusion can never be used as punishment or to coerce. Release criteria are about safety only. This line alone could cost the hospital its license to seclude.', '303');
+          if (lies.length) A.judge('303-note-true', 'judgment', -2, `Your note claims things that didn't happen: ${[...new Set(lies)].join('; ')}.`, 'A restraint and seclusion record is a legal document. Charting care that wasn\'t given is falsification, and it\'s the first thing a surveyor or an attorney checks against the observation sheet.', '303');
+          else A.judge('303-note-true', 'judgment', 1, 'Everything in your note happened.', 'Accurate, specific and complete. If this episode is ever reviewed, the note will stand on its own.', '303');
+          const pick = (k, list) => list.filter((o) => (a[k] || []).includes(o.id)).map((o) => o.label).join('; ');
+          const f = this.form(s, P);
+          return `${clock(e.at)}${e.seclStart !== null ? `; seclusion ${clock(e.seclStart)} to ${e.seclEnd !== null ? clock(e.seclEnd) : 'ongoing'}` : ''}. ${pick('type', f.sections[0].opts)}. Behavior: ${pick('beh', f.sections[1].opts)}. Tried first: ${pick('tried', f.sections[2].opts)}. ${pick('mon', f.sections[3].opts)}. ${f.sections[4].q}: ${pick('rel', f.sections[4].opts)}.`;
+        } },
+      { id: 'imnote', label: 'Chart the emergency medication note', cost: 4, avail: (s, P) => P.im !== null && P.ep && !P.ep.imNote,
+        form() {
+          return { title: 'Emergency medication note', intro: 'She has no capacity ruling, so she can refuse medication, except in an emergency. This note is what shows it was one.',
+            sections: [
+              { id: 'beh', q: 'Why it was an emergency', hint: 'Specific and observed.', opts: BEH.map((b) => ({ id: b.id, label: b.label })) },
+              { id: 'po', q: 'By mouth first?', one: true, opts: [{ id: 'offered', label: 'Oral olanzapine ODT offered first; she refused or couldn\'t take it safely' }, { id: 'unsafe', label: 'Not offered: too dangerous to approach with a cup' }, { id: 'sched', label: 'She refused her scheduled morning meds, so they were given IM' }] },
+              { id: 'hold', q: 'How it was given', one: true, opts: [{ id: 'held', label: 'Held by staff for the injection; charted as a restraint episode' }, { id: 'nohold', label: 'No restraint used' }] },
+              { id: 'after', q: 'Notification and follow-up', opts: [{ id: 'md', label: 'Dr. Iyer notified' }, { id: 'resp', label: 'Response reassessed: sedation, breathing, vital signs, stiffness' }, { id: 'nonea', label: 'Neither yet' }] },
+              { id: 'rights', q: 'Her medication rights from here', one: true, opts: [{ id: 'emerg', label: 'Emergency only. She can still refuse non-emergency medication; no capacity ruling (Riese) is on file' }, { id: 'invol', label: 'She is now on involuntary medication' }, { id: 'allim', label: 'Ask Dr. Iyer to order all her medications IM from now on' }] },
+            ] };
+        },
+        sign(s, P, A, a) {
+          P.ep.imNote = true;
+          const lies = judgeBehavior(P, A, a.beh, '303-imnote');
+          const po = a.po[0], offered = P.prnAt !== null || P.poOffered;
+          if (po === 'sched') A.judge('303-imnote-po', 'meds', -2, 'Your note says she got IM medication because she refused her scheduled meds.', 'Refusing medication is her right until a court rules otherwise. An IM for refusal isn\'t emergency medication; it\'s forced treatment.', '303');
+          else if ((po === 'offered') !== offered) lies.push(po === 'offered' ? 'that oral medication was offered first' : 'that oral medication was never offered');
+          else A.judge('303-imnote-po', 'meds', 1, 'Your note says whether oral medication came first.', 'Least restrictive first: by mouth as a choice, then IM only if the danger can\'t wait.', '303');
+          if (a.hold[0] === 'held') A.judge('303-imnote-hold', 'judgment', 1, 'You charted the hold for the injection as a restraint.', 'Under CMS rules, holding someone to give medication against their will is a restraint, with everything that comes with it: order, face-to-face, documentation.', '303');
+          else { lies.push('that no restraint was used'); A.judge('303-imnote-hold', 'judgment', -1, 'Your note says no restraint was used.', 'Four staff held her for the injection. A hold to give medication against someone\'s will is a restraint, and it has to be charted as one.', '303'); }
+          if ((a.after || []).includes('md') && P.mdNotified === null) lies.push('that Dr. Iyer was notified');
+          if ((a.after || []).includes('resp') && P.postIM === null) lies.push('that her response was reassessed');
+          if ((a.after || []).includes('nonea') && (P.mdNotified !== null || P.postIM !== null)) lies.push('that neither was done');
+          if (a.rights[0] === 'emerg') A.judge('303-imnote-rights', 'judgment', 1, 'Your note keeps her right to refuse.', 'One emergency dose doesn\'t remove her right to refuse. If refusals keep blocking treatment, the path is a capacity (Riese) hearing.', '303');
+          else A.judge('303-imnote-rights', 'judgment', -2, a.rights[0] === 'invol' ? 'Your note says she\'s now on involuntary medication.' : 'You planned to give all her medications IM.', 'An emergency ends when the emergency does. Without a court ruling on capacity, every non-emergency dose is still her choice.', '303');
+          if (lies.length) A.judge('303-imnote-true', 'judgment', -2, `Your note claims things that didn't happen: ${[...new Set(lies)].join('; ')}.`, 'Emergency medication without consent is only legal when the record proves the emergency. A note that doesn\'t match the facts proves the opposite.', '303');
+          else A.judge('303-imnote-true', 'judgment', 1, 'Your emergency medication note matches what happened.', 'Specific behavior, the oral option, the hold, who was told and how she responded: all of it true.', '303');
+          return `Haloperidol 5 mg + lorazepam 2 mg IM at ${clock(P.im)}. Emergency: ${BEH.filter((b) => a.beh.includes(b.id)).map((b) => b.label).join('; ')}. ${this.form().sections[1].opts.find((o) => o.id === po).label}. ${a.hold[0] === 'held' ? 'Held by staff for the injection; restraint episode charted.' : 'No restraint used.'} ${this.form().sections[3].opts.filter((o) => (a.after || []).includes(o.id)).map((o) => o.label).join('; ')}.`;
+        } },
     ],
     meds: [
       {
@@ -231,6 +350,7 @@
         id: '303-odt', name: 'Olanzapine ODT', dose: '5 mg', route: 'PO', freq: 'Every 6 h as needed, agitation (offer first)', prn: true,
         block: (s, P) => (P.prnAt !== null && s.t - P.prnAt < 360 ? 'Given at ' + clock(P.prnAt) + '. Next available in 6 hours.' : null),
         refuse: (s, P) => (P.esc >= 2.6 ? 'She\'s past the point of taking anything by mouth. She throws the cup.' : null),
+        onRefuse(s, P) { P.poOffered = true; },
         checks: (s, P) => [{ label: 'Agitation', value: escTxt(P.esc), ok: P.esc >= .8 }, { label: 'Her choice', value: 'Dissolves on the tongue; offer it, don\'t force it', ok: null }],
         give(s, P, A) {
           P.prnAt = s.t; P.tried = true;
@@ -245,7 +365,7 @@
         block: (s, P) => (P.im !== null ? 'Given at ' + clock(P.im) + '.' : null),
         checks: (s, P) => [{ label: 'Imminent danger', value: P.esc >= 2.6 ? 'Yes' : 'No: ' + escTxt(P.esc), ok: P.esc >= 2.6 }, { label: 'PO offered', value: P.prnAt !== null ? 'Given at ' + clock(P.prnAt) : 'Not yet', ok: P.prnAt !== null }],
         give(s, P, A) {
-          P.im = s.t;
+          P.im = s.t; startEp(s, P, 'hold');
           if (P.esc < 2.6) A.judge('303-im', 'meds', -3, 'You gave Jasmine emergency IM medication when she wasn\'t an imminent danger.', 'Involuntary medication without a capacity ruling is legal only in an emergency: imminent danger to self or others. Otherwise it\'s an assault, and it teaches her the unit is a place where people hold her down.', '303');
           else A.judge('303-im', 'meds', 1, 'You gave Jasmine emergency medication when she was an imminent danger.', 'When she\'s actively dangerous and won\'t take it by mouth, emergency medication is appropriate. Notify the psychiatrist, monitor her closely, and debrief with her later.', '303');
           P.esc = Math.max(0, P.esc - 2.4);
@@ -266,15 +386,22 @@
           { id: 'art', label: 'Drawing all night', key: false, need: true },
         ];
       },
-      requests: [
+      requests: (s, P) => [
         { id: 'meds', label: 'Her mania isn\'t controlled. Can we look at her medication plan?' },
         { id: 'seclude', label: 'Can I get a seclusion order?' },
         { id: 'im', label: 'Can I give her the IM medication now?' },
+        ...(P.ep && P.ep.f2fCalled === null ? [{ id: 'f2f', label: `She's ${P.secluded ? 'been in seclusion' : 'been held for an emergency IM'} since ${clock(P.ep.at)}. I need the order for this episode and your face-to-face within the hour.` }] : []),
         { id: 'fyi', label: 'Just keeping you updated.' },
       ],
       respond(s, P, A, picked, req) {
+        if (P.ep || P.esc >= 2 || P.im !== null) P.mdNotified = P.mdNotified === null ? s.t : P.mdNotified;
+        if (req === 'f2f') {
+          const e = P.ep; if (e.ordered === null) e.ordered = s.t; e.f2fCalled = s.t;
+          A.judge('303-sbar-f2f', 'comm', s.t - e.at <= 20 ? 2 : 1, 'You called Dr. Iyer for the order and the face-to-face.', 'Every episode of seclusion or restraint needs its own order and an in-person evaluation within one hour, even if she\'s already out by the time the doctor arrives.', '303');
+          return `I'll be up in fifteen minutes for the face-to-face. ${P.secluded ? 'Seclusion order is in, up to four hours, but release her the moment she\'s safe. Who\'s watching her?' : 'Order for the hold is in. Keep up her post-IM checks.'}`;
+        }
         if (req === 'seclude' || req === 'im') {
-          if (P.esc >= 2.6 && P.tried) { A.judge('303-sbar-em', 'comm', 1, 'You escalated Jasmine\'s imminent danger with what you\'d tried.', 'Emergency interventions need a clear danger and a record of less restrictive measures. You gave both.', '303'); return 'She\'s a danger right now and you\'ve tried the less restrictive options. The emergency IM is ordered. Seclusion only if it doesn\'t work, and I\'ll be up for the face-to-face within the hour.'; }
+          if (P.esc >= 2.6 && P.tried) { P.orderSecl = s.t; if (P.ep) { if (P.ep.ordered === null) P.ep.ordered = s.t; if (P.ep.f2fCalled === null) P.ep.f2fCalled = s.t; } A.judge('303-sbar-em', 'comm', 1, 'You escalated Jasmine\'s imminent danger with what you\'d tried.', 'Emergency interventions need a clear danger and a record of less restrictive measures. You gave both.', '303'); return 'She\'s a danger right now and you\'ve tried the less restrictive options. The emergency IM is ordered. Seclusion only if it doesn\'t work, and I\'ll be up for the face-to-face within the hour.'; }
           A.judge('303-sbar-restrict', 'judgment', -2, 'You asked for restrictive measures before Jasmine was an imminent danger.', 'Seclusion and involuntary medication are for imminent danger, after less restrictive measures. The question to answer first: what have you tried?', '303');
           return 'Is she an imminent danger right now? If not, no. What have you tried? Quiet room, the PRN by mouth, less stimulation?';
         }
@@ -660,7 +787,7 @@
     dan_e: { who: '301', text: '"Promise." He smiles again, the same smile.' },
     dan_safe: { who: '301', text: '"The float guy is doing card tricks. He\'s terrible at them." A small, real laugh. "Can I call my sister later?"' },
     jas_chat: { who: '303', text: '"Okay okay okay, so: a record label, a nonprofit, AND a podcast, and I\'m calling Beyoncé\'s people at noon, I have a GUY." She\'s uncapped a marker and started drawing on your sleeve before you notice.', choices: [
-      { label: 'Those are big plans, and I want you well enough to do them. You haven\'t slept in three nights. Will you take your morning meds with me, then try the quiet room for a bit?', next: 'jas_a', fx: (s, A) => { const P = s.p['303']; P.agreed = true; P.esc = Math.max(0, P.esc - .4); A.judge('303-talk', 'comm', 1, 'You joined Jasmine\'s energy to a concrete, kind limit.', 'Don\'t argue with grandiosity or feed it. Acknowledge, then steer to one small, concrete step: meds, rest, less stimulation.', '303'); } },
+      { label: 'Those are big plans, and I want you well enough to do them. You haven\'t slept in three nights. Will you take your morning meds with me, then try the quiet room for a bit?', next: 'jas_a', fx: (s, A) => { const P = s.p['303']; P.tv = true; P.agreed = true; P.esc = Math.max(0, P.esc - .4); A.judge('303-talk', 'comm', 1, 'You joined Jasmine\'s energy to a concrete, kind limit.', 'Don\'t argue with grandiosity or feed it. Acknowledge, then steer to one small, concrete step: meds, rest, less stimulation.', '303'); } },
       { label: 'Jasmine, none of that is realistic right now.', next: 'jas_b', fx: (s, A) => { s.p['303'].esc += .4; A.judge('303-talk', 'comm', -1, 'You argued with Jasmine\'s grandiosity.', 'Arguing with mania is a contest you lose. It raises the heat without changing a single belief.', '303'); } },
       { label: 'A record label? Tell me everything!', next: 'jas_c', fx: (s, A) => { s.p['303'].esc += .4; A.judge('303-talk', 'comm', -1, 'You fed Jasmine\'s mania with enthusiasm.', 'Stimulation is fuel. Warm, brief and low-key helps more than matching her energy.', '303'); } },
     ] },
@@ -668,7 +795,7 @@
     jas_b: { who: '303', text: '"You sound like my MOTHER." She slams the sketchbook shut and stalks off.' },
     jas_c: { who: '303', text: 'She\'s off: ten minutes, at full volume, while two other patients drift over. She\'s louder when she\'s done.' },
     jas_hot: { who: '303', text: '"Get OUT of my face! Everybody keeps STARING at me! That kid in 307 said I\'m a DEMON!" She\'s standing too close, fists tight.', choices: [
-      { label: '(Step back, lower your voice, open hands.) Jasmine, it\'s really loud out here. Do you want to go to the quiet room, or to your own room? Your call. I\'ll walk with you.', next: 'jas_d', fx: (s, A) => { const P = s.p['303']; P.tried = true; P.esc = Math.max(0, P.esc - 1.1); A.judge('303-deesc', 'safety', 2, 'You de-escalated Jasmine with space, a calm voice and a real choice.', 'Distance, a low voice, open hands and two acceptable choices give her a way to back down without losing face. It\'s the first rung on the ladder, and it usually works.', '303'); } },
+      { label: '(Step back, lower your voice, open hands.) Jasmine, it\'s really loud out here. Do you want to go to the quiet room, or to your own room? Your call. I\'ll walk with you.', next: 'jas_d', fx: (s, A) => { const P = s.p['303']; P.tv = true; P.tried = true; P.esc = Math.max(0, P.esc - 1.1); A.judge('303-deesc', 'safety', 2, 'You de-escalated Jasmine with space, a calm voice and a real choice.', 'Distance, a low voice, open hands and two acceptable choices give her a way to back down without losing face. It\'s the first rung on the ladder, and it usually works.', '303'); } },
       { label: 'You need to calm down right now, or you\'re going to seclusion.', next: 'jas_e', fx: (s, A) => { s.p['303'].esc += .6; A.judge('303-deesc', 'safety', -2, 'You threatened Jasmine with seclusion.', 'Threats escalate. Seclusion isn\'t a consequence for being loud; it\'s a last resort for imminent danger.', '303'); } },
       { label: '(Put a hand on her shoulder.) Hey, hey. Take a breath.', next: 'jas_f', fx: (s, A) => { s.p['303'].esc += .5; A.judge('303-deesc', 'safety', -1, 'You touched Jasmine while she was escalated.', 'Uninvited touch reads as a threat to someone who is agitated. Give space first.', '303'); } },
     ] },
@@ -730,7 +857,17 @@
     { id: 'tv', when: (s) => s.t >= 90 && s.p['303'].esc >= 1.5 && !s.p['303'].secluded, run(s, A) { const P = s.p['303']; P.esc += .3; s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'andre', pid: '303', urgent: P.esc >= 2.2, text: '303 and 307 are fighting over the dayroom TV. She\'s yelling in his face and he\'s backed into the corner. I\'m splitting them up but I can\'t hold this long.', replies: [{ label: 'Go to 303', act: 'goto', pid: '303' }] }); } },
     { id: 'covert', when: (s) => s.t >= 100 && !s.p['307'].medTaken && s.meds['307-risp'].status !== 'given', run(s, A) { A.msg({ from: 'andre', pid: '307', text: '307 still won\'t take his risperidone. At my old job we\'d just mix it in the juice. Want me to?', replies: [{ label: 'No. He has the right to refuse', act: 'covert-no' }, { label: 'Yes, mix it in', act: 'covert-yes' }] }); } },
     { id: 'jas-crisis', when: (s) => { const P = s.p['303']; return P.crisisAt === null && P.esc >= 3 && !P.secluded; }, run(s, A) { const P = s.p['303']; P.crisisAt = s.t; P.callLight = true; A.msg({ from: 'andre', pid: '303', urgent: true, text: '303 just threw a chair. She\'s swinging at anyone who gets close. We need you in the dayroom NOW.', replies: [{ label: 'Go to 303', act: 'goto', pid: '303' }] }); } },
-    { id: 'jas-emerg', when: (s) => { const P = s.p['303']; return P.crisisAt !== null && !P.emerg && P.im === null && s.t - P.crisisAt >= 12 && P.esc >= 2.6; }, run(s, A) { const P = s.p['303']; P.emerg = true; P.emergTried = P.tried || P.prnAt !== null; P.im = s.t; P.secluded = true; P.seclOk = true; P.esc = .6; A.judge('303-emerg', 'safety', P.emergTried ? 0 : -2, 'Jasmine\'s agitation reached a crisis that needed a team takedown.', P.emergTried ? 'Sometimes the ladder runs out even when you climb it right. You tried the early rungs; next time, try them earlier and more than once.' : 'Escalation is a ladder: lower stimulation, offer choices, offer PRN by mouth, then emergency measures. Skipping the early rungs leaves only the last one.', '303'); s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'nova', pid: '303', urgent: true, text: 'Code green in the dayroom. We had to hold 303 for an IM injection and she\'s in seclusion. No one was hurt, barely. 307 watched the whole thing.' }); } },
+    { id: 'jas-emerg', when: (s) => { const P = s.p['303']; return P.crisisAt !== null && !P.emerg && P.im === null && s.t - P.crisisAt >= 12 && P.esc >= 2.6; }, run(s, A) { const P = s.p['303']; P.emerg = true; P.emergTried = P.tried || P.prnAt !== null; P.im = s.t; P.secluded = true; P.seclOk = true; P.esc = .6; const e = startEp(s, P, 'hold'); startEp(s, P, 'secl'); e.ordered = s.t; e.obs = s.t; P.mdNotified = s.t; A.judge('303-emerg', 'safety', P.emergTried ? 0 : -2, 'Jasmine\'s agitation reached a crisis that needed a team takedown.', P.emergTried ? 'Sometimes the ladder runs out even when you climb it right. You tried the early rungs; next time, try them earlier and more than once.' : 'Escalation is a ladder: lower stimulation, offer choices, offer PRN by mouth, then emergency measures. Skipping the early rungs leaves only the last one.', '303'); s.p['307'].trust = Math.max(0, s.p['307'].trust - .3); A.msg({ from: 'nova', pid: '303', urgent: true, text: 'Code green in the dayroom. We had to hold 303 for an IM injection and she\'s in seclusion. No one was hurt, barely. 307 watched the whole thing. I got a verbal order from Iyer and Marco is at the door. She\'s your patient: the face-to-face call, her 15-minute checks, her post-IM checks and both notes are on you.' }); } },
+    { id: 'jas-f2f', when: (s) => { const e = s.p['303'].ep; return e && e.f2fCalled !== null && e.f2fAt === null && s.t >= e.f2fCalled + 15; }, run(s, A) { const P = s.p['303'], e = P.ep; e.f2fAt = s.t; const ok = s.t - e.at <= 60;
+      A.judge('303-f2f', 'safety', ok ? 1 : 0, ok ? 'Jasmine had her face-to-face evaluation within the hour.' : 'Jasmine\'s face-to-face evaluation came after the one-hour limit.', 'The face-to-face checks her immediate situation, her reaction to the intervention, her medical and behavioral condition, and whether to continue or end it. One hour, every episode.', '303');
+      A.note('303', 'Dr. Iyer', `Face-to-face evaluation at ${clock(s.t)} for ${e.kinds.includes('secl') ? 'seclusion' : ''}${e.kinds.length > 1 ? ' and ' : ''}${e.kinds.includes('hold') ? 'physical hold for emergency IM' : ''} starting ${clock(e.at)}. ${P.secluded ? (P.esc >= 2 ? 'Remains an imminent danger: continue seclusion, release as soon as calm and safe.' : 'Calm and in control: release now.') : 'Out of seclusion.'} No injuries from the intervention. Airway and breathing normal. Mania, sleep deprivation and a low lithium level drove this; lithium going up.`);
+      A.msg({ from: 'iyer', pid: '303', text: `Saw 303 for her face-to-face. ${P.secluded ? (P.esc >= 2 ? 'Still dangerous; keep her in, release the minute she\'s safe.' : 'She\'s calm. She can come out now. Don\'t wait on the order to run out.') : 'No injuries, breathing fine.'} My note is in.` }); } },
+    { id: 'jas-f2f-late', when: (s) => { const e = s.p['303'].ep; return e && e.f2fAt === null && !e.late && s.t >= e.at + 60; }, run(s, A) { const e = s.p['303'].ep; e.late = true;
+      A.judge('303-f2f-miss', 'safety', -2, 'An hour went by without Jasmine\'s face-to-face evaluation.', 'The one-hour face-to-face is federal law for seclusion and restraint used for violent behavior. It means someone with authority to end it has actually looked at her.', '303');
+      A.msg({ from: 'nova', pid: '303', urgent: true, text: `It's been an hour since 303 ${e.kinds.includes('secl') ? 'went into seclusion' : 'was held for the IM'} and nobody has called Iyer for the face-to-face. That's a citation waiting to happen. Call her now.` }); } },
+    { id: 'jas-obs-miss', when: (s) => { const P = s.p['303'], e = P.ep; return P.secluded && e && e.obs === null && !e.obsMiss && s.t >= e.seclStart + 15; }, run(s, A) { const e = s.p['303'].ep; e.obsMiss = true; e.obs = s.t;
+      A.judge('303-obs-miss', 'safety', -2, 'Jasmine was in seclusion with nobody assigned to watch her.', 'Seclusion requires continuous observation by trained staff, in person or by camera with audio. A locked door with no one watching is how people get hurt.', '303');
+      A.msg({ from: 'nova', pid: '303', urgent: true, text: 'Who\'s watching 303? Nobody was at the seclusion room window. I put Marco there. Seclusion means eyes on her every second.' }); } },
     { id: 'ana', when: (s) => s.t >= 120, run(s, A) { A.msg({ from: 'desk', pid: '307', text: 'Visitor for 307: Ana Santos, his mother. She has a tote bag and a food container.', replies: [{ label: 'Check her bag first', act: 'bag-check' }, { label: 'Send her in', act: 'bag-skip' }] }); } },
     { id: 'ana-in', when: (s) => s.t >= 135 && s.p['307'].visit === null, run(s, A) { const P = s.p['307']; P.visit = s.t; P.charger = true; A.judge('307-bag-miss', 'safety', -1, 'Ana went in to visit without her bag being checked.', 'Visitor bags get checked on a locked unit. Cords, glass and medications come in with love, not malice.', '307'); A.msg({ from: 'desk', pid: '307', text: 'No answer from you, so Andre let Ana Santos back to 307.' }); } },
     { id: 'charger', when: (s) => { const P = s.p['307']; return P.charger && !P.chargerFound && P.visit !== null && s.t >= P.visit + 40; }, run(s, A) { const P = s.p['307']; P.chargerFound = true; A.judge('307-charger', 'safety', -1, 'A phone charger cord sat in 307 for 40 minutes.', 'On a unit where someone in 301 has a plan, a cord in any room is a ligature risk.', '307'); A.msg({ from: 'andre', pid: '307', text: 'Found a phone charger in 307, from his mom\'s bag. Locked it up. With 301 the way he is, that scared me.' }); } },
@@ -777,6 +914,7 @@
       if (task.id === 'one') { const D = s.p['301']; D.oneToOne = true; D.floatAt = s.t + 40; if (risky(D)) A.judge('deleg-one', 'deleg', 1, 'You put Andre on 1:1 with Daniel.', 'Continuous observation is exactly what a mental health worker is for. Now get the order and tell the psychiatrist why.'); return 'Andre: "On it. I\'ll pull a chair beside him. Heads up: that\'s me off the hall until Nova finds a float."'; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return 'Andre: "Give me a minute, I\'m still on the last thing, plus checks."';
       if (task.id === 'walk' && s.p['303'].esc >= 2.4) return 'Andre: "She\'s too hot for me to walk right now. She needs you."';
+      if (task.id === 'walk') s.p['303'].tw = true;
       if (task.id === 'fluids') { s.p['309'].supervised = true; A.judge('deleg-fluids', 'deleg', 1, 'You had Andre supervise Linda\'s fluids.', 'Supervising intake is observation work, perfect to delegate, and it\'s what makes a restriction real.'); return 'Andre: "Got it. I\'ll keep a tally and keep her out of the bathroom sink."'; }
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       if (task.id === 'vitals' || task.id === 'ortho' || task.id === 'weigh' || task.id === 'meal') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the mental health worker.`, 'Hand off the tasks; keep the assessment and the conversations that need a nurse.');
@@ -795,6 +933,8 @@
   /* ---------- Nova ---------- */
   function novaHint(s, A) {
     const D = s.p['301'], Jc = s.p['303'], B = s.p['305'], M = s.p['307'], L = s.p['309'];
+    if (Jc.ep && Jc.ep.f2fCalled === null) return 'Seclusion and holds come with requirements that run on a clock. Who has to lay eyes on her within the hour, and does she know?';
+    if (Jc.secluded && Jc.ep && Jc.ep.obs === null) return 'There\'s a locked door on your hall. Who is watching what\'s behind it right now?';
     if (!B.gone && !B.icu && s.t >= 30 && !B.reported) return 'A critical lab came back on someone whose "stomach bug" started when a new pill did. Who needs to hear about it, right now?';
     if (!D.attempt && !D.disclosed && !D.reported) return 'The most dangerous patient on a psych unit can be the one who suddenly feels fine. Who got better overnight, and have you asked him the real question?';
     if (!D.attempt && D.disclosed && !D.oneToOne && !D.searched) return 'He told you he has a plan. Fifteen-minute checks leave fifteen-minute gaps. What closes them?';
@@ -820,6 +960,13 @@
     if (!B.reported && !B.icu) A.judge('305-norep', 'comm', -2, 'Bob\'s critical lithium level never reached the psychiatrist.', 'Critical values go to the provider promptly, by policy usually within 30 to 60 minutes, with the nurse\'s assessment attached.', '305');
     if (!D.reported && !D.attempt) A.judge('301-norep', 'comm', -2, 'The psychiatrist decided Daniel\'s discharge without hearing what nursing saw.', 'She sees him for fifteen minutes. You see him all shift. The warning signs have to reach the person making the decision.', '301');
     if (!L.weighed && !L.icu) A.judge('309-noweigh', 'assess', -1, 'Linda\'s protocol weight was never done.', 'The polydipsia protocol runs on the scale. She refused at 06:00; that\'s a reason to try again, not to skip it.', '309');
+    const Jx = s.p['303'];
+    if (Jx.ep) {
+      judgeGaps(s, Jx, A, Jx.secluded ? s.t : (Jx.ep.seclEnd || s.t));
+      if (!Jx.ep.note) A.judge('303-note-none', 'comm', -2, 'Jasmine\'s seclusion or restraint was never charted.', 'No note means no record of the danger, the less restrictive steps, the order, the face-to-face, the checks or the release. Legally, it\'s as if it was done without any of them.', '303');
+      if (Jx.im !== null && !Jx.ep.imNote) A.judge('303-imnote-none', 'comm', -2, 'Jasmine\'s emergency medication was never charted with its justification.', 'Medication over objection is legal only in a documented emergency. The MAR shows the dose; only your note shows why.', '303');
+      if (Jx.im !== null && Jx.postIM === null) A.judge('303-postim-none', 'assess', -1, 'Nobody checked Jasmine after her IM haloperidol and lorazepam.', 'Sedation, breathing, blood pressure and dystonia after emergency IM medication: first check within 30 minutes.', '303');
+    }
     if (M.refused && !M.medTaken && !M.reported) A.judge('307-norep', 'comm', -1, 'Miguel\'s medication refusals never reached the psychiatrist.', 'Repeated refusal is a treatment-planning problem. The team decides together whether to pursue a capacity hearing.', '307');
     const keys = []; A.c.patients.forEach((d) => (d.report || []).forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
@@ -857,6 +1004,12 @@
       if (s.t < 180 && !D.attempt) out.push({ t: 180, late: false, text: '301 Psychiatrist rounds: hold ends 14:00' });
       if (M.visit === null && s.t < 140) out.push({ t: 120, late: false, text: '307 Visitor expected: Ana Santos' });
       if (L.statAt !== null && !L.statDone) out.push({ t: L.statAt + 30, late: false, text: '309 STAT BMP resulting' });
+      const J3 = s.p['303'], e = J3.ep;
+      if (e && e.f2fAt === null) out.push({ t: e.at + 60, late: s.t > e.at + 60, text: e.f2fCalled === null ? '303 Face-to-face evaluation: call Dr. Iyer (due within 1 hour)' : '303 Dr. Iyer coming for the face-to-face' });
+      if (e && J3.secluded) { const last = Math.max(e.seclStart, ...e.checks); out.push({ t: last + 15, late: s.t > last + 15, text: '303 Seclusion check (every 15 minutes)' }); }
+      if (J3.im !== null && J3.postIM === null) out.push({ t: J3.im + 30, late: s.t > J3.im + 45, text: '303 Post-IM check: vitals, sedation, breathing' });
+      if (e && !e.note) out.push({ t: e.at + 60, late: false, text: '303 Seclusion and restraint note' });
+      if (e && J3.im !== null && !e.imNote) out.push({ t: J3.im + 60, late: false, text: '303 Emergency medication note' });
       return out;
     },
     replies,
@@ -896,6 +1049,7 @@
         if (Jc.im !== null) rise = -.01;
         Jc.esc = clamp(Jc.esc + rise, 0, 3.4);
       }
+      Jc.peak = Math.max(Jc.peak || 0, Jc.esc);
       const M = s.p['307']; M.trust = clamp(M.trust, 0, 3);
     },
   });

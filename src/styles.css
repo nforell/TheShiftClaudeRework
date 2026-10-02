@@ -1531,3 +1531,13 @@ table.health td{white-space:normal}
 .dl-all>summary small{font-weight:400;color:var(--ink-2);margin-left:.4rem}
 .dl-task{padding:.6rem 0;border-bottom:1px solid var(--line)}.dl-tl{font-weight:600;margin-bottom:.35rem}
 .nova-what{margin:0 0 .7rem;font-size:.95rem}
+
+/* Signed notes for restrictive interventions */
+.doc-intro{margin:0 0 .8rem;color:var(--ink-2);font-size:.92rem}
+.doc-sec{border:0;border-top:1px solid var(--line);margin:0;padding:.7rem 0 .5rem}
+.doc-sec legend{font-weight:700;padding:0;margin-bottom:.35rem;font-size:.95rem}
+.doc-hint{margin:-.1rem 0 .4rem;font-size:.84rem;color:var(--ink-2)}
+.doc-sec .opt{margin:.25rem 0}
+.doc-paper{background:var(--paper,var(--surface));border:1px solid var(--line);border-left:4px solid var(--teal);padding:.8rem 1rem;margin:0 0 1rem;font-family:var(--mono);font-size:.84rem;line-height:1.5}
+.doc-paper p{margin:.4rem 0 0;white-space:pre-wrap}
+.doc-hd{display:grid;gap:.1rem;font-family:var(--sans)}.doc-hd span{font-size:.8rem;color:var(--ink-2)}
