@@ -126,6 +126,7 @@
       ui.ghosts = ui.ghosts.filter((g) => g.held || nowMs - g.born < GHOST_MS);
     }
     if (s.t > t0) ui.adv = s.t - t0;
+    if (track && s.t > t0) stuckCheck();
     const fresh = s.fresh.splice(0);
     const isCrit = (m) => m && m.urgent && m.pid && def(m.pid);
     if (fresh.length) { const ms = fresh.map((id) => s.inbox.find((x) => x.id === id)); const crit = ms.some(isCrit), urgent = ms.some((m) => m && m.urgent); setTimeout(() => FX.play(crit ? 'crit' : urgent ? 'urgent' : 'msg'), crit ? 120 : 420); }
@@ -201,7 +202,7 @@
     R0.earned = R0.earned.concat(L.badges);
     if (L.xp) { R0.total += L.xp; R0.after += L.xp; R0.lvAfter = RW.level(R0.after); prof.xp = R0.after; }
     prof.runs.unshift({ at: Date.now(), score: d.overall, rating: d.rating, caseId: s.caseId });
-    TEL.track('shift_complete', { case: s.caseId, score: d.overall, rating: d.rating, stars: s.reward.stars, ended_early: s.t < C().length - 5, game_min: Math.round(s.t), wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null, good_calls: d.judg.filter((j) => j.delta > 0).length, misses: d.judg.filter((j) => j.delta < 0).length, poor_outcomes: d.outcomes.filter((o) => o.tone === 'bad').length, hints_used: (C().novaCredits || 3) - s.nova, attempt: prof.done[s.caseId] });
+    TEL.track('shift_complete', { case: s.caseId, score: d.overall, rating: d.rating, stars: s.reward.stars, ended_early: s.t < C().length - 30, game_min: Math.round(s.t), wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null, good_calls: d.judg.filter((j) => j.delta > 0).length, misses: d.judg.filter((j) => j.delta < 0).length, poor_outcomes: d.outcomes.filter((o) => o.tone === 'bad').length, hints_used: (C().novaCredits || 3) - s.nova, attempt: prof.done[s.caseId] });
     if (CL) CL.recordRun({ case_id: s.caseId, score: d.overall, stars: s.reward.stars, minutes: s.t,
       domains: d.dom.filter((x) => x.score !== null).map((x) => ({ id: x.id, score: x.score })),
       steps: CJ.score(d.judg).filter((x) => x.score !== null).map((x) => ({ id: x.id, score: x.score })),
@@ -428,9 +429,10 @@
   /* ------------ the command bar: what needs you, what's next, and a way to let time pass ------------ */
   function nowRows() {
     const out = [];
-    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text, late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp' }); }); });
+    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked }); }); });
     const pr = prioList();
-    return out.sort((a, b) => b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
+    // Something you can act on comes before something you're waiting on.
+    return out.sort((a, b) => a.blocked - b.blocked || b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
   }
   function nextKnown() {
     let best = null; const put = (t, text) => { if (t > s.t && (!best || t < best.t)) best = { t, text }; };
@@ -454,17 +456,60 @@
     return 'So far, so good';
   }
   function goalsHTML(g, cls) { return `<div class="goals ${cls || ''}" role="list" aria-label="Shift goals">${g.map((x) => `<span role="listitem" class="goal ${x.st}" title="${esc(x.sub)}"><i aria-hidden="true">${x.st === 'done' ? '✓' : x.st === 'fail' ? '✕' : ''}</i><span><b>${esc(x.label)}</b><small>${esc(goalSub(x))}</small></span></span>`).join('')}</div>`; }
+  /* Stuck players. Real time: 45 seconds with no input while work is waiting shows a pointer to the next step.
+     Game time: falling well behind brings a free check-in from Nova (it doesn't use up a tip). */
+  let idleT = null;
+  function armIdle() { if (ui.stuck) { ui.stuck = false; } clearTimeout(idleT); idleT = setTimeout(idleCheck, 45000); }
+  function idleCheck() {
+    if (!s || s.ended || ui.ov || document.hidden || (ui.view !== 'station' && ui.view !== 'room') || !nowRows().length) return;
+    ui.stuck = true; render();
+    const g = document.querySelector('.cmd-go'); if (g && !reduced()) g.classList.add('nudge');
+  }
+  function stuckTip(where) {
+    if (!ui.stuck || !s || s.ended) return '';
+    const rows = nowRows(), top = (where === 'room' && rows.find((r) => r.pid === s.loc && !r.blocked)) || rows[0]; if (!top) return '';
+    if (where === 'station') return `<div class="stuck-tip" role="status"><p><b>Not sure where to start?</b> Tap the task above. It walks you to ${top.away ? 'the follow-up' : 'the room'} and the right tab.${s.nova ? ' Nova can also point you somewhere.' : ''}</p>${s.nova ? '<button class="btn" data-act="nova">Ask Nova</button>' : ''}</div>`;
+    const d = def(s.loc), mine = top.pid === d.id;
+    return `<div class="stuck-tip" role="status"><p>${mine ? `<b>Next here:</b> ${esc(top.text)}. ${ui.dock === 'brain' ? 'Tap it in the list below.' : 'Open the Brain tab: it lists this patient\'s tasks, overdue first.'}` : `<b>Done in here?</b> ${esc(def(top.pid).room)} needs you next: ${esc(top.text)}.`}</p>${mine ? (ui.dock === 'brain' ? '' : '<button class="btn" data-act="dock" data-id="brain">Brain</button>') : `<button class="btn" data-act="${top.away ? 'away' : top.rp ? 'report' : 'goto'}" data-pid="${top.pid}">Go</button>`}</div>`;
+  }
+  function stuckCheck() {
+    if (!s || s.ended || (ui.view !== 'station' && ui.view !== 'room')) return;
+    const late = nowRows().filter((r) => r.late && !r.blocked);
+    s.help = s.help || { n: 0, at: -999, skips: 0 };
+    const H = s.help, behind = late.length >= 3 || (late.length >= 1 && H.skips >= 2);
+    if (!behind || H.n >= 2 || s.t - H.at < 40 || s.t < 40 || s.t > C().length - 25) return;
+    H.n += 1; H.at = s.t; H.skips = 0;
+    let tip = ''; try { tip = C().novaHint ? C().novaHint(s, A()) : ''; } catch (e) { tip = ''; }
+    const first = late[0], d = def(first.pid);
+    const lead = late.length >= 3 ? `${late.length} tasks are overdue. It happens to everyone. Pick one room and finish it before you move on.` : 'Skipping ahead won\'t make the overdue work go away. Deal with it first.';
+    A().msg({ from: 'nova', pid: first.away ? undefined : first.pid, help: true, text: `${lead} I'd start with ${d.room}: ${first.text.toLowerCase()}.${tip ? ' One more thing to keep in mind: ' + tip : ''} (This one's free. It doesn't use one of your tips.)`, replies: [{ label: `Go to ${d.room}`, act: first.away ? 'away' : 'goto', pid: first.pid }] });
+  }
+  // Caught up: point at the patient nobody has looked at for longest. Quiet time is reassessment time.
+  function suggestIdle() {
+    let best = null;
+    pts().forEach((d) => { const P = s.p[d.id]; if (gone(P)) return; const last = Math.max(P.seenAt === null ? -999 : P.seenAt, P.touchAt === undefined ? -999 : P.touchAt); if (s.t - last >= 45 && (!best || last < best.last)) best = { pid: d.id, last, d }; });
+    if (!best) return null;
+    const d = best.d, P = s.p[d.id];
+    return { pid: d.id, text: P.seenAt === null ? `Nobody's waiting on you. You haven't seen ${d.short} yet.` : `Nobody's waiting on you. ${d.short} hasn't seen you since ${E.clock(best.last)}: a good time to look again.`, go: `Go to ${d.room}` };
+  }
   function cmdBar() {
     const now = nowRows(), nx = nextKnown(), open = FL.open(s), top = now[0];
-    const status = top ? `<div class="cmd-st busy"><span class="cmd-n" aria-hidden="true">${now.length}</span><div><b>${now.length === 1 ? 'One thing needs you' : `${now.length} things need you`}</b><button class="cmd-go" data-act="${top.rp ? 'report' : top.away ? 'away' : 'goto'}" data-pid="${top.pid}">${top.late ? '<em>Overdue</em> ' : ''}${esc(rowLabel(top))} <span aria-hidden="true">›</span></button></div></div>`
-      : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b><small>Skip ahead. The clock runs until something needs you.</small></div></div>`;
+    // One next step, and a count you can live with: rooms waiting, not every line item.
+    const rooms = new Set(now.map((r) => r.pid)).size, lateN = now.filter((r) => r.late && !r.blocked).length;
+    const head = now.length === 1 ? 'One thing needs you' : rooms === 1 ? `${now.length} things in one room` : `Work waiting in ${rooms} rooms`;
+    const tail = now.length > 1 ? `<small class="cmd-sub">${now.length} tasks due${lateN ? ` · <em>${lateN} overdue</em>` : ''}. Start with this one:</small>` : '';
+    const idle = suggestIdle();
+    const status = top ? `<div class="cmd-st busy ${lateN >= 3 ? 'behind' : ''}"><span class="cmd-n" aria-hidden="true">${now.length === 1 ? 1 : rooms}</span><div><b>${head}</b>${tail}<button class="cmd-go" data-act="${top.rp ? 'report' : top.away ? 'away' : 'goto'}" data-pid="${top.pid}">${top.late && !top.blocked ? '<em>Overdue</em> ' : ''}${esc(rowLabel(top))} <span aria-hidden="true">›</span></button></div></div>`
+      : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
     const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
     const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip">${ICON.ff}<span><b>Skip ahead</b><small>${nx ? `${E.clock(nx.t)} ${esc(nx.text)}` : 'Until something happens'}</small></span></button>`;
-    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
+    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
   }
   /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
   function skipAhead() {
     if (!s || s.ended) return;
+    s.help = s.help || { n: 0, at: -999, skips: 0 };
+    if (nowRows().some((r) => r.late && !r.blocked)) s.help.skips += 1; else s.help.skips = 0;
     const t0 = s.t, f0 = s.fresh.length, base = new Set(nowRows().map((r) => r.pid + '|' + r.key)), arr = pts().length, dl = s.deleg.filter((x) => x.done).length, L = C().length;
     const why = spend(Math.min(30, L - s.t), null, (ss) => {
       if (ss.fresh.length > f0) { const m = ss.inbox.find((x) => x.id === ss.fresh[ss.fresh.length - 1]); if (m) return { pid: m.pid, from: m.from, text: m.text, urgent: m.urgent }; }
@@ -475,7 +520,7 @@
       if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
       return null;
     });
-    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : { text: 'A quiet half hour. Nothing new came up.' }) };
+    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
     if (!s.ended) render();
     ffPlay();
   }
@@ -589,6 +634,16 @@
     chart: '<svg class="ai" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16l4-5 3 3 4-6"/></svg>',
   };
   const tabFor = (text) => (/glucose|BG\b/i.test(text) ? 'care' : /weigh|weight|scan/i.test(text) ? 'care' : /neuro|POSS|sedation|vital|CIWA|mental|assess/i.test(text) ? 'assess' : null);
+  // A task the case didn't route: send it to the tab whose action shares the most words with it, so every due task is tappable.
+  function paneFor(d, P, text) {
+    const w = text.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3), Ax = A();
+    const score = (label) => w.filter((x) => label.toLowerCase().includes(x)).length;
+    let best = null, bs = 0;
+    (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { const n = score(x.label); if (n > bs) { bs = n; best = 'care'; } });
+    (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { const n = score(x.label); if (n > bs) { bs = n; best = 'talk'; } });
+    if (best) return best;
+    return /call|page|notify|update|family|provider|SBAR/i.test(text) ? 'talk' : /med|dose|give/i.test(text) ? 'meds' : 'care';
+  }
   /* Completion tracking: every task that leaves the to-do list gets a visible check-off. */
   ui.ghosts = [];
   function openSnap() {
@@ -611,7 +666,7 @@
     const rows = [];
     // Shift assessment: every patient needs one, early.
     const sysDone = Object.keys(P.assessAt || {}).length + (P.vit.some((v) => v.by === 'You') ? 1 : 0);
-    rows.push({ key: 'sa', t: 0, late: s.t > 60 && sysDone < 3, done: sysDone >= 3, text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
+    rows.push({ key: 'sa', t: 0, late: s.t > 90 && sysDone < 3, done: sysDone >= 3, text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
     (d.meds || []).forEach((m) => {
       const st = s.meds[m.id];
       if (m.available && !m.available(s, P)) return;
@@ -619,9 +674,9 @@
       if (m.due === undefined || m.prn) return;
       if (st.status === 'given' || st.status === 'held') rows.push({ key: 'm:' + m.id, t: st.at, done: true, text: `${m.name} ${m.dose} ${m.route}`, sub: `${st.status === 'given' ? 'Given' : 'Held'} ${E.clock(st.at)}` });
       else if (m.initStatus === 'given') return;
-      else rows.push({ key: 'm:' + m.id, t: m.due, late: s.t > m.due + 60, text: `${m.name} ${m.dose} ${m.route}`, sub: st.status === 'verify' ? 'Awaiting pharmacy' : m.freq, go: { act: 'med', id: m.id } });
+      else rows.push({ key: 'm:' + m.id, t: m.due, late: s.t > m.due + 60, text: `${m.name} ${m.dose} ${m.route}`, sub: st.status === 'verify' ? 'Awaiting pharmacy: it can\'t be given until it\'s released' : m.freq, blocked: st.status === 'verify', go: { act: 'med', id: m.id } });
     });
-    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{3}/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{3}\s*/, ''), tab = tabFor(tx); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, go: tab ? { act: 'dock', id: tab } : null }); });
+    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{3}/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{3}\s*/, ''), tab = tabFor(tx) || paneFor(d, P, tx); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, go: tab ? { act: 'dock', id: tab } : null }); });
     s.deleg.filter((x) => !x.done && x.pid === d.id).forEach((x) => rows.push({ key: 'd:' + x.id + ':' + x.at, at: x.at, t: x.due, prog: true, text: `${cna().name}: ${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()}`, sub: `In progress, back about ${E.clock(x.due)}` }));
     return rows.concat(flowRows(d, P));
   }
@@ -645,7 +700,7 @@
     const doneLog = s.log.filter((l) => l.pid === d.id && (l.kind === 'find' || l.kind === 'act') && !/^You: "/.test(l.text)).slice().reverse();
     const shown = ui.brainAll ? doneLog : doneLog.slice(0, 5);
     const row = (r, cls) => { const inner = `${cls === 'prog' ? `<span class="b-prog" aria-hidden="true"><i style="width:${Math.min(100, Math.max(4, (s.t - r.at) / Math.max(1, r.t - r.at) * 100)).toFixed(0)}%"></i></span>` : ''}<span class="b-tm">${r.t === null ? esc(r.later) : E.clock(Math.max(r.t, 0))}</span><span class="b-tx"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="b-st">${cls === 'over' ? 'Overdue' : cls === 'now' ? 'Due' : cls === 'soon' ? 'Upcoming' : cls === 'prog' ? 'In progress' : cls === 'later' ? 'Later' : ''}</span>${r.go ? '<span class="b-go" aria-hidden="true">›</span>' : '<span></span>'}`;
-      return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}">${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
+      return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}"${r.go.act === 'dock' ? ` data-hl="${esc(r.text)}"` : ''}>${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
     const grp = (title, list, cls) => (list.length ? `<div class="b-grp ${cls}"><h4>${title}<span>${list.length}</span></h4><ul>${list.map((r) => row(r, cls)).join('')}</ul></div>` : '');
     const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).map((k) => d.report[+k.split(':')[1]].text);
     let h = ghostList(d.id);
@@ -738,7 +793,7 @@
           <button class="rt rt-chart" data-act="chart" data-pid="${d.id}">${AI.chart}<span class="rt-l">Chart</span><span class="rt-s">Labs, orders, notes</span></button>
         </nav>
         <section class="pane" role="tabpanel" aria-label="${pane[1]}">
-          <header class="pane-h"><h3>${pane[1]}<span> · ${esc(d.short)}, ${d.room}</span></h3><p>${pane[2]}</p></header>
+          <header class="pane-h"><h3>${pane[1]}<span> · ${esc(d.short)}, ${d.room}</span></h3><p>${pane[2]}</p>${stuckTip('room')}</header>
           <div class="pane-b">${body}</div>
         </section>
         <aside class="doc" aria-label="Vitals and documentation">
@@ -902,7 +957,7 @@
     const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
-      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 5 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
+      <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 30 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>
       ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
@@ -1194,7 +1249,7 @@
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
     if (block) body += `<div class="warnbox">${esc(block)}</div>`;
     if (refuse) body += `<div class="warnbox">${esc(refuse)}</div>${m.prn ? '' : '<p class="muted" style="margin:.4rem 0 0;font-size:.88rem">You can come back and offer it again, or hold it and document the refusal.</p>'}`;
-    if (verify) body += `<div class="warnbox">Pharmacy has not verified this order. It can't be dispensed yet.</div>`;
+    if (verify) { const ph = (d.interventions || []).concat(d.comms || []).find((x) => /pharmac/i.test(x.label) && (!x.avail || x.avail(s, P, Ax))), tab = ph && (d.interventions || []).includes(ph) ? 'Care' : 'Talk & call'; body += `<div class="warnbox">Pharmacy has not verified this order. It can't be dispensed yet.${ph ? ` To find out what they need, use <b>${esc(ph.label)}</b> on the ${tab} tab.` : ' Check your messages: pharmacy usually says what they need to release it.'}</div>`; }
     if (done) body += `<div class="warnbox">${st.status === 'given' ? 'Given' : 'Held'} at ${E.clock(st.at)}.${st.note ? ' ' + esc(st.note) : ''}</div>`;
     if (m.doses && !block && !verify && !refuse) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
     if (ui.med.holding) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Reason for holding</legend>${['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'].map((r, i) => `<label class="opt"><input type="radio" name="hr" data-act="hreason" data-v="${i}" ${ui.med.reason == i ? 'checked' : ''}><span>${r}</span></label>`).join('')}</fieldset>`;
@@ -1204,7 +1259,7 @@
       else {
         if (!m.prn) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
         if (refuse) foot += `<button class="btn btn-primary" data-act="med-declined">Offer again later <span style="font-weight:400;opacity:.8">2 min</span></button>`;
-        else foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${m.infusion ? 'Hold to set the pump' : `Hold to give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''}`}</span> <span style="font-weight:400;opacity:.8">5 min</span></button>`;
+        else foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${m.infusion ? 'Hold to set the pump' : `Hold to give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''}`}</span> <span style="font-weight:400;opacity:.8">${P.medPassAt !== undefined && s.t - P.medPassAt <= 6 ? '2 min, same med pass' : '5 min'}</span></button>`;
       }
     }
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
@@ -1688,6 +1743,12 @@
     back() { ui.ov = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) {
       ui.dock = el.dataset.id; render();
+      // Coming from a task in the brain: point at the action that does it.
+      if (el.dataset.hl) {
+        const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = null, bs = 0;
+        document.querySelectorAll('.pane .fs-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
+        if (best) { best.classList.add('hl'); if (innerWidth <= 760) best.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); return; }
+      }
       // On a phone the panel sits below the scene: bring the chosen tab's content into view.
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
     },
@@ -1728,7 +1789,9 @@
     'med-give'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const dose = ui.med.dose; ui.ov = null; ui.med = null;
-      doAct(`${m.name} given`, 5, (Ax) => { const t = m.give(s, P, Ax, dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
+      // A med pass: once you're at the bedside with the cart, each further dose for the same patient takes less time.
+      const pass = P.medPassAt !== undefined && s.t - P.medPassAt <= 6 && s.loc === d.id; P.medPassAt = s.t;
+      doAct(`${m.name} given`, pass ? 2 : 5, (Ax) => { P.medPassAt = s.t + (pass ? 2 : 5); const t = m.give(s, P, Ax, dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
     },
     'med-declined'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id);
@@ -1970,6 +2033,7 @@
   addEventListener('error', (e) => { if (e.error) crashed(e.error, 'async'); });
   addEventListener('unhandledrejection', (e) => crashed(e.reason, 'promise'));
   function onClick(e) {
+    armIdle();
     const el = e.target.closest('[data-act]');
     if (!el) return;
     if (el.dataset.scrim && e.target !== el) return; // clicks inside sheet don't close
@@ -2034,7 +2098,7 @@
     document.addEventListener('pointerdown', startHold);
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, cancelHold, true));
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey); document.addEventListener('keydown', armIdle);
     document.addEventListener('input', (e) => { const b = e.target && e.target.dataset && e.target.dataset.bind; if (!b) return; const v = e.target.value; if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } else if (b === 'cls.code' || b === 'cls.name') { ui.cls = ui.cls || {}; ui.cls[b.slice(4)] = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? !!(v.trim() || (ui.fb && ui.fb.pay)) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = 'Answer one of the two first.'; } } });
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);

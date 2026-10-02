@@ -291,9 +291,23 @@ window.Shift = window.Shift || {};
   function finish(s) {
     const c = cases[s.caseId];
     const A = api(s);
-    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); if (S.flow) S.flow.endChecks(s, A); if (S.floor) S.floor.endChecks(s, A); }
+    if (!s.finalized) { s.finalized = true; if (c.endChecks) c.endChecks(s, A); if (S.flow) S.flow.endChecks(s, A); if (S.floor) S.floor.endChecks(s, A); mergeMissedMeds(s, A); }
     s.ended = true;
     return debrief(s);
+  }
+
+  /* One missed med pass is one lesson, not five. Scheduled doses never given or held are folded into a
+     single judgment per patient: -2 for one dose, -3 for two, -4 for three or more. */
+  function mergeMissedMeds(s, A) {
+    const by = {};
+    s.judg.forEach((j) => { if (j.domain === 'meds' && j.pid && /-missed$/.test(j.key || '') && / was never given or held\.$/.test(j.text)) (by[j.pid] = by[j.pid] || []).push(j); });
+    Object.keys(by).forEach((pid) => {
+      const L = by[pid]; if (L.length < 2) return;
+      const names = L.map((j) => j.text.replace(/ for .*$/, '')), d = A.def(pid), who = d ? d.short : pid;
+      const list = names.length > 3 ? names.slice(0, 3).join(', ') + ` and ${names.length - 3} more` : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+      const merged = { key: `${pid}-meds-missed`, t: L[0].t, domain: 'meds', delta: L.length >= 3 ? -4 : -3, text: `${names.length} scheduled doses for ${who} were never given or held: ${list}.`, why: L[0].why, pid };
+      const drop = new Set(L); s.judg = s.judg.filter((j) => !drop.has(j)); s.judg.push(merged);
+    });
   }
 
   const DOMAINS = [
@@ -309,7 +323,9 @@ window.Shift = window.Shift || {};
       const js = s.judg.filter((j) => j.domain === id);
       const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0);
       const bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      const score = js.length ? clamp(Math.round(60 + good * 6 - bad * 9), 5, 100) : null;
+      // Misses past the first few points in one domain count half: one bad stretch shouldn't zero a whole skill.
+      const pen = Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5;
+      const score = js.length ? clamp(Math.round(60 + good * 6 - pen), 5, 100) : null;
       return { id, label, score, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
     });
     const scored = dom.filter((d) => d.score !== null);
@@ -608,7 +624,7 @@ window.Shift = window.Shift || {};
     return STEPS.map(([id, label, what]) => {
       const js = judg.filter((j) => step(j) === id);
       const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0), bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - bad * 9))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - (Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5)))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
     });
   }
   S.cjmm = { STEPS, OVERRIDE, step, score };

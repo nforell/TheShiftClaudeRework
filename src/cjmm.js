@@ -42,7 +42,7 @@
     return STEPS.map(([id, label, what]) => {
       const js = judg.filter((j) => step(j) === id);
       const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0), bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - bad * 9))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - (Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5)))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
     });
   }
   S.cjmm = { STEPS, OVERRIDE, step, score };
