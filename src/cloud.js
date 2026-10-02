@@ -69,6 +69,8 @@
     ['best', 'stars', 'done'].forEach((k) => { out[k] = Object.assign({}, a[k] || {}); Object.entries(b[k] || {}).forEach(([c, v]) => { out[k][c] = Math.max(out[k][c] || 0, v); }); });
     out.badges = Object.assign({}, a.badges || {}); Object.entries(b.badges || {}).forEach(([id, t]) => { out.badges[id] = out.badges[id] ? Math.min(out.badges[id], t) : t; });
     out.seen = Object.assign({}, a.seen || {}, b.seen || {});
+    if (String(b.terms || '') > String(out.terms || '')) { out.terms = b.terms; out.termsAt = b.termsAt; }   // keep the newest terms agreement
+    if (String(a.terms || '') > String(out.terms || '')) { out.terms = a.terms; out.termsAt = a.termsAt; }
     out.floorSeen = Object.assign({}, a.floorSeen || {}); Object.entries(b.floorSeen || {}).forEach(([id, v]) => { if (out.floorSeen[id] === undefined || RANK[v] > RANK[out.floorSeen[id]]) out.floorSeen[id] = v; });
     out.lessons = Object.assign({}, a.lessons || {}); Object.entries(b.lessons || {}).forEach(([k, L]) => { const m = out.lessons[k]; if (!m || (L.last || 0) > (m.last || 0) || (L.fixed && !m.fixed)) out.lessons[k] = L; });
     return out;

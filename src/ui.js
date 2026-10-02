@@ -38,6 +38,32 @@
   const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption: null, toasts: [], rank: null, rankDone: false, dlg: null, med: null, sbar: null, delegMsg: null, nova: null, hIdx: 0, newLog: 0, filter: 'all', confirm: null, adv: null, stamp: null, justKey: null, busy: false };
 
   const C = () => E.getCase(caseId);
+  /* Shift picker: which specialty each shift belongs to and how hard it is (1–5), with the reason in one line. */
+  const SPEC = {
+    ms: { name: 'Medical-surgical', unit: '4 West', blurb: 'Adult general floor: post-op care, diabetes, infection, heart failure. Start here.' },
+    sd: { name: 'Cardiac step-down', unit: '6 East', blurb: 'Telemetry, drips and protocols that run on numbers. Best after med-surg.' },
+    psy: { name: 'Adult psychiatry', unit: '3 East', blurb: 'Locked adult unit: holds, seclusion, the right to refuse, and medical problems hiding behind psych diagnoses.' },
+    teen: { name: 'Adolescent psychiatry', unit: '4 North', blurb: 'Teens 14 to 17: consent, privacy, restraint charting and mandated reporting.' },
+    peds: { name: 'Pediatrics', unit: '5 South', blurb: 'Infants to teens: age-based vital signs, weight-based doses, and their families.' },
+  };
+  const DIFF = ['', 'Orientation', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
+  const META = {
+    'medsurg-4w-1': { sp: 'ms', d: 1, why: 'Four patients and three hints. One of them is quietly getting worse. The best place to learn how the game works.' },
+    'medsurg-4w-2': { sp: 'ms', d: 2, why: 'A fifth patient arrives from the ED, a unit of blood, a critical lab call, and other people changing orders on you.' },
+    'medsurg-4w-3': { sp: 'ms', d: 3, why: 'Nights: nobody calls you when someone changes, your aide is floated at 01:00, and you only get two hints.' },
+    'stepdown-6e-1': { sp: 'sd', d: 4, why: 'Every patient is on a drip, a nomogram or a protocol, and new results that should change them. Assumes med-surg basics.' },
+    'psych-3e-1': { sp: 'psy', d: 4, why: 'Legal holds and seclusion charted step by step, plus a medical emergency on a psych unit. Uses California law (switch in Settings).' },
+    'psych-4n-1': { sp: 'teen', d: 5, why: 'Minors: parents, privacy and mandated reports, restraint charting, refeeding labs and a hidden overdose. The hardest shift.' },
+    'peds-5s-1': { sp: 'peds', d: 4, why: 'Normal vital signs change with age and every dose depends on weight. Parents, an interpreter and a safeguarding concern.' },
+  };
+  const meta = (id) => META[id] || { sp: 'ms', d: 1, why: '' };
+  const specOf = (id) => SPEC[meta(id).sp];
+  const diffLabel = (id) => DIFF[meta(id).d];
+  const diffPips = (id, cls) => { const d = meta(id).d; return `<span class="diff d${d} ${cls || ''}" role="img" aria-label="Difficulty ${d} of 5, ${DIFF[d]}"><span class="pips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= d ? 'on' : ''}"></i>`).join('')}</span><b aria-hidden="true">${DIFF[d]}</b></span>`; };
+  const shiftFacts = (k) => { const n = k.patients.filter((x) => !x.arrives).length, a = k.patients.length - n; return `${n} patients${a ? ` + ${a} admission` : ''} · ${k.novaCredits || 3} hints · about ${k.minutes || 15} min`; };
+  /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
+  const TERMS = S.terms || null;
+  const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
   // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
   let _A = null, _As = null;
   const A = () => (_As === s && _A ? _A : (_As = s, _A = E.api(s)));
@@ -289,6 +315,8 @@
   }
 
   /* ------------ home ------------ */
+  function specHead(sp) { const x = SPEC[sp]; return `<div class="spec-h sp-${sp}"><b>${esc(x.name)}</b><span class="spec-u">${esc(x.unit)}</span><span class="spec-b">${esc(x.blurb)}</span></div>`; }
+  function diffKey() { return `<span class="diff-scale" aria-hidden="true">${[1, 2, 3, 4, 5].map((d) => `<span class="dk diff d${d}"><span class="pips">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= d ? 'on' : ''}"></i>`).join('')}</span>${DIFF[d]}</span>`).join('')}</span>`; }
   function vHome() {
     E.useCase(caseId);
     const g = E.store.load(), c = C(), done = (id) => prof.runs.filter((r) => r.caseId === id);
@@ -298,7 +326,7 @@
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
       const prev = i ? done(CASES[i - 1]).length : 1;
       const stn = (prof.stars || {})[id] || 0;
-      return `<button class="rung ${locked(id) ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b>${esc(k.title)}</b><span>${esc(k.card)}</span></span><span class="rg-l">${esc(k.level.replace('Specialty: ', ''))}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${locked(id) ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'After ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
+      return `<button class="rung sp-${meta(id).sp} ${locked(id) ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b><span>${esc(k.card)}</span><small class="rg-facts">${esc(shiftFacts(k))}</small></span><span class="rg-l">${diffPips(id)}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${locked(id) ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
     };
     const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
@@ -307,8 +335,10 @@
       <section class="home-hero">
         <div>
           <p class="big-clock" aria-label="${start}">${start.slice(0, 2)}<span>:</span>${start.slice(3)}</p>
+          <p class="home-tags"><span class="spec-chip sp-${meta(caseId).sp}">${esc(specOf(caseId).name)} · ${esc(specOf(caseId).unit)}</span>${diffPips(caseId, 'big')}</p>
           <h1>${esc(c.hero.head)}</h1>
           <p class="lede">${esc(c.hero.lede)}</p>
+          <p class="home-why"><b>Why it's rated ${esc(diffLabel(caseId).toLowerCase())}:</b> ${esc(meta(caseId).why)}</p>
           <div class="cta">
             ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : locked(caseId) ? `<button class="btn btn-primary btn-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>${saved ? `<button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : ''}` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
@@ -321,13 +351,14 @@
         </div>
       </section>
       <div>
-        <h2 class="sched-h">Shifts</h2>
+        <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
         <div class="ladder" role="group" aria-label="Choose a shift">
-          ${CASES.map(rung).join('')}
+          ${CASES.map((id, i) => (i === 0 || meta(CASES[i - 1]).sp !== meta(id).sp ? specHead(meta(id).sp) : '') + rung(id, i)).join('')}
+          <div class="spec-h sp-soon"><b>Coming later</b></div>
           <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>Not built yet</b><span>ED, ICU, labor and delivery.</span></span></div>
         </div>
         ${careerHTML()}
-        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>Original clinical content for education. Not a substitute for clinical instruction.${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
+        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
       </div>
     </div>`;
   }
@@ -898,7 +929,7 @@
   const MEDAL = ['none', 'bronze', 'silver', 'gold'];
   function medalHTML(tier, g) { return `<svg class="medal m-${MEDAL[tier]}" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 3h7l2 9-6 2zM33 3h-7l-2 9 6 2z" class="md-rib"/><circle cx="24" cy="29" r="15" class="md-rim"/><circle cx="24" cy="29" r="11" class="md-in"/><g transform="translate(12 17)" class="md-g">${GLYPH[g] || GLYPH.star}</g></svg>`; }
   const TRACKG = { safety: 'shield', priority: 'up', assess: 'eye', meds: 'check', deleg: 'solo', comm: 'bell', judgment: 'heart', time: 'flame', lessons: 'book', stories: 'chat', floor: 'badge', shifts: 'map', stars: 'star' };
-  const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} (${k.level.replace('Specialty: ', '')})` : 'Floor calls'; };
+  const caseTitle = (id) => { const k = E.getCase(id); return k ? `${k.title} (${specOf(id).name})` : 'Floor calls'; };
   const ago = (ms) => { const d = Math.round((Date.now() - ms) / 86400000); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
   function trackRow(tr) {
     const v = tr.val(prof), tier = RW.tierOf(tr, v), next = tr.tiers[tier], lo = tier ? tr.tiers[tier - 1] : 0, pct = next ? Math.min(1, (v - lo) / (next - lo)) : 1;
@@ -927,7 +958,7 @@
     if (tab === 'lessons') body = `<section class="ach-sec"><h2>Lesson log</h2><p class="muted ach-note">Every call to rethink from a finished shift is kept here with the reason. Replay that shift and don't repeat it, and the lesson is marked fixed (+60 XP). Floor-call lessons are fixed when you meet that call again and choose the best answer.</p>
       <div class="filter" role="group" aria-label="Lessons">${[['open', `Still to fix (${open})`], ['fixed', `Fixed (${fixed})`]].map(([k, l]) => `<button class="btn ${(ui.lesF || 'open') === k ? 'btn-primary' : ''}" data-act="les-f" data-k="${k}" aria-pressed="${(ui.lesF || 'open') === k}">${l}</button>`).join('')}</div>${lessonsHTML(ui.lesF || 'open')}</section>`;
     if (tab === 'floor') body = `<section class="ach-sec"><h2>Floor-call collection <span class="muted">${col} of ${FL.POOL.length}</span></h2>${floorHTML()}</section>`;
-    if (tab === 'units') body = `<section class="ach-sec"><h2>Units</h2><div class="ach-units">${CASES.map((id) => { const k = E.getCase(id), st = (prof.stars || {})[id] || 0, n = (prof.done || {})[id] || prof.runs.filter((r) => r.caseId === id).length, best = (prof.best || {})[id] || (prof.runs.filter((r) => r.caseId === id).map((r) => r.score).sort((a, b) => b - a)[0]), ol = les.filter((l) => l.caseId === id && !l.fixed).length; return `<div class="ach-u"><span class="rung-st">${[0, 1, 2].map((i) => starSvg(i < st, i, 'rs')).join('')}</span><b>${esc(k.title)}</b><small>${esc(k.level)}</small><dl><dt>Best</dt><dd>${best !== undefined ? best : '–'}</dd><dt>Played</dt><dd>${n || 0}</dd><dt>Open lessons</dt><dd>${ol}</dd></dl><button class="btn ${n ? '' : 'btn-primary'}" data-act="pick-case" data-id="${id}">${n ? 'Play again' : 'Play'}</button></div>`; }).join('')}</div></section>`;
+    if (tab === 'units') body = `<section class="ach-sec"><h2>Units</h2><div class="ach-units">${CASES.map((id) => { const k = E.getCase(id), st = (prof.stars || {})[id] || 0, n = (prof.done || {})[id] || prof.runs.filter((r) => r.caseId === id).length, best = (prof.best || {})[id] || (prof.runs.filter((r) => r.caseId === id).map((r) => r.score).sort((a, b) => b - a)[0]), ol = les.filter((l) => l.caseId === id && !l.fixed).length; return `<div class="ach-u"><span class="rung-st">${[0, 1, 2].map((i) => starSvg(i < st, i, 'rs')).join('')}</span><b>${esc(k.title)}</b><small>${esc(specOf(id).name)} · ${esc(diffLabel(id))}</small><dl><dt>Best</dt><dd>${best !== undefined ? best : '–'}</dd><dt>Played</dt><dd>${n || 0}</dd><dt>Open lessons</dt><dd>${ol}</dd></dl><button class="btn ${n ? '' : 'btn-primary'}" data-act="pick-case" data-id="${id}">${n ? 'Play again' : 'Play'}</button></div>`; }).join('')}</div></section>`;
     return `<header class="top"><button class="mark" data-act="aw-back">The Shift</button><div class="where">Achievements</div><button class="btn btn-quiet" data-act="aw-back">${ICON.back}Back</button></header><main><div class="ach">
       <section class="ach-hero"><div class="ach-lv">${lvHTML(lv, prof.xp || 0, 0, false)}</div><div class="ach-sum"><div><b>${medals}</b><small>track medals</small></div><div><b>${Object.keys(have).length}</b><small>milestones</small></div><div><b>${fixed}</b><small>lessons fixed</small></div><div><b>${col}</b><small>floor calls collected</small></div></div></section>
       <nav class="ach-tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-act="aw-tab" data-k="${k}" aria-selected="${tab === k}">${l}</button>`).join('')}</nav>${body}</div></main>`;
@@ -968,7 +999,7 @@
           ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one.</p>' : ''}
           ${(ui.byCj && CJ ? CJ.score(d.judg) : d.dom).map((x) => `<div class="meter"${x.what ? ` title="${esc(x.what)}"` : ''}><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(next.level)}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(next.level)})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(specOf(nextId).name)}, ${esc(diffLabel(nextId).toLowerCase())}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(specOf(nextId).name)}, ${esc(diffLabel(nextId).toLowerCase())})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
@@ -1085,7 +1116,7 @@
     if (owned()) return sheet('Shift pack unlocked', `<p style="margin-top:0">Every shift is open${CL.owns('pack') === 'class' ? ', through your class' : ''}. Thanks for supporting The Shift.</p>`, `<button class="btn btn-primary" data-act="close">Play</button>`, { label: 'Shift pack' });
     if (w) return sheet('Finishing your purchase', `<p style="margin-top:0">${w === 'slow' ? 'Your payment went through, but the unlock hasn\'t reached your account yet. It usually takes a few seconds. Check again in a minute; if it still doesn\'t show, email us and we\'ll sort it out.' : 'Checking with your account…'}</p>`,
       `<button class="btn" data-act="close">Close</button><button class="btn btn-primary" data-act="pack-check">Check again</button>`, { label: 'Shift pack' });
-    const list = `<ul class="pack-list">${lockedIds.map((id) => { const k = E.getCase(id); return `<li><b>${esc(k.title)}</b><small>${esc(k.level.replace('Specialty: ', ''))} · ${esc(k.card)}</small></li>`; }).join('')}</ul>`;
+    const list = `<ul class="pack-list">${lockedIds.map((id) => { const k = E.getCase(id); return `<li><b>${esc(k.title)}</b><small>${esc(specOf(id).name)} · ${esc(diffLabel(id))} · ${esc(k.card)}</small></li>`; }).join('')}</ul>`;
     const intro = `<p style="margin-top:0">${freeN} shifts are free to play as much as you like. The shift pack opens the other ${lockedIds.length}, and every shift we add after this, for one payment of <b>${esc(PACK.price || '')}</b>. No subscription.</p>${list}`;
     const school = CL ? '<p class="muted" style="font-size:.9rem">Is your school paying? <button class="acct-link" data-act="cls">Join your class</button> with the code from your instructor and every shift opens.</p>' : '';
     if (!CL) return sheet('The shift pack', intro + '<p class="muted">Buying the pack needs the online version of The Shift.</p>', `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Shift pack' });
@@ -1433,6 +1464,7 @@
       <button class="btn" data-act="help">How it plays</button><button class="btn" data-act="settings">Settings</button>
       ${CL ? `<button class="btn" data-act="account">${CL.user() ? 'Your account' : 'Save your progress across devices'}</button><button class="btn" data-act="cls">Your class</button>` : ''}
       <button class="btn" data-act="rpt">Send feedback or report a problem</button>
+      ${TERMS ? '<button class="btn" data-act="terms">Terms and disclaimer</button>' : ''}
       ${RV ? '<button class="btn" data-act="review">Clinical review</button>' : ''}
       ${ui.installEvt ? '<button class="btn" data-act="install">Install The Shift on this device</button>' : iosInstallable() ? '<button class="btn" data-act="install-ios">Add The Shift to your home screen</button>' : ''}
       ${inShift && s.t >= 15 ? '<button class="btn" data-act="endask">End the shift early and see debrief</button>' : ''}
@@ -1470,6 +1502,16 @@
       <p><b>People, not just patients.</b> Once someone is stable, talking with them again opens up their story. Trust grows when you listen, answer their call light yourself, or just sit with them, and some of what they tell you matters clinically. The debrief tells you what became of them.</p>
       <p><b>Report.</b> In the last hour, give report to the oncoming nurse on everyone still on the unit. What's pending matters more than what's done.</p>
       <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
+  }
+  function ovTerms(gate) {
+    const web = /^https?:/.test(location.protocol);
+    const sum = `<ul class="terms-sum">${TERMS.summary.map(([h, x]) => `<li><b>${esc(h)}</b> ${esc(x)}</li>`).join('')}</ul>`;
+    const full = `<details class="terms-full"><summary>Read the full terms of use</summary>${TERMS.sections.map((sec) => `<h3>${esc(sec.h)}</h3>${sec.p.map((x) => `<p>${esc(x)}</p>`).join('')}`).join('')}<p class="muted">Updated ${esc(TERMS.updated)}. Questions: ${esc(TERMS.contact)}.</p></details>`;
+    const links = web ? `<p class="terms-links"><a href="/terms/" target="_blank" rel="noopener">Terms of use</a> · <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></p>` : '';
+    const lead = gate ? '<p class="terms-lead">The Shift is a game for practicing nursing judgment. Before your first shift, please read and agree to the following.</p>' : '<p class="terms-lead">The Shift is a game for practicing nursing judgment, not a guide to caring for real patients.</p>';
+    return sheet(gate ? 'Before you play' : 'Terms and disclaimer', `<div class="terms">${lead}${sum}${full}${links}</div>`,
+      gate ? `<p class="terms-ok-note">By continuing you confirm you're 18 or older (or playing under an educator's supervision) and agree to the terms of use.</p><button class="btn btn-primary" data-act="terms-ok">I understand and agree</button>` : `<button class="btn btn-primary" data-act="close">Close</button>`,
+      gate ? { noClose: true, noScrimClose: true, wide: true, label: 'Before you play: terms of use' } : { wide: true });
   }
   function ovHealth() {
     const pm = performance.memory, rs = R.stats ? R.stats() : {}, last = PERF.last || {};
@@ -1553,6 +1595,8 @@
     else if (ov === 'class' && CL) h += ovClass();
     else if (ov === 'pack') h += ovPack();
     else if (ov === 'review' && RV) h += ovReviewInfo();
+    else if (ov === 'terms' && TERMS) h += ovTerms(false);
+    if (!ov && TERMS && !termsOk() && (ui.view === 'home' || !s)) h += ovTerms(true);
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
@@ -1711,6 +1755,8 @@
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
     restart() { ui.confirm = { title: 'Restart this shift?', text: `You'll go back to ${E.clock(0)} report. Progress in this shift is lost.`, ok: 'Restart', act: 'new-yes', danger: true }; ui.ov = 'confirm'; render(); },
     menu() { ui.ov = 'menu'; render(); }, help() { ui.ov = 'help'; render(); }, settings() { ui.ov = 'settings'; render(); },
+    terms() { ui.ov = 'terms'; render(); },
+    'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
     close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },

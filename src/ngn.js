@@ -93,8 +93,8 @@
       { id: 'ms3-cloze', type: 'cloze', step: 'eval',
         stem: `A 26-year-old with diabetic ketoacidosis is on an insulin infusion.`,
         q: `Complete the sentences.`,
-        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.3`, `over 5.2`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
-        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first.` },
+        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
+        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
     ],
     'stepdown-6e-1': [
       { id: 'sd-bow', type: 'bowtie', step: 'hypo',

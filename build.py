@@ -9,6 +9,9 @@ import decisions as DEC
 CF = DEC.case_files()
 hashes = {cid: hashlib.sha256(b''.join(f.read_bytes() for f in fs)).hexdigest()[:10] for cid, fs in CF.items()}
 pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.dumps(hashes) + ';\n'
+# Terms of use and disclaimer: one source (src/terms.json) for the in-game sheet and the /terms/ page.
+TERMS = json.loads((src/'terms.json').read_text())
+pre += 'window.Shift.terms = ' + json.dumps(TERMS).replace('</', '<\\/') + ';\n'
 js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','rig.js','art.js','ui.js'])
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -56,5 +59,9 @@ for cid in CF:
 TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js']+[f for f in LOGIC if f.startswith('case-')]
 (dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+''.join((src/f).read_text()+'\n' for f in TEACH)+'</script>'))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
+import html as _h
+_sum = '<ul>' + ''.join(f'<li><b>{_h.escape(h)}</b> {_h.escape(x)}</li>' for h, x in TERMS['summary']) + '</ul>'
+_sec = ''.join(f'  <h2>{_h.escape(s["h"])}</h2>\n' + ''.join(f'  <p>{_h.escape(x)}</p>\n' for x in s['p']) for s in TERMS['sections'])
+(dist/'terms').mkdir(exist_ok=True); (dist/'terms'/'index.html').write_text((root/'site'/'terms.html').read_text().replace('<!--UPDATED-->', TERMS['updated']).replace('<!--SUMMARY-->', _sum).replace('<!--SECTIONS-->', _sec).replace('<!--CONTACT-->', TERMS['contact']))
 shutil.copytree(root/'site'/'assets', dist/'assets', dirs_exist_ok=True)
 print(len(html))

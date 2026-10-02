@@ -51,7 +51,7 @@
         { t: 'Finish the shift and report it tomorrow', v: -1, fb: 'PEP should start as soon as possible, ideally within 2 hours and no later than 72. Waiting uses up the window.' },
         { t: 'Wash it and report it before she leaves today', v: 1, fb: 'Washing is right. Report now, not at the end of the shift: the evaluation and any PEP decision are time-sensitive.' },
       ],
-      teach: 'Needlestick: wash with soap and water, report immediately, test the source patient, and get an employee health evaluation. HIV PEP ideally starts within 2 hours.' },
+      teach: 'Needlestick: wash with soap and water, report immediately, test the source patient, and get an employee health evaluation. HIV PEP starts as soon as possible, ideally within 2 hours and no later than 72.' },
     { id: 'fire', k: ['med', 'psych', 'peds'], from: 'fl-clerk', title: 'Smoke', dom: 'safety', cost: 3, exp: 10,
       ping: 'Pat, from the desk: "There\'s smoke coming out of the family lounge!"',
       text: 'A trash can by the microwave is smoldering. A visitor is dozing in the recliner right next to it.',

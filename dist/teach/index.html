@@ -432,6 +432,8 @@ window.Shift = window.Shift || {};
     ['best', 'stars', 'done'].forEach((k) => { out[k] = Object.assign({}, a[k] || {}); Object.entries(b[k] || {}).forEach(([c, v]) => { out[k][c] = Math.max(out[k][c] || 0, v); }); });
     out.badges = Object.assign({}, a.badges || {}); Object.entries(b.badges || {}).forEach(([id, t]) => { out.badges[id] = out.badges[id] ? Math.min(out.badges[id], t) : t; });
     out.seen = Object.assign({}, a.seen || {}, b.seen || {});
+    if (String(b.terms || '') > String(out.terms || '')) { out.terms = b.terms; out.termsAt = b.termsAt; }   // keep the newest terms agreement
+    if (String(a.terms || '') > String(out.terms || '')) { out.terms = a.terms; out.termsAt = a.termsAt; }
     out.floorSeen = Object.assign({}, a.floorSeen || {}); Object.entries(b.floorSeen || {}).forEach(([id, v]) => { if (out.floorSeen[id] === undefined || RANK[v] > RANK[out.floorSeen[id]]) out.floorSeen[id] = v; });
     out.lessons = Object.assign({}, a.lessons || {}); Object.entries(b.lessons || {}).forEach(([k, L]) => { const m = out.lessons[k]; if (!m || (L.last || 0) > (m.last || 0) || (L.fixed && !m.fixed)) out.lessons[k] = L; });
     return out;
@@ -725,8 +727,8 @@ window.Shift = window.Shift || {};
       { id: 'ms3-cloze', type: 'cloze', step: 'eval',
         stem: `A 26-year-old with diabetic ketoacidosis is on an insulin infusion.`,
         q: `Complete the sentences.`,
-        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.3`, `over 5.2`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
-        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first.` },
+        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
+        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
     ],
     'stepdown-6e-1': [
       { id: 'sd-bow', type: 'bowtie', step: 'hypo',
@@ -1386,7 +1388,7 @@ window.Shift = window.Shift || {};
           P.pharmAsked = true;
           if (!P.allergyInfo) return 'Omar, pharmacy: "I need to know what the penicillin reaction was and whether she\'s had a cephalosporin before. Can you find out? Until then I can\'t verify it."';
           P.abxAvail = s.t + 15;
-          A.judge('416-pharm', 'comm', 2, 'You clarified Mrs. Whitfield\'s allergy with her daughter and closed the loop with pharmacy.', 'A childhood rash to penicillin and a tolerated cephalosporin since then makes ceftriaxone low risk. Every hour of delayed antibiotics in sepsis raises mortality. The fastest path was a phone call, not a note.', '416');
+          A.judge('416-pharm', 'comm', 2, 'You clarified Mrs. Whitfield\'s allergy with her daughter and closed the loop with pharmacy.', 'A childhood rash to penicillin and a tolerated cephalosporin since then makes ceftriaxone low risk. Current allergy guidance goes further: cross-reactivity between penicillins and third-generation cephalosporins like ceftriaxone is very low, so most penicillin allergy labels shouldn\'t delay one. Every hour of delayed antibiotics in sepsis raises mortality. The fastest path was a phone call, not a note.', '416');
           return 'Omar: "Childhood rash, tolerated Keflex. That works. Verifying now. It\'ll be in the tube station in 15."';
         },
       },
@@ -1414,8 +1416,8 @@ window.Shift = window.Shift || {};
         checks: (s, P) => [{ label: 'Allergy', value: P.allergyInfo ? 'Penicillin: childhood rash. Tolerated cephalexin in 2024.' : 'Penicillin, reaction unknown', ok: P.allergyInfo ? true : null }],
         give(s, P, A) {
           P.abxAt = s.t;
-          if (s.t <= 150) A.judge('416-abx-time', 'time', 1, 'Mrs. Whitfield\'s first antibiotic dose went in by mid-morning.', 'In suspected sepsis, antibiotics within an hour of recognition is the standard. It started 6 hours after admission because of the allergy hold.', '416');
-          else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality. The block was a phone call to her daughter.', '416');
+          if (s.t <= 150) A.judge('416-abx-time', 'time', 1, 'Mrs. Whitfield\'s first antibiotic dose went in by mid-morning.', 'Surviving Sepsis guidance: antibiotics within 1 hour when sepsis is probable or shock is present, and within 3 hours when sepsis is possible without shock. Her dose started 6 hours after admission because of the allergy hold.', '416');
+          else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality, and current guidance wants the first dose within 1 to 3 hours of recognition. The block was a phone call to her daughter.', '416');
           return 'Ceftriaxone 1 g IV over 30 minutes. Watching for any reaction.';
         },
       },
@@ -1527,6 +1529,7 @@ window.Shift = window.Shift || {};
       { t: -2800, text: 'Potassium chloride 20 mEq PO daily. Apixaban 5 mg PO twice daily.' },
     ],
     notes: [
+      { t: -1500, author: 'Cardiology consult', text: 'HFrEF, EF 30%, not yet on full guideline-directed therapy. Diurese first. Once euvolemic with stable K and creatinine: add an SGLT2 inhibitor and spironolactone, and plan to switch losartan to sacubitril/valsartan before discharge. Metoprolol succinate dose limited by slow AF.' },
       { t: -30, author: 'Dana, night RN', text: 'Slept on 3 pillows. Weight up 0.6 kg from yesterday. Rosa brought food from home; I talked with her and she said "he has to eat something he likes." HR 50s to 60s in AFib overnight. K 3.3, day team to address. 350 mL urine after the 21:00 furosemide.' },
     ],
     io: { intake: 'PO 1,900 mL yesterday (limit 1,500)', output: 'Urine 1,450 mL yesterday' },
@@ -1719,7 +1722,7 @@ window.Shift = window.Shift || {};
     { id: 'or-sob', when: (s) => s.p['418'].fl >= 63, run(s, A) { s.p['418'].overload = true; A.msg({ from: 'rosa', pid: '418', urgent: true, text: 'Call light 418. Rosa: "He can\'t catch his breath! Please come."', replies: [{ label: 'Go to 418', act: 'goto', pid: '418' }] }); } },
     { id: 'ok-hypo', when: (s) => s.p['414'].prandAt !== null && okaforBG(s, s.p['414']) < 62, run(s, A) { const P = s.p['414']; P.hypo = true; P.hypoAt = s.t; A.msg({ from: 'luis', pid: '414', urgent: true, text: 'Mrs. Okafor in 414 is sweaty and shaky. She says she feels "off."', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'ok-severe', when: (s) => s.p['414'].hypo && !s.p['414'].hypoResolved && s.p['414'].juiceAt === null && s.t - s.p['414'].hypoAt >= 25, run(s, A) { s.p['414'].hypoSevere = true; A.judge('414-untreated', 'safety', -2, 'Mrs. Okafor\'s hypoglycemia went untreated for 25 minutes.', 'Shaky, sweaty and anxious on insulin is hypoglycemia until proven otherwise. Check, treat, recheck, and don\'t let it wait behind routine tasks.', '414'); A.msg({ from: 'luis', pid: '414', urgent: true, text: '414 isn\'t making sense. She\'s slurring. I checked her sugar: 36.', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
-    { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 2 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
+    { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 4 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : v >= 2 ? `416 lactate ${v} mmol/L, elevated. Sepsis protocol: notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
     { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.' }); } },
     { id: 'wh-drowsy', when: (s) => { const P = s.p['416']; return !P.escalated && !P.icu && P.sev >= 40; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: 'Heads up: 416 is a lot sleepier than she was at 7, and she didn\'t touch her breakfast. Her face looks flushed.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
     { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
@@ -1812,7 +1815,7 @@ window.Shift = window.Shift || {};
       const re = W.vit.some((v) => v.t >= W.bolusAt + 20 && v.t <= W.bolusAt + 120);
       A.judge('416-evaluate', 'judgment', re ? 1 : -1, re ? 'You rechecked Mrs. Whitfield\'s vitals after her bolus.' : 'You didn\'t recheck Mrs. Whitfield\'s vitals after her bolus.', 'Fluid is a treatment with an expected response. Reassessing BP, HR and mentation tells you whether she needs more or a vasopressor.', '416');
     }
-    if (W.lactResult !== null && W.lactResult >= 2 && !W.lactReported) A.judge('416-lact-unreported', 'comm', -1, 'The critical lactate on Mrs. Whitfield wasn\'t reported to the provider.', 'Critical values need to reach the provider promptly, read back and documented.', '416');
+    if (W.lactResult !== null && W.lactResult >= 2 && !W.lactReported) A.judge('416-lact-unreported', 'comm', -1, 'The elevated lactate on Mrs. Whitfield wasn\'t reported to the provider.', 'A lactate over 2 in suspected sepsis means poor perfusion and changes the plan: more fluid, a repeat lactate, closer monitoring. Over 4 is a critical value. Either way it has to reach the provider promptly.', '416');
     const R = s.p['418'];
     if (R.metoHeld && !R.notifiedMeto) A.judge('418-hold-notify', 'comm', -1, 'You held Mr. Ortiz\'s metoprolol but didn\'t tell the provider.', 'A held cardiac medication changes the plan. The provider needs to know to adjust the dose.', '418');
     const keys = []; A.c.patients.forEach((d) => d.report.forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
@@ -2089,7 +2092,7 @@ window.Shift = window.Shift || {};
       { name: 'Ethanol level (admission)', val: 'Negative', unit: '', ref: '', flag: '', t: -1100 },
     ],
     orders: [
-      { t: -1100, text: 'NPO. Lactated Ringer\'s at 150 mL/h; change to D5 ½NS with 20 mEq KCl at 16:00.' },
+      { t: -1100, text: 'NPO for now (nausea, pain 6). Reassess daily for early oral feeding as tolerated. Lactated Ringer\'s at 150 mL/h; change to D5 ½NS with 20 mEq KCl at 16:00.' },
       { t: -1100, text: 'Thiamine 100 mg IV daily. Give thiamine before any dextrose-containing fluid.' },
       { t: -1100, text: 'CIWA-Ar every 4 h, every 1 h if score is 10 or more. Lorazepam per protocol: CIWA 10–15, 1 mg IV; CIWA 16 or more, 2 mg IV. Reassess 1 h after each dose. Call if more than 4 mg in 1 h.' },
       { t: -1100, text: 'Hydromorphone 0.5 mg IV every 3 h as needed for pain 4–10. Pantoprazole 40 mg IV daily. Seizure precautions if CIWA 16 or more.' },
@@ -2133,14 +2136,14 @@ window.Shift = window.Shift || {};
         id: 'dex', label: 'Change IV fluid to D5 ½NS + 20 KCl (ordered for 16:00)', cost: 3, avail: (s, P) => s.t >= 50 && P.dexAt === null,
         run(s, P, A) {
           P.dexAt = s.t;
-          if (P.thiaAt === null) A.judge('423-dex', 'meds', -2, 'You started dextrose fluid before Mr. Tran\'s thiamine.', 'Thiamine-depleted patients who get glucose first can be tipped into Wernicke\'s encephalopathy: confusion, ataxia, eye movement problems. Thiamine first, then dextrose.', '423');
+          if (P.thiaAt === null) A.judge('423-dex', 'meds', -2, 'You started dextrose fluid before Mr. Tran\'s thiamine.', 'In heavy drinkers, thiamine stores run low, and glucose metabolism burns through what\'s left. Giving thiamine before a scheduled dextrose infusion protects against Wernicke\'s encephalopathy (confusion, ataxia, eye movement problems). The one exception: never delay glucose for a patient who is hypoglycemic. Give both.', '423');
           else A.judge('423-dex', 'meds', 1, 'You gave thiamine before switching Mr. Tran to dextrose fluid.', 'Glucose metabolism burns thiamine. Replacing it first protects against Wernicke\'s encephalopathy.', '423');
           return 'D5 ½NS with 20 mEq KCl running at 150 mL/h.';
         },
       },
       {
         id: 'tray', label: 'Remove the dinner tray (he is NPO)', cost: 1, avail: (s, P) => P.trayIn && !P.trayGone && !P.ate,
-        run(s, P, A) { P.trayGone = true; A.judge('423-tray', 'safety', 1, 'You caught a dinner tray delivered to an NPO patient.', 'Eating stimulates the pancreas. In acute pancreatitis that means more pain and inflammation. Check the diet order against what shows up.', '423'); return 'Tray back to the cart. You call dietary to flag his NPO order. "Aw, man. That smelled good."'; },
+        run(s, P, A) { P.trayGone = true; A.judge('423-tray', 'safety', 1, 'You caught a dinner tray delivered to an NPO patient.', 'The diet order says NPO, so a full tray is a dietary error. Current guidelines favor early oral feeding in mild pancreatitis once pain and nausea are settling, but that is the provider\'s call to make on rounds, not a tray that shows up by mistake. Check the diet order against what arrives, and ask about advancing his diet if he\'s hungry.', '423'); return 'Tray back to the cart. You call dietary to flag his NPO order. "Aw, man. That smelled good."'; },
       },
       {
         id: 'seiz', label: 'Seizure precautions: pad rails, suction set up, bed low', cost: 3, avail: (s, P) => !P.seizPrec,
@@ -2248,7 +2251,7 @@ window.Shift = window.Shift || {};
       { name: 'Type and crossmatch', val: 'O positive, antibody screen negative. 2 units crossmatched.', unit: '', ref: '', flag: '', t: -80 },
     ],
     orders: [
-      { t: -80, text: 'Transfuse 2 units packed red blood cells, each over 2 hours. Vital signs before, at 15 minutes, and after each unit.' },
+      { t: -80, text: 'Transfuse 1 unit packed red blood cells over 2 hours, then recheck hemoglobin. Second unit crossmatched: give if Hgb stays under 7 or she bleeds again. Vital signs before, at 15 minutes, and after each unit.' },
       { t: -500, text: 'Pantoprazole 8 mg/h IV infusion. Clear liquids. Hemoglobin every 6 h.' },
       { t: -500, text: 'Acetaminophen 650 mg PO every 6 h as needed for pain. Hold apixaban.' },
       { t: -2000, text: 'Ibuprofen 400 mg PO every 6 h as needed for arthritis pain (home medication, admission reconciliation).' },
@@ -2261,7 +2264,7 @@ window.Shift = window.Shift || {};
     report: [
       { text: 'Bea Nakamura, 79, upper GI bleed from an ulcer. Scoped this morning, they clipped it. DNR, but she wants blood and fluids.', key: false },
       { text: 'Hemoglobin 6.9, down from 8.4. Heart rate\'s been 100 to 105, pressure around 100.', key: true },
-      { text: 'Two units ordered. Blood bank says the first one is ready around 15:20.', key: true },
+      { text: 'One unit ordered, a second one crossmatched if she needs it. Blood bank says the first is ready around 15:20.', key: true },
       { text: 'She had a black tarry stool at 13:30 and she\'s dizzy when she sits up. Commode only.', key: true },
       { text: 'She\'s hard of hearing on the left. Talk to her right side.', key: false },
       { text: 'She taught piano for 50 years. Ask her about her students.', key: false },
@@ -2462,7 +2465,7 @@ window.Shift = window.Shift || {};
     },
     interventions: [
       { id: 'strip', label: 'Look at his monitor strip', cost: 1, run(s, P, A) { P.stripAt = s.t; const k = darnellK(s, P); if (k >= 6.2) A.judge('427-strip', 'assess', 1, 'You looked at Mr. Brooks\'s rhythm strip in the context of his potassium.', 'Peaked T waves are the earliest ECG sign of hyperkalemia. The monitor is an assessment tool, not wallpaper.', '427'); return k >= 6.2 ? 'Tall, narrow, tented T waves in every beat. Rate 76, sinus.' : 'Normal sinus rhythm, normal T waves.'; } },
-      { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const g = darnellBG(s, P); P.bgAt = s.t; P.lastBG = g; P.bgs.push({ t: s.t, val: g, by: 'You' }); if (P.insAt !== null && s.t - P.insAt >= 30 && s.t - P.insAt <= 130) A.judge('427-bg', 'judgment', 1, 'You checked Mr. Brooks\'s glucose after IV insulin.', 'IV insulin shifts potassium into cells and glucose with it. In kidney failure insulin lasts longer, so hypoglycemia can come 1 to 3 hours later.', '427'); return `Glucose ${g} mg/dL.${g < 70 ? ' Low.' : ''}`; } },
+      { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const g = darnellBG(s, P); P.bgAt = s.t; P.lastBG = g; P.bgs.push({ t: s.t, val: g, by: 'You' }); if (P.insAt !== null && s.t - P.insAt >= 30 && s.t - P.insAt <= 130) A.judge('427-bg', 'judgment', 1, 'You checked Mr. Brooks\'s glucose after IV insulin.', 'IV insulin shifts potassium into cells and glucose with it. In kidney failure insulin lasts longer, so hypoglycemia can come 1 to 3 hours later. Patients with kidney failure or a starting glucose under about 125 are at highest risk, which is why many protocols lower the insulin dose or add a dextrose infusion for them.', '427'); return `Glucose ${g} mg/dL.${g < 70 ? ' Low.' : ''}`; } },
       { id: 'tray', label: 'Swap the dinner tray for a renal-diet tray', cost: 3, avail: (s, P) => P.trayIn && !P.traySwapped && !P.ate, run(s, P, A) { P.traySwapped = true; A.judge('427-tray', 'safety', 1, 'You caught a high-potassium dinner tray for a hyperkalemic patient.', 'Bananas, orange juice and potatoes are loaded with potassium. Diet orders get mixed up; the nurse at the bedside is the last check.', '427'); return 'Dietary sends up a renal tray: chicken, rice, green beans, apple juice. "Man. I was looking forward to that banana."'; } },
       { id: 'juice', label: 'Give 4 oz apple juice (15 g fast carbs)', cost: 2, avail: (s, P) => darnellBG(s, P) < 70 && (P.juiceAt === null || s.t - P.juiceAt > 20), urgent: true, run(s, P, A) { P.juiceAt = s.t; A.judge('427-juice', 'safety', 2, 'You treated Mr. Brooks\'s low glucose with apple juice.', 'Apple juice is a low-potassium fast carb. Orange juice would have fixed the glucose and fed the hyperkalemia.', '427'); return 'He drinks the apple juice. Recheck in 15 minutes.'; } },
     ],
@@ -2481,7 +2484,7 @@ window.Shift = window.Shift || {};
       },
       {
         id: '427-ins', name: 'Insulin regular + dextrose 50%', dose: '10 units + 25 g', route: 'IV', freq: 'Once', prn: true, available: (s, P) => P.hkOrders, block: (s, P) => P.insAt !== null ? 'Given at ' + clock(P.insAt) + '.' : null,
-        checks: (s, P) => [{ label: 'Glucose before', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 60) }, { label: 'After', value: 'Glucose every hour for 4 hours (kidney failure prolongs insulin)', ok: null }],
+        checks: (s, P) => [{ label: 'Glucose before', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 60) }, { label: 'After', value: 'Glucose every hour for 4 hours (kidney failure prolongs insulin)', ok: null }, { label: 'Hypoglycemia risk', value: 'High: CKD 4, glucose under 125. Many protocols use 5 units or add a dextrose infusion here.', ok: null }],
         give(s, P, A) { P.insAt = s.t; if (!recent(s, P.bgAt, 60)) A.judge('427-ins-bg', 'assess', -1, 'You gave IV insulin without a baseline glucose.', 'You need the starting number to judge the drop that follows.', '427'); return 'Regular insulin 10 units IV, then dextrose 50% 25 g IV. Potassium shifts into cells over 15 to 30 minutes. Glucose checks every hour.'; },
       },
       {
@@ -2592,7 +2595,7 @@ window.Shift = window.Shift || {};
           P.checklistAt = s.t;
           const hcg = s.t >= 130;
           if (hcg) P.hcgSeen = true;
-          const it = [['Consent signed', P.consentAt !== null], ['NPO since midnight, nothing since arrival', !P.tea], ['ID and allergy bands on', P.bands], ['Pre-op antibiotic safe for her allergy, due on call', P.abxChanged || P.abxGiven === 'safe'], ['hCG resulted', hcg], ['Admission assessment done', P.admitted !== null]];
+          const it = [['Consent signed', P.consentAt !== null], ['NPO: nothing by mouth since arrival', !P.tea], ['ID and allergy bands on', P.bands], ['Pre-op antibiotic safe for her allergy, due on call', P.abxChanged || P.abxGiven === 'safe'], ['hCG resulted', hcg], ['Admission assessment done', P.admitted !== null]];
           return it.map(([l, ok]) => (ok ? '✓ ' : '✗ ') + l).join('. ') + '.' + (hcg ? ' hCG: negative.' : '');
         },
       },
@@ -2751,7 +2754,7 @@ window.Shift = window.Shift || {};
     { id: 'linh', when: (s) => s.t >= 110, run(s, A) { A.msg({ from: 'linh', pid: '423', text: 'Kevin\'s mother, Linh, on line 2: "Is my son drinking again? What is wrong with him? Nobody tells me anything."', replies: [{ label: '"I can\'t share details without his permission. I\'ll tell him you called and ask if he wants to talk."', act: 'linh-good' }, { label: '"He\'s here for pancreatitis from drinking."', act: 'linh-bad' }, { label: '"He\'s fine, don\'t worry."', act: 'linh-fine' }] }); } },
     { id: 'trays', when: (s) => s.t >= 120, run(s, A) { s.p['423'].trayIn = true; s.p['427'].trayIn = true; A.log(null, 'Dinner trays are out.', 'ambient'); } },
     { id: 'hcg', when: (s) => s.t >= 130, run(s, A) { A.addLab('429', { name: 'Serum hCG', val: 'Negative (< 5)', unit: 'mIU/mL', ref: '', flag: '' }); } },
-    { id: 'kev-eat', when: (s) => s.t >= 165 && s.p['423'].trayIn && !s.p['423'].trayGone, run(s, A) { const P = s.p['423']; P.ate = true; A.judge('423-ate', 'safety', -1, 'Mr. Tran ate a dinner tray while NPO for pancreatitis.', 'Food stimulates pancreatic enzymes. The tray should have been caught at delivery.', '423'); A.msg({ from: 'luis', pid: '423', text: '423 ate half his dinner. Wasn\'t he NPO? He says his stomach is worse.' }); } },
+    { id: 'kev-eat', when: (s) => s.t >= 165 && s.p['423'].trayIn && !s.p['423'].trayGone, run(s, A) { const P = s.p['423']; P.ate = true; A.judge('423-ate', 'safety', -1, 'Mr. Tran ate a dinner tray while his order said NPO.', 'Early feeding is often fine in mild pancreatitis, but he still had pain and nausea and the order said NPO. A tray that doesn\'t match the diet order should be caught at delivery, and a hungry patient is a reason to ask the provider, not to let it slide.', '423'); A.msg({ from: 'luis', pid: '423', text: '423 ate half his dinner. Wasn\'t he NPO? He says his stomach is worse.' }); } },
     { id: 'dar-eat', when: (s) => s.t >= 165 && s.p['427'].trayIn && !s.p['427'].traySwapped, run(s, A) { const P = s.p['427']; P.ate = true; A.judge('427-ate', 'safety', -1, 'Mr. Brooks ate a banana and orange juice with a potassium over 6.', 'The dinner tray violated his renal diet. Diet errors happen; the bedside check catches them.', '427'); } },
     { id: 'tea', when: (s) => s.t >= 160 && !s.p['429'].momTaught && !s.p['429'].gone, run(s, A) { const P = s.p['429']; P.tea = s.t; A.msg({ from: 'luis', pid: '429', text: 'FYI, 429\'s mom gave her some tea from a thermos. Is she allowed?' }); } },
     { id: 'morales-1', when: (s) => s.t >= 150, run(s, A) { A.msg({ from: 'morales', pid: '429', text: 'Dr. Morales, surgery: heading to 429 in 15 minutes to consent Ms. Hassan.' }); } },
@@ -3253,7 +3256,7 @@ window.Shift = window.Shift || {};
     orders: [
       { t: -420, text: 'DKA protocol: regular insulin infusion 0.1 units/kg/h (6 units/h). Point-of-care glucose every hour.' },
       { t: -420, text: 'When glucose < 250 mg/dL: change fluids to D5 ½NS at 150 mL/h and reduce insulin to 0.05 units/kg/h (3 units/h).' },
-      { t: -420, text: 'Potassium protocol: K 3.3–5.2, give KCl 20 mEq IV per liter of fluid. K < 3.3: HOLD insulin, give KCl 40 mEq IV, recheck in 2 h. BMP every 2 h.' },
+      { t: -420, text: 'Potassium protocol: K 3.5–5.0, give KCl 20 mEq IV per liter of fluid. K < 3.5: HOLD insulin, give KCl 40 mEq IV, recheck in 2 h. BMP every 2 h.' },
       { t: -420, text: 'When anion gap ≤ 12: give insulin glargine subQ, continue the infusion for 2 h after, then stop. NPO until gap closes.' },
     ],
     notes: [
@@ -3294,15 +3297,15 @@ window.Shift = window.Shift || {};
         },
       },
       {
-        id: 'pause', label: 'Pause the insulin infusion (protocol: K < 3.3)', cost: 1, avail: (s, P) => P.dripOn && !P.paused,
+        id: 'pause', label: 'Pause the insulin infusion (protocol: K < 3.5)', cost: 1, avail: (s, P) => P.dripOn && !P.paused,
         run(s, P, A) {
           P.paused = true;
-          if (!P.kLow) A.judge('435-pause-bad', 'judgment', -2, 'You paused Ms. Sorensen\'s insulin without a low potassium.', 'Every minute off the drip is a minute the acidosis isn\'t being treated. The protocol only holds insulin for K under 3.3.', '435');
-          else A.judge('435-pause', 'safety', 2, 'You held the insulin infusion for a potassium under 3.3.', 'Insulin drives potassium into cells. Running it with a K of 3.1 invites a dangerous arrhythmia. Replace first, then restart.', '435');
+          if (!P.kLow) A.judge('435-pause-bad', 'judgment', -2, 'You paused Ms. Sorensen\'s insulin without a low potassium.', 'Every minute off the drip is a minute the acidosis isn\'t being treated. The protocol only holds insulin for K under 3.5.', '435');
+          else A.judge('435-pause', 'safety', 2, 'You held the insulin infusion for a potassium under 3.5.', 'Insulin drives potassium into cells. Running it with a K of 3.1 invites a dangerous arrhythmia. Replace first, then restart. (The 2024 ADA consensus on hyperglycemic crises raised the hold threshold from 3.3 to 3.5.)', '435');
           return 'Insulin infusion paused.';
         },
       },
-      { id: 'resume', label: 'Resume the insulin infusion', cost: 1, avail: (s, P) => P.dripOn && P.paused, run(s, P, A) { if (P.K < 3.3) A.judge('435-resume-early', 'safety', -1, 'You restarted insulin before her potassium was replaced.', 'Give the KCl and let it run before you restart the drip.', '435'); P.paused = false; return 'Insulin infusion running again.'; } },
+      { id: 'resume', label: 'Resume the insulin infusion', cost: 1, avail: (s, P) => P.dripOn && P.paused, run(s, P, A) { if (P.K < 3.5) A.judge('435-resume-early', 'safety', -1, 'You restarted insulin before her potassium was replaced.', 'Give the KCl and let it run before you restart the drip.', '435'); P.paused = false; return 'Insulin infusion running again.'; } },
       {
         id: 'stop', label: 'Stop the insulin infusion', cost: 1, avail: (s, P) => P.dripOn,
         run(s, P, A) {
@@ -3318,13 +3321,13 @@ window.Shift = window.Shift || {};
     meds: [
       { id: '435-drip', name: 'Insulin regular infusion', dose: '0.1 units/kg/h', route: 'IV', freq: 'Continuous, per DKA protocol', initStatus: 'given', givenNote: 'Running since 16:30' },
       {
-        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'IV', freq: 'Per liter, protocol for K 3.3–5.2', due: 0,
+        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'IV', freq: 'Per liter, protocol for K 3.5–5.0', due: 0,
         checks: (s, P) => [{ label: 'Potassium', value: '3.6 at 22:00', ok: true }, { label: 'Urine output', value: 'Adequate, 1,650 mL since admission', ok: true }, { label: 'Rate', value: 'No faster than 10 mEq/h peripherally', ok: null }],
         give(s, P, A) { P.kclAt = s.t; if (s.t > 60) A.judge('435-kcl-late', 'time', -1, 'Ms. Sorensen\'s protocol potassium went in late.', 'Insulin keeps pulling potassium down. Replacement has to keep pace.', '435'); return 'KCl 20 mEq added to the running liter, infusing over 2 h.'; },
         hold(s, P, A) { A.judge('435-kcl-hold', 'meds', -2, 'You held the protocol potassium on an insulin drip.', 'Her K was 3.6 and falling with every hour of insulin.', '435'); return 'Held.'; },
       },
       {
-        id: '435-kcl2', name: 'Potassium chloride (low-K protocol)', dose: '40 mEq', route: 'IV', freq: 'Once, K < 3.3', prn: true, available: (s, P) => P.kLow, block: (s, P) => (P.kclLowAt !== null ? 'Given at ' + clock(P.kclLowAt) + '.' : null),
+        id: '435-kcl2', name: 'Potassium chloride (low-K protocol)', dose: '40 mEq', route: 'IV', freq: 'Once, K < 3.5', prn: true, available: (s, P) => P.kLow, block: (s, P) => (P.kclLowAt !== null ? 'Given at ' + clock(P.kclLowAt) + '.' : null),
         checks: () => [{ label: 'Potassium', value: '3.1 (low)', ok: true }, { label: 'Insulin', value: 'Hold while replacing', ok: null }],
         give(s, P, A) { P.kclLowAt = s.t; P.kclAt = s.t; A.judge('435-kcl2', 'meds', 1, 'You replaced Ms. Sorensen\'s low potassium.', 'Replace, recheck, then restart the insulin.', '435'); return 'KCl 40 mEq IV infusing over 4 h via pump.'; },
       },
@@ -3341,7 +3344,7 @@ window.Shift = window.Shift || {};
         const kLab = P.labs.filter((l) => l.name === 'Potassium').pop();
         return [
           { id: 'bg', label: P.bgAt !== null && P.bgAt >= 0 ? `Glucose ${P.lastBG} at ${clock(P.bgAt)}` : 'Glucose', key: true, need: P.bgAt >= 0, lock: 'Check her glucose' },
-          { id: 'k', label: `Potassium ${kLab.val}${P.kLow ? ' (below 3.3)' : ''}`, key: P.kLow, need: true },
+          { id: 'k', label: `Potassium ${kLab.val}${P.kLow ? ' (below 3.5)' : ''}`, key: P.kLow, need: true },
           { id: 'gap', label: P.gapClosed ? 'Anion gap 11, bicarb 18: closed' : 'Anion gap 18 at 22:00', key: P.gapClosed, need: true },
           { id: 'dex', label: P.dex ? `On D5 ½NS since ${clock(P.dexAt)}` : 'Still on normal saline', key: false, need: true },
           { id: 'hungry', label: 'Hungry, asking to eat', key: false, need: true },
@@ -3436,7 +3439,7 @@ window.Shift = window.Shift || {};
           P.alert = s.t;
           A.judge('437-alert', 'judgment', s.t - P.found <= 10 ? 2 : 1, 'You called a stroke alert for Mr. Delgado.', 'Time is brain: about 1.9 million neurons a minute. The alert starts the CT, the labs and the clock at once.', '437');
           A.addOrder('437', 'Stroke alert. CT head without contrast STAT. Labetalol 10 mg IV for SBP > 185 or DBP > 110. NPO. Neuro checks every 15 min.');
-          return `The stroke team is here in four minutes. "When was he last known well?" You tell them ${clock(P.lastNormal)}. "His pressure has to be under 185/110 before we can even think about alteplase."`;
+          return `The stroke team is here in four minutes. "When was he last known well?" You tell them ${clock(P.lastNormal)}. "His pressure has to be under 185/110 before we can even think about thrombolytics."`;
         },
       },
     ],
@@ -3458,12 +3461,12 @@ window.Shift = window.Shift || {};
       {
         id: '437-labe', name: 'Labetalol', dose: '10 mg', route: 'IV', freq: 'For SBP > 185 or DBP > 110', prn: true, available: (s, P) => P.alert !== null, block: (s, P) => (P.labeAt !== null ? 'Given at ' + clock(P.labeAt) + '.' : null),
         checks: (s, P, A) => { const v = A.vitals('437'); return [{ label: 'BP now', value: `${v.SBP}/${v.DBP}`, ok: v.SBP > 185 }, { label: 'HR', value: `${v.HR}`, ok: v.HR >= 60 }]; },
-        give(s, P, A) { P.labeAt = s.t; A.judge('437-labe', 'meds', 1, 'You brought Mr. Delgado\'s BP under the alteplase threshold.', 'Alteplase needs BP under 185/110 before it starts and under 180/105 after. The nurse gets it there.', '437'); return 'Labetalol 10 mg IV over 2 minutes. BP 176/98 on recheck.'; },
+        give(s, P, A) { P.labeAt = s.t; A.judge('437-labe', 'meds', 1, 'You brought Mr. Delgado\'s BP under the thrombolytic threshold.', 'Thrombolytics (tenecteplase or alteplase) need BP under 185/110 before they start and under 180/105 for 24 hours after. The nurse gets it there.', '437'); return 'Labetalol 10 mg IV over 2 minutes. BP 176/98 on recheck.'; },
       },
       {
-        id: '437-tpa', name: 'Alteplase', dose: '0.9 mg/kg (76 mg)', route: 'IV', freq: '10% bolus, rest over 60 min', prn: true, available: (s, P) => P.eligible === true, block: (s, P) => (P.tpa !== null ? 'Started at ' + clock(P.tpa) + '.' : null),
+        id: '437-tpa', name: 'Tenecteplase', dose: '0.25 mg/kg (21 mg)', route: 'IV', freq: 'Single bolus over 5 seconds', prn: true, available: (s, P) => P.eligible === true, block: (s, P) => (P.tpa !== null ? 'Started at ' + clock(P.tpa) + '.' : null),
         checks: () => [{ label: 'CT', value: 'No hemorrhage', ok: true }, { label: 'BP', value: 'Under 185/110 after labetalol', ok: true }, { label: 'Window', value: 'Within 4.5 h of last known well', ok: true }],
-        give(s, P, A) { P.tpa = s.t; A.judge('437-tpa', 'judgment', 2, 'Alteplase went in for Mr. Delgado inside the window.', 'Every step you did fast (finding him, the alert, glucose, BP) came off the clock. Neuro checks every 15 minutes now.', '437'); return 'Alteplase bolus given, infusion running. Neuro checks every 15 minutes, BP every 15.'; },
+        give(s, P, A) { P.tpa = s.t; A.judge('437-tpa', 'judgment', 2, 'Tenecteplase went in for Mr. Delgado inside the window.', 'Every step you did fast (finding him, the alert, glucose, BP) came off the clock. Tenecteplase is now preferred at many stroke centers over alteplase: same window, one bolus instead of an hour-long infusion. Neuro checks every 15 minutes now.', '437'); return 'Tenecteplase 21 mg IV bolus given, two-nurse verified. Neuro checks and BP every 15 minutes.'; },
       },
       { id: '437-cef', name: 'Ceftriaxone', dose: '1 g', route: 'IV', freq: 'Daily at 10:00', later: '10:00' },
     ],
@@ -3492,17 +3495,17 @@ window.Shift = window.Shift || {};
     scene: (s, P) => ({ iv: P.tpa !== null ? 'running' : 'lock', o2: 2, tray: 'none', flowers: true, night: true }),
     clues: (s, P) => ({
       flowers: 'A paper cup with a tomato seedling in it. A card: "Get home soon, Papi. The garden misses you. Lupe."',
-      iv: P.tpa !== null ? 'Alteplase infusing.' : 'Saline lock, left hand.',
+      iv: P.tpa !== null ? 'Tenecteplase given. Saline flush running behind it.' : 'Saline lock, left hand.',
       o2: 'Nasal cannula at 2 L.',
     }),
     rig: (s, P) => (stroke(P) ? { facial: P.tpa !== null && s.t - P.tpa > 40 ? .5 : 1, confused: true } : {}),
     status: (s, P) => (stroke(P) && P.found !== null && P.alert === null ? 'urgent' : stroke(P) ? 'watch' : 'stable'),
     outcome(s, P) {
       if (!stroke(P)) return { tone: 'good', title: 'Stable', text: 'Resting.' };
-      if (P.tpa !== null) return { tone: P.poGiven ? 'mixed' : 'good', title: 'Stroke, treated in the window', text: `Alteplase at ${clock(P.tpa)}, last known well ${clock(P.lastNormal)}. His arm was lifting again by 04:00.` + (P.poGiven ? ' He did choke on an oral med first.' : '') };
-      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'He wasn\'t checked between 21:00 and Nova\'s walk-by. Out of the alteplase window; he\'s going to IR for a possible thrombectomy.' };
-      if (P.eligible === false) return { tone: 'mixed', title: 'Stroke, outside the alteplase window', text: `Last known well was ${clock(P.lastNormal)}. A midnight neuro check would have moved that time forward and kept the window open.` };
-      return { tone: 'mixed', title: 'Stroke, workup incomplete', text: 'Symptoms found, but the alteplase decision never got made.' };
+      if (P.tpa !== null) return { tone: P.poGiven ? 'mixed' : 'good', title: 'Stroke, treated in the window', text: `Tenecteplase at ${clock(P.tpa)}, last known well ${clock(P.lastNormal)}. His arm was lifting again by 04:00.` + (P.poGiven ? ' He did choke on an oral med first.' : '') };
+      if (P.missed) return { tone: 'bad', title: 'Stroke found an hour late', text: 'He wasn\'t checked between 21:00 and Nova\'s walk-by. Out of the thrombolytic window; he\'s going to IR for a possible thrombectomy.' };
+      if (P.eligible === false) return { tone: 'mixed', title: 'Stroke, outside the thrombolytic window', text: `Last known well was ${clock(P.lastNormal)}. A midnight neuro check would have moved that time forward and kept the window open.` };
+      return { tone: 'mixed', title: 'Stroke, workup incomplete', text: 'Symptoms found, but the thrombolytic decision never got made.' };
     },
   };
 
@@ -3683,7 +3686,7 @@ window.Shift = window.Shift || {};
     { id: 'stroke', when: (s) => s.t >= 95, run(s, A) { s.p['437'].onset = s.t; } },
     { id: 'dee-437', when: (s) => s.t >= 116 && stroke(s.p['437']) && s.p['437'].found === null, run(s, A) { A.msg({ from: 'dee', pid: '437', text: 'Before they pull me: 437\'s words were mushy when I did his vitals just now, and his right hand kept dropping the cup. He says he\'s fine.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
     { id: 'dee-float', when: (s) => s.t >= 120, run(s, A) { A.msg({ from: 'dee', urgent: true, text: 'They just floated me to the ED. I\'m so sorry. You\'ve got the whole hall. Nova says she\'ll help when she can.' }); } },
-    { id: 'k-recheck', when: (s) => s.t >= 120, run(s, A) { const P = s.p['435'], k = +P.K.toFixed(1); A.addLab('435', { name: 'Potassium', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k < 3.5 ? 'L' : '' }); if (k < 3.3) { P.kLow = true; A.msg({ from: 'lab', pid: '435', urgent: true, text: `435 Sorensen potassium ${k.toFixed(1)}. DKA protocol: hold insulin for K under 3.3.`, replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } else A.msg({ from: 'lab', pid: '435', text: `435 Sorensen BMP: potassium ${k.toFixed(1)}, anion gap 14. Closing.` }); } },
+    { id: 'k-recheck', when: (s) => s.t >= 120, run(s, A) { const P = s.p['435'], k = +P.K.toFixed(1); A.addLab('435', { name: 'Potassium', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k < 3.5 ? 'L' : '' }); if (k < 3.5) { P.kLow = true; A.msg({ from: 'lab', pid: '435', urgent: true, text: `435 Sorensen potassium ${k.toFixed(1)}. DKA protocol: hold insulin for K under 3.5.`, replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } else A.msg({ from: 'lab', pid: '435', text: `435 Sorensen BMP: potassium ${k.toFixed(1)}, anion gap 14. Closing.` }); } },
     { id: 'duplex', when: (s) => s.p['433'].duplexAt !== null && s.t >= s.p['433'].duplexAt + 35, run(s, A) { const P = s.p['433']; P.dvt = true; P.hepOrdered = true; A.addLab('433', { name: 'Venous duplex, right leg', val: 'Occlusive DVT, right popliteal and femoral veins', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'us', pid: '433', text: 'Ultrasound: 433 Brandt has an occlusive DVT in the right popliteal and femoral veins. Heparin order is in.', replies: [{ label: 'Go to 433', act: 'goto', pid: '433' }] }); } },
     { id: 'pe', when: (s) => { const P = s.p['433']; return P.pe === null && !P.icu && ((s.t >= 150 && !(P.hepAt !== null && P.hepAt < 150)) || (P.early && s.t >= P.early)); }, run(s, A) { const P = s.p['433']; P.pe = s.t; P.callLight = true; A.msg({ from: 'nova', pid: '433', urgent: true, text: '433\'s call light. He says he can\'t breathe and his chest hurts. He looks gray.', replies: [{ label: 'Go to 433', act: 'goto', pid: '433' }] }); } },
     { id: 'pe-icu', when: (s) => { const P = s.p['433']; return P.pe !== null && !P.icu && peSev(s, P) >= 1.35; }, run(s, A) { const P = s.p['433']; P.icu = true; A.judge('433-icu', 'safety', -3, 'Mr. Brandt\'s PE progressed to shock before anyone escalated.', 'Sudden dyspnea, tachycardia and hypoxia in a high-risk patient needs oxygen and a rapid response in minutes, not after the next round.', '433'); A.msg({ from: 'nova', pid: '433', urgent: true, text: 'Rapid response in 433. BP 78 systolic, sat 81%. They\'re taking him to the ICU.' }); } },
@@ -3694,8 +3697,8 @@ window.Shift = window.Shift || {};
     { id: 'rebound', when: (s) => { const P = s.p['435']; return P.dripOffAt !== null && !P.rebound && (P.glarAt === null || P.dripOffAt - P.glarAt < 120) && s.t >= P.dripOffAt + 45; }, run(s, A) { const P = s.p['435']; P.rebound = true; A.addLab('435', { name: 'Anion gap', val: 19, unit: 'mmol/L', ref: '8–12', flag: 'H' }); A.msg({ from: 'lab', pid: '435', urgent: true, text: '435 Sorensen BMP: glucose 318, anion gap 19. The gap has reopened.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'bg-late', when: (s) => { const P = s.p['435']; const last = P.bgs.length ? P.bgs[P.bgs.length - 1].t : -60; return P.dripOn && s.t - last > 85; }, run(s, A) { A.judge('435-bg-late', 'time', -1, 'Ms. Sorensen\'s hourly glucose checks slipped.', 'On an insulin infusion, the hourly glucose is the steering wheel. Miss one and you\'re driving blind.', '435'); A.msg({ from: 'nova', pid: '435', text: '435\'s glucose is overdue. She\'s on a drip.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'ct', when: (s) => { const P = s.p['437']; return P.alert !== null && P.ct === null && s.t >= P.alert + 20; }, run(s, A) { const P = s.p['437']; P.ct = s.t; A.addLab('437', { name: 'CT head without contrast', val: 'No hemorrhage. No early ischemic changes.', unit: '', ref: '', flag: '' }); A.msg({ from: 'stroke', pid: '437', text: 'CT head on 437: no bleed.' }); } },
-    { id: 'tpa-wait', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && (P.labeAt === null || P.bgAt === null) && s.t >= P.ct + 4; }, run(s, A) { A.msg({ from: 'stroke', pid: '437', urgent: true, text: 'We can\'t decide on alteplase for 437 yet. We need a glucose and a BP under 185/110.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
-    { id: 'tpa', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && P.labeAt !== null && P.bgAt !== null; }, run(s, A) { const P = s.p['437'], win = P.lastNormal + 270; P.eligible = s.t <= win; A.msg({ from: 'stroke', pid: '437', urgent: P.eligible, text: P.eligible ? `No bleed, BP under 185/110, glucose 132, last known well ${clock(P.lastNormal)}. He\'s inside the window. Start alteplase now.` : `Last known well was ${clock(P.lastNormal)}, more than 4.5 hours ago. He\'s outside the alteplase window. We\'re calling IR about thrombectomy.`, replies: P.eligible ? [{ label: 'Go to 437', act: 'goto', pid: '437' }] : null }); } },
+    { id: 'tpa-wait', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && (P.labeAt === null || P.bgAt === null) && s.t >= P.ct + 4; }, run(s, A) { A.msg({ from: 'stroke', pid: '437', urgent: true, text: 'We can\'t decide on thrombolytics for 437 yet. We need a glucose and a BP under 185/110.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
+    { id: 'tpa', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && P.labeAt !== null && P.bgAt !== null; }, run(s, A) { const P = s.p['437'], win = P.lastNormal + 270; P.eligible = s.t <= win; A.msg({ from: 'stroke', pid: '437', urgent: P.eligible, text: P.eligible ? `No bleed, BP under 185/110, glucose 132, last known well ${clock(P.lastNormal)}. He\'s inside the window. Give tenecteplase now.` : `Last known well was ${clock(P.lastNormal)}, more than 4.5 hours ago. He\'s outside the thrombolytic window. We\'re calling IR about thrombectomy.`, replies: P.eligible ? [{ label: 'Go to 437', act: 'goto', pid: '437' }] : null }); } },
     { id: 'nova-437', when: (s) => { const P = s.p['437']; return stroke(P) && P.found === null && s.t >= 175; }, run(s, A) { const P = s.p['437']; P.found = s.t; P.missed = true; A.judge('437-missed', 'assess', -3, 'Mr. Delgado\'s stroke went unnoticed for over an hour.', 'At night, patients don\'t call you when they have a stroke. Hourly rounding and scheduled neuro checks are how it gets found in time.', '437'); A.msg({ from: 'nova', pid: '437', urgent: true, text: 'I just walked past 437. His face is drooping and he can\'t lift his right arm. When did anyone last see him?', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
     { id: 'dot-fall', when: (s) => { const P = s.p['431']; return s.t >= 200 && !P.fell && dotAg(s, P) > 1.1 && !P.fallPrec && !P.sitter; }, run(s, A) { const P = s.p['431']; P.fell = true; A.judge('431-fell', 'safety', -3, 'Mrs. Pruitt fell trying to get to the bathroom.', 'Delirium, a fresh hip repair, no fall precautions, and a bladder no one checked. Every one of those was fixable.', '431'); A.msg({ from: 'nova', pid: '431', urgent: true, text: '431 is on the floor next to her bed. She was trying to get to the bathroom. She\'s crying about her hip.', replies: [{ label: 'Go to 431', act: 'goto', pid: '431' }] }); } },
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to report. Go look at everyone one more time. At 4 a.m., the quiet ones are the ones to worry about.' }); } },
@@ -3740,7 +3743,7 @@ window.Shift = window.Shift || {};
     if (stroke(F) && F.found === null) return 'Someone\'s face may have changed since the last time anyone looked. Who haven\'t you laid eyes on since midnight?';
     if (stroke(F) && F.alert === null) return 'Face, arm, speech. Who do you call, and what\'s the one time they\'ll ask you for?';
     if (F.alert !== null && F.eligible === null && (F.labeAt === null || F.bgAt === null)) return 'The stroke team is waiting on two things from you before they can decide. What are they?';
-    if (K.kLow && !K.paused) return 'Insulin drives potassium into cells. What does the protocol say to do with a K under 3.3?';
+    if (K.kLow && !K.paused) return 'Insulin drives potassium into cells. What does the protocol say to do with a K under 3.5?';
     if (K.dripOn && K.bg < 250 && !K.dex) return 'Her sugar is dropping faster than her acid is clearing. What does the protocol add at 250?';
     if (K.glarAt !== null && K.dripOn && s.t - K.glarAt < 120) return 'She wants the drip off. How long does glargine take to start working?';
     if (D.cathAt === null && dotAg(s, D) > .5) return 'An 84-year-old who keeps saying she needs the bathroom. When did she last actually go?';
@@ -6474,7 +6477,7 @@ window.Shift = window.Shift || {};
     nightVitals: { T: 36.8, HR: 136, SBP: 100, DBP: 64, RR: 22, SpO2: 94, O2: '2 L nasal cannula', pain: 0 },
     labs: [
       { name: 'BNP', val: 1840, unit: 'pg/mL', ref: 'under 100', flag: 'H', t: -420 },
-      { name: 'Troponin I', val: 0.04, unit: 'ng/mL', ref: 'under 0.04', flag: '', t: -420 },
+      { name: 'hs-Troponin I', val: 12, unit: 'ng/L', ref: 'under 16 (women)', flag: '', t: -420 },
       { name: 'Potassium', val: 4.1, unit: 'mmol/L', ref: '3.5–5.0', flag: '', t: -60 },
       { name: 'TSH', val: 2.1, unit: 'mIU/L', ref: '0.4–4.0', flag: '', t: -420 },
       { name: 'Echocardiogram', val: 'Done 06:10, reading pending', unit: '', ref: '', flag: '', t: -50 },
@@ -6607,7 +6610,7 @@ window.Shift = window.Shift || {};
     labs: [
       { name: 'Hemoglobin', val: 13.8, unit: 'g/dL', ref: '13.5–17.5', flag: '', t: -120 },
       { name: 'Platelets', val: 246, unit: 'K/µL', ref: '150–400', flag: '', t: -120 },
-      { name: 'Troponin I (peak)', val: 18.6, unit: 'ng/mL', ref: 'under 0.04', flag: 'H', t: -60 },
+      { name: 'hs-Troponin I (peak)', val: '18,600', unit: 'ng/L', ref: 'under 34 (men)', flag: 'H', t: -60 },
       { name: 'Creatinine', val: 1.0, unit: 'mg/dL', ref: '0.7–1.3', flag: '', t: -120 },
     ],
     orders: [
