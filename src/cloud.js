@@ -5,7 +5,7 @@
    the game saves only on the device, as before. */
 (function (S) {
   const CFG = S.config || {}, E = S.engine, TEL = S.tel || { track() {} };
-  const SK = 'theshift.auth.v1', SYNCK = 'theshift.sync.v1';
+  const SK = 'theshift.auth.v1', SYNCK = 'theshift.sync.v1', OUTK = 'theshift.outbox.v1', OWNK = 'theshift.owns.v1';
   const base = () => String(CFG.supabaseUrl || '').replace(/\/$/, '');
   const on = () => !!(CFG.supabaseUrl && CFG.supabaseKey) && /^https?:$/.test(location.protocol);
   const get = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
@@ -55,7 +55,7 @@
     TEL.track('account_signed_in', {});
     return true;
   }
-  function signOut(quiet) { sess = null; put(SK, null); meta = {}; put(SYNCK, null); if (!quiet) TEL.track('account_signed_out', {}); changed(); }
+  function signOut(quiet) { sess = null; put(SK, null); meta = {}; put(SYNCK, null); put(OWNK, null); if (!quiet) TEL.track('account_signed_out', {}); changed(); }
 
   /* Merging two devices' progress: nothing earned on either is lost. Settings stay with this device. */
   const RANK = { wrong: 0, ok: 1, best: 2 };
@@ -92,6 +92,8 @@
         E.store.saveProfile(merged);
         await call('/rest/v1/saves?on_conflict=user_id', { method: 'POST', auth: true, keepalive: why === 'leaving', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: { user_id: uid, profile: merged, game: game && !game.ended ? game : null, updated_at: new Date().toISOString() } });
         dirty = false; meta = { at: Date.now() }; put(SYNCK, meta);
+        await flush().catch(() => {});
+        await checkOwns().catch(() => {});
         if (why === 'signin') TEL.track('account_synced', { had_cloud: !!(remote && !empty(remote.profile)), had_local: !empty(local) });
         return true;
       } catch (e) {
@@ -101,6 +103,87 @@
     })();
     return busy;
   }
+
+  /* Results for instructors: each finished shift and each practice question goes to an outbox on the device,
+     then up to results / ngn_results when signed in. Nothing is lost while offline or signed out; the outbox is
+     capped so a device that never signs in doesn't grow forever. */
+  const outbox = () => { const o = get(OUTK) || {}; return { results: o.results || [], ngn: o.ngn || [] }; };
+  function enqueue(kind, row) {
+    if (!on()) return;
+    const o = outbox(); o[kind].push(row); o[kind] = o[kind].slice(-60); put(OUTK, o);
+    if (sess) flush().catch(() => {});
+  }
+  let flushing = null;
+  async function flush() {
+    if (!on() || !sess || !sess.user) return false;
+    if (flushing) return flushing;
+    flushing = (async () => {
+      try {
+        if (!(await fresh())) return false;
+        const uid = sess.user.id, o = outbox();
+        for (const [kind, table] of [['results', 'results'], ['ngn', 'ngn_results']]) {
+          if (!o[kind].length) continue;
+          const rows = o[kind].map((r) => Object.assign({}, r, { user_id: uid }));
+          await call('/rest/v1/' + table, { method: 'POST', auth: true, headers: { Prefer: 'return=minimal' }, body: rows });
+          const now = outbox(); now[kind] = now[kind].slice(o[kind].length); put(OUTK, now);
+        }
+        return true;
+      } finally { flushing = null; }
+    })();
+    return flushing;
+  }
+  function recordRun(r) {
+    enqueue('results', { case_id: r.case_id, score: Math.round(r.score || 0), stars: r.stars || 0, minutes: r.minutes == null ? null : Math.round(r.minutes),
+      domains: r.domains || [], steps: r.steps || [], misses: (r.misses || []).slice(0, 30), outcomes: r.outcomes || [], played_at: new Date().toISOString() });
+  }
+  function recordNgn(caseId, item, score, max) {
+    enqueue('ngn', { case_id: caseId, item_id: item.id, item_type: item.type, step: item.step || null, score, max, at: new Date().toISOString() });
+  }
+
+  /* Classes. A student joins with the instructor's code and the name the instructor will see. */
+  async function need() { if (!on() || !sess || !sess.user) throw new Error('Sign in first'); if (!(await fresh())) throw new Error('Sign in again'); return sess.user.id; }
+  async function myClasses() {
+    const uid = await need();
+    const rows = await call('/rest/v1/class_members?select=class_id,display_name,classes(name,code,pack)&user_id=eq.' + encodeURIComponent(uid), { auth: true });
+    return (rows || []).map((r) => ({ id: r.class_id, as: r.display_name, name: r.classes && r.classes.name, code: r.classes && r.classes.code, pack: !!(r.classes && r.classes.pack) }));
+  }
+  async function join(code, name) {
+    await need();
+    const k = await call('/rest/v1/rpc/join_class', { method: 'POST', auth: true, body: { p_code: String(code || '').trim().toUpperCase(), p_name: String(name || '').trim() } });
+    TEL.track('class_joined', {});
+    await flush().catch(() => {}); await checkOwns().catch(() => {}); changed();
+    return k;
+  }
+  async function leave(classId) {
+    const uid = await need();
+    await call('/rest/v1/class_members?class_id=eq.' + encodeURIComponent(classId) + '&user_id=eq.' + encodeURIComponent(uid), { method: 'DELETE', auth: true, headers: { Prefer: 'return=minimal' } });
+    await checkOwns().catch(() => {}); changed();
+  }
+  /* Instructor side (used by /teach/). */
+  async function createClass(name) { await need(); const k = await call('/rest/v1/rpc/create_class', { method: 'POST', auth: true, body: { p_name: String(name || '').trim() } }); TEL.track('class_created', {}); return k; }
+  async function teaching() { const uid = await need(); return (await call('/rest/v1/classes?select=id,name,code,pack,created_at&order=created_at.desc&teacher=eq.' + encodeURIComponent(uid), { auth: true })) || []; }
+  async function roster(classId) { await need(); return (await call('/rest/v1/class_members?select=user_id,display_name,joined_at&order=display_name.asc&class_id=eq.' + encodeURIComponent(classId), { auth: true })) || []; }
+  async function removeMember(classId, userId) { await need(); await call('/rest/v1/class_members?class_id=eq.' + encodeURIComponent(classId) + '&user_id=eq.' + encodeURIComponent(userId), { method: 'DELETE', auth: true, headers: { Prefer: 'return=minimal' } }); }
+  const inList = (ids) => 'in.(' + ids.map(encodeURIComponent).join(',') + ')';
+  async function classResults(ids) { await need(); if (!ids.length) return []; return (await call('/rest/v1/results?select=*&order=played_at.desc&limit=5000&user_id=' + inList(ids), { auth: true })) || []; }
+  async function classNgn(ids) { await need(); if (!ids.length) return []; return (await call('/rest/v1/ngn_results?select=*&order=at.desc&limit=5000&user_id=' + inList(ids), { auth: true })) || []; }
+
+  /* The shift pack: owned through a purchase (entitlements, written only by the payment webhook) or through a class
+     whose school bought it (classes.pack). Remembered on the device so it stays unlocked offline. */
+  async function checkOwns() {
+    if (!on() || !sess || !sess.user || !(await fresh())) return;
+    const uid = sess.user.id;
+    const ent = (await call('/rest/v1/entitlements?select=product,source&user_id=eq.' + encodeURIComponent(uid), { auth: true })) || [];
+    const cls = (await call('/rest/v1/class_members?select=classes(pack)&user_id=eq.' + encodeURIComponent(uid), { auth: true })) || [];
+    const owns = {};
+    ent.forEach((e) => { owns[e.product] = e.source || 'stripe'; });
+    if (!owns.pack && cls.some((c) => c.classes && c.classes.pack)) owns.pack = 'class';
+    const before = JSON.stringify(get(OWNK) || {});
+    put(OWNK, owns);
+    if (before !== JSON.stringify(owns)) changed();
+  }
+  const owns = (product) => { const o = sess ? get(OWNK) || {} : {}; return o[product] || null; };
+
   function later() { dirty = true; if (!timer && sess) timer = setTimeout(() => { timer = null; if (dirty) sync('auto'); }, 20000); }
 
   /* Every local save also schedules a cloud save. The shift's own timestamp settles which device's shift is newer. */
@@ -127,6 +210,9 @@
     user: () => (sess && sess.user) || null,
     linked: () => linked,   // this page load came from the emailed link
     status: () => (!on() ? null : !sess ? { state: 'out', err: meta.err || null } : { state: 'in', email: sess.user && sess.user.email, at: meta.at || null, err: meta.err || null, busy: !!busy }),
+    recordRun, recordNgn, flush, pending: () => { const o = outbox(); return o.results.length + o.ngn.length; },
+    myClasses, join, leave, createClass, teaching, roster, removeMember, classResults, classNgn,
+    owns, checkOwns,
     _merge: mergeProfile,
   };
 })(window.Shift);

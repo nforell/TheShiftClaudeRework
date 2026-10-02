@@ -15,6 +15,7 @@
     'medsurg-4w-3': { reviewers: [], hash: '', references: [] },
     'psych-3e-1': { reviewers: [], hash: '', references: [] },
     'psych-4n-1': { reviewers: [], hash: '', references: [] },
+    'stepdown-6e-1': { reviewers: [], hash: '', references: [] },
     'peds-5s-1': { reviewers: [], hash: '', references: [] },
   };
   const now = (id) => (S.reviewHashes || {})[id] || '';

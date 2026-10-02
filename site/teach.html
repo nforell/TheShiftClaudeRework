@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Instructor dashboard — The Shift</title>
+<meta name="theme-color" content="#22406A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2322406A'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23FAF8F3' stroke-width='5'/%3E%3Cpath d='M32 32V18M32 32l-6.5 11' stroke='%23FAF8F3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ECE9E1;--surface:#FAF8F3;--surface-2:#F1EEE6;--ink:#1C2330;--ink-2:#59606B;--line:#D3CEC2;--teal:#22406A;--teal-ink:#fff;--red:#B3342B;--red-bg:#F8E1DE;--good:#2B7249;--good-bg:#E0F0E6;--amber:#A96C0E;--amber-bg:#FBEFD6;
+  --serif:"Barlow Condensed","Arial Narrow",sans-serif;--sans:"Atkinson Hyperlegible Next",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"Atkinson Hyperlegible Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161C;--surface:#1A1F27;--surface-2:#212833;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--teal:#93B4E4;--teal-ink:#0F1B2C;--red:#F0766B;--red-bg:#3b1d1b;--good:#72c692;--good-bg:#16301f;--amber:#E9AE4E;--amber-bg:#35291a}}
+:root[data-theme="dark"]{--bg:#12161C;--surface:#1A1F27;--surface-2:#212833;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--teal:#93B4E4;--teal-ink:#0F1B2C;--red:#F0766B;--red-bg:#3b1d1b;--good:#72c692;--good-bg:#16301f;--amber:#E9AE4E;--amber-bg:#35291a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+main{max-width:62rem;margin:0 auto;padding:clamp(1.2rem,5vw,3rem) 16px calc(5rem + env(safe-area-inset-bottom))}
+a{color:var(--teal)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.home{font-family:var(--serif);font-weight:700;font-size:1.1rem;letter-spacing:.04em;text-transform:uppercase;background:var(--ink);color:var(--bg);padding:.28em .55em .22em;border-radius:2px;text-decoration:none}
+.who{font-size:.88rem;color:var(--ink-2)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.1;margin:1.6rem 0 .3rem}
+h2{font-family:var(--serif);font-weight:600;font-size:1.45rem;letter-spacing:.01em;margin:2.2rem 0 .5rem;line-height:1.15}
+h3{font-size:1rem;margin:0}
+p{margin:.5rem 0}
+.muted{color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1rem 1.1rem;margin:.8rem 0}
+label{display:block;font-weight:600;font-size:.9rem;margin:.7rem 0 .25rem}
+input[type=text],input[type=email],select{width:100%;min-height:44px;padding:.5em .7em;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink);font:inherit}
+.row{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap}.row>div{flex:1 1 14rem}
+button,.btn{font:inherit;font-weight:600;min-height:44px;padding:.45em 1em;border-radius:3px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+button.link{background:none;border:none;color:var(--teal);text-decoration:underline;padding:0;min-height:0}
+button.small{min-height:34px;padding:.2em .7em;font-size:.85rem}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.err{color:var(--red)}.ok{color:var(--good)}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.6rem 0 0}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.code{font-family:var(--mono);font-size:clamp(1.8rem,7vw,2.6rem);letter-spacing:.2em;font-weight:600;line-height:1}
+.codebox{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--teal);padding:1rem 1.1rem;border-radius:4px;margin:.8rem 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.6rem;margin:.8rem 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:.7rem .9rem}
+.stat b{display:block;font-family:var(--serif);font-size:2rem;line-height:1.05;font-weight:600}
+.stat span{font-size:.82rem;color:var(--ink-2)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:.4rem 0}
+th,td{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--ink-2);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.sc{display:inline-block;min-width:2.4em;text-align:center;padding:.05em .35em;border-radius:3px;font-weight:700;font-variant-numeric:tabular-nums}
+.sc.hi{background:var(--good-bg);color:var(--good)}.sc.mid{background:var(--amber-bg);color:var(--amber)}.sc.lo{background:var(--red-bg);color:var(--red)}.sc.none{color:var(--ink-2);font-weight:400}
+.bars{display:grid;gap:.45rem;margin:.6rem 0}
+.bars .b{display:grid;grid-template-columns:minmax(9rem,13rem) 1fr 3rem;gap:.7rem;align-items:center;font-size:.9rem}
+.bars .t{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.bars .t i{display:block;height:100%;background:var(--teal)}
+.bars .t i.lo{background:var(--red)}.bars .t i.mid{background:var(--amber)}
+.miss{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:4px;padding:.7rem .9rem;margin:.5rem 0}
+.miss .m{font-size:.78rem;color:var(--ink-2);font-weight:600;display:flex;gap:.3rem .7rem;flex-wrap:wrap}
+.miss p{margin:.25rem 0 0}
+.empty{border:1px dashed var(--line);border-radius:4px;padding:1rem;color:var(--ink-2);margin:.8rem 0}
+.foot{margin-top:3rem;font-size:.82rem;color:var(--ink-2)}
+@media (max-width:560px){.bars .b{grid-template-columns:1fr 2.6rem}.bars .b .l{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><a class="home" href="/">The Shift</a><span class="who" id="who"></span></div>
+  <h1>Instructor dashboard</h1>
+  <p class="muted">Make a class, give your students the code, and see how their shifts go: scores by skill and by NCLEX clinical judgment step, the decisions most of them missed, and how they did on the practice questions.</p>
+  <div id="app" aria-live="polite"><p class="muted">Loading…</p></div>
+  <p class="foot">Students' results show here only after they join your class. Students can leave a class at any time, and you can remove anyone from yours. <a href="/privacy/">Privacy</a></p>
+</main>
+<!--SCRIPTS-->
+<script>
+(function () {
+  const S = window.Shift, CL = S.cloud, E = S.engine, CJ = S.cjmm, NG = S.ngn;
+  const app = document.getElementById('app'), who = document.getElementById('who');
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const CASES = Object.keys(E.cases);
+  const title = (id) => (E.cases[id] && E.cases[id].title) || id;
+  const short = (id) => { const c = E.cases[id]; return c ? (c.unitShort || c.title) : id; };
+  const DOM = Object.fromEntries(E.DOMAINS.map(([id, l]) => [id, l]));
+  const STEP = Object.fromEntries(CJ.STEPS.map(([id, l]) => [id, l]));
+  const band = (n) => n == null ? 'none' : n >= 80 ? 'hi' : n >= 65 ? 'mid' : 'lo';
+  const sc = (n) => `<span class="sc ${band(n)}">${n == null ? '—' : n}</span>`;
+  const avg = (a) => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : null;
+  const when = (t) => { const d = new Date(t); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); };
+  const st = { email: '', sent: null, err: null, classes: null, cur: null, data: null, tab: 'overview', shift: 'all', student: null, busy: false };
+
+  function render() {
+    const s = CL && CL.status();
+    who.innerHTML = s && s.state === 'in' ? `${esc(s.email)} · <button class="link" data-act="out">Sign out</button>` : '';
+    if (!CL || !CL.on()) { app.innerHTML = '<div class="empty">Accounts aren\'t switched on for this copy of The Shift, so there are no classes here.</div>'; return; }
+    if (!s || s.state !== 'in') return signIn();
+    if (!st.classes) { app.innerHTML = '<p class="muted">Loading your classes…</p>'; load(); return; }
+    app.innerHTML = classesHTML() + (st.cur ? classHTML() : '');
+  }
+
+  function signIn() {
+    if (st.sent) { app.innerHTML = `<div class="card"><h3>Check your email</h3><p>We sent a sign-in link to <b>${esc(st.sent)}</b>. Open it on this device to come back here signed in.</p><button data-act="again">Use a different email</button></div>`; return; }
+    app.innerHTML = `<div class="card"><h3>Sign in</h3><p class="muted">No password: we email you a link. Use the same email on any device to see your classes.</p>
+      <form data-form="link" class="row"><div><label for="em">Email</label><input id="em" type="email" autocomplete="email" required value="${esc(st.email)}" placeholder="you@school.edu"></div><button class="primary" type="submit">${st.busy ? 'Sending…' : 'Email me a link'}</button></form>
+      ${st.err ? `<p class="err" role="alert">${esc(st.err)}</p>` : ''}</div>`;
+  }
+
+  async function load() {
+    try { st.classes = await CL.teaching(); if (!st.cur && st.classes.length) await open(st.classes[0].id); }
+    catch (e) { st.classes = []; st.err = 'Couldn\'t load your classes: ' + e.message; }
+    render();
+  }
+  async function open(id) {
+    st.cur = id; st.data = null; st.student = null; render();
+    try {
+      const roster = await CL.roster(id), ids = roster.map((r) => r.user_id);
+      const [runs, ngn] = await Promise.all([CL.classResults(ids), CL.classNgn(ids)]);
+      st.data = { roster, runs, ngn };
+    } catch (e) { st.data = { roster: [], runs: [], ngn: [], err: e.message }; }
+    render();
+  }
+
+  function classesHTML() {
+    const L = st.classes;
+    return `<h2>Your classes</h2>
+      ${L.length ? `<div class="tabs" role="group" aria-label="Classes">${L.map((k) => `<button data-act="open" data-id="${esc(k.id)}" aria-pressed="${k.id === st.cur}">${esc(k.name)}</button>`).join('')}</div>` : '<p class="muted">You haven\'t made a class yet.</p>'}
+      <form data-form="make" class="row" style="margin-top:.6rem"><div><label for="cn">${L.length ? 'Make another class' : 'Make a class'}</label><input id="cn" type="text" maxlength="80" required placeholder="NURS 310, Fall, Tuesday clinical"></div><button class="primary" type="submit">${st.busy ? 'Making…' : 'Make class'}</button></form>
+      ${st.err ? `<p class="err" role="alert">${esc(st.err)}</p>` : ''}`;
+  }
+
+  function classHTML() {
+    const k = st.classes.find((x) => x.id === st.cur); if (!k) return '';
+    const head = `<h2>${esc(k.name)}</h2>
+      <div class="codebox"><div><div class="muted" style="font-size:.8rem;font-weight:600">CLASS CODE</div><div class="code" id="code">${esc(k.code)}</div></div>
+        <div style="flex:1 1 16rem"><p style="margin:0">Students open The Shift, then <b>Menu → Your class</b>, sign in, and enter this code with their name.${k.pack ? ' Every shift is open to this class.' : ''}</p></div>
+        <button data-act="copy">Copy invite</button></div>`;
+    const d = st.data;
+    if (!d) return head + '<p class="muted">Loading results…</p>';
+    if (d.err) return head + `<p class="err">Couldn't load results: ${esc(d.err)}</p>`;
+    if (!d.roster.length) return head + '<div class="empty">No students yet. Share the code: results show here as soon as someone joins and finishes a shift.</div>';
+    const tabs = [['overview', 'Overview'], ['students', 'Students'], ['missed', 'Most missed'], ['ngn', 'Practice questions']];
+    return head + `<div class="row" style="align-items:center;justify-content:space-between">
+        <div class="tabs" role="group" aria-label="View">${tabs.map(([id, l]) => `<button data-act="tab" data-v="${id}" aria-pressed="${st.tab === id}">${l}</button>`).join('')}</div>
+        <div style="flex:0 1 16rem"><label for="sf" style="margin-top:0">Shift</label><select id="sf" data-act="shift"><option value="all">All shifts</option>${CASES.map((c) => `<option value="${c}" ${st.shift === c ? 'selected' : ''}>${esc(title(c))}</option>`).join('')}</select></div></div>
+      ${st.student ? studentHTML() : st.tab === 'students' ? studentsHTML() : st.tab === 'missed' ? missedHTML() : st.tab === 'ngn' ? ngnHTML() : overviewHTML()}
+      <p style="margin-top:1.4rem"><button data-act="csv">Download results (CSV)</button> <button data-act="refresh">Refresh</button></p>`;
+  }
+
+  const name = (uid) => { const r = st.data.roster.find((x) => x.user_id === uid); return r ? r.display_name : 'Former student'; };
+  const runsF = () => st.data.runs.filter((r) => st.shift === 'all' || r.case_id === st.shift);
+  /* Each student's latest attempt at each shift: what "where the class is now" means. */
+  function latest() { const seen = {}, out = []; runsF().forEach((r) => { const k = r.user_id + '|' + r.case_id; if (!seen[k]) { seen[k] = 1; out.push(r); } }); return out; }
+
+  function bars(rows) {
+    return `<div class="bars">${rows.map(([l, n, sub]) => `<div class="b"><span class="l">${esc(l)}${sub ? ` <small class="muted">${esc(sub)}</small>` : ''}</span><span class="t" aria-hidden="true"><i class="${band(n)}" style="width:${n == null ? 0 : n}%"></i></span><span class="n">${sc(n)}</span></div>`).join('')}</div>`;
+  }
+  function byKey(rs, field, labels) {
+    return Object.keys(labels).map((id) => { const v = []; rs.forEach((r) => (r[field] || []).forEach((x) => { if (x.id === id && x.score != null) v.push(x.score); })); return [labels[id], avg(v), v.length ? `${v.length} shift${v.length === 1 ? '' : 's'}` : 'not scored yet']; });
+  }
+
+  function overviewHTML() {
+    const L = latest(), all = runsF(), played = new Set(all.map((r) => r.user_id));
+    const ng = st.data.ngn.filter((r) => st.shift === 'all' || r.case_id === st.shift);
+    const harmed = L.filter((r) => (r.outcomes || []).some((o) => o.tone === 'bad')).length;
+    if (!all.length) return '<div class="empty">No finished shifts yet' + (st.shift === 'all' ? '' : ' on this one') + '.</div>';
+    return `<div class="stats">
+        <div class="stat"><b>${played.size}<small style="font-size:1rem"> / ${st.data.roster.length}</small></b><span>students have finished a shift</span></div>
+        <div class="stat"><b>${all.length}</b><span>shifts finished</span></div>
+        <div class="stat"><b>${avg(L.map((r) => r.score)) ?? '—'}</b><span>average score, latest attempts</span></div>
+        <div class="stat"><b>${L.length ? Math.round(harmed / L.length * 100) + '%' : '—'}</b><span>of latest shifts had a patient come to harm</span></div>
+        <div class="stat"><b>${ng.length ? Math.round(ng.reduce((n, r) => n + r.score, 0) / Math.max(1, ng.reduce((n, r) => n + r.max, 0)) * 100) + '%' : '—'}</b><span>practice-question points earned</span></div></div>
+      <h2>By NCLEX clinical judgment step</h2><p class="muted">Latest attempt by each student. The step a class is lowest on is usually the one to teach to next.</p>${bars(byKey(L, 'steps', STEP))}
+      <h2>By skill</h2>${bars(byKey(L, 'domains', DOM))}`;
+  }
+
+  function studentsHTML() {
+    const cs = st.shift === 'all' ? CASES : [st.shift];
+    const rows = st.data.roster.map((m) => {
+      const mine = st.data.runs.filter((r) => r.user_id === m.user_id);
+      const best = (c) => { const v = mine.filter((r) => r.case_id === c).map((r) => r.score); return v.length ? Math.max(...v) : null; };
+      const last = mine[0];
+      return `<tr><td><button class="link" data-act="student" data-id="${esc(m.user_id)}">${esc(m.display_name)}</button></td>${cs.map((c) => `<td class="n">${sc(best(c))}</td>`).join('')}<td class="n">${mine.length}</td><td>${last ? when(last.played_at) : '<span class="muted">—</span>'}</td><td><button class="small" data-act="remove" data-id="${esc(m.user_id)}" aria-label="Remove ${esc(m.display_name)} from the class">Remove</button></td></tr>`;
+    }).join('');
+    return `<p class="muted">Best score on each shift. Select a name to see every attempt and what they missed.</p><div class="scroll"><table><thead><tr><th>Student</th>${cs.map((c) => `<th class="n" title="${esc(title(c))}">${esc(short(c))}</th>`).join('')}<th class="n">Shifts</th><th>Last played</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function studentHTML() {
+    const uid = st.student, mine = runsF().filter((r) => r.user_id === uid);
+    const ng = st.data.ngn.filter((r) => r.user_id === uid && (st.shift === 'all' || r.case_id === st.shift));
+    return `<p><button class="link" data-act="back">← All students</button></p><h2>${esc(name(uid))}</h2>
+      ${mine.length ? '' : '<div class="empty">No finished shifts' + (st.shift === 'all' ? '' : ' on this one') + ' yet.</div>'}
+      ${mine.map((r) => `<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h3>${esc(title(r.case_id))} <span class="muted" style="font-weight:400">· ${when(r.played_at)}</span></h3><span>${sc(r.score)} ${'★'.repeat(r.stars || 0)}</span></div>
+        <p class="muted" style="font-size:.88rem">${(r.steps || []).map((x) => `${esc(STEP[x.id] || x.id)} ${x.score}`).join(' · ')}</p>
+        ${(r.outcomes || []).some((o) => o.tone === 'bad') ? `<p class="err" style="font-size:.9rem">A patient came to harm (room ${(r.outcomes || []).filter((o) => o.tone === 'bad').map((o) => esc(o.id)).join(', ')}).</p>` : ''}
+        ${(r.misses || []).length ? `<details><summary>${r.misses.length} decision${r.misses.length === 1 ? '' : 's'} to rethink</summary><ul>${r.misses.map((m) => `<li>${esc(m.text)} <small class="muted">· ${esc(STEP[m.step] || '')}</small></li>`).join('')}</ul></details>` : '<p class="ok" style="font-size:.9rem">No decisions to rethink.</p>'}</div>`).join('')}
+      ${ng.length ? `<h2>Practice questions</h2><div class="scroll"><table><thead><tr><th>Question</th><th>Type</th><th class="n">Score</th><th>When</th></tr></thead><tbody>${ng.map((r) => `<tr><td>${esc(itemLabel(r))}</td><td>${esc(NG.TYPE[r.item_type] || r.item_type)}</td><td class="n">${r.score} / ${r.max}</td><td>${when(r.at)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+  }
+
+  function itemLabel(r) { const it = NG.items(r.case_id).find((x) => x.id === r.item_id); return it ? (it.q || it.stem || r.item_id).slice(0, 110) : r.item_id; }
+
+  function missedHTML() {
+    const L = latest(), by = {};
+    L.forEach((r) => (r.misses || []).forEach((m) => { const k = r.case_id + '|' + (m.key || m.text); const o = by[k] = by[k] || { case: r.case_id, text: m.text, step: m.step, who: new Set() }; o.who.add(r.user_id); }));
+    const tried = {}; L.forEach((r) => { tried[r.case_id] = (tried[r.case_id] || 0) + 1; });
+    const list = Object.values(by).sort((a, b) => b.who.size / tried[b.case] - a.who.size / tried[a.case] || b.who.size - a.who.size).slice(0, 25);
+    if (!list.length) return '<div class="empty">No missed decisions yet' + (L.length ? '. Nice.' : ': nobody has finished a shift.') + '</div>';
+    return `<p class="muted">From each student's latest attempt. The share is of students who played that shift.</p>${list.map((o) => `<div class="miss"><div class="m"><span>${Math.round(o.who.size / tried[o.case] * 100)}% · ${o.who.size} of ${tried[o.case]} student${tried[o.case] === 1 ? '' : 's'}</span><span>${esc(short(o.case))}</span><span>${esc(STEP[o.step] || '')}</span></div><p>${esc(o.text)}</p></div>`).join('')}`;
+  }
+
+  function ngnHTML() {
+    const rs = st.data.ngn.filter((r) => st.shift === 'all' || r.case_id === st.shift);
+    if (!rs.length) return '<div class="empty">No practice questions answered yet. They come after the debrief of each shift.</div>';
+    const first = {}; rs.slice().reverse().forEach((r) => { const k = r.user_id + '|' + r.item_id; if (!first[k]) first[k] = r; });   // first try is the honest measure
+    const by = {}; Object.values(first).forEach((r) => { const o = by[r.item_id] = by[r.item_id] || { r, pts: 0, max: 0, n: 0 }; o.pts += r.score; o.max += r.max; o.n++; });
+    const items = Object.values(by).sort((a, b) => a.pts / a.max - b.pts / b.max);
+    return `<p class="muted">First attempt by each student, lowest first.</p><div class="scroll"><table><thead><tr><th>Question</th><th>Shift</th><th>Type</th><th>Step</th><th class="n">Students</th><th class="n">Points</th></tr></thead><tbody>${items.map((o) => `<tr><td>${esc(itemLabel(o.r))}</td><td>${esc(short(o.r.case_id))}</td><td>${esc(NG.TYPE[o.r.item_type] || o.r.item_type)}</td><td>${esc(STEP[o.r.step] || '')}</td><td class="n">${o.n}</td><td class="n">${sc(Math.round(o.pts / o.max * 100))}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+
+  function csv() {
+    const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const head = ['student', 'shift', 'played_at', 'score', 'stars', 'minutes', ...CJ.STEPS.map((x) => 'step_' + x[0]), ...E.DOMAINS.map((x) => 'skill_' + x[0]), 'patients_harmed', 'misses'];
+    const lines = [head.join(',')].concat(runsF().map((r) => [name(r.user_id), title(r.case_id), r.played_at, r.score, r.stars, r.minutes,
+      ...CJ.STEPS.map(([id]) => ((r.steps || []).find((x) => x.id === id) || {}).score),
+      ...E.DOMAINS.map(([id]) => ((r.domains || []).find((x) => x.id === id) || {}).score),
+      (r.outcomes || []).filter((o) => o.tone === 'bad').length, (r.misses || []).map((m) => m.text).join(' | ')].map(q).join(',')));
+    const k = st.classes.find((x) => x.id === st.cur);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+    a.download = 'the-shift-' + (k ? k.name.replace(/[^\w]+/g, '-').toLowerCase() : 'class') + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  document.addEventListener('submit', async (e) => {
+    const f = e.target.dataset.form; if (!f) return; e.preventDefault();
+    if (f === 'link') {
+      const em = document.getElementById('em').value.trim(); st.email = em; st.err = null; st.busy = true; render();
+      try { await CL.sendLink(em); st.sent = em; } catch (x) { st.err = /rate|seconds/i.test(x.message) ? 'Too many tries. Wait a minute, then send again.' : 'Couldn\'t send the link. Check the email and your connection.'; }
+      st.busy = false; render();
+    } else if (f === 'make') {
+      const n = document.getElementById('cn').value.trim(); if (!n) return; st.err = null; st.busy = true; render();
+      try { const k = await CL.createClass(n); st.classes.unshift(Object.assign({ pack: false }, k)); st.busy = false; st.tab = 'overview'; await open(k.id); }
+      catch (x) { st.busy = false; st.err = 'Couldn\'t make the class: ' + x.message; render(); }
+    }
+  });
+  document.addEventListener('change', (e) => { if (e.target.dataset.act === 'shift') { st.shift = e.target.value; render(); } });
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT') return;
+    const a = b.dataset.act;
+    if (a === 'out') { CL.signOut(); Object.assign(st, { classes: null, cur: null, data: null, sent: null }); render(); }
+    else if (a === 'again') { st.sent = null; render(); }
+    else if (a === 'open') { st.tab = 'overview'; open(b.dataset.id); }
+    else if (a === 'tab') { st.tab = b.dataset.v; st.student = null; render(); }
+    else if (a === 'student') { st.student = b.dataset.id; render(); window.scrollTo({ top: app.offsetTop, behavior: 'smooth' }); }
+    else if (a === 'back') { st.student = null; render(); }
+    else if (a === 'refresh') open(st.cur);
+    else if (a === 'csv') csv();
+    else if (a === 'copy') {
+      const k = st.classes.find((x) => x.id === st.cur), t = `Join my class on The Shift: open ${location.origin}/play/, then Menu → Your class, and enter code ${k.code}.`;
+      try { await navigator.clipboard.writeText(t); b.textContent = 'Copied'; } catch (x) { b.textContent = 'Code: ' + k.code; }
+    } else if (a === 'remove') {
+      if (!confirm(`Remove ${name(b.dataset.id)} from this class? Their results stop showing here. They can rejoin with the code.`)) return;
+      try { await CL.removeMember(st.cur, b.dataset.id); await open(st.cur); } catch (x) { alert('Couldn\'t remove them: ' + x.message); }
+    }
+  });
+  if (CL) { CL.onChange(() => { if (!CL.user()) { st.classes = null; } render(); }); CL.ready.then(render); }
+  render();
+})();
+</script>
+</body>
+</html>

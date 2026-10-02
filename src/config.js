@@ -13,4 +13,8 @@ window.Shift.config = Object.assign({
   // Never put the secret / service_role key here.
   supabaseUrl: 'https://omcorltahsnnmpifefpm.supabase.co',
   supabaseKey: 'sb_publishable_gXXC0_aKPHdzsZu8N6UkLg_rljVc_89',
+  // The shift pack: a few shifts free, the rest (and every shift added later) for one payment. Off until Stripe is
+  // set up (docs/ROADMAP-PROGRESS.md, Session 9). checkoutUrl is a Stripe Payment Link; its "after payment" page
+  // should be https://<your site>/play/?pack=thanks. Purchases are recorded by supabase/functions/stripe-webhook.
+  pack: { on: false, free: ['medsurg-4w-1', 'medsurg-4w-2', 'psych-3e-1'], price: '$12', checkoutUrl: '' },
 }, window.Shift.config || {});   // a test harness may set values first
