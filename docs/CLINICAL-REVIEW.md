@@ -21,6 +21,8 @@ One reviewer per shift is the minimum; two is better. Match the shift to the spe
 | Days, evenings and nights on 4 West (med-surg) | Med-surg RN with 3+ years, or a med-surg clinical instructor |
 | Days on 3 East (adult psych) | Inpatient psych RN; California-licensed for the 5150/5250/Riese content |
 | Evenings on 5 South (peds) | Pediatric RN |
+| Evenings in the ED (Pod B) | Emergency RN, ideally with stroke and STEMI coordinator experience |
+| Days on 2 North (mother-baby) | Postpartum or mother-baby RN; an L&D nurse for the hemorrhage and magnesium content |
 | Any shift with heavy medication content | A PharmD for the medication traps |
 
 Credit them by name in the game (the sign-off checkbox asks permission).

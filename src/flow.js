@@ -4,7 +4,7 @@
    to be clinically specific (what happened in the ICU) lives in AFTER below. */
 window.Shift = window.Shift || {};
 (function (S) {
-  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : 'med');
+  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : 'med');
   const seed = (str) => [...String(str)].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
   const ageNum = (d) => (typeof d.age === 'number' ? d.age : /mo/.test(d.age) ? 0 : parseFloat(d.age) || 0);
 
@@ -15,6 +15,10 @@ window.Shift = window.Shift || {};
     picu: { name: 'Jess Moreno', role: 'PICU RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'ponytail', '#3B2718', 'teal') },
     ed: { name: 'Tom Baird', role: 'ED RN', look: L('#EDCBAE', '#D2AA8B', '#AE665C', '#E69A86', '#43607A', 'short', '#6B4B2E', 'navy', ['beard']) },
     med: { name: 'Ines Carvalho', role: 'Medicine RN', look: L('#E4B894', '#C79A74', '#A45D50', '#DE9378', '#3E2A1A', 'bob', '#2A1C14', 'blue') },
+    cath: { name: 'Ana Ferreira', role: 'Cath lab RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'bun', '#2A1C14', 'teal') },
+    or: { name: 'Mike Dunn', role: 'OR circulating RN', look: L('#EDCBAE', '#D2AA8B', '#AE665C', '#E69A86', '#43607A', 'buzz', '#6B4B2E', 'blue') },
+    ld: { name: 'Carmen Ruiz', role: 'L&D RN', look: L('#C99A74', '#AA7C58', '#8E5246', '#C8866C', '#2A1B10', 'bun', '#2A1C14', 'rose') },
+    nicu: { name: 'Priya Shah', role: 'NICU RN', look: L('#A7714C', '#875634', '#6E3E2E', '#B7735A', '#20140C', 'long', '#140E0A', 'teal') },
     pacu: { name: 'Dev Patel', role: 'PACU RN', look: L('#B98460', '#9A6846', '#7E4535', '#BE7A5E', '#20140C', 'short', '#15100D', 'grey') },
   };
   const ONCOMING = {
@@ -24,6 +28,8 @@ window.Shift = window.Shift || {};
     'psych-3e-1': { key: 'owen', name: 'Owen', role: 'Oncoming RN', look: L('#C79470', '#A87652', '#8E5244', '#C98468', '#2A1B10', 'curls', '#20150F', 'grey', ['beard']) },
     'psych-4n-1': { key: 'marco', name: 'Marco', role: 'Night RN', look: L('#D6A47E', '#B88660', '#9A5648', '#D48A70', '#2A1C12', 'short', '#1A1310', 'navy', ['goatee']) },
     'stepdown-6e-1': { key: 'ari', name: 'Ari', role: 'Oncoming RN', look: L('#E2B48E', '#C49670', '#A0594C', '#DC8E74', '#3A2616', 'short', '#2A1C14', 'teal', ['studs']) },
+    'ed-podb-1': { key: 'jo', name: 'Jo', role: 'Night RN', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'curlyshort', '#140E0A', 'navy', ['studs']) },
+    'ob-2n-1': { key: 'maya', name: 'Maya', role: 'Oncoming RN', look: L('#E8C0A0', '#CC9E7E', '#AE6258', '#E4927C', '#2A1C12', 'bob', '#3A2618', 'rose', ['studs']) },
     'peds-5s-1': { key: 'june', name: 'June', role: 'Night RN', look: L('#EFCCAF', '#D4AA8C', '#B66A60', '#EE9C88', '#3C2A1E', 'long', '#1E1712', 'wine') },
   };
   // Staff for a case: receiving units, plus the oncoming nurse (reusing a character from another shift if we have one).
@@ -359,13 +365,135 @@ window.Shift = window.Shift || {};
       later: 'Three days in the CCU. Low potassium and magnesium, a doubled SSRI and an antiemetic each lengthened his QT a little; together they were enough. The electrolyte protocol and two held doses were all available at 09:00.',
     }),
   };
+  AFTER['ob-2n-1'] = {
+    '212': (s, P, A, at) => ({
+      unit: 'L&D', nurse: 'ld', emergent: true,
+      event: `Postpartum hemorrhage from uterine atony, QBL over 1,600 mL at ${A.clock(at)}.${P.bladder ? ' Bladder still full, never emptied.' : ''}`,
+      extra: [{ label: 'Asthma: no carboprost', key: true }, { label: [P.methAt !== null && `methylergonovine ${A.clock(P.methAt)}`, P.txaAt !== null && `TXA ${A.clock(P.txaAt)}`, P.misoAt !== null && `misoprostol ${A.clock(P.misoAt)}`, P.oxyUp && 'oxytocin at 250 mL/h'].filter(Boolean).join(', ') || 'No uterotonics given beyond the oxytocin infusion', key: true }, { label: 'Baby boy rooming in, breastfeeding', key: false }],
+      family: { name: 'Andre', rel: 'husband', phone: true },
+      course: [
+        { at: 0, st: 'crit', text: 'In the L&D OR. Bimanual massage, bladder catheterized (900 mL), a Bakri balloon placed. Two units of blood running. Fibrinogen 180.' },
+        { at: 50, st: 'serious', text: 'Bleeding slowed with the balloon. Cryoprecipitate given. HR 104, BP 102/60. Total blood loss 2,300 mL.' },
+        { at: 130, st: 'improving', text: 'Stable. Balloon stays in for 12 hours. Andre and the baby are with her; she\'s breastfeeding in the recovery bay.' },
+      ],
+      later: 'Balloon out the next morning, home on day three with iron and a hemoglobin of 7.6. Atony is the most common cause of postpartum hemorrhage, and a full bladder is one of its most fixable causes. Feeling the fundus and weighing the pads finds it early.',
+    }),
+    '214': (s, P, A, at) => ({
+      unit: 'ICU', nurse: 'icu', emergent: true,
+      event: `Respiratory depression from magnesium toxicity at ${A.clock(at)}: RR 6, unresponsive. Magnesium about ${P.mg.toFixed(1)} with oliguria since 04:00.`,
+      extra: [{ label: 'Preeclampsia with severe features; seizure prophylaxis still needed once the level falls', key: true }, { label: 'Creatinine 1.4 and rising; urine under 30 mL/h since 04:00', key: true }, { label: P.firstBpMed !== null ? `Severe BP treated at ${A.clock(P.firstBpMed)}` : (P.sevAt !== null ? 'Severe-range BP not yet treated' : 'BP 140s–150s/90s'), key: P.sevAt !== null }],
+      family: { name: 'Kainoa', rel: 'partner' },
+      course: [
+        { at: 0, st: 'crit', text: 'Bag-mask breaths, calcium gluconate 1 g given twice. Breathing on her own again, RR 12. Magnesium off. Level 13.4.' },
+        { at: 60, st: 'serious', text: 'RR 14, more awake. Furosemide given; urine picking up. Level 10.8. Nephrology consulted.' },
+        { at: 150, st: 'improving', text: 'Level 7.0. Awake and asking for Mālia. Restarting magnesium at 1 g/h for the rest of her 24 hours, with hourly checks.' },
+      ],
+      later: 'Two days in the ICU, home on day five with a blood pressure cuff and a plan for daily checks. Magnesium leaves the body through the kidneys; when the urine slows, the level climbs. Reflexes fade before breathing does, which is why the checks are hourly.',
+    }),
+    '216': (s, P, A, at) => (P.nicu ? {
+      unit: 'NICU', nurse: 'nicu', emergent: true,
+      event: `Hypoglycemic seizure at ${A.clock(at)}, glucose 18. Infant of a diabetic mother, last fed 04:00${P.checks.length ? '' : ', no glucose this shift'}.`,
+      extra: [{ label: `Glucose checks this shift: ${(P.checkVals || []).join(', ') || 'none'}`, key: true }, { label: 'Mother wants exclusive breastfeeding; pumping', key: true }],
+      family: { name: 'Bảo', rel: 'father', phone: true },
+      course: [
+        { at: 0, st: 'crit', text: 'D10 bolus and an infusion through a UVC. Seizure stopped. Glucose 52 at 30 minutes. Phenobarbital given once.' },
+        { at: 60, st: 'serious', text: 'Glucose 60s on the infusion. No more seizures. An EEG and head MRI are planned.' },
+        { at: 150, st: 'serious', text: 'Stable. Linh is with him, pumping. Neurology will follow up on the MRI.' },
+      ],
+      later: 'Seven days in the NICU. His MRI showed changes in the back of the brain typical of neonatal hypoglycemia; he\'ll be followed for development. The glucose check before a feed is how the low is found before the brain is hurt.',
+    } : {
+      unit: 'NICU', nurse: 'nicu', emergent: false, push: 45,
+      event: `To the NICU for IV dextrose before any seizure: ${P.symAt !== null ? 'jittery' : 'glucose under 45 after gel'} at ${A.clock(at)}.`,
+      extra: [{ label: `Glucose checks: ${(P.checkVals || []).join(', ')}`, key: true }, { label: `Dextrose gel ×${P.gels.length}`, key: true }, { label: 'Mother wants exclusive breastfeeding; donor milk okay', key: true }],
+      family: { name: 'Bảo', rel: 'father', phone: true },
+      course: [
+        { at: 0, st: 'serious', text: 'Peripheral IV in, D10 at 80 mL/kg/day. Glucose 58 at 30 minutes. No more jitteriness.' },
+        { at: 70, st: 'improving', text: 'Glucose 60s. Breastfeeding in the NICU with Linh. Weaning the infusion as feeds improve.' },
+        { at: 150, st: 'stable', text: 'Infusion off overnight; glucoses stable on feeds. Back to 2 North with Linh tomorrow.' },
+      ],
+      later: 'Two nights in the NICU, then home breastfeeding. Escalating when he was symptomatic is what kept this from becoming a seizure.',
+    }),
+  };
+  AFTER['ed-podb-1'] = {
+    '21': (s, P, A, at) => ({
+      unit: 'Cath lab', nurse: 'cath', emergent: !!P.arrest, push: 40,
+      event: P.arrest ? `VF arrest at ${A.clock(at)} from an inferior STEMI; ROSC after three shocks.` : `Inferior STEMI with right ventricular involvement; cath lab activated at ${A.clock(P.called)}.`,
+      extra: [{ label: P.asa !== null ? `Aspirin 324 mg at ${A.clock(P.asa)}` : 'No aspirin given in the ED', key: true }, { label: P.hep !== null ? `Heparin bolus at ${A.clock(P.hep)}` : 'No heparin given yet', key: true }, { label: 'RV involvement: no nitrates, preload-dependent', key: P.v4r !== null }],
+      family: { name: 'Bev', rel: 'sister' },
+      course: [
+        { at: 0, st: P.arrest ? 'crit' : 'serious', text: 'On the table. Right coronary artery 100% occluded proximally. Wire across.' },
+        { at: 40, st: 'serious', text: 'Drug-eluting stent to the proximal RCA, flow restored. Pressure held with fluids. To the CCU.' },
+        { at: 140, st: 'improving', text: 'In the CCU, pain-free. Heart rate back to the 70s. Echo shows the right ventricle recovering.' },
+      ],
+      later: P.arrest ? 'She survived with a weaker heart than she needed to have. Diabetic women often present with fatigue, nausea and "indigestion"; a repeat ECG is how the evolving MI is caught before it fibrillates.' : 'Home on day three. In an atypical presentation, serial ECGs and a nurse who says "STEMI" out loud are how door-to-balloon stays under 90 minutes.',
+    }),
+    '22': (s, P, A, at) => (P.ich ? {
+      unit: 'Neuro ICU', nurse: 'icu', emergent: true,
+      event: `Symptomatic intracranial hemorrhage after tenecteplase at ${A.clock(P.tpaGiven)}. True last known well 11:00.`,
+      extra: [{ label: 'Tenecteplase given; cryoprecipitate and tranexamic acid ordered', key: true }, { label: 'Last known well 11:00, found at 14:30', key: true }],
+      family: { name: 'Joan', rel: 'wife' },
+      course: [
+        { at: 0, st: 'crit', text: 'Intubated. Cryoprecipitate and TXA running. Repeat CT: 40 mL hemorrhage in the stroke territory.' },
+        { at: 90, st: 'crit', text: 'External ventricular drain placed. Pupils equal now.' },
+        { at: 200, st: 'serious', text: 'Stable but unresponsive off sedation. Family meeting tomorrow.' },
+      ],
+      later: 'Thrombolytics (tenecteplase or alteplase) work up to 4.5 hours after a patient was last known well, not after they were found. Outside that window the bleeding risk outweighs the benefit, and a large-vessel clot goes to thrombectomy instead.',
+    } : {
+      unit: 'IR', nurse: 'icu', emergent: false, push: 40,
+      event: `Left M1 occlusion; last known well 11:00, so no thrombolytic. To neurointerventional radiology for thrombectomy.`,
+      extra: [{ label: 'Last known well 11:00, found at 14:30', key: true }, { label: 'NPO; failed swallow screen' + (P.swallow ? '' : ' not yet done'), key: true }, { label: `BP goal 185/110 or less${P.lab !== null ? '; labetalol given' : ''}`, key: true }],
+      family: { name: 'Joan', rel: 'wife' },
+      course: [
+        { at: 0, st: 'serious', text: 'Under conscious sedation. Clot retrieved in one pass, full flow restored to the left middle cerebral artery.' },
+        { at: 60, st: 'serious', text: 'In the neuro ICU. Moving his right arm against gravity. Said "yes" and "Joan."' },
+        { at: 180, st: 'improving', text: 'NIHSS 5, down from 14. Swallow evaluation tomorrow.' },
+      ],
+      later: 'Thrombectomy works up to 24 hours from last known well for the right patient. One question to his wife, "When was he last normal?", moved him from the wrong treatment to the right one.',
+    }),
+    '23': (s, P, A, at) => ({
+      unit: 'OR', nurse: 'or', emergent: !!P.rupture, push: 50,
+      event: P.rupture ? `Ruptured ectopic, hemorrhagic shock at ${A.clock(at)}; massive transfusion protocol.` : `Possible ruptured ectopic, free fluid on bedside ultrasound. To the OR for laparoscopy.`,
+      extra: [{ label: 'O negative: Rh immune globulin after surgery', key: true }, { label: P.disclosed ? 'Disclosed partner violence; boyfriend not to be given information' : 'Partner present and controlling; safety not yet assessed', key: true }],
+      family: { name: 'Her mother', rel: 'mother', phone: true },
+      course: [
+        { at: 0, st: P.rupture ? 'crit' : 'surgery', text: P.rupture ? 'In the OR, two units in. Left tubal rupture, 1.8 L of blood in the abdomen.' : 'Laparoscopy: left tubal ectopic, ruptured, 600 mL in the pelvis. Salpingectomy.' },
+        { at: 60, st: 'serious', text: 'In recovery. Hemoglobin 9.2. Rh immune globulin given.' },
+        { at: 150, st: 'stable', text: 'On the gynecology floor with her mother. Social work and an advocate have met with her.' },
+      ],
+      later: 'A positive pregnancy test with abdominal pain is an ectopic until an ultrasound shows a pregnancy in the uterus. Shoulder pain and a climbing heart rate mean it is bleeding.',
+    }),
+    '24': (s, P, A, at) => ({
+      unit: 'ICU', nurse: 'icu', emergent: true,
+      event: `Anaphylaxis with airway obstruction at ${A.clock(at)}; intubated. Epinephrine ${P.epi.length ? 'first given at ' + A.clock(P.epi[0]) : 'not given before the airway closed'}.`,
+      extra: [{ label: 'Peanut anaphylaxis; diphenhydramine from EMS, no epinephrine', key: true }, { label: 'Mild asthma', key: false }],
+      family: { name: 'His mother', rel: 'mother', phone: true },
+      course: [
+        { at: 0, st: 'crit', text: 'Intubated with a small tube through a swollen airway. Epinephrine infusion running.' },
+        { at: 90, st: 'serious', text: 'Epinephrine weaned off. Swelling going down; cuff leak test tomorrow.' },
+        { at: 200, st: 'improving', text: 'Cuff leak present. Plan to extubate in the morning.' },
+      ],
+      later: 'Epinephrine IM is the first and most important treatment for anaphylaxis. Antihistamines treat the hives, not the airway or the shock.',
+    }),
+    '25': (s, P, A, at) => ({
+      unit: 'OR', nurse: 'or', emergent: true,
+      event: `Expanding left subdural, GCS ${P.bleed >= 1 ? 7 : 11} with a dilated left pupil at ${A.clock(at)}. INR 3.6 on warfarin${P.pcc !== null ? '; PCC given at ' + A.clock(P.pcc) : ', not reversed'}.`,
+      extra: [{ label: 'Warfarin for AF; INR 3.6', key: true }, { label: P.warf === 'given' ? 'Warfarin 5 mg given at 18:00' : 'Warfarin held tonight', key: true }],
+      family: { name: 'Karen', rel: 'daughter' },
+      course: [
+        { at: 0, st: 'crit', text: 'Emergency craniotomy. PCC and vitamin K given in the OR.' },
+        { at: 90, st: 'crit', text: 'Hematoma evacuated. To the neuro ICU, sedated on the ventilator.' },
+        { at: 200, st: 'serious', text: 'Pupils equal. Following simple commands with his left hand.' },
+      ],
+      later: 'Older patients on anticoagulants can bleed slowly for hours after a head strike while looking fine. Scheduled neuro checks find the decline, and fast reversal stops it.',
+    }),
+  };
   function spec(s, A, d, P, at) {
     const f = (AFTER[s.caseId] || {})[d.id];
     const base = f ? f(s, P, A, at) : { unit: P.icu ? 'ICU' : 'another unit', nurse: 'icu', emergent: !!P.icu, event: P.goneText || 'Transferred off the unit.', course: [{ at: 0, st: P.icu ? 'crit' : 'stable', text: P.goneText || 'Transferred.' }], later: '' };
     return Object.assign({ handoff: true, note: true, push: 50, extra: [], family: null }, base);
   }
   const outOf = (P) => P.icu || P.gone;
-  const where = (u) => ({ CCU: 'the CCU', IR: 'interventional radiology', ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', Pediatrics: 'the pediatric floor', PACU: 'PACU' }[u] || 'the ' + u);
+  const where = (u) => ({ 'Cath lab': 'the cath lab', OR: 'the OR', 'Neuro ICU': 'the neuro ICU', 'L&D': 'Labor and Delivery', NICU: 'the NICU', CCU: 'the CCU', IR: 'interventional radiology', ICU: 'the ICU', PICU: 'the PICU', ED: 'the ED', Medicine: 'the medicine floor', Pediatrics: 'the pediatric floor', PACU: 'PACU' }[u] || 'the ' + u);
   function entryAt(P, dt) { const c = P.out.spec.course; let i = 0; c.forEach((e, k) => { if (e.at <= dt) i = k; }); return i; }
 
   /* ---------- unit flavor: rounding, call lights, report noise ---------- */
@@ -385,6 +513,21 @@ window.Shift = window.Shift || {};
       { id: 'anx', text: 'for something to help with anxiety', cna: false, fix: 'Talked it through first, then checked the MAR for what\'s ordered and when it was last given.' },
       { id: 'laundry', text: 'for help with laundry', cna: true, fix: 'Laundry started; clothes back by lunch.' },
     ],
+    ob: [
+      { id: 'pads', text: 'needs more pads and a fresh peri bottle', cna: true, fix: 'Pads, mesh underwear, ice pack and a filled peri bottle at the bedside.', ok: (d) => !d.newborn },
+      { id: 'latch', text: 'wants help getting the baby to latch', cna: false, fix: 'You watch a feed: wide mouth, chin in, lips flanged out. Audible swallows after a minute. Showed her the football hold to keep off her incision or stitches.', ok: (d) => !d.newborn || !!d.family },
+      { id: 'water', text: 'wants a big cup of ice water', cna: true, fix: 'Fresh ice water at the bedside. Breastfeeding makes you thirsty.', ok: (d) => !d.newborn && !/NPO|restrict|clear/i.test(d.diet) },
+      { id: 'bath', text: 'needs help to the bathroom', cna: true, fix: 'Walked to the bathroom with help, peri bottle used, pad changed. Back in bed with the rail up and the call light in reach.', ok: (d) => !d.newborn && !/bed rest/i.test(d.mobility) },
+      { id: 'pain', text: 'is asking for something for pain', cna: false, fix: (v) => `Rates pain ${v.pain} out of 10 and wants medicine. Check the MAR for what's ordered and when it was last given.`, ok: (d, P, v) => !d.newborn && v.pain >= 3 },
+      { id: 'diaper', text: 'needs diapers and wants help with the first bath', cna: true, fix: 'Diapers, wipes and a bath demo at the bedside. Cord left dry.', ok: (d) => !!d.newborn },
+    ],
+    ed: [
+      { id: 'water', text: 'is asking for something to drink', cna: false, fix: 'Checked the orders first: still waiting on results, so nothing by mouth yet. Explained why and offered a mouth swab.', ok: (d) => !d.newborn },
+      { id: 'cold', text: 'is cold and wants a warm blanket', cna: true, fix: 'Warm blanket from the warmer.', ok: (d, P, v) => v.T < 38 },
+      { id: 'wait', text: 'wants to know how much longer', cna: false, fix: 'You give a straight answer: what you\'re waiting on, roughly how long, and what happens next. "Nobody\'s told me anything" is the most common ED complaint.' },
+      { id: 'bath', text: 'needs to use the bathroom', cna: true, fix: 'Helped to the bathroom and back, call light in reach.', ok: (d) => !/bed rest|flat|stretcher/i.test(d.mobility) },
+      { id: 'pump', text: 'says the IV pump is beeping', cna: false, fix: 'Pump alarm: air in line. Cleared it, the site looks good, infusion restarted.', ok: (d, P, v, f) => f.iv === 'running' },
+    ],
     peds: [
       { id: 'diaper', text: 'needs more diapers and wipes', cna: true, fix: 'Diapers and wipes at the bedside, and a scale to weigh diapers for output.', ok: (d) => ageNum(d) < 3 },
       { id: 'pump', text: 'says the IV pump is beeping', cna: false, fix: 'Pump alarm: occlusion. The tubing was pinched in the crib rail. Freed it, the site looks good, infusion restarted.', ok: (d, P, v, f) => f.iv === 'running' },
@@ -397,6 +540,8 @@ window.Shift = window.Shift || {};
   const NOISE = {
     med: ['What they had for breakfast', 'Every vital sign since the start of the shift, in order', 'That the TV remote doesn\'t work', 'The last nurse\'s opinion of the family'],
     psych: ['What was on TV in the dayroom', 'Every q15 check since the start of the shift, one by one', 'What they ate for breakfast', 'That they seem "manipulative"'],
+    ob: ['What she named the baby', 'Every vital sign since delivery, in order', 'How many visitors came last night', 'The last nurse\'s opinion of her birth plan'],
+    ed: ['How long they waited in the lobby', 'Every vital sign since arrival, in order', 'That the TV in the bay is broken', 'A guess about whether they\'re drug-seeking'],
     peds: ['Their favorite cartoon', 'Every vital sign since the start of the shift, in order', 'Which popsicle flavor they picked', 'A guess about how the parents get along'],
   };
   const NOBELL = { 'peds-5s-1': ['507'], 'psych-3e-1': ['301'], 'psych-4n-1': ['409'] };
@@ -408,6 +553,8 @@ window.Shift = window.Shift || {};
   function roundText(c, d, P, A) {
     const v = A.vitals(d.id), f = d.scene(A.s, P, A), k = kindOf(c);
     if (k === 'psych') return `Checked in face to face; ${d.short} is ${v.pain >= 4 ? 'uncomfortable, pain ' + v.pain + ' out of 10' : 'up and settled'}. Room scanned: nothing new that could be used for harm. Offered ${P.restricted ? 'a chance to talk' : 'a snack and a chance to talk'}.`;
+    if (k === 'ob' && d.newborn) return `Swaddled skin to skin or in the bassinet, breathing easy, color pink. Diaper checked, last feed noted, ID band matches ${d.family ? d.family.name + '\'s' : 'the mother\'s'} band, security tag on.`;
+    if (k === 'ob') return `Pain ${v.pain} out of 10. Fundus checked by feel through the blanket, pad looked at, bathroom offered, water and call light in reach. The baby is asleep in the bassinet beside her, on their back.`;
     if (k === 'peds') return `Rails up, ${f.iv === 'running' ? 'IV site clean and the pump running, ' : ''}${ageNum(d) < 3 ? 'diaper checked' : 'bathroom offered'}, ${d.family ? 'parent offered a break and water' : 'call light in reach'}. Pain ${v.pain} out of 10.`;
     return `Pain ${v.pain} out of 10. Repositioned, offered the bathroom${/NPO|restrict/i.test(d.diet) ? '' : ' and water'}, call light and table within reach. Bed low and locked.`;
   }
@@ -448,7 +595,7 @@ window.Shift = window.Shift || {};
       const opts = NEEDS[k].filter((n) => !n.ok || n.ok(d, P, v, f)); if (!opts.length) return;
       const n = opts[seed(d.id + ':' + Math.floor(s.t / 10)) % opts.length];
       const fix = typeof n.fix === 'function' ? n.fix(v, d) : n.fix;
-      const who = k === 'peds' && d.family ? d.family.name : d.short;
+      const who = (k === 'peds' || d.newborn) && d.family ? d.family.name : d.short;
       P.bell = { at: s.t, id: n.id, text: n.text, cna: n.cna, fix, who }; P.lastBell = s.t; s.lastBell = s.t;
       const text = k === 'psych' ? `${d.short} is at the nurses' station asking ${n.text}.` : `Call light in ${d.room}: ${who} ${n.text}.`;
       const cn = (c.staff[cnaKey(c)] || {}).name || 'your aide';

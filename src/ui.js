@@ -2,7 +2,7 @@
 (function (S) {
   const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'ed-podb-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
   /* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
      plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
@@ -44,6 +44,8 @@
     sd: { name: 'Cardiac step-down', unit: '6 East', blurb: 'Telemetry, drips and protocols that run on numbers. Best after med-surg.' },
     psy: { name: 'Adult psychiatry', unit: '3 East', blurb: 'Locked adult unit: holds, seclusion, the right to refuse, and medical problems hiding behind psych diagnoses.' },
     teen: { name: 'Adolescent psychiatry', unit: '4 North', blurb: 'Teens 14 to 17: consent, privacy, restraint charting and mandated reporting.' },
+    ed: { name: 'Emergency', unit: 'ED Pod B', blurb: 'Patients arrive with clocks running: stroke windows, door-to-balloon times, an airway that is closing.' },
+    ob: { name: 'Mother-baby', unit: '2 North', blurb: 'The first day after birth: fundus checks, magnesium, newborn glucose, and the screens that catch what doesn\'t show.' },
     peds: { name: 'Pediatrics', unit: '5 South', blurb: 'Infants to teens: age-based vital signs, weight-based doses, and their families.' },
   };
   const DIFF = ['', 'Orientation', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
@@ -54,13 +56,15 @@
     'stepdown-6e-1': { sp: 'sd', d: 4, why: 'Every patient is on a drip, a nomogram or a protocol, and new results that should change them. Assumes med-surg basics.' },
     'psych-3e-1': { sp: 'psy', d: 4, why: 'Legal holds and seclusion charted step by step, plus a medical emergency on a psych unit. Uses California law (switch in Settings).' },
     'psych-4n-1': { sp: 'teen', d: 5, why: 'Minors: parents, privacy and mandated reports, restraint charting, refeeding labs and a hidden overdose. The hardest shift.' },
+    'ed-podb-1': { sp: 'ed', d: 4, why: 'Five patients, two arriving mid-shift, each with a time-critical treatment that depends on a fact someone has to ask for. Assumes med-surg basics.' },
+    'ob-2n-1': { sp: 'ob', d: 3, why: 'Mothers and a newborn at once: bleeding, a high-alert drip, weight-based newborn dosing and a mental health screen. Assumes med-surg basics.' },
     'peds-5s-1': { sp: 'peds', d: 4, why: 'Normal vital signs change with age and every dose depends on weight. Parents, an interpreter and a safeguarding concern.' },
   };
   const meta = (id) => META[id] || { sp: 'ms', d: 1, why: '' };
   const specOf = (id) => SPEC[meta(id).sp];
   const diffLabel = (id) => DIFF[meta(id).d];
   const diffPips = (id, cls) => { const d = meta(id).d; return `<span class="diff d${d} ${cls || ''}" role="img" aria-label="Difficulty ${d} of 5, ${DIFF[d]}"><span class="pips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= d ? 'on' : ''}"></i>`).join('')}</span><b aria-hidden="true">${DIFF[d]}</b></span>`; };
-  const shiftFacts = (k) => { const n = k.patients.filter((x) => !x.arrives).length, a = k.patients.length - n; return `${n} patients${a ? ` + ${a} admission` : ''} · ${k.novaCredits || 3} hints · about ${k.minutes || 15} min`; };
+  const shiftFacts = (k) => { const n = k.patients.filter((x) => !x.arrives).length, a = k.patients.length - n; return `${n} patients${a ? ` + ${a} ${k.arrivalNoun || 'admission'}${a > 1 ? 's' : ''}` : ''} · ${k.novaCredits || 3} hints · about ${k.minutes || 15} min`; };
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
@@ -79,11 +83,14 @@
   const pface = (id) => R.icon(id, s ? rigV(id) : null);
   const faceOf = (k) => (def(k) ? pface(k) : face(k));
   const who = (k) => (def(k) ? { name: def(k).name, role: 'Room ' + k } : staff(k));
+  const fromOf = (d) => d.from || 'the ED', admWord = (d) => d.arriveAs || 'Admission';
   const here = (d) => !d.arrives || (s && s.p[d.id].arrived);          // admitted patients appear mid-shift
   const pts = () => C().patients.filter(here);
   const gone = (P) => P.icu || P.gone;                                   // off the unit (ICU, OR)
   const goneText = (P) => P.goneText || 'Transferred to ICU';
-  const prov = () => staff(C().provider || 'chen');
+  /* A case can give patients their own provider (an OB for the mother, a pediatrician for the baby). */
+  const provKey = (pid) => ((pid && def(pid) && def(pid).provider) || C().provider || 'chen');
+  const prov = (pid) => (pid === undefined && C().patients.some((x) => x.provider) ? { name: C().providerLabel || 'a provider', role: '', look: null } : staff(provKey(pid)));
   const cna = () => staff(C().cna || 'luis');
   const unitS = () => esc(C().unitShort || '4 West');
   const sysL = (id, l) => (C().sysLabels && C().sysLabels[id]) || l;
@@ -347,7 +354,7 @@
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
           ${initial.map((d) => `<figure class="tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust')}<figcaption><b>${d.room} ${esc(d.short)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(d.dx)}</figcaption></figure>`).join('')}
-          ${adm.map((d) => `<figure class="adm tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust', '-232 -112 464 232')}<figcaption><b>${d.room} ${esc(d.short)}, arriving ${hhmm(c, d.arrives)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : 'Admission from the ED: ' + esc(d.reason.toLowerCase())}</figcaption></figure>`).join('')}
+          ${adm.map((d) => `<figure class="adm tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust', '-232 -112 464 232')}<figcaption><b>${d.room} ${esc(d.short)}, arriving ${hhmm(c, d.arrives)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(admWord(d)) + ' from ' + esc(fromOf(d)) + ': ' + esc(d.reason.toLowerCase())}</figcaption></figure>`).join('')}
         </div>
       </section>
       <div>
@@ -431,7 +438,7 @@
       </article>`;
     };
     const body = `<p class="muted" style="margin-top:0">${s.prio ? 'In your priority order. Move patients up or down as the shift changes; this list isn\'t scored.' : 'Everyone you have today, with what you flagged in report.'}</p>
-      <div class="ro-list">${list.map(card).join('')}${pend.map((d) => `<article class="ro pend"><div class="ro-h"><div class="pend-dot" aria-hidden="true"></div><div class="ro-who"><b>${d.room} Admission</b><span>From the ED, about ${E.clock(d.arrives)}</span></div></div><p class="ro-why"><b>Coming for</b> ${esc(d.reason)}</p></article>`).join('')}</div>`;
+      <div class="ro-list">${list.map(card).join('')}${pend.map((d) => `<article class="ro pend"><div class="ro-h"><div class="pend-dot" aria-hidden="true"></div><div class="ro-who"><b>${d.room} ${esc(admWord(d))}</b><span>From ${esc(fromOf(d))}, about ${E.clock(d.arrives)}</span></div></div><p class="ro-why"><b>Coming for</b> ${esc(d.reason)}</p></article>`).join('')}</div>`;
     return sheet('Your patients', body, `<button class="btn btn-primary" data-act="close">Done</button>`, { wide: true, label: 'Your patients' });
   }
 
@@ -468,7 +475,7 @@
   function nextKnown() {
     let best = null; const put = (t, text) => { if (t > s.t && (!best || t < best.t)) best = { t, text }; };
     pts().forEach((d) => { const P = s.p[d.id]; (gone(P) ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && r.t !== null) put(r.t, r.prog ? r.text : `${d.room} ${r.text}`); }); });
-    C().patients.forEach((d) => { if (!here(d)) put(d.arrives, `${d.room} admission from the ED`); });
+    C().patients.forEach((d) => { if (!here(d)) put(d.arrives, `${d.room} ${admWord(d).toLowerCase()} from ${fromOf(d)}`); });
     put(C().length - 60, 'Report hour begins'); put(C().length, 'End of shift');
     return best;
   }
@@ -476,6 +483,8 @@
   const FLAVOR = {
     med: ['Charting vitals and I&Os', 'Restocking the supply cart', 'Returning pages', 'Checking tomorrow\'s lab orders', 'A sip of cold coffee', 'Scanning the telemetry board'],
     psych: ['Charting behavior checks', 'A walk through the milieu', 'Returning a call from a board-and-care', 'Updating the treatment plan', 'A sip of cold coffee', 'Counting sharps with the tech'],
+    ob: ['Charting fundal checks and lochia', 'Restocking pads and peri bottles', 'Answering the infant security alarm test', 'Logging feeds and diapers', 'A sip of cold coffee', 'Calling the lactation consultant back'],
+    ed: ['Charting triage notes', 'Restocking the trauma bay', 'Returning a call from radiology', 'Checking the lobby board', 'A sip of cold coffee', 'Cleaning a stretcher for the next patient'],
     peds: ['Charting intake and output', 'Restocking syringes and diapers', 'Returning a page from pharmacy', 'Weighing diapers', 'A sip of cold coffee', 'Checking pump volumes'],
   };
   function goalSub(x) {
@@ -544,7 +553,7 @@
     const t0 = s.t, f0 = s.fresh.length, base = new Set(nowRows().map((r) => r.pid + '|' + r.key)), arr = pts().length, dl = s.deleg.filter((x) => x.done).length, L = C().length;
     const why = spend(Math.min(30, L - s.t), null, (ss) => {
       if (ss.fresh.length > f0) { const m = ss.inbox.find((x) => x.id === ss.fresh[ss.fresh.length - 1]); if (m) return { pid: m.pid, from: m.from, text: m.text, urgent: m.urgent }; }
-      if (pts().length > arr) { const d = pts()[pts().length - 1]; return { pid: d.id, text: `${d.room} ${d.name} is up from the ED.` }; }
+      if (pts().length > arr) { const d = pts()[pts().length - 1]; return { pid: d.id, text: d.arrivedText || `${d.room} ${d.name} is up from the ED.` }; }
       if (ss.deleg.filter((x) => x.done).length > dl) return { from: C().cna || 'luis', text: `${cna().name} is back and free.` };
       const nk = nowRows().find((r) => !base.has(r.pid + '|' + r.key)); if (nk) return { pid: nk.pid, text: `${rowLabel(nk)}: due now` };
       if (ss.t === L - 60) return { from: 'nova', text: 'One hour left. Start thinking about report.' };
@@ -578,7 +587,7 @@
     requestAnimationFrame(step); el.addEventListener('click', done);
   }
   function vStation() {
-    const doors = C().patients.map((d) => { const P = s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives) }; const light = !gone(P) && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
+    const doors = C().patients.map((d) => { const P = s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
     const pending = C().patients.filter((d) => !here(d));
     const due = dueList();
     return `<main>
@@ -594,7 +603,7 @@
             <div class="facts">${legal(d)}${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null && !gone(P) ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${v && !gone(P) ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
             <div class="go">${gone(P) ? (() => { const n = F.awayRows(s, A(), d, P).filter((r) => !r.done).length; return `<button class="btn ${n ? 'btn-primary' : ''}" data-act="away" data-pid="${d.id}">Follow up${n ? ` (${n})` : ''}</button>`; })() : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
           </div>`; }).join('')}
-          ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} Admission</div><div class="dx">From the ED, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
+          ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} ${esc(admWord(d))}</div><div class="dx">From ${esc(fromOf(d))}, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
           <div class="board-h" style="border-top:1px solid var(--line)"><h2>Unit brain</h2><span class="muted" style="font-size:.82rem">Due across your patients</span></div>
           ${due.length ? dueGroups(due) : '<p class="empty">Nothing due in the next hour.</p>'}
         </section>
@@ -751,7 +760,7 @@
     }).join('')}</ul>`;
   }
   const RISKY = /restrain|seclu|stop the (insulin|pca)|stop the infusion|straight cath|massage|search his room|1:1|pause the insulin|release/i;
-  const ROUND = { med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'] };
+  const ROUND = { med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'], ob: ['Hourly round', 'Fundus, pad, pain, bathroom, baby on their back'], ed: ['Hourly round', 'Pain, what they\'re waiting on, things in reach'] };
   function paneCare(d, P) {
     const Ax = A(), list = (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)), rd = ROUND[F.kindOf(C())], last = F.roundRow(s, Ax, d, P);
     const top = `${P.bell ? `<li><button class="fs-row urgent" data-act="bell" data-id="${d.id}"><span class="fs-l"><b>Answer the call light</b><small>${esc(P.bell.who)} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${esc(P.bell.text)} · since ${E.clock(P.bell.at)}</small></span><span class="fs-t"></span><span class="fs-c">2 min</span></button></li>` : ''}<li><button class="fs-row ${last && last.late ? 'due' : ''} ${stamped(rd[0]) ? 'stamped' : ''}" style="${stamped(rd[0]) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="round" data-id="${d.id}"><span class="fs-l"><b>${rd[0]}</b><small>${rd[1]}${P.roundAt !== undefined ? ` · last ${E.clock(P.roundAt)}` : ''}</small></span><span class="fs-t">${P.roundAt !== undefined ? `${ICON.tick}${E.clock(P.roundAt)}` : ''}</span><span class="fs-c">2 min</span></button></li>`;
@@ -768,9 +777,9 @@
     const Ax = A();
     const item = (act, label, c, extra, cls) => `<li><button class="fs-row ${cls || ''}" data-act="${act}" ${extra || ''}><span class="fs-l"><b>${label}</b></span><span class="fs-t"></span><span class="fs-c">${c}</span></button></li>`;
     const wants = STY && STY.waiting(s, C(), d, P, Ax);
-    let h = `<div class="b-grp"><h4>At the bedside</h4><ul class="fs">${item('talk', `Talk with ${esc(d.short)}${wants ? ' <span class="st-tag">Wants to talk</span>' : ''}`, '3 min')}`;
+    let h = `<div class="b-grp"><h4>At the bedside</h4><ul class="fs">${item('talk', `${esc(d.talkLabel || 'Talk with ' + d.short)}${wants ? ' <span class="st-tag">Wants to talk</span>' : ''}`, '3 min')}`;
     if (d.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += item('family', `${d.family.mode === 'phone' ? 'Call' : 'Talk with'} ${esc(d.family.name)} (${esc(d.family.rel.toLowerCase())})`, d.family.cost + ' min');
-    h += `</ul></div><div class="b-grp"><h4>Call and escalate</h4><ul class="fs">${item('sbar', `Call ${esc(prov().name)} with an SBAR`, '6 min', `data-pid="${d.id}"`)}`;
+    h += `</ul></div><div class="b-grp"><h4>Call and escalate</h4><ul class="fs">${item('sbar', `Call ${esc(prov(d.id).name)} with an SBAR`, '6 min', `data-pid="${d.id}"`)}`;
     (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { h += item('comm', esc(x.label), x.cost + ' min', `data-id="${x.id}"`, x.id === 'rrt' ? 'urgent' : ''); });
     if (!(d.comms || []).some((x) => x.id === 'rrt')) h += item('rrt-generic', 'Call a rapid response', '3 min');
     h += `</ul></div><div class="b-grp"><h4>Get help</h4><ul class="fs">${item('delegate', `Ask ${esc(cna().name)} (${esc(cna().role)})`, '1 min')}</ul></div>`;
@@ -814,7 +823,7 @@
         <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
           <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
-        ${(() => { const w = cnt.talk[1] === 'due'; return `<button class="talk-bub ${w ? 'wants' : ''} ${ui.dock === 'talk' ? 'on' : ''}" data-act="dock" data-id="talk" aria-label="${w ? `${esc(d.short)} wants to talk. ` : ''}Talk with ${esc(d.short)}">${AI.talk}<span>${w ? `${esc(d.short)} wants to talk` : `Talk with ${esc(d.short)}`}</span>${w ? '<i aria-hidden="true"></i>' : ''}</button>`; })()}
+        ${(() => { const w = cnt.talk[1] === 'due'; return `<button class="talk-bub ${w ? 'wants' : ''} ${ui.dock === 'talk' ? 'on' : ''}" data-act="dock" data-id="talk" aria-label="${w ? `${esc(d.short)} wants to talk. ` : ''}${esc(d.talkLabel || 'Talk with ' + d.short)}">${AI.talk}<span>${w ? `${esc(d.short)} wants to talk` : esc(d.talkLabel || 'Talk with ' + d.short)}</span>${w ? '<i aria-hidden="true"></i>' : ''}</button>`; })()}
         ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
       ${looks.length ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
@@ -1276,7 +1285,7 @@
     let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
       <p class="muted" style="margin:.2rem 0">Allergies: ${esc(d.allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
-    if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => `<button class="btn" data-act="prep" data-p="${p}">${PREP[p][0]} <span class="muted">${PREP[p][1]} min</span></button>`).join('')}</div>`;
+    if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => { const x = (def(s.loc).interventions || []).find((i) => i.id === p), lab = PREP[p] || (x ? [x.label, x.cost] : null); return lab ? `<button class="btn" data-act="prep" data-p="${p}">${esc(lab[0])} <span class="muted">${lab[1]} min</span></button>` : ''; }).join('')}</div>`;
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
     if (block) body += `<div class="warnbox">${esc(block)}</div>`;
     if (refuse) body += `<div class="warnbox">${esc(refuse)}</div>${m.prn ? '' : '<p class="muted" style="margin:.4rem 0 0;font-size:.88rem">You can come back and offer it again, or hold it and document the refusal.</p>'}`;
@@ -1300,10 +1309,10 @@
     const pid = ui.sbar.pid;
     if (!pid) {
       const body = `<p>Which patient are you calling about?</p>${pts().filter((p) => !gone(s.p[p.id])).map((p) => `<button class="choice" data-act="sbar" data-pid="${p.id}"><b>${p.room} ${esc(p.name)}</b><br><span class="muted">${esc(p.dx)}</span></button>`).join('')}`;
-      return sheet(`Call ${esc(prov().name)}`, body, '', { face: face(C().provider) });
+      return sheet(`Call ${esc(prov().name)}`, body, '', { face: C().patients.some((x) => x.provider) ? '' : face(C().provider) });
     }
     const d = def(pid), P = s.p[pid], Ax = A();
-    if (ui.sbar.reply) return sheet(esc(prov().name), `<div class="reply">${face(C().provider)}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>${reviewHTML(ui.sbar.review, 'Your call, reviewed')}`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
+    if (ui.sbar.reply) return sheet(esc(prov(pid).name), `<div class="reply">${face(provKey(pid))}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>${reviewHTML(ui.sbar.review, 'Your call, reviewed')}`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
     const items = d.sbar.items(s, P, Ax);
     const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(s, s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
@@ -1312,7 +1321,7 @@
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
         ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
-    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(C().provider), wide: true });
+    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
   }
 
   function ovDeleg() {
@@ -1884,9 +1893,9 @@
         reply = d.sbar.respond.call(d.sbar, s, P, Ax, ui.sbar.picked, ui.sbar.req);
         if (!keys.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
-        P.k.calledAt = s.t; Ax.log(pid, `Called ${prov().name}. "${reply}"`, 'info');
+        P.k.calledAt = s.t; Ax.log(pid, `Called ${prov(pid).name}. "${reply}"`, 'info');
       });
-      if (s.ended) return; ui.sbar.reply = reply; ui.sbar.review = judgSince(j0, pid); reviewSound(ui.sbar.review); stamp(`Called ${prov().name}`, 6); render();
+      if (s.ended) return; ui.sbar.reply = reply; ui.sbar.review = judgSince(j0, pid); reviewSound(ui.sbar.review); stamp(`Called ${prov(pid).name}`, 6); render();
     },
     'doc-pick'(el) {
       const q = ui.doc; if (!q || q.done) return; const d = def(q.pid), x = d.interventions.find((i) => i.id === q.id), sec = x.form(s, s.p[q.pid], A()).sections.find((z) => z.id === el.dataset.s);
@@ -2011,7 +2020,7 @@
       if (m.pid && def(m.pid) && here(def(m.pid)) && !gone(s.p[m.pid]) && !(ui.view === 'room' && s.loc === m.pid)) return enterRoom(m.pid);
       save(); render();
     },
-    pending(el) { const d = def(el.dataset.pid); hint(el, `${d.room} is an admission from the ED, arriving about ${E.clock(d.arrives)}.`); },
+    pending(el) { const d = def(el.dataset.pid); hint(el, `${d.room} is ${/^[AEIOU]/i.test(admWord(d)) ? 'an' : 'a'} ${admWord(d).toLowerCase()} from ${fromOf(d)}, arriving about ${E.clock(d.arrives)}.`); },
     cast(el) {
       const id = el.dataset.id; R.poke(id + ':bust');
       const d = C().patients.find((p) => p.id === id), look = d ? d.look : (C().staff[id] || {}).look;

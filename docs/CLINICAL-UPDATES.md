@@ -2,6 +2,19 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 3, 2026: two new shifts
+
+| Shift | What's new | Basis |
+|---|---|---|
+| Days on 2 North | Postpartum hemorrhage: QBL by weighed pads, 1,000 mL threshold, uterotonic contraindications (carboprost in asthma, methylergonovine in hypertension), TXA within 3 hours of birth. | ACOG Practice Bulletin 183; WOMAN trial; CMQCC OB Hemorrhage Toolkit. |
+| Days on 2 North | Magnesium therapeutic range 4.8–8.4 mg/dL, hourly reflex/RR/urine checks, calcium gluconate 1 g for toxicity; severe hypertension treated within 30–60 minutes with labetalol, hydralazine or immediate-release nifedipine. | ACOG Practice Bulletin 222 and Committee Opinion 767. |
+| Days on 2 North | Newborn hypoglycemia: 45 mg/dL target from 4–24 hours, dextrose 40% gel 0.5 mL/kg, recheck in an hour; hepatitis B vaccine within 24 hours, vastus lateralis. | AAP 2011 clinical report; Sugar Babies trial; ACIP. |
+| Days on 2 North | EPDS with any positive item 10 needs same-day assessment; Rh immune globulin 300 mcg within 72 hours. | ACOG Clinical Practice Guideline 4 (2023); ACOG Practice Bulletin 181. |
+| Evenings in the ED | Stroke: last known well vs. time found, 4.5-hour thrombolytic window, tenecteplase 0.25 mg/kg (max 25 mg), BP under 185/110, thrombectomy up to 24 hours for large-vessel occlusion. | AHA/ASA 2019 guideline and updates; FDA tenecteplase approval. |
+| Evenings in the ED | Inferior STEMI: repeat ECGs for ongoing symptoms, V4R, nitrates avoided with RV involvement; aspirin chewed. | ACC/AHA STEMI guidance. |
+| Evenings in the ED | Anaphylaxis: epinephrine 0.01 mg/kg IM (max 0.5 mg) in the thigh, repeat in 5–15 minutes, observation for biphasic reactions. | 2023 AAAAI/ACAAI anaphylaxis practice parameter. |
+| Evenings in the ED | Warfarin-associated subdural: 4-factor PCC 25 units/kg for INR 2–4, vitamin K 10 mg IV slowly. | ACC 2020 expert consensus on bleeding with oral anticoagulants. |
+
 ## October 2, 2026 sweep
 
 | Shift | What changed | Why |
