@@ -23,7 +23,8 @@ with sync_playwright() as p:
     went = []
     A = device(b, db, '/play/', 'pat', errs, extra=PACK)
     A.context.route('https://buy.stripe.test/**', lambda r: (went.append(r.request.url), r.fulfill(status=200, body='<h1>Stripe stand-in</h1>', content_type='text/html')))
-    check(lockedN(A) == 4, f'four shifts are in the pack ({lockedN(A)})')
+    NPACK = A.locator('.rung[data-id]').count() - 3
+    check(NPACK >= 4 and lockedN(A) == NPACK, f'every shift but the free three is in the pack ({lockedN(A)} of {NPACK})')
     check(A.locator('.rung[data-id]:not(.in-pack)').count() == 3, 'three shifts are free')
     H(A, 'pick-case', id='medsurg-4w-1'); H(A, 'new')
     check(A.evaluate("Shift.ui._ui.view") == 'handoff', 'a free shift starts')
@@ -32,7 +33,7 @@ with sync_playwright() as p:
     H(A, 'new'); A.wait_for_timeout(150)
     check(A.evaluate("Shift.ui._ui.ov") == 'pack' and A.evaluate("Shift.ui._ui.view") == 'home', 'starting a pack shift opens the pack instead')
     txt = A.inner_text('.sheet')
-    check('3 shifts are free' in txt and 'other 4' in txt and '$12' in txt and 'Days on 6 East' in txt, 'the pack says what it opens and the price')
+    check('3 shifts are free' in txt and f'other {NPACK}' in txt and '$12' in txt and 'Days on 6 East' in txt, 'the pack says what it opens and the price')
     check('Sign in to buy' in txt, 'buying asks to sign in first')
     A.screenshot(path=str(OUT / 'pack-signed-out.png'))
 
@@ -56,14 +57,14 @@ with sync_playwright() as p:
     r = A.evaluate(f"fetch('{db and 'https://supa.theshift.test'}/rest/v1/entitlements',{{method:'POST',headers:{{apikey:Shift.config.supabaseKey,'Content-Type':'application/json',Authorization:'Bearer p1'}},body:JSON.stringify({{user_id:'u-pat',product:'pack2'}})}}).then(r=>r.status)")
     check(r == 403, 'a player can\'t write a purchase themselves')
     H(A, 'account'); H(A, 'acct-out'); A.wait_for_timeout(200)
-    check(lockedN(A) == 4, 'signing out locks the pack again on this device')
+    check(lockedN(A) == NPACK, 'signing out locks the pack again on this device')
 
     # A school license: the class has pack = true.
     T = device(b, db, '/teach/', 'teach', errs, vw=1280); signin(T, 'tt', '/teach/')
     T.fill('#cn', 'School cohort'); T.click('form[data-form=make] button'); T.wait_for_timeout(600)
     db.classes[-1]['pack'] = True; code = db.classes[-1]['code']
     B = device(b, db, '/play/', 'sam', errs, extra=PACK); signin(B, 's1')
-    check(lockedN(B) == 4, 'a student not yet in a licensed class sees the pack')
+    check(lockedN(B) == NPACK, 'a student not yet in a licensed class sees the pack')
     H(B, 'cls'); B.wait_for_timeout(300); B.fill('#cls-code', code); B.fill('#cls-name', 'Sam Lee'); H(B, 'cls-join'); B.wait_for_timeout(800)
     check('Every shift is open to you' in B.content(), 'joining a licensed class says every shift opens')
     H(B, 'close'); check(lockedN(B) == 0, 'a licensed class unlocks every shift')

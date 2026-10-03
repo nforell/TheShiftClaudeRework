@@ -2,6 +2,32 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 12 — October 3, 2026 (branch `more-shifts`, built on `main`)
+
+Nick's ask: more rooms and cases, as robust as possible. Two new specialty shifts, toward 12–15 for the pack.
+
+### Done
+- **Shift 9: Days on 2 North** (mother-baby, 07:00–12:00). `src/case-ob1.js`, `src/stories/ob1.js`.
+  - 212 Keisha: atony behind a full bladder 2.5 hours after a long oxytocin induction. Fundus, bladder scan and cath, weighed pads (QBL), massage, the PPH order set. Asthma makes carboprost dangerous; leaving it off the call makes the OB suggest it. TXA scores fully only inside 3 hours of birth.
+  - 214 Lani: magnesium for severe preeclampsia with 3 hours of oliguria and a rising creatinine. Hourly reflex/RR/LOC/urine checks; a call gets 1 g/h, and the pump has to be changed. Ignored, reflexes go, then breathing (toxicity protocol: stop, calcium gluconate). At 08:35 a severe-range pressure with a headache starts the 60-minute treatment clock (labetalol, hydralazine or nifedipine; acetaminophen for the headache is the trap).
+  - 216 Baby Nguyen: 6 hours old, 4.45 kg, mother on insulin. Glucose overdue, no feed since 04:00, a little cool. Dextrose gel by weight (2.2 mL), feed, warm, recheck in an hour; symptoms mean the pediatrician and IV dextrose. His mother wants exclusive breastfeeding: donor milk with her consent. Hepatitis B vaccine with an injection-site choice.
+  - 218 Sarah: day 1 after a cesarean, EPDS 15 with item 10 marked, history of depression off sertraline, discharge planned for 14:00. Ask directly, ask about a plan, never promise secrecy, call, hold discharge, safety companion. RhoGAM (IM only, within 72 hours) and intrathecal morphine checks.
+  - Each patient can now have their own provider (`provider` on a patient): the OB for mothers, a pediatrician for the baby.
+- **Shift 8: Evenings in the ED** (Pod B, 15:00–20:00). `src/case-ed1.js`, `src/stories/ed1.js`. Three in beds and two arrivals.
+  - 22 Walter: stroke alert. EMS's "onset 14:30" is when his wife found him; she last saw him normal at 11:00. A tenecteplase order arrives at 15:24 based on the EMS time. Asking her, and calling, cancels it and sends him to thrombectomy for an M1 clot. BP under 185/110, swallow screen before anything by mouth.
+  - 21 Rosalind: diabetic woman with "indigestion" and no aspirin at triage. The repeat ECG (on time, or when her pain moves to her jaw) shows an inferior STEMI; V4R shows the right ventricle, so nitroglycerin crashes her pressure. Ignored, she fibrillates.
+  - 23 Alicia: positive hCG, waiting on a backed-up ultrasound while she bleeds: shoulder-tip pain, dizziness, a heart rate that climbs. Her boyfriend answers for her; talking to her alone surfaces bruising and a disclosure, with a right and two wrong responses.
+  - 24 Kenji (arrives 16:10): anaphylaxis; EMS gave diphenhydramine, no epinephrine. IM thigh epinephrine fast, a second dose, fluids; IV push of 1 mg/mL is a scored error. Later he wants to leave: observation, two autoinjectors, teach-back.
+  - 25 Harold (arrives 17:30): fall on warfarin, GCS 15. A slow subdural shows up on neuro checks about 40 minutes in; 4-factor PCC and IV vitamin K stop it. Ondansetron for new vomiting without a neuro check, and his 18:00 warfarin, are traps.
+- Every new patient has a story arc, transfer follow-ups (L&D, NICU, cath lab, IR, OR, ICU) and new receiving nurses, three NCLEX-style items per shift, floor calls for each unit (infant security, baby blues vs. depression, a cool newborn, safe sleep; a gray man in the lobby, leaving AMA, EMTALA, an escalating visitor), unit flavor for call lights and rounds, and a STEMI rhythm on the monitor.
+- Admissions can now be labeled per patient ("Arrival from EMS", "from triage") instead of always "Admission from the ED"; newborns get "Pick him up" instead of "Talk with".
+- New tests: `tests/ob.py` and `tests/ed.py` (careful run: every patient good, Evaluate outcomes scored; skip-ahead run: every patient bad). Both shifts added to the sweep in `tests/run_all.py`. `docs/cjmm-map.csv` regenerated.
+
+### Needs Nick
+- Clinical review: send `/review/ob-2n-1/` to a mother-baby or L&D nurse and `/review/ed-podb-1/` to an ED nurse. Specific things to check: the PPH order set allowing nurse-initiated uterotonics, the magnesium toxicity thresholds, the newborn glucose protocol numbers, the EPDS follow-up workflow, the ED heparin bolus (60 units/kg, max 4,000), and the stroke workflow using tenecteplase.
+- Play each once. The ED is rated Advanced: two arrivals land while the first three are still active.
+- The shift pack: both new shifts are paid by default (only the three listed in `config.pack.free` are free).
+
 ## Session 11 — October 1, 2026 (branch `psych-documentation`, built on `clarity-pass`)
 
 Nick's ask: on the psych units, lean into the documentation and justification that seclusion, restraint and emergency IM medication require, including the provider's in-person check.

@@ -17,6 +17,8 @@
     'psych-4n-1': { reviewers: [], hash: '', references: [] },
     'stepdown-6e-1': { reviewers: [], hash: '', references: [] },
     'peds-5s-1': { reviewers: [], hash: '', references: [] },
+    'ob-2n-1': { reviewers: [], hash: '', references: [] },
+    'ed-podb-1': { reviewers: [], hash: '', references: [] },
   };
   const now = (id) => (S.reviewHashes || {})[id] || '';
   /* awaiting: nobody has signed off yet · reviewed: signed off on this exact content · changed: signed off on an older version */
