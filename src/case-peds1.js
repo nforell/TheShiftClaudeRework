@@ -13,7 +13,7 @@
 
   /* ---------- 501 Mateo Hernández: RSV bronchiolitis on high-flow ---------- */
   const mat = {
-    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
+    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
     norms: INFANT,
     look: { skin: '#D8A77F', shade: '#BC8A63', lip: '#B0655A', blush: '#E59A86', iris: '#2B1B10', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#2A1B12' }, brow: { w: 2.2, color: '#5A4030' }, body: { w: 56, cloth: 'onesie2' }, extras: ['cannula'], smile: .5,
@@ -327,7 +327,7 @@
   /* ---------- 507 Noah Whitfield: a fussy baby whose body tells a different story ---------- */
   const headSev = (s, P) => (P.ct !== null ? 0 : clamp((s.t - 60) / 110, 0, 1.2));
   const noah = {
-    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', age: '4 mo', sex: 'M', mrn: '01193310',
+    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01193310',
     norms: INFANT,
     look: { skin: '#F1D2B8', shade: '#D8B498', lip: '#C47A70', blush: '#F2A594', iris: '#4C6A84', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#B08A5A' }, brow: { w: 2, color: '#C0A078' }, body: { w: 56, cloth: 'onesie' }, extras: [], smile: .2,

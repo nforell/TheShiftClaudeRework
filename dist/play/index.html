@@ -1879,9 +1879,81 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .orient{--pen:#2B4C8C}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .orient{--pen:#9DBBEA}}
 :root[data-theme="dark"] .orient{--pen:#9DBBEA}
+
+/* ------------ Talking in the room: speech bubbles by the speaker, replies under the scene ------------ */
+.sb{position:absolute;z-index:4;max-width:calc(100% - 20px);padding:.6rem .85rem .65rem;background:#FFFEF9;color:#1C2330;border:2px solid #1C2330;border-radius:18px;box-shadow:0 10px 22px -12px rgba(20,24,30,.55);font-size:.98rem;line-height:1.45}
+.sb:not([data-side]){visibility:hidden}
+.sb-tail{position:absolute;width:16px;height:16px;background:#FFFEF9;border:2px solid #1C2330;transform:rotate(45deg)}
+.sb[data-side="l"] .sb-tail{right:-10px;top:calc(var(--ty,40px) - 8px);border-left:0;border-bottom:0}
+.sb[data-side="r"] .sb-tail{left:-10px;top:calc(var(--ty,40px) - 8px);border-right:0;border-top:0}
+.sb[data-side="down"] .sb-tail{bottom:-10px;left:calc(var(--tx,50%) - 18px);border-left:0;border-top:0}
+.sb[data-side="up"] .sb-tail{top:-10px;left:calc(var(--tx,50%) - 20px);border-right:0;border-bottom:0}
+.sb[data-side="below"] .sb-tail{top:-10px;left:calc(var(--tx,50%) - 18px);border-right:0;border-bottom:0}
+.sb[data-side="none"] .sb-tail,.sb[data-side="fam"] .sb-tail,.sb[data-side="famlo"] .sb-tail{display:none}
+.sb-tx{margin:0;font-family:var(--serif)}
+.sb .sb-say{color:#1C2330}
+.sb .sb-act{font-style:italic;color:#59606B;font-size:.94em}
+.sb-who{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .7rem;margin:0 0 .3rem;font-size:.8rem;color:#59606B}
+.sb-who b{font-family:var(--sign);font-size:1.02rem;font-weight:700;letter-spacing:.01em;color:#1C2330}
+.sb-st{display:inline-flex;align-items:center;gap:.35rem}
+.sb-st .st-tr small{display:none}
+/* idle: what they're saying now, and the way in */
+.sb.idle{padding:.5rem .7rem .55rem;font-size:.93rem}
+.sb.idle .sb-tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sb-go{position:relative;display:flex;align-items:center;gap:.5rem;width:100%;margin-top:.45rem;min-height:40px;padding:.35rem .4rem .35rem .75rem;border:1.5px solid #1C2330;border-radius:999px;background:transparent;color:#1C2330;font-weight:700;font-size:.9rem;cursor:pointer;text-align:left}
+.sb-go span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-go small{flex:none;padding:.1rem .45rem;border-radius:999px;background:#ECE9E1;font-family:var(--mono);font-size:.74rem;font-weight:700;color:#59606B}
+.sb-go:hover{background:#1C2330;color:#FFFEF9}.sb-go:hover small{background:rgba(255,255,255,.18);color:#FFFEF9}
+.sb.idle .sb-tx + .sb-go{margin-top:.45rem}
+.sb.idle .sb-go:first-child{margin-top:0}
+.sb.wants{border-color:var(--teal-strong,#22406A)}
+.sb.wants .sb-tail{border-color:var(--teal-strong,#22406A)}
+.sb.wants .sb-go{background:#22406A;border-color:#22406A;color:#fff}
+.sb.wants .sb-go small{background:rgba(255,255,255,.2);color:#fff}
+.sb-go .ping{position:absolute;left:-5px;top:-5px;width:13px;height:13px;border-radius:50%;background:#F2C12E;box-shadow:0 0 0 2px #FFFEF9;animation:bubPing 1.6s ease-out infinite}
+.sb.fam{padding:.35rem}.sb.fam .sb-go{margin:0;font-size:.85rem}
+.sb.fresh{animation:sbPop .32s cubic-bezier(.3,1.5,.5,1)}
+/* in conversation */
+.sb.talking{padding:.7rem 1rem .8rem;font-size:1.04rem;animation:sbPop .34s cubic-bezier(.3,1.4,.5,1)}
+.sb.talking .sb-tx{font-size:1.06rem;line-height:1.5}
+@keyframes sbPop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.sb[data-side="l"]{transform-origin:100% 70%}.sb[data-side="r"]{transform-origin:0 70%}
+.room-top.talking::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 46% 70% at 50% 45%,transparent 50%,rgba(10,14,20,.38) 100%)}
+.room-top.talking .nameplate{z-index:3}
+.roomv.talking .ws{opacity:.38;filter:saturate(.5);pointer-events:none;transition:opacity .25s}
+/* replies */
+.convo{margin:.75rem 0 0;padding:.9rem clamp(.8rem,2vw,1.2rem) 1rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--rc);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;animation:sbPop .3s ease-out}
+.said{display:flex;align-items:flex-end;gap:.5rem;margin:0;max-width:min(640px,100%);opacity:.8}
+.said-b{padding:.5rem .85rem;border-radius:18px 18px 4px 18px;background:var(--teal);color:var(--teal-ink);font-family:var(--serif);font-size:.95rem}
+.said-k,.replies-k{font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.replies{display:flex;flex-direction:column;align-items:flex-end;gap:.45rem;width:100%}
+.replies-k{margin:.2rem 0 0;align-self:flex-end}
+.reply{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.6rem;align-items:start;max-width:min(640px,100%);min-height:44px;padding:.6rem .95rem .65rem .7rem;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;background:var(--paper);color:var(--ink);text-align:left;cursor:pointer;font-family:var(--serif);font-size:1rem;line-height:1.45;transition:background .15s,border-color .15s,transform .08s;animation:sbPop .3s ease-out backwards}
+.reply:nth-child(3){animation-delay:.06s}.reply:nth-child(4){animation-delay:.12s}
+.reply kbd{display:grid;place-items:center;width:1.55rem;height:1.55rem;margin-top:.05rem;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.reply:hover{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,var(--paper))}
+.reply:hover kbd{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.reply:active{transform:translateY(1px)}
+.convo .rv{align-self:stretch}
+.convo-f{display:flex;justify-content:flex-end;width:100%}
+@media (prefers-reduced-motion:reduce){.sb,.sb.talking,.sb.fresh,.reply,.convo,.sb-go .ping{animation:none!important}}
+:root[data-motion="reduced"] .sb,:root[data-motion="reduced"] .reply,:root[data-motion="reduced"] .convo,:root[data-motion="reduced"] .sb-go .ping{animation:none!important}
+@media (max-width:760px){
+  .sb{font-size:.92rem}
+  .sb[data-side="down"]{left:10px;right:10px;max-width:none}
+  .sb[data-side="down"] .sb-tx{-webkit-line-clamp:2}
+  .sb[data-side="below"]{left:10px;right:10px;max-width:none}
+  .sb[data-side="below"] .sb-tx{-webkit-line-clamp:2}
+  .sb[data-side="fam"],.sb[data-side="famlo"]{right:10px;max-width:60%}
+  .sb[data-side="up"]{position:relative;margin:14px 10px 10px;max-width:none}
+  .room-top.talking .nameplate{display:none}
+  .room-top.talking::after{bottom:auto;height:300px}
+  .reply{font-size:.96rem}
+  .reply kbd{display:none}.reply{grid-template-columns:minmax(0,1fr)}
+}
 </style></head>
 <body><div id="app"></div>
-<script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "7a082369fa", "ed-podb-1": "bddd69088c", "medsurg-4w-1": "e98eececdc", "medsurg-4w-2": "9e39a38416", "medsurg-4w-3": "a9b55d35d1", "ob-2n-1": "591d264c41", "peds-5s-1": "ba8c723472", "psych-3e-1": "aec236f1c3", "stepdown-6e-1": "25d6b7b9e9"};
+<script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "7a082369fa", "ed-podb-1": "bddd69088c", "medsurg-4w-1": "e98eececdc", "medsurg-4w-2": "9e39a38416", "medsurg-4w-3": "a9b55d35d1", "ob-2n-1": "06c3afa6e9", "peds-5s-1": "a524375617", "psych-3e-1": "aec236f1c3", "stepdown-6e-1": "25d6b7b9e9"};
 window.Shift.terms = {"version": "2026-10-02", "updated": "October 2, 2026", "contact": "nicholasforell@gmail.com", "summary": [["Practice, not advice.", "The Shift is an educational game. It is not medical, nursing or legal advice, and it doesn't replace your nursing program, clinical instruction, licensure requirements, your facility's policies or a licensed professional's judgment."], ["Never use it for real patients.", "Doses, protocols, thresholds and laws are simplified for teaching and can differ from current guidelines, drug labeling, your facility and your state. For real care, follow your orders, your policies and current references."], ["It can be wrong.", "The content is written to commonly taught practice and is being reviewed by working nurses, but medicine changes and mistakes happen. It's provided as is, with no guarantee it's accurate, complete or current."], ["No exam guarantee.", "The Shift isn't affiliated with or endorsed by NCSBN. NCLEX\u00ae is a registered trademark of NCSBN. Playing doesn't guarantee any exam result."], ["Hard topics.", "Shifts include suicide risk, self-harm, abuse, overdose, restraint and death. If you're in crisis, call or text 988 (US), or call 911."], ["Fictional people.", "Every patient, family member, staff member and unit is invented."]], "sections": [{"h": "Agreeing to these terms", "p": ["By playing The Shift, using its website, instructor dashboard or review pages, or creating an account, you agree to these terms. If you don't agree, don't use The Shift. \"We\" and \"us\" mean The Shift and its creator."]}, {"h": "An educational simulation only", "p": ["The Shift is a game for practicing clinical judgment. It is provided for general education and entertainment. It is not medical, nursing, pharmacy, legal or other professional advice, and using it does not create any nurse\u2013patient, provider\u2013patient or other professional relationship.", "It is not a substitute for an accredited nursing program, clinical instruction, preceptorship, continuing education requirements, your licensing board's rules, your employer's or school's policies, or the judgment of a licensed professional."]}, {"h": "Not for patient care", "p": ["Do not use anything in The Shift to make decisions about the care of a real person. Medication doses, protocols, nomograms, lab values and thresholds, scoring, timing and the legal framework are simplified and adapted for teaching. They may differ from current clinical guidelines, manufacturer labeling, your facility's protocols and the law where you live or work.", "In real practice, follow the orders you're given, your facility's policies and procedures, current drug references and the scope of practice in your state. If you have a question about your own health, talk to a qualified health professional. In an emergency, call 911."]}, {"h": "Accuracy and clinical review", "p": ["Content is written to reflect commonly taught nursing practice as of its last update, and each shift shows whether it has been reviewed by a clinician. Even so, medicine and law change, reviewers can disagree, and errors happen. We don't promise that any content is accurate, complete, current or suited to your situation, and we may change or remove content at any time.", "If you spot something clinically wrong, please tell us through Menu \u2192 Send feedback or report a problem."]}, {"h": "Laws and settings vary", "p": ["The psychiatric shifts are written to California law (for example, 5150, 5250, 5585, Riese and LPS conservatorship) as one example. Other states' laws differ. A General US setting replaces those terms with plain descriptions, but neither version is a statement of the law where you practice. Facility policies also differ from unit to unit."]}, {"h": "Exams and trademarks", "p": ["The Shift is not affiliated with, sponsored by or endorsed by the National Council of State Boards of Nursing (NCSBN). NCLEX\u00ae, NCLEX-RN\u00ae and NCLEX-PN\u00ae are registered trademarks of NCSBN, used here only to describe the exam the practice relates to. Practice questions are original and are not actual exam items. Using The Shift does not guarantee that you will pass any exam, course or competency check."]}, {"h": "Sensitive content", "p": ["Shifts depict suicide risk, self-harm, child abuse, overdose, alcohol withdrawal, physical restraint, serious illness and death, written at the level a nurse would encounter them. Take a break whenever you need to. If you are thinking about harming yourself or are in crisis, call or text 988 (Suicide & Crisis Lifeline, US), or call 911."]}, {"h": "Who it's for", "p": ["The Shift is intended for adults (18 or older) in nursing education or practice. Younger learners may use it only with a parent's or educator's permission and supervision."]}, {"h": "Fictional characters", "p": ["All patients, families, staff, hospitals, units and events in The Shift are fictional. Any resemblance to real people or events is coincidental. Please don't enter real patient information or anything that identifies a real person anywhere in the game, including feedback."]}, {"h": "Your account, purchases and feedback", "p": ["You're responsible for activity on your account. If you buy the shift pack, payment is handled by Stripe; contact us if something goes wrong with a purchase. Feedback and clinical review comments you send may be used to improve The Shift without any obligation or payment to you. How data is handled is described in the Privacy page."]}, {"h": "No warranties", "p": ["The Shift is provided \"as is\" and \"as available\", without warranties of any kind, express or implied, including warranties of accuracy, fitness for a particular purpose, merchantability, non-infringement, or that it will be uninterrupted or error-free, to the fullest extent permitted by law."]}, {"h": "Limitation of liability", "p": ["To the fullest extent permitted by law, The Shift and its creator, contributors and clinical reviewers are not liable for any direct, indirect, incidental, consequential, special, exemplary or punitive damages, or for any loss of data, income or opportunity, arising out of or related to your use of, or inability to use, The Shift or any decision or action taken based on it, even if advised of the possibility of such damages. If any liability can't be excluded, it is limited to the amount you paid for The Shift in the 12 months before the claim, or US $50 if you paid nothing.", "You agree to use The Shift at your own risk, and you are solely responsible for how you apply anything you learn from it. Some jurisdictions don't allow certain limitations, so some of the above may not apply to you."]}, {"h": "Indemnity", "p": ["To the extent permitted by law, you agree to hold harmless The Shift and its creator from claims arising out of your misuse of The Shift, including using it to make decisions about real patient care, or your breach of these terms."]}, {"h": "Changes and general terms", "p": ["We may update these terms. When they change in a way that matters, the date above changes and the game asks you to agree again. These terms are governed by the laws of the State of California, without regard to conflict-of-law rules. If any part is found unenforceable, the rest still applies.", "Questions: email the address below."]}]};
 /* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
    posthogKey: the project API key from PostHog (Project settings → Project API key, starts with "phc_").
@@ -9325,7 +9397,7 @@ window.Shift = window.Shift || {};
 
   /* ---------- 501 Mateo Hernández: RSV bronchiolitis on high-flow ---------- */
   const mat = {
-    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
+    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
     norms: INFANT,
     look: { skin: '#D8A77F', shade: '#BC8A63', lip: '#B0655A', blush: '#E59A86', iris: '#2B1B10', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#2A1B12' }, brow: { w: 2.2, color: '#5A4030' }, body: { w: 56, cloth: 'onesie2' }, extras: ['cannula'], smile: .5,
@@ -9639,7 +9711,7 @@ window.Shift = window.Shift || {};
   /* ---------- 507 Noah Whitfield: a fussy baby whose body tells a different story ---------- */
   const headSev = (s, P) => (P.ct !== null ? 0 : clamp((s.t - 60) / 110, 0, 1.2));
   const noah = {
-    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', age: '4 mo', sex: 'M', mrn: '01193310',
+    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01193310',
     norms: INFANT,
     look: { skin: '#F1D2B8', shade: '#D8B498', lip: '#C47A70', blush: '#F2A594', iris: '#4C6A84', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#B08A5A' }, brow: { w: 2, color: '#C0A078' }, body: { w: 56, cloth: 'onesie' }, extras: [], smile: .2,
@@ -11114,7 +11186,7 @@ window.Shift = window.Shift || {};
     norms: NEWBORN,
     look: { skin: '#EBC2A0', shade: '#D0A27E', lip: '#C47A70', blush: '#F0A08C', iris: '#1E140C', head: { w: 62, h: 58, jaw: .02 }, eye: 10.6, small: .62,
       hair: { style: 'buzz', color: '#1A1410' }, brow: { w: 1.8, color: '#4A3A2C' }, body: { w: 54, cloth: 'onesie2' }, extras: [], smile: .1,
-      lines: { calm: '(Asleep, fists curled up by his face.)', shaky: '(His arms tremble in quick little jerks, then stop when you hold them.)', drowsy: '(Floppy and hard to wake. He won\'t root.)', anxious: '(A thin, fussy cry.)', none: '(Limp. He doesn\'t respond.)', hypo: '(Jittery and pale. A weak, high cry.)' } },
+      lines: { calm: '(Asleep, fists curled up by his face.)', shaky: '(His arms tremble in quick little jerks, then stop when you hold them.)', drowsy: '(Sleepy. He stirs when you touch his cheek, then drifts off without rooting.)', anxious: '(A thin, fussy cry.)', none: '(Limp. He doesn\'t respond.)', hypo: '(Jittery and pale. A weak, high cry.)' } },
     bio: `Born at 01:05, 39 weeks, 4.45 kg. First baby for Linh, a pharmacy tech, and her husband Bảo, who went home to sleep at four.`,
     dx: `Newborn, infant of a diabetic mother`, reason: `Term baby boy, 6 hours old. Mother has gestational diabetes treated with insulin. Large for gestational age, 4.45 kg. Hypoglycemia protocol.`,
     hx: [`Mother: gestational diabetes on insulin since 28 weeks; HbA1c 6.4`, `Apgars 8 and 9`, `Erythromycin eye ointment and vitamin K given at birth`, `Mother's hepatitis B surface antigen negative`],
@@ -11225,7 +11297,7 @@ window.Shift = window.Shift || {};
     },
     scene: (s, P) => ({ crib: true, tray: 'none', bottle: P.donor, family: P.gone ? null : 'linh', familyLabel: P.skin ? 'Linh, holding him skin to skin' : 'Linh, his mother, in the bed beside the bassinet', empty: P.gone, emptyText: P.nicu ? 'Bassinet empty. Taken to the NICU after a seizure.' : 'Bassinet empty. In the NICU for IV dextrose; Linh went with him.' }),
     clues: (s, P) => ({ crib: `Bassinet card: "Baby Boy Nguyen, 4.45 kg, 01:05." Under it, Linh's feeding log: "01:30 15 min. 04:00 10 min (sleepy)." Nothing after.`, family: `Linh, sitting up, a breast pump flange in its wrapper on the table. A glucose meter of her own in her bag: "I'm not supposed to need it anymore."`, bottle: `A syringe of donor milk, labeled with his name and the time.` }),
-    rig: (s, P) => ({ glu: Math.round(P.glu) + 20, tremor: sym(P) && P.glu >= 28 ? .6 : 0, alert: P.glu < 28 ? 2 : P.glu < 40 || P.temp < 36.4 ? 1 : 0, temp: bTemp(P) }),
+    rig: (s, P) => ({ sbp: 110, glu: sym(P) ? 30 : 95, tremor: sym(P) && P.glu >= 28 ? .6 : 0, alert: P.glu < 28 ? 2 : P.glu < 40 || P.temp < 36.4 ? 1 : 0, temp: bTemp(P) }),
     status: (s, P) => (P.gone ? 'gone' : sym(P) || P.glu < 30 ? 'urgent' : P.glu < 45 || P.temp < 36.5 ? 'watch' : 'stable'),
     outcome(s, P) {
       if (P.nicu) return { tone: 'bad', title: 'Hypoglycemic seizure, NICU', text: `Glucose ${Math.round(P.glu)} with a seizure at ${clock(P.goneAt)}. His 07:00 check ${P.checks.length ? 'came late' : 'was never done'}, and he hadn't fed since 04:00.` };
@@ -15730,10 +15802,96 @@ window.Shift = window.Shift || {};
       talk: STY && STY.waiting(s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Patient, family, provider', ''],
     };
   }
+  /* ------------ talking in the room ------------
+     The patient (or the family member beside them) speaks in a speech bubble by their head. Your replies are
+     speech bubbles under the scene; tap one to say it. Speech is plain; what people do is in italics. */
+  function speechHTML(t, sp) {
+    t = String(t == null ? '' : t).trim();
+    if (!t.includes('"')) { const narr = /^\(.*\)$/.test(t) || !sp; return narr ? `<em class="sb-act">${esc(t.replace(/^\((.*)\)$/, '$1'))}</em>` : `<span class="sb-say">${esc(t)}</span>`; }
+    return t.split('"').map((seg, i) => (!seg.trim() ? '' : i % 2 ? `<span class="sb-say">${esc(seg.trim())}</span>` : `<em class="sb-act">${esc(seg.trim())}</em>`)).join(' ');
+  }
+  const isPt = (key) => !!def(key);
+  function dlgLine() {
+    if (ui.dlg.id === '__review') return ui.dlgLast || null;
+    const node = C().dialogs[ui.dlg.id]; if (!node) return null;
+    return { who: node.who, text: typeof node.text === 'function' ? node.text(s) : node.text, story: node.story || null };
+  }
+  function speech(d, P, fl) {
+    const Ax = A();
+    if (ui.ov === 'dialog' && ui.dlg) {
+      const L = dlgLine(); if (!L) return '';
+      const pt = isPt(L.who), fam = !pt && fl.family === L.who, nm = pt ? def(L.who).short : who(L.who).name;
+      const st = L.story && STY ? trustDots(STY.trust(s.p[L.story.pid])) : '';
+      return `<div class="sb talking" data-anchor="${fam ? 'fam' : pt ? 'pt' : 'side'}" role="status" aria-live="polite">
+        <p class="sb-who"><b>${esc(nm)}</b>${st ? `<span class="sb-st">Getting to know ${esc(pt ? d.short : nm.split(' ')[0])} ${st}</span>` : ''}</p>
+        <p class="sb-tx">${speechHTML(L.text, false)}</p><i class="sb-tail" aria-hidden="true"></i></div>`;
+    }
+    if (fl.empty || gone(P)) return '';
+    const cid = d.talk(s, P, Ax), node = cid && C().dialogs[cid];
+    const line = ui.captionPoke && ui.caption ? { text: ui.captionRaw, quiet: ui.captionQuiet } : R.say(d.id, rigV(d.id));
+    let h = '';
+    if (cid || line) {
+      const story = !!(STY && STY.waiting(s, C(), d, P, Ax)), fresh = !!(node && node.choices && !(s.seenDlg || {})[cid]);
+      const wants = cid && (story || fresh), label = wants && !d.newborn ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
+      h += `<div class="sb idle ${wants ? 'wants' : ''} ${ui.captionPoke ? 'fresh' : ''}" data-anchor="pt">${line ? `<p class="sb-tx">${speechHTML(line.text, !line.quiet)}</p>` : ''}${cid ? `<button class="sb-go" data-act="talk">${wants ? '<i class="ping" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span><small>3 min</small></button>` : ''}<i class="sb-tail" aria-hidden="true"></i></div>`;
+    }
+    if (d.family && fl.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<div class="sb idle fam" data-anchor="fam"><button class="sb-go" data-act="family"><span>Talk with ${esc(d.family.name)}</span><small>${d.family.cost} min</small></button><i class="sb-tail" aria-hidden="true"></i></div>`;
+    return h;
+  }
+  function convoTray(d) {
+    const rev = ui.dlg.id === '__review', node = rev ? null : C().dialogs[ui.dlg.id];
+    const L = dlgLine(), nm = L ? (isPt(L.who) ? def(L.who).short : who(L.who).name) : d.short;
+    let h = `<section class="convo" aria-label="Conversation with ${esc(nm)}">`;
+    if (ui.said) h += `<p class="said"><span class="said-b">${esc(ui.said)}</span><span class="said-k">You</span></p>`;
+    if (node && node.choices) h += `<div class="replies" role="group" aria-label="Your reply"><p class="replies-k">Your reply</p>${mixOrder(node.choices.length, ui.dlg.id).map((i, k) => `<button class="reply" data-act="dlg" data-i="${i}"><kbd aria-hidden="true">${k + 1}</kbd><span>${esc(node.choices[i].label)}</span></button>`).join('')}</div>`;
+    else h += `${ui.dlgReview ? reviewHTML(ui.dlgReview, rev ? 'Why it matters' : undefined) : ''}<div class="convo-f"><button class="btn btn-primary" data-act="close">Continue</button></div>`;
+    return h + '</section>';
+  }
+  /* Bubbles point at whoever is speaking: map the speaker's head from scene coordinates to the screen. */
+  function placeBubbles(root) {
+    const rt = (root || document).querySelector('.room-top'), sv = rt && rt.querySelector('svg.scene'); if (!sv || !s || !s.loc) return;
+    const d = def(s.loc); if (!d) return;
+    const M = sv.getScreenCTM(), R0 = rt.getBoundingClientRect(); if (!M || !R0.width) return;
+    const narrow = innerWidth <= 760, sm = d.look.small || 0;
+    const pt = (x, y) => { const q = sv.createSVGPoint(); q.x = x; q.y = y; const o = q.matrixTransform(M); return { x: o.x - R0.left, y: o.y - R0.top }; };
+    const blockers = [...rt.querySelectorAll('.nameplate .plate, .plate-btns')].map((e) => e.getBoundingClientRect()).filter((z) => z.width).map((z) => ({ l: z.left - R0.left, r: z.right - R0.left, t: z.top - R0.top, b: z.bottom - R0.top }));
+    rt.querySelectorAll('.sb').forEach((b) => {
+      const fam = b.dataset.anchor === 'fam', talking = b.classList.contains('talking');
+      const hx = fam ? 963 : 515, hy = fam ? 250 : (sm ? 150 + (1 - sm) * 330 : 150), hr = fam ? 38 : d.look.head.h * (sm || 1);
+      const c = pt(hx, hy), r = Math.abs(pt(hx + hr, hy).x - c.x);
+      b.style.cssText = ''; b.dataset.side = '';
+      if (narrow) {
+        // Phones: the conversation bubble sits under the scene (tail up); the idle one floats at the top (tail down).
+        // Idle: over the bed when the head is high in the frame, at the top when it's low (a baby in a crib).
+        b.style.setProperty('--tx', Math.max(26, Math.min(R0.width - 26, c.x)) + 'px');
+        // The family's button goes on the opposite edge from the patient's bubble.
+        const SH = sv.getBoundingClientRect().height, low = pt(515, sm ? 150 + (1 - sm) * 330 : 150).y > SH * .5;
+        b.dataset.side = talking ? 'up' : fam ? (low ? 'famlo' : 'fam') : low ? 'down' : 'below';
+        if (!talking) { const atTop = fam ? !low : low; b.style.top = Math.max(10, atTop ? 10 : SH - b.offsetHeight - 10) + 'px'; }
+        return;
+      }
+      if (b.dataset.anchor === 'side') { b.dataset.side = 'none'; b.style.left = '50%'; b.style.top = '12px'; b.style.transform = 'translateX(-50%)'; b.style.width = Math.min(440, R0.width - 40) + 'px'; return; }
+      const maxW = talking ? 420 : fam ? 230 : 300;
+      let P = { x: c.x - r * (fam ? 1.15 : .95), y: c.y + r * .25 }, side = 'l', avail = P.x - 16 - 12;
+      if (avail < 220 && !fam) { P = { x: c.x + r * .95, y: P.y }; side = 'r'; avail = R0.width - P.x - 16 - 12; }
+      const w = Math.max(150, Math.min(maxW, avail));
+      b.style.width = w + 'px';
+      const left = side === 'l' ? P.x - 16 - w : P.x + 16, h = b.offsetHeight;
+      let top = P.y - h * .62, minTop = 10;
+      blockers.forEach((z) => { if (left < z.r && left + w > z.l) minTop = Math.max(minTop, z.b + 8); });
+      top = Math.max(minTop, Math.min(top, R0.height - h - 10)); if (top < 10) top = 10;
+      Object.assign(b.style, { left: left + 'px', top: top + 'px' });
+      b.style.setProperty('--ty', Math.max(16, Math.min(h - 16, P.y - top)) + 'px');
+      b.dataset.side = side;
+    });
+  }
+  addEventListener('resize', () => { if (ui.view === 'room') placeBubbles(); });
+
   function vRoom() {
     const d = def(s.loc), P = s.p[d.id], Ax = A();
     const v = Ax.lastVitals(d.id), fl = d.scene(s, P, Ax), st = d.status(s, P, Ax);
-    const sceneSvg = A_.room(d, s, P, fl, rigV(d.id), P.callLight || !!P.bell, st === 'urgent');
+    let sceneSvg = A_.room(d, s, P, fl, rigV(d.id), P.callLight || !!P.bell, st === 'urgent');
+    if (ui.ov === 'dialog' && ui.dlg) sceneSvg = sceneSvg.replace('<svg class="scene"', '<svg class="scene" inert');   // the room holds still while you talk
     const looks = [...sceneSvg.matchAll(/data-act="clue" data-id="([^"]+)" tabindex="0" role="button" aria-label="([^"]+)"/g)].map((x) => [x[1], x[2]]);
     if (!PANES.some((p) => p[0] === ui.dock)) ui.dock = 'brain';
     const pane = PANES.find((p) => p[0] === ui.dock), cnt = railCounts(d, P);
@@ -15741,17 +15899,19 @@ window.Shift = window.Shift || {};
     const ab = { T: abn(d, 'T', v.T), HR: abn(d, 'HR', v.HR), BP: abn(d, 'SBP', v.SBP), RR: abn(d, 'RR', v.RR), SpO2: abn(d, 'SpO2', v.SpO2) };
     const bg = P.bgs && P.bgs.length ? P.bgs[P.bgs.length - 1] : null;
     const body = ui.dock === 'brain' ? paneBrain(d, P) : ui.dock === 'assess' ? paneAssess(d, P) : ui.dock === 'care' ? paneCare(d, P) : ui.dock === 'meds' ? paneMeds(d, P) : paneTalk(d, P);
-    return `<main class="roomv">
-      <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''}">
+    const talking = ui.ov === 'dialog' && !!ui.dlg;
+    return `<main class="roomv ${talking ? 'talking' : ''}">
+      <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''} ${talking ? 'talking' : ''}">
         ${sceneSvg}
+        ${speech(d, P, fl)}
         <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
           <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
-        ${(() => { const w = cnt.talk[1] === 'due'; return `<button class="talk-bub ${w ? 'wants' : ''} ${ui.dock === 'talk' ? 'on' : ''}" data-act="dock" data-id="talk" aria-label="${w ? `${esc(d.short)} wants to talk. ` : ''}${esc(d.talkLabel || 'Talk with ' + d.short)}">${AI.talk}<span>${w ? `${esc(d.short)} wants to talk` : esc(d.talkLabel || 'Talk with ' + d.short)}</span>${w ? '<i aria-hidden="true"></i>' : ''}</button>`; })()}
-        ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
+        ${ui.caption && !ui.captionPoke && !talking ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
-      ${looks.length ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
-      <div class="ws">
+      ${talking ? convoTray(d) : ''}
+      ${looks.length && !talking ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
+      <div class="ws" ${talking ? 'inert' : ''}>
         <nav class="rail" role="tablist" aria-label="Activities for ${esc(d.short)}">
           ${PANES.map(([id, l]) => `<button role="tab" class="rt ${cnt[id][1]}" data-act="dock" data-id="${id}" aria-selected="${ui.dock === id}">${AI[id]}<span class="rt-l">${l}</span><span class="rt-s">${esc(cnt[id][0])}</span></button>`).join('')}
           <button class="rt rt-chart" data-act="chart" data-pid="${d.id}">${AI.chart}<span class="rt-l">Chart</span><span class="rt-s">Labs, orders, notes</span></button>
@@ -16108,7 +16268,7 @@ window.Shift = window.Shift || {};
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
       { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
       { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
-      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap the speech bubble by the bed. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
+      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap their speech bubble. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
   };
@@ -16294,6 +16454,7 @@ window.Shift = window.Shift || {};
     return o;
   }
   function ovDialog() {
+    if (ui.view === 'room') return '';
     if (ui.dlg.id === '__review') return sheet('Your choice', reviewHTML(ui.dlgReview, 'Why it matters'), `<button class="btn btn-primary" data-act="close">Continue</button>`, { label: 'Decision review' });
     const node = C().dialogs[ui.dlg.id];
     const w = who(node.who);
@@ -16541,9 +16702,8 @@ window.Shift = window.Shift || {};
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
-    // The talk bubble sits beside the patient, below the name card however tall the card is.
-    const tb = root.querySelector('.talk-bub'), pl = root.querySelector('.nameplate .plate'), rt = root.querySelector('.room-top');
-    if (tb && pl && rt && innerWidth > 760) { tb.style.top = ''; const a = rt.getBoundingClientRect(), b = pl.getBoundingClientRect(), c = tb.getBoundingClientRect(); if (b.width && c.left < b.right && c.top < b.bottom + 8) tb.style.top = Math.min(b.bottom - a.top + 12, a.height - c.height - 12) + 'px'; }
+    if (ui.view === 'room') placeBubbles(root);
+    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const r = cv.getBoundingClientRect(), rt = root.querySelector('.room-top').getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
     const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
@@ -16694,7 +16854,7 @@ window.Shift = window.Shift || {};
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
-    close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
+    close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
     'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); s.hHeard = Array.from(new Set((s.hHeard || []).concat(C().patients.filter((x) => !x.arrives)[ui.hIdx].id))); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
     'h-done'() { TEL.track('report_done', { case: caseId, flags: s.brain.length, heard: ui.hIdx + 1 }); ui.rankMoved = null; ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
@@ -16736,8 +16896,8 @@ window.Shift = window.Shift || {};
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
-    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
-    clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
+    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
+    clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
@@ -16790,8 +16950,8 @@ window.Shift = window.Shift || {};
       const d = def(s.loc), P = s.p[d.id], Ax = A(), cid = d.talk(s, P, Ax), sid = cid && STY ? STY.pick(s, C(), d, P, Ax, cid) : null, id = sid || cid;
       if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; }
       if (!sid) { s.seenDlg = s.seenDlg || {}; s.seenDlg[cid] = 1; }
-      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
-    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
+      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.captionPoke = false; ui.caption = null; ui.dlg = { id }; ui.ov = 'dialog'; ui.convoIn = true; R.poke('room:' + d.id); render(); },
+    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.convoIn = true; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
     dlg(el) {
       const node = C().dialogs[ui.dlg.id], c = node.choices[+el.dataset.i];
       const Ax = A(), j0 = s.judg.length; if (c.fx) c.fx(s, Ax);
@@ -16800,10 +16960,10 @@ window.Shift = window.Shift || {};
       const pid = node.pid || (/^\d+$/.test(node.who) ? node.who : s.loc);
       if (STY && node.story) { const f = s.storyFresh; s.storyFresh = null; if (f && f.d > 0) { gain(25, f.why === 'presence' ? 'Presence' : 'Connection', 'bond'); ui.bondSound = true; } else if (f && f.d < 0) ui.pops.push({ text: 'Trust', label: `${def(f.pid).short} pulls back`, cls: 'lost' }); }
       else if (STY && s.p[pid]) STY.fromDialog(s, pid, rv.filter((j) => j.pid === pid));
-      logHere(pid, `You: "${c.label}"`, 'act');
-      if (c.next) { const nx = C().dialogs[c.next]; logHere(pid, typeof nx.text === 'function' ? nx.text(s) : nx.text, 'info'); ui.dlg = { id: c.next }; }
+      logHere(pid, `You: "${c.label}"`, 'act'); ui.said = c.label; ui.dlgLast = { who: node.who, text, story: node.story || null }; ui.convoIn = true;
+      if (c.next) { const nx = C().dialogs[c.next]; logHere(pid, typeof nx.text === 'function' ? nx.text(s) : nx.text, 'info'); ui.dlg = { id: c.next }; if (isPt(nx.who)) setTimeout(() => R.poke('room:' + nx.who), 60); }
       else if (ui.dlgReview && fbNow()) { ui.dlg = { id: '__review' }; }
-      else { ui.dlg = null; ui.ov = null; }
+      else { ui.dlg = null; ui.ov = null; ui.said = null; }
       save(); render();
     },
     comm(el) { const d = def(s.loc), x = d.comms.find((c) => c.id === el.dataset.id); doAct(x.label, x.cost, (Ax) => { const t = x.run(s, s.p[d.id], Ax); logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
@@ -17067,6 +17227,7 @@ window.Shift = window.Shift || {};
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
     if (ui.ov === 'orient' && ui.or && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { if (e.key === 'Escape') { closeOrient(false); return; } if (e.key === 'ArrowRight' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: ui.or.i === OR.CH.length - 1 ? 'done' : 'next' } }); return; } if (e.key === 'ArrowLeft' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: 'back' } }); return; } }
+    if (ui.ov === 'dialog' && ui.view === 'room' && /^[1-9]$/.test(e.key) && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { const b = document.querySelectorAll('.convo .reply')[+e.key - 1]; if (b) { e.preventDefault(); b.click(); return; } }
     if (e.key === 'Escape' && ui.ov && ui.ov !== 'rank') { handlers.close(); return; }
     const el = e.target;
     if ((e.key === 'Enter' || e.key === ' ') && el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); onClick({ target: el, preventDefault() {} }); }
