@@ -1,11 +1,11 @@
 /* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
-   posthogKey: the project API key from PostHog (Project settings → Project API key, starts with "phc_").
+   posthogKey: the project API key from PostHog (Settings → Project → Project token, starts with "phc_").
    It is a public, write-only key; it's safe in the page. Leave it empty and nothing is ever sent:
    events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
 window.Shift = window.Shift || {};
 window.Shift.config = Object.assign({
   version: '0.6.0-beta',
-  posthogKey: '',
+  posthogKey: 'phc_tisU8pDBvqfZjZj4Xhdur9yhtnhzqAAcmDwByf35n3Rc',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',
   // Accounts and cloud saves (Supabase → Connect, or Project Settings → API Keys). The publishable key is meant to
