@@ -80,7 +80,7 @@ main{max-width:1320px;margin:0 auto;padding:clamp(.6rem,2vw,1.4rem)}
 .home-cast svg.bust{display:block;width:100%;height:auto;flex:1}
 .home-cast figcaption{padding:.45rem .7rem .55rem;background:var(--surface);font-size:.8rem;color:var(--ink-2);line-height:1.35}
 .home-cast figcaption b{display:block;color:var(--ink);font-size:.88rem}
-.caption.quiet{font-style:italic}
+.caption.quiet{}
 .pt{cursor:pointer}.pt:focus{outline:none}.pt:focus-visible{filter:drop-shadow(0 0 6px var(--teal))}
 .sched-h{margin:2rem 0 .4rem;font-family:var(--sign);font-size:1.5rem;font-weight:600;letter-spacing:0}
 .ladder{display:flex;flex-direction:column;border-top:2px solid var(--ink)}
@@ -412,7 +412,7 @@ td.wrap{white-space:normal;min-width:220px}
 .pt-row,.due li,.brain li,.msg,.vstrip,.home-cast figure{transition:transform .09s ease-out,background .15s}
 .vstrip.tap:hover{background:color-mix(in srgb,var(--teal) 5%,transparent)}
 .home-cast figure.tap:hover{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--teal) 45%,transparent)}
-.home-cast q{display:block;font-family:var(--serif);font-style:italic;color:var(--ink);quotes:"\201C" "\201D";animation:rise .2s ease-out}
+.home-cast q{display:block;font-family:var(--serif);color:var(--ink);quotes:none;animation:rise .2s ease-out}
 .due li.tap span:last-child::after{content:" \203A";color:var(--teal);font-weight:700}
 /* disabled but still tappable (so it can explain itself) */
 .btn.off,.act.off{opacity:.45;cursor:not-allowed}
@@ -1890,15 +1890,13 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .sb[data-side="up"] .sb-tail{top:-10px;left:calc(var(--tx,50%) - 20px);border-right:0;border-bottom:0}
 .sb[data-side="below"] .sb-tail{top:-10px;left:calc(var(--tx,50%) - 18px);border-right:0;border-bottom:0}
 .sb[data-side="none"] .sb-tail,.sb[data-side="fam"] .sb-tail,.sb[data-side="famlo"] .sb-tail{display:none}
-.sb-tx{margin:0;font-family:var(--serif)}
-.sb .sb-say{color:#1C2330}
-.sb .sb-act{font-style:italic;color:#59606B;font-size:.94em}
+.sb-tx{margin:0;font-family:var(--serif);font-size:1rem;line-height:1.5;color:#1C2330}
 .sb-who{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .7rem;margin:0 0 .3rem;font-size:.8rem;color:#59606B}
 .sb-who b{font-family:var(--sign);font-size:1.02rem;font-weight:700;letter-spacing:.01em;color:#1C2330}
 .sb-st{display:inline-flex;align-items:center;gap:.35rem}
 .sb-st .st-tr small{display:none}
 /* idle: what they're saying now, and the way in */
-.sb.idle{padding:.5rem .7rem .55rem;font-size:.93rem}
+.sb.idle{padding:.5rem .7rem .55rem}
 .sb.idle .sb-tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .sb-go{position:relative;display:flex;align-items:center;gap:.5rem;width:100%;margin-top:.45rem;min-height:40px;padding:.35rem .4rem .35rem .75rem;border:1.5px solid #1C2330;border-radius:999px;background:transparent;color:#1C2330;font-weight:700;font-size:.9rem;cursor:pointer;text-align:left}
 .sb-go span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1914,8 +1912,7 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .sb.fam{padding:.35rem}.sb.fam .sb-go{margin:0;font-size:.85rem}
 .sb.fresh{animation:sbPop .32s cubic-bezier(.3,1.5,.5,1)}
 /* in conversation */
-.sb.talking{padding:.7rem 1rem .8rem;font-size:1.04rem;animation:sbPop .34s cubic-bezier(.3,1.4,.5,1)}
-.sb.talking .sb-tx{font-size:1.06rem;line-height:1.5}
+.sb.talking{padding:.7rem 1rem .8rem;animation:sbPop .34s cubic-bezier(.3,1.4,.5,1)}
 @keyframes sbPop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
 .sb[data-side="l"]{transform-origin:100% 70%}.sb[data-side="r"]{transform-origin:0 70%}
 .room-top.talking::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 46% 70% at 50% 45%,transparent 50%,rgba(10,14,20,.38) 100%)}
@@ -1924,22 +1921,22 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 /* replies */
 .convo{margin:.75rem 0 0;padding:.9rem clamp(.8rem,2vw,1.2rem) 1rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--rc);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;animation:sbPop .3s ease-out}
 .said{display:flex;align-items:flex-end;gap:.5rem;margin:0;max-width:min(640px,100%);opacity:.8}
-.said-b{padding:.5rem .85rem;border-radius:18px 18px 4px 18px;background:var(--teal);color:var(--teal-ink);font-family:var(--serif);font-size:.95rem}
+.said-b{padding:.5rem .85rem;border-radius:18px 18px 4px 18px;background:var(--teal);color:var(--teal-ink);font-family:var(--serif);font-size:1rem;line-height:1.5}
 .said-k,.replies-k{font-size:.78rem;font-weight:700;color:var(--ink-2)}
 .replies{display:flex;flex-direction:column;align-items:flex-end;gap:.45rem;width:100%}
 .replies-k{margin:.2rem 0 0;align-self:flex-end}
-.reply{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.6rem;align-items:start;max-width:min(640px,100%);min-height:44px;padding:.6rem .95rem .65rem .7rem;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;background:var(--paper);color:var(--ink);text-align:left;cursor:pointer;font-family:var(--serif);font-size:1rem;line-height:1.45;transition:background .15s,border-color .15s,transform .08s;animation:sbPop .3s ease-out backwards}
-.reply:nth-child(3){animation-delay:.06s}.reply:nth-child(4){animation-delay:.12s}
-.reply kbd{display:grid;place-items:center;width:1.55rem;height:1.55rem;margin-top:.05rem;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--ink-2)}
-.reply:hover{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,var(--paper))}
-.reply:hover kbd{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
-.reply:active{transform:translateY(1px)}
+.cv-reply{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.6rem;align-items:start;max-width:min(640px,100%);min-height:44px;padding:.6rem .95rem .65rem .7rem;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;background:var(--paper);color:var(--ink);text-align:left;cursor:pointer;font-family:var(--serif);font-size:1rem;line-height:1.45;transition:background .15s,border-color .15s,transform .08s;animation:sbPop .3s ease-out backwards}
+.cv-reply:nth-child(3){animation-delay:.06s}.cv-reply:nth-child(4){animation-delay:.12s}
+.cv-reply kbd{display:grid;place-items:center;width:1.55rem;height:1.55rem;margin-top:.05rem;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.cv-reply:hover{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,var(--paper))}
+.cv-reply:hover kbd{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.cv-reply:active{transform:translateY(1px)}
 .convo .rv{align-self:stretch}
 .convo-f{display:flex;justify-content:flex-end;width:100%}
-@media (prefers-reduced-motion:reduce){.sb,.sb.talking,.sb.fresh,.reply,.convo,.sb-go .ping{animation:none!important}}
-:root[data-motion="reduced"] .sb,:root[data-motion="reduced"] .reply,:root[data-motion="reduced"] .convo,:root[data-motion="reduced"] .sb-go .ping{animation:none!important}
+@media (prefers-reduced-motion:reduce){.sb,.sb.talking,.sb.fresh,.cv-reply,.convo,.sb-go .ping{animation:none!important}}
+:root[data-motion="reduced"] .sb,:root[data-motion="reduced"] .cv-reply,:root[data-motion="reduced"] .convo,:root[data-motion="reduced"] .sb-go .ping{animation:none!important}
 @media (max-width:760px){
-  .sb{font-size:.92rem}
+  .sb-tx{font-size:.95rem}
   .sb[data-side="down"]{left:10px;right:10px;max-width:none}
   .sb[data-side="down"] .sb-tx{-webkit-line-clamp:2}
   .sb[data-side="below"]{left:10px;right:10px;max-width:none}
@@ -1948,12 +1945,12 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
   .sb[data-side="up"]{position:relative;margin:14px 10px 10px;max-width:none}
   .room-top.talking .nameplate{display:none}
   .room-top.talking::after{bottom:auto;height:300px}
-  .reply{font-size:.96rem}
-  .reply kbd{display:none}.reply{grid-template-columns:minmax(0,1fr)}
+  .cv-reply{font-size:.96rem}
+  .cv-reply kbd{display:none}.cv-reply{grid-template-columns:minmax(0,1fr)}
 }
 </style></head>
 <body><div id="app"></div>
-<script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "7a082369fa", "ed-podb-1": "bddd69088c", "medsurg-4w-1": "e98eececdc", "medsurg-4w-2": "9e39a38416", "medsurg-4w-3": "a9b55d35d1", "ob-2n-1": "06c3afa6e9", "peds-5s-1": "a524375617", "psych-3e-1": "aec236f1c3", "stepdown-6e-1": "25d6b7b9e9"};
+<script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "7a082369fa", "ed-podb-1": "f4e16fb7bd", "medsurg-4w-1": "e98eececdc", "medsurg-4w-2": "9e39a38416", "medsurg-4w-3": "a9b55d35d1", "ob-2n-1": "06c3afa6e9", "peds-5s-1": "a524375617", "psych-3e-1": "aec236f1c3", "stepdown-6e-1": "25d6b7b9e9"};
 window.Shift.terms = {"version": "2026-10-02", "updated": "October 2, 2026", "contact": "nicholasforell@gmail.com", "summary": [["Practice, not advice.", "The Shift is an educational game. It is not medical, nursing or legal advice, and it doesn't replace your nursing program, clinical instruction, licensure requirements, your facility's policies or a licensed professional's judgment."], ["Never use it for real patients.", "Doses, protocols, thresholds and laws are simplified for teaching and can differ from current guidelines, drug labeling, your facility and your state. For real care, follow your orders, your policies and current references."], ["It can be wrong.", "The content is written to commonly taught practice and is being reviewed by working nurses, but medicine changes and mistakes happen. It's provided as is, with no guarantee it's accurate, complete or current."], ["No exam guarantee.", "The Shift isn't affiliated with or endorsed by NCSBN. NCLEX\u00ae is a registered trademark of NCSBN. Playing doesn't guarantee any exam result."], ["Hard topics.", "Shifts include suicide risk, self-harm, abuse, overdose, restraint and death. If you're in crisis, call or text 988 (US), or call 911."], ["Fictional people.", "Every patient, family member, staff member and unit is invented."]], "sections": [{"h": "Agreeing to these terms", "p": ["By playing The Shift, using its website, instructor dashboard or review pages, or creating an account, you agree to these terms. If you don't agree, don't use The Shift. \"We\" and \"us\" mean The Shift and its creator."]}, {"h": "An educational simulation only", "p": ["The Shift is a game for practicing clinical judgment. It is provided for general education and entertainment. It is not medical, nursing, pharmacy, legal or other professional advice, and using it does not create any nurse\u2013patient, provider\u2013patient or other professional relationship.", "It is not a substitute for an accredited nursing program, clinical instruction, preceptorship, continuing education requirements, your licensing board's rules, your employer's or school's policies, or the judgment of a licensed professional."]}, {"h": "Not for patient care", "p": ["Do not use anything in The Shift to make decisions about the care of a real person. Medication doses, protocols, nomograms, lab values and thresholds, scoring, timing and the legal framework are simplified and adapted for teaching. They may differ from current clinical guidelines, manufacturer labeling, your facility's protocols and the law where you live or work.", "In real practice, follow the orders you're given, your facility's policies and procedures, current drug references and the scope of practice in your state. If you have a question about your own health, talk to a qualified health professional. In an emergency, call 911."]}, {"h": "Accuracy and clinical review", "p": ["Content is written to reflect commonly taught nursing practice as of its last update, and each shift shows whether it has been reviewed by a clinician. Even so, medicine and law change, reviewers can disagree, and errors happen. We don't promise that any content is accurate, complete, current or suited to your situation, and we may change or remove content at any time.", "If you spot something clinically wrong, please tell us through Menu \u2192 Send feedback or report a problem."]}, {"h": "Laws and settings vary", "p": ["The psychiatric shifts are written to California law (for example, 5150, 5250, 5585, Riese and LPS conservatorship) as one example. Other states' laws differ. A General US setting replaces those terms with plain descriptions, but neither version is a statement of the law where you practice. Facility policies also differ from unit to unit."]}, {"h": "Exams and trademarks", "p": ["The Shift is not affiliated with, sponsored by or endorsed by the National Council of State Boards of Nursing (NCSBN). NCLEX\u00ae, NCLEX-RN\u00ae and NCLEX-PN\u00ae are registered trademarks of NCSBN, used here only to describe the exam the practice relates to. Practice questions are original and are not actual exam items. Using The Shift does not guarantee that you will pass any exam, course or competency check."]}, {"h": "Sensitive content", "p": ["Shifts depict suicide risk, self-harm, child abuse, overdose, alcohol withdrawal, physical restraint, serious illness and death, written at the level a nurse would encounter them. Take a break whenever you need to. If you are thinking about harming yourself or are in crisis, call or text 988 (Suicide & Crisis Lifeline, US), or call 911."]}, {"h": "Who it's for", "p": ["The Shift is intended for adults (18 or older) in nursing education or practice. Younger learners may use it only with a parent's or educator's permission and supervision."]}, {"h": "Fictional characters", "p": ["All patients, families, staff, hospitals, units and events in The Shift are fictional. Any resemblance to real people or events is coincidental. Please don't enter real patient information or anything that identifies a real person anywhere in the game, including feedback."]}, {"h": "Your account, purchases and feedback", "p": ["You're responsible for activity on your account. If you buy the shift pack, payment is handled by Stripe; contact us if something goes wrong with a purchase. Feedback and clinical review comments you send may be used to improve The Shift without any obligation or payment to you. How data is handled is described in the Privacy page."]}, {"h": "No warranties", "p": ["The Shift is provided \"as is\" and \"as available\", without warranties of any kind, express or implied, including warranties of accuracy, fitness for a particular purpose, merchantability, non-infringement, or that it will be uninterrupted or error-free, to the fullest extent permitted by law."]}, {"h": "Limitation of liability", "p": ["To the fullest extent permitted by law, The Shift and its creator, contributors and clinical reviewers are not liable for any direct, indirect, incidental, consequential, special, exemplary or punitive damages, or for any loss of data, income or opportunity, arising out of or related to your use of, or inability to use, The Shift or any decision or action taken based on it, even if advised of the possibility of such damages. If any liability can't be excluded, it is limited to the amount you paid for The Shift in the 12 months before the claim, or US $50 if you paid nothing.", "You agree to use The Shift at your own risk, and you are solely responsible for how you apply anything you learn from it. Some jurisdictions don't allow certain limitations, so some of the above may not apply to you."]}, {"h": "Indemnity", "p": ["To the extent permitted by law, you agree to hold harmless The Shift and its creator from claims arising out of your misuse of The Shift, including using it to make decisions about real patient care, or your breach of these terms."]}, {"h": "Changes and general terms", "p": ["We may update these terms. When they change in a way that matters, the date above changes and the game asks you to agree again. These terms are governed by the laws of the State of California, without regard to conflict-of-law rules. If any part is found unenforceable, the rest still applies.", "Questions: email the address below."]}]};
 /* The Shift — deployment settings. The only file you need to touch to turn on analytics and feedback.
    posthogKey: the project API key from PostHog (Settings → Project → Project token, starts with "phc_").
@@ -3515,8 +3512,8 @@ window.Shift = window.Shift || {};
   }
   const FAM = [
     { id: 'honest', label: (f, sp) => `${f.interp ? `Call the ${f.interp} interpreter line, then tell` : 'Tell'} ${f.name} what happened, that the ${sp.unit} team is caring for them now, and give the ${sp.unit} number`, d: 1 },
-    { id: 'fine', label: () => '"Everything is going to be fine. They\'re in good hands."', d: -1 },
-    { id: 'none', label: (f, sp) => `"I can't discuss it. You'll have to call ${where(sp.unit)}."`, d: -1 },
+    { id: 'fine', label: (f) => `Tell ${f.name} everything is going to be fine, that they're in good hands`, d: -1 },
+    { id: 'none', label: (f, sp) => `Tell ${f.name} you can't discuss it and they'll have to call ${where(sp.unit)}`, d: -1 },
   ];
   function famChoices(P) { const f = P.out.spec.family, sp = P.out.spec; const list = FAM.map((x) => ({ id: x.id, label: x.label(f, sp) })); if (f.interp) list.push({ id: 'english', label: `Explain it slowly in English; ${f.name} seems to understand some` }); return list.sort((a, b) => seed(a.id + P.out.at) % 5 - seed(b.id + P.out.at) % 5); }
   function famUpdate(s, A, pid, choice) {
@@ -12217,7 +12214,7 @@ window.Shift = window.Shift || {};
     bev_b: { who: 'bev', pid: '21', text: `"Thanks, hon." She goes to find the machine.` },
     bev_after: { who: 'bev', pid: '21', text: `"She's been tired for two weeks. I should've made her come sooner."` },
 
-    walt_talk: { who: '22', text: `He looks at you hard and tries. "The — the — " His face crumples. He taps his own mouth with his left hand, frustrated.`, choices: [
+    walt_talk: { who: '22', text: `He looks at you hard and tries. "The — the —" His face crumples. He taps his own mouth with his left hand, frustrated.`, choices: [
       { label: `Take your time. You can squeeze my hand once for yes, twice for no. Did this start today?`, next: 'walt_a', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', 1, `You gave Mr. Brooks a way to communicate.`, `Expressive aphasia: he understands, he can't produce words. Yes/no questions and his good hand let him take part.`, '22'); } },
       { label: `Don't try to talk. Just rest.`, next: 'walt_b', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', -1, `You told Mr. Brooks not to try to communicate.`, `He understands everything. Give him a way to answer.`, '22'); } },
     ] },
@@ -15805,11 +15802,17 @@ window.Shift = window.Shift || {};
   /* ------------ talking in the room ------------
      The patient (or the family member beside them) speaks in a speech bubble by their head. Your replies are
      speech bubbles under the scene; tap one to say it. Speech is plain; what people do is in italics. */
-  function speechHTML(t, sp) {
+  /* One look for everything a character says or does, wherever it appears: the words as written, spoken words in
+     quotation marks, what people do in plain text around them. A line that is only speech (an idle line) gets its
+     quotation marks here; a line in parentheses is a description, shown without them. */
+  function sayText(t, spoken) {
     t = String(t == null ? '' : t).trim();
-    if (!t.includes('"')) { const narr = /^\(.*\)$/.test(t) || !sp; return narr ? `<em class="sb-act">${esc(t.replace(/^\((.*)\)$/, '$1'))}</em>` : `<span class="sb-say">${esc(t)}</span>`; }
-    return t.split('"').map((seg, i) => (!seg.trim() ? '' : i % 2 ? `<span class="sb-say">${esc(seg.trim())}</span>` : `<em class="sb-act">${esc(seg.trim())}</em>`)).join(' ');
+    if (/^\(.*\)$/.test(t)) return t.slice(1, -1).trim();
+    if (spoken && !t.includes('"')) return `"${t}"`;
+    if (spoken && !/^"/.test(t)) return `"${t.replace(/"([^"]*)"/g, "'$1'")}"`;
+    return t;
   }
+  const speechHTML = (t, spoken) => esc(sayText(t, spoken));
   const isPt = (key) => !!def(key);
   function dlgLine() {
     if (ui.dlg.id === '__review') return ui.dlgLast || null;
@@ -15843,7 +15846,7 @@ window.Shift = window.Shift || {};
     const L = dlgLine(), nm = L ? (isPt(L.who) ? def(L.who).short : who(L.who).name) : d.short;
     let h = `<section class="convo" aria-label="Conversation with ${esc(nm)}">`;
     if (ui.said) h += `<p class="said"><span class="said-b">${esc(ui.said)}</span><span class="said-k">You</span></p>`;
-    if (node && node.choices) h += `<div class="replies" role="group" aria-label="Your reply"><p class="replies-k">Your reply</p>${mixOrder(node.choices.length, ui.dlg.id).map((i, k) => `<button class="reply" data-act="dlg" data-i="${i}"><kbd aria-hidden="true">${k + 1}</kbd><span>${esc(node.choices[i].label)}</span></button>`).join('')}</div>`;
+    if (node && node.choices) h += `<div class="replies" role="group" aria-label="Your reply"><p class="replies-k">Your reply</p>${mixOrder(node.choices.length, ui.dlg.id).map((i, k) => `<button class="cv-reply" data-act="dlg" data-i="${i}"><kbd aria-hidden="true">${k + 1}</kbd><span>${esc(node.choices[i].label)}</span></button>`).join('')}</div>`;
     else h += `${ui.dlgReview ? reviewHTML(ui.dlgReview, rev ? 'Why it matters' : undefined) : ''}<div class="convo-f"><button class="btn btn-primary" data-act="close">Continue</button></div>`;
     return h + '</section>';
   }
@@ -16703,7 +16706,7 @@ window.Shift = window.Shift || {};
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
     if (ui.view === 'room') placeBubbles(root);
-    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const r = cv.getBoundingClientRect(), rt = root.querySelector('.room-top').getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
+    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const r = cv.getBoundingClientRect(), rt = root.querySelector('.room-top').getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.cv-reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
     const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
@@ -16896,7 +16899,7 @@ window.Shift = window.Shift || {};
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
-    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
+    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
@@ -17111,7 +17114,7 @@ window.Shift = window.Shift || {};
     cast(el) {
       const id = el.dataset.id; R.poke(id + ':bust');
       const d = C().patients.find((p) => p.id === id), look = d ? d.look : (C().staff[id] || {}).look;
-      const text = id === 'nova' ? 'Go see the sickest one first.' : look && look.lines ? look.lines.calm : null;
+      const text = id === 'nova' ? sayText('Go see the sickest one first.', true) : look && look.lines ? sayText(look.lines.calm, true) : null;
       ui.castSay = text ? { id, text } : null; render();
       clearTimeout(ui.castT); ui.castT = setTimeout(() => { if (ui.castSay && ui.castSay.id === id && ui.view === 'home') { ui.castSay = null; render(); } }, 3200);
     },
@@ -17227,7 +17230,7 @@ window.Shift = window.Shift || {};
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
     if (ui.ov === 'orient' && ui.or && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { if (e.key === 'Escape') { closeOrient(false); return; } if (e.key === 'ArrowRight' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: ui.or.i === OR.CH.length - 1 ? 'done' : 'next' } }); return; } if (e.key === 'ArrowLeft' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: 'back' } }); return; } }
-    if (ui.ov === 'dialog' && ui.view === 'room' && /^[1-9]$/.test(e.key) && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { const b = document.querySelectorAll('.convo .reply')[+e.key - 1]; if (b) { e.preventDefault(); b.click(); return; } }
+    if (ui.ov === 'dialog' && ui.view === 'room' && /^[1-9]$/.test(e.key) && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { const b = document.querySelectorAll('.convo .cv-reply')[+e.key - 1]; if (b) { e.preventDefault(); b.click(); return; } }
     if (e.key === 'Escape' && ui.ov && ui.ov !== 'rank') { handlers.close(); return; }
     const el = e.target;
     if ((e.key === 'Enter' || e.key === ' ') && el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); onClick({ target: el, preventDefault() {} }); }

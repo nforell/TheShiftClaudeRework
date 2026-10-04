@@ -55,13 +55,13 @@ with sync_playwright() as p:
             check(pg.evaluate("Shift.ui._ui.ov") == 'dialog' and pg.locator('.sheet').count() == 0, f'{t} tapping it starts the conversation in the room, not in a pop-up')
             sp = pg.locator('.sb.talking')
             check(sp.count() == 1 and sp.is_visible() and len(sp.inner_text().strip()) > 10, f'{t} what they say appears in a speech bubble')
-            n = pg.locator('.convo .reply').count()
+            n = pg.locator('.convo .cv-reply').count()
             if n:
-                pg.locator('.convo .reply').first.click(); pg.wait_for_timeout(200)
+                pg.locator('.convo .cv-reply').first.click(); pg.wait_for_timeout(200)
                 check(pg.locator('.convo .said').count() == 1 or pg.evaluate("Shift.ui._ui.ov") != 'dialog', f'{t} your reply is shown as what you said')
             for _ in range(6):
                 if pg.evaluate("Shift.ui._ui.ov") != 'dialog': break
-                if pg.locator('.convo .reply').count(): pg.locator('.convo .reply').first.click()
+                if pg.locator('.convo .cv-reply').count(): pg.locator('.convo .cv-reply').first.click()
                 else: pg.locator('.convo [data-act=close]').click()
                 pg.wait_for_timeout(120)
             check(pg.evaluate("Shift.ui._ui.ov") != 'dialog' and pg.locator('.sb.talking').count() == 0, f'{t} the conversation ends back in the room')

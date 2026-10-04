@@ -661,8 +661,8 @@ window.Shift = window.Shift || {};
   }
   const FAM = [
     { id: 'honest', label: (f, sp) => `${f.interp ? `Call the ${f.interp} interpreter line, then tell` : 'Tell'} ${f.name} what happened, that the ${sp.unit} team is caring for them now, and give the ${sp.unit} number`, d: 1 },
-    { id: 'fine', label: () => '"Everything is going to be fine. They\'re in good hands."', d: -1 },
-    { id: 'none', label: (f, sp) => `"I can't discuss it. You'll have to call ${where(sp.unit)}."`, d: -1 },
+    { id: 'fine', label: (f) => `Tell ${f.name} everything is going to be fine, that they're in good hands`, d: -1 },
+    { id: 'none', label: (f, sp) => `Tell ${f.name} you can't discuss it and they'll have to call ${where(sp.unit)}`, d: -1 },
   ];
   function famChoices(P) { const f = P.out.spec.family, sp = P.out.spec; const list = FAM.map((x) => ({ id: x.id, label: x.label(f, sp) })); if (f.interp) list.push({ id: 'english', label: `Explain it slowly in English; ${f.name} seems to understand some` }); return list.sort((a, b) => seed(a.id + P.out.at) % 5 - seed(b.id + P.out.at) % 5); }
   function famUpdate(s, A, pid, choice) {
