@@ -1,6 +1,6 @@
 """First-player clarity (from beta feedback): the station says what it is, Nova and the aide are always in the
-header as people with a label, the aide leads with at most three suggestions and folds the rest, and a talk
-bubble by the bed opens the conversation. Every shift, phone and desktop. Usage: python tests/clarity.py"""
+header as people with a label, the aide leads with at most three suggestions and folds the rest, and the
+patient speaks in a bubble by their head that starts the conversation in the room. Every shift, phone and desktop. Usage: python tests/clarity.py"""
 import sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tests'))
@@ -37,23 +37,34 @@ with sync_playwright() as p:
             check(pg.evaluate("Shift.ui._state().deleg.length") >= 1 and not neg, f'{t} suggestions send in one tap and none is scored as a mistake' + (f': {neg}' if neg else ''))
             H('close'); pid = pg.evaluate("Shift.ui._state() && Object.keys(Shift.ui._state().p).find(k=>{const d=Shift.engine.getCase(Shift.ui._state().caseId).patients.find(x=>x.id===k);return !d.arrives})")
             H('goto', pid=pid); pg.wait_for_timeout(200)
-            bub = pg.locator('.talk-bub')
-            check(bub.count() == 1 and bub.is_visible(), f'{t} a talk bubble is in the room')
+            bub = pg.locator('.sb.idle[data-anchor=pt]')
+            check(bub.count() == 1 and bub.is_visible() and pg.locator('.sb.idle [data-act=talk]').count() == 1, f'{t} the patient has a speech bubble with a way to talk')
             box, scene = bub.bounding_box(), pg.locator('.room-top svg').first.bounding_box()
             check(box and scene and box['x'] >= scene['x'] - 1 and box['x'] + box['width'] <= scene['x'] + scene['width'] + 1 and box['y'] >= scene['y'] - 1 and box['y'] + box['height'] <= scene['y'] + scene['height'] + 1, f'{t} the bubble sits inside the scene')
             # every patient's room: the bubble is inside the scene and clear of the name card and buttons
             bad = []
             for q in pg.evaluate("(()=>{const s=Shift.ui._state(),c=Shift.engine.getCase(s.caseId);return c.patients.filter(d=>!d.arrives).map(d=>d.id)})()"):
                 H('goto', pid=q); H('close'); pg.wait_for_timeout(80)
-                r = pg.evaluate("""(()=>{const b=document.querySelector('.talk-bub'),sc=document.querySelector('.room-top svg');if(!b||!sc)return 'missing';const x=b.getBoundingClientRect(),y=sc.getBoundingClientRect();
+                r = pg.evaluate("""(()=>{const b=document.querySelector('.sb.idle[data-anchor=pt]'),sc=document.querySelector('.room-top svg');if(!b||!sc)return 'missing';const x=b.getBoundingClientRect(),y=sc.getBoundingClientRect();
                   if(x.left<y.left-1||x.right>y.right+1||x.top<y.top-1||x.bottom>y.bottom+1)return 'outside';
                   for(const e of document.querySelectorAll('.nameplate .plate,.plate-btns')){const z=e.getBoundingClientRect();if(z.width&&x.left<z.right&&x.right>z.left&&x.top<z.bottom&&x.bottom>z.top)return 'overlaps '+e.className}
                   return ''})()""")
                 if r: bad.append(f'{q} {r}')
             check(not bad, f'{t} the bubble is placed well in every room' + (': ' + ', '.join(bad) if bad else ''))
-            H('goto', pid=pid); H('close'); bub = pg.locator('.talk-bub')
-            bub.click(); pg.wait_for_timeout(150)
-            check(pg.evaluate("Shift.ui._ui.dock") == 'talk', f'{t} the bubble opens Talk')
+            H('goto', pid=pid); H('close'); pg.locator('.sb.idle [data-act=talk]').click(); pg.wait_for_timeout(250)
+            check(pg.evaluate("Shift.ui._ui.ov") == 'dialog' and pg.locator('.sheet').count() == 0, f'{t} tapping it starts the conversation in the room, not in a pop-up')
+            sp = pg.locator('.sb.talking')
+            check(sp.count() == 1 and sp.is_visible() and len(sp.inner_text().strip()) > 10, f'{t} what they say appears in a speech bubble')
+            n = pg.locator('.convo .reply').count()
+            if n:
+                pg.locator('.convo .reply').first.click(); pg.wait_for_timeout(200)
+                check(pg.locator('.convo .said').count() == 1 or pg.evaluate("Shift.ui._ui.ov") != 'dialog', f'{t} your reply is shown as what you said')
+            for _ in range(6):
+                if pg.evaluate("Shift.ui._ui.ov") != 'dialog': break
+                if pg.locator('.convo .reply').count(): pg.locator('.convo .reply').first.click()
+                else: pg.locator('.convo [data-act=close]').click()
+                pg.wait_for_timeout(120)
+            check(pg.evaluate("Shift.ui._ui.ov") != 'dialog' and pg.locator('.sb.talking').count() == 0, f'{t} the conversation ends back in the room')
             H('nova'); check('Get a tip' in pg.inner_text('.sheet') and 'charge nurse' in pg.inner_text('.sheet'), f'{t} Nova explains what she\'s for'); H('close')
             H('endask'); H('end-yes'); pg.wait_for_timeout(200)
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))

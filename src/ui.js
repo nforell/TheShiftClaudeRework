@@ -816,10 +816,96 @@
       talk: STY && STY.waiting(s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Patient, family, provider', ''],
     };
   }
+  /* ------------ talking in the room ------------
+     The patient (or the family member beside them) speaks in a speech bubble by their head. Your replies are
+     speech bubbles under the scene; tap one to say it. Speech is plain; what people do is in italics. */
+  function speechHTML(t, sp) {
+    t = String(t == null ? '' : t).trim();
+    if (!t.includes('"')) { const narr = /^\(.*\)$/.test(t) || !sp; return narr ? `<em class="sb-act">${esc(t.replace(/^\((.*)\)$/, '$1'))}</em>` : `<span class="sb-say">${esc(t)}</span>`; }
+    return t.split('"').map((seg, i) => (!seg.trim() ? '' : i % 2 ? `<span class="sb-say">${esc(seg.trim())}</span>` : `<em class="sb-act">${esc(seg.trim())}</em>`)).join(' ');
+  }
+  const isPt = (key) => !!def(key);
+  function dlgLine() {
+    if (ui.dlg.id === '__review') return ui.dlgLast || null;
+    const node = C().dialogs[ui.dlg.id]; if (!node) return null;
+    return { who: node.who, text: typeof node.text === 'function' ? node.text(s) : node.text, story: node.story || null };
+  }
+  function speech(d, P, fl) {
+    const Ax = A();
+    if (ui.ov === 'dialog' && ui.dlg) {
+      const L = dlgLine(); if (!L) return '';
+      const pt = isPt(L.who), fam = !pt && fl.family === L.who, nm = pt ? def(L.who).short : who(L.who).name;
+      const st = L.story && STY ? trustDots(STY.trust(s.p[L.story.pid])) : '';
+      return `<div class="sb talking" data-anchor="${fam ? 'fam' : pt ? 'pt' : 'side'}" role="status" aria-live="polite">
+        <p class="sb-who"><b>${esc(nm)}</b>${st ? `<span class="sb-st">Getting to know ${esc(pt ? d.short : nm.split(' ')[0])} ${st}</span>` : ''}</p>
+        <p class="sb-tx">${speechHTML(L.text, false)}</p><i class="sb-tail" aria-hidden="true"></i></div>`;
+    }
+    if (fl.empty || gone(P)) return '';
+    const cid = d.talk(s, P, Ax), node = cid && C().dialogs[cid];
+    const line = ui.captionPoke && ui.caption ? { text: ui.captionRaw, quiet: ui.captionQuiet } : R.say(d.id, rigV(d.id));
+    let h = '';
+    if (cid || line) {
+      const story = !!(STY && STY.waiting(s, C(), d, P, Ax)), fresh = !!(node && node.choices && !(s.seenDlg || {})[cid]);
+      const wants = cid && (story || fresh), label = wants && !d.newborn ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
+      h += `<div class="sb idle ${wants ? 'wants' : ''} ${ui.captionPoke ? 'fresh' : ''}" data-anchor="pt">${line ? `<p class="sb-tx">${speechHTML(line.text, !line.quiet)}</p>` : ''}${cid ? `<button class="sb-go" data-act="talk">${wants ? '<i class="ping" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span><small>3 min</small></button>` : ''}<i class="sb-tail" aria-hidden="true"></i></div>`;
+    }
+    if (d.family && fl.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<div class="sb idle fam" data-anchor="fam"><button class="sb-go" data-act="family"><span>Talk with ${esc(d.family.name)}</span><small>${d.family.cost} min</small></button><i class="sb-tail" aria-hidden="true"></i></div>`;
+    return h;
+  }
+  function convoTray(d) {
+    const rev = ui.dlg.id === '__review', node = rev ? null : C().dialogs[ui.dlg.id];
+    const L = dlgLine(), nm = L ? (isPt(L.who) ? def(L.who).short : who(L.who).name) : d.short;
+    let h = `<section class="convo" aria-label="Conversation with ${esc(nm)}">`;
+    if (ui.said) h += `<p class="said"><span class="said-b">${esc(ui.said)}</span><span class="said-k">You</span></p>`;
+    if (node && node.choices) h += `<div class="replies" role="group" aria-label="Your reply"><p class="replies-k">Your reply</p>${mixOrder(node.choices.length, ui.dlg.id).map((i, k) => `<button class="reply" data-act="dlg" data-i="${i}"><kbd aria-hidden="true">${k + 1}</kbd><span>${esc(node.choices[i].label)}</span></button>`).join('')}</div>`;
+    else h += `${ui.dlgReview ? reviewHTML(ui.dlgReview, rev ? 'Why it matters' : undefined) : ''}<div class="convo-f"><button class="btn btn-primary" data-act="close">Continue</button></div>`;
+    return h + '</section>';
+  }
+  /* Bubbles point at whoever is speaking: map the speaker's head from scene coordinates to the screen. */
+  function placeBubbles(root) {
+    const rt = (root || document).querySelector('.room-top'), sv = rt && rt.querySelector('svg.scene'); if (!sv || !s || !s.loc) return;
+    const d = def(s.loc); if (!d) return;
+    const M = sv.getScreenCTM(), R0 = rt.getBoundingClientRect(); if (!M || !R0.width) return;
+    const narrow = innerWidth <= 760, sm = d.look.small || 0;
+    const pt = (x, y) => { const q = sv.createSVGPoint(); q.x = x; q.y = y; const o = q.matrixTransform(M); return { x: o.x - R0.left, y: o.y - R0.top }; };
+    const blockers = [...rt.querySelectorAll('.nameplate .plate, .plate-btns')].map((e) => e.getBoundingClientRect()).filter((z) => z.width).map((z) => ({ l: z.left - R0.left, r: z.right - R0.left, t: z.top - R0.top, b: z.bottom - R0.top }));
+    rt.querySelectorAll('.sb').forEach((b) => {
+      const fam = b.dataset.anchor === 'fam', talking = b.classList.contains('talking');
+      const hx = fam ? 963 : 515, hy = fam ? 250 : (sm ? 150 + (1 - sm) * 330 : 150), hr = fam ? 38 : d.look.head.h * (sm || 1);
+      const c = pt(hx, hy), r = Math.abs(pt(hx + hr, hy).x - c.x);
+      b.style.cssText = ''; b.dataset.side = '';
+      if (narrow) {
+        // Phones: the conversation bubble sits under the scene (tail up); the idle one floats at the top (tail down).
+        // Idle: over the bed when the head is high in the frame, at the top when it's low (a baby in a crib).
+        b.style.setProperty('--tx', Math.max(26, Math.min(R0.width - 26, c.x)) + 'px');
+        // The family's button goes on the opposite edge from the patient's bubble.
+        const SH = sv.getBoundingClientRect().height, low = pt(515, sm ? 150 + (1 - sm) * 330 : 150).y > SH * .5;
+        b.dataset.side = talking ? 'up' : fam ? (low ? 'famlo' : 'fam') : low ? 'down' : 'below';
+        if (!talking) { const atTop = fam ? !low : low; b.style.top = Math.max(10, atTop ? 10 : SH - b.offsetHeight - 10) + 'px'; }
+        return;
+      }
+      if (b.dataset.anchor === 'side') { b.dataset.side = 'none'; b.style.left = '50%'; b.style.top = '12px'; b.style.transform = 'translateX(-50%)'; b.style.width = Math.min(440, R0.width - 40) + 'px'; return; }
+      const maxW = talking ? 420 : fam ? 230 : 300;
+      let P = { x: c.x - r * (fam ? 1.15 : .95), y: c.y + r * .25 }, side = 'l', avail = P.x - 16 - 12;
+      if (avail < 220 && !fam) { P = { x: c.x + r * .95, y: P.y }; side = 'r'; avail = R0.width - P.x - 16 - 12; }
+      const w = Math.max(150, Math.min(maxW, avail));
+      b.style.width = w + 'px';
+      const left = side === 'l' ? P.x - 16 - w : P.x + 16, h = b.offsetHeight;
+      let top = P.y - h * .62, minTop = 10;
+      blockers.forEach((z) => { if (left < z.r && left + w > z.l) minTop = Math.max(minTop, z.b + 8); });
+      top = Math.max(minTop, Math.min(top, R0.height - h - 10)); if (top < 10) top = 10;
+      Object.assign(b.style, { left: left + 'px', top: top + 'px' });
+      b.style.setProperty('--ty', Math.max(16, Math.min(h - 16, P.y - top)) + 'px');
+      b.dataset.side = side;
+    });
+  }
+  addEventListener('resize', () => { if (ui.view === 'room') placeBubbles(); });
+
   function vRoom() {
     const d = def(s.loc), P = s.p[d.id], Ax = A();
     const v = Ax.lastVitals(d.id), fl = d.scene(s, P, Ax), st = d.status(s, P, Ax);
-    const sceneSvg = A_.room(d, s, P, fl, rigV(d.id), P.callLight || !!P.bell, st === 'urgent');
+    let sceneSvg = A_.room(d, s, P, fl, rigV(d.id), P.callLight || !!P.bell, st === 'urgent');
+    if (ui.ov === 'dialog' && ui.dlg) sceneSvg = sceneSvg.replace('<svg class="scene"', '<svg class="scene" inert');   // the room holds still while you talk
     const looks = [...sceneSvg.matchAll(/data-act="clue" data-id="([^"]+)" tabindex="0" role="button" aria-label="([^"]+)"/g)].map((x) => [x[1], x[2]]);
     if (!PANES.some((p) => p[0] === ui.dock)) ui.dock = 'brain';
     const pane = PANES.find((p) => p[0] === ui.dock), cnt = railCounts(d, P);
@@ -827,17 +913,19 @@
     const ab = { T: abn(d, 'T', v.T), HR: abn(d, 'HR', v.HR), BP: abn(d, 'SBP', v.SBP), RR: abn(d, 'RR', v.RR), SpO2: abn(d, 'SpO2', v.SpO2) };
     const bg = P.bgs && P.bgs.length ? P.bgs[P.bgs.length - 1] : null;
     const body = ui.dock === 'brain' ? paneBrain(d, P) : ui.dock === 'assess' ? paneAssess(d, P) : ui.dock === 'care' ? paneCare(d, P) : ui.dock === 'meds' ? paneMeds(d, P) : paneTalk(d, P);
-    return `<main class="roomv">
-      <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''}">
+    const talking = ui.ov === 'dialog' && !!ui.dlg;
+    return `<main class="roomv ${talking ? 'talking' : ''}">
+      <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''} ${talking ? 'talking' : ''}">
         ${sceneSvg}
+        ${speech(d, P, fl)}
         <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
           <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
-        ${(() => { const w = cnt.talk[1] === 'due'; return `<button class="talk-bub ${w ? 'wants' : ''} ${ui.dock === 'talk' ? 'on' : ''}" data-act="dock" data-id="talk" aria-label="${w ? `${esc(d.short)} wants to talk. ` : ''}${esc(d.talkLabel || 'Talk with ' + d.short)}">${AI.talk}<span>${w ? `${esc(d.short)} wants to talk` : esc(d.talkLabel || 'Talk with ' + d.short)}</span>${w ? '<i aria-hidden="true"></i>' : ''}</button>`; })()}
-        ${ui.caption ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
+        ${ui.caption && !ui.captionPoke && !talking ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
-      ${looks.length ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
-      <div class="ws">
+      ${talking ? convoTray(d) : ''}
+      ${looks.length && !talking ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
+      <div class="ws" ${talking ? 'inert' : ''}>
         <nav class="rail" role="tablist" aria-label="Activities for ${esc(d.short)}">
           ${PANES.map(([id, l]) => `<button role="tab" class="rt ${cnt[id][1]}" data-act="dock" data-id="${id}" aria-selected="${ui.dock === id}">${AI[id]}<span class="rt-l">${l}</span><span class="rt-s">${esc(cnt[id][0])}</span></button>`).join('')}
           <button class="rt rt-chart" data-act="chart" data-pid="${d.id}">${AI.chart}<span class="rt-l">Chart</span><span class="rt-s">Labs, orders, notes</span></button>
@@ -1194,7 +1282,7 @@
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
       { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
       { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
-      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap the speech bubble by the bed. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
+      { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap their speech bubble. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
   };
@@ -1380,6 +1468,7 @@
     return o;
   }
   function ovDialog() {
+    if (ui.view === 'room') return '';
     if (ui.dlg.id === '__review') return sheet('Your choice', reviewHTML(ui.dlgReview, 'Why it matters'), `<button class="btn btn-primary" data-act="close">Continue</button>`, { label: 'Decision review' });
     const node = C().dialogs[ui.dlg.id];
     const w = who(node.who);
@@ -1627,9 +1716,8 @@
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
-    // The talk bubble sits beside the patient, below the name card however tall the card is.
-    const tb = root.querySelector('.talk-bub'), pl = root.querySelector('.nameplate .plate'), rt = root.querySelector('.room-top');
-    if (tb && pl && rt && innerWidth > 760) { tb.style.top = ''; const a = rt.getBoundingClientRect(), b = pl.getBoundingClientRect(), c = tb.getBoundingClientRect(); if (b.width && c.left < b.right && c.top < b.bottom + 8) tb.style.top = Math.min(b.bottom - a.top + 12, a.height - c.height - 12) + 'px'; }
+    if (ui.view === 'room') placeBubbles(root);
+    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const r = cv.getBoundingClientRect(), rt = root.querySelector('.room-top').getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
     const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
@@ -1780,7 +1868,7 @@
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
-    close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
+    close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
     'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); s.hHeard = Array.from(new Set((s.hHeard || []).concat(C().patients.filter((x) => !x.arrives)[ui.hIdx].id))); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
     'h-done'() { TEL.track('report_done', { case: caseId, flags: s.brain.length, heard: ui.hIdx + 1 }); ui.rankMoved = null; ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
@@ -1822,8 +1910,8 @@
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
-    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
-    clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
+    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = line.quiet ? line.text : '"' + line.text + '"'; ui.captionQuiet = !!line.quiet; } render(); },
+    clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
@@ -1876,8 +1964,8 @@
       const d = def(s.loc), P = s.p[d.id], Ax = A(), cid = d.talk(s, P, Ax), sid = cid && STY ? STY.pick(s, C(), d, P, Ax, cid) : null, id = sid || cid;
       if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; }
       if (!sid) { s.seenDlg = s.seenDlg || {}; s.seenDlg[cid] = 1; }
-      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id }; ui.ov = 'dialog'; render(); },
-    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
+      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.captionPoke = false; ui.caption = null; ui.dlg = { id }; ui.ov = 'dialog'; ui.convoIn = true; R.poke('room:' + d.id); render(); },
+    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.convoIn = true; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
     dlg(el) {
       const node = C().dialogs[ui.dlg.id], c = node.choices[+el.dataset.i];
       const Ax = A(), j0 = s.judg.length; if (c.fx) c.fx(s, Ax);
@@ -1886,10 +1974,10 @@
       const pid = node.pid || (/^\d+$/.test(node.who) ? node.who : s.loc);
       if (STY && node.story) { const f = s.storyFresh; s.storyFresh = null; if (f && f.d > 0) { gain(25, f.why === 'presence' ? 'Presence' : 'Connection', 'bond'); ui.bondSound = true; } else if (f && f.d < 0) ui.pops.push({ text: 'Trust', label: `${def(f.pid).short} pulls back`, cls: 'lost' }); }
       else if (STY && s.p[pid]) STY.fromDialog(s, pid, rv.filter((j) => j.pid === pid));
-      logHere(pid, `You: "${c.label}"`, 'act');
-      if (c.next) { const nx = C().dialogs[c.next]; logHere(pid, typeof nx.text === 'function' ? nx.text(s) : nx.text, 'info'); ui.dlg = { id: c.next }; }
+      logHere(pid, `You: "${c.label}"`, 'act'); ui.said = c.label; ui.dlgLast = { who: node.who, text, story: node.story || null }; ui.convoIn = true;
+      if (c.next) { const nx = C().dialogs[c.next]; logHere(pid, typeof nx.text === 'function' ? nx.text(s) : nx.text, 'info'); ui.dlg = { id: c.next }; if (isPt(nx.who)) setTimeout(() => R.poke('room:' + nx.who), 60); }
       else if (ui.dlgReview && fbNow()) { ui.dlg = { id: '__review' }; }
-      else { ui.dlg = null; ui.ov = null; }
+      else { ui.dlg = null; ui.ov = null; ui.said = null; }
       save(); render();
     },
     comm(el) { const d = def(s.loc), x = d.comms.find((c) => c.id === el.dataset.id); doAct(x.label, x.cost, (Ax) => { const t = x.run(s, s.p[d.id], Ax); logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
@@ -2153,6 +2241,7 @@
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
     if (ui.ov === 'orient' && ui.or && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { if (e.key === 'Escape') { closeOrient(false); return; } if (e.key === 'ArrowRight' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: ui.or.i === OR.CH.length - 1 ? 'done' : 'next' } }); return; } if (e.key === 'ArrowLeft' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: 'back' } }); return; } }
+    if (ui.ov === 'dialog' && ui.view === 'room' && /^[1-9]$/.test(e.key) && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { const b = document.querySelectorAll('.convo .reply')[+e.key - 1]; if (b) { e.preventDefault(); b.click(); return; } }
     if (e.key === 'Escape' && ui.ov && ui.ov !== 'rank') { handlers.close(); return; }
     const el = e.target;
     if ((e.key === 'Enter' || e.key === ' ') && el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); onClick({ target: el, preventDefault() {} }); }

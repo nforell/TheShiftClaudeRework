@@ -2,6 +2,18 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 14 — October 4, 2026 (branch `talk-in-scene`)
+
+Nick's ask: make it obvious you can talk to people, and show conversations in the room instead of sending you to a button and a pop-up.
+
+### Done
+- **Patients speak in the room.** Each patient has a speech bubble by their head with what they're saying right now (it changes with how they're doing) and a button inside it: "Talk with Mrs. Mendes · 3 min", or "Mrs. Mendes wants to talk" with a pulsing dot when there's a new conversation or a story beat waiting. Tapping the patient refreshes what they say. Family at the bedside get their own bubble ("Talk with Lucía"). Newborns and infants say "Pick him up".
+- **Conversations happen in the scene.** The patient's line appears in a comic-style speech bubble pointing at them (or at the family member speaking), with spoken words plain and actions in italics. Your replies appear under the scene as speech bubbles you tap (number keys 1–3 work too). What you said stays on screen as your bubble, the next line appears by the patient, and "Why it matters" feedback shows inline. The rest of the room dims and holds still while you talk. No pop-up.
+- The old "Talk with…" button floating by the bed is gone; Talk & call still lists conversations, calls and help.
+- Phones: the idle bubble sits over the bed (or at the top when the patient is a baby in a crib), and the conversation bubble drops below the scene with its tail pointing up at them.
+- Fixed: Baby Nguyen's idle look line said he was limp at baseline (the art read a newborn's normal blood pressure as shock).
+- `tests/clarity.py` now checks the bubble, starting a conversation in the room, replies, and ending it, on every shift, phone and desktop. Full suite clean.
+
 ## Session 13 — October 3, 2026 (branch `more-shifts`)
 
 Nick's ask: make the "who first" ranking draggable, and give first-time players a real introduction instead of dropping them in.

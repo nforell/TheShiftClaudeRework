@@ -5804,7 +5804,7 @@ window.Shift = window.Shift || {};
 
   /* ---------- 501 Mateo Hernández: RSV bronchiolitis on high-flow ---------- */
   const mat = {
-    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
+    id: '501', room: '501', name: 'Mateo Hernández', short: 'Mateo', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01120334', legal: 'Interpreter: Spanish',
     norms: INFANT,
     look: { skin: '#D8A77F', shade: '#BC8A63', lip: '#B0655A', blush: '#E59A86', iris: '#2B1B10', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#2A1B12' }, brow: { w: 2.2, color: '#5A4030' }, body: { w: 56, cloth: 'onesie2' }, extras: ['cannula'], smile: .5,
@@ -6118,7 +6118,7 @@ window.Shift = window.Shift || {};
   /* ---------- 507 Noah Whitfield: a fussy baby whose body tells a different story ---------- */
   const headSev = (s, P) => (P.ct !== null ? 0 : clamp((s.t - 60) / 110, 0, 1.2));
   const noah = {
-    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', age: '4 mo', sex: 'M', mrn: '01193310',
+    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01193310',
     norms: INFANT,
     look: { skin: '#F1D2B8', shade: '#D8B498', lip: '#C47A70', blush: '#F2A594', iris: '#4C6A84', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#B08A5A' }, brow: { w: 2, color: '#C0A078' }, body: { w: 56, cloth: 'onesie' }, extras: [], smile: .2,
@@ -7593,7 +7593,7 @@ window.Shift = window.Shift || {};
     norms: NEWBORN,
     look: { skin: '#EBC2A0', shade: '#D0A27E', lip: '#C47A70', blush: '#F0A08C', iris: '#1E140C', head: { w: 62, h: 58, jaw: .02 }, eye: 10.6, small: .62,
       hair: { style: 'buzz', color: '#1A1410' }, brow: { w: 1.8, color: '#4A3A2C' }, body: { w: 54, cloth: 'onesie2' }, extras: [], smile: .1,
-      lines: { calm: '(Asleep, fists curled up by his face.)', shaky: '(His arms tremble in quick little jerks, then stop when you hold them.)', drowsy: '(Floppy and hard to wake. He won\'t root.)', anxious: '(A thin, fussy cry.)', none: '(Limp. He doesn\'t respond.)', hypo: '(Jittery and pale. A weak, high cry.)' } },
+      lines: { calm: '(Asleep, fists curled up by his face.)', shaky: '(His arms tremble in quick little jerks, then stop when you hold them.)', drowsy: '(Sleepy. He stirs when you touch his cheek, then drifts off without rooting.)', anxious: '(A thin, fussy cry.)', none: '(Limp. He doesn\'t respond.)', hypo: '(Jittery and pale. A weak, high cry.)' } },
     bio: `Born at 01:05, 39 weeks, 4.45 kg. First baby for Linh, a pharmacy tech, and her husband Bảo, who went home to sleep at four.`,
     dx: `Newborn, infant of a diabetic mother`, reason: `Term baby boy, 6 hours old. Mother has gestational diabetes treated with insulin. Large for gestational age, 4.45 kg. Hypoglycemia protocol.`,
     hx: [`Mother: gestational diabetes on insulin since 28 weeks; HbA1c 6.4`, `Apgars 8 and 9`, `Erythromycin eye ointment and vitamin K given at birth`, `Mother's hepatitis B surface antigen negative`],
@@ -7704,7 +7704,7 @@ window.Shift = window.Shift || {};
     },
     scene: (s, P) => ({ crib: true, tray: 'none', bottle: P.donor, family: P.gone ? null : 'linh', familyLabel: P.skin ? 'Linh, holding him skin to skin' : 'Linh, his mother, in the bed beside the bassinet', empty: P.gone, emptyText: P.nicu ? 'Bassinet empty. Taken to the NICU after a seizure.' : 'Bassinet empty. In the NICU for IV dextrose; Linh went with him.' }),
     clues: (s, P) => ({ crib: `Bassinet card: "Baby Boy Nguyen, 4.45 kg, 01:05." Under it, Linh's feeding log: "01:30 15 min. 04:00 10 min (sleepy)." Nothing after.`, family: `Linh, sitting up, a breast pump flange in its wrapper on the table. A glucose meter of her own in her bag: "I'm not supposed to need it anymore."`, bottle: `A syringe of donor milk, labeled with his name and the time.` }),
-    rig: (s, P) => ({ glu: Math.round(P.glu) + 20, tremor: sym(P) && P.glu >= 28 ? .6 : 0, alert: P.glu < 28 ? 2 : P.glu < 40 || P.temp < 36.4 ? 1 : 0, temp: bTemp(P) }),
+    rig: (s, P) => ({ sbp: 110, glu: sym(P) ? 30 : 95, tremor: sym(P) && P.glu >= 28 ? .6 : 0, alert: P.glu < 28 ? 2 : P.glu < 40 || P.temp < 36.4 ? 1 : 0, temp: bTemp(P) }),
     status: (s, P) => (P.gone ? 'gone' : sym(P) || P.glu < 30 ? 'urgent' : P.glu < 45 || P.temp < 36.5 ? 'watch' : 'stable'),
     outcome(s, P) {
       if (P.nicu) return { tone: 'bad', title: 'Hypoglycemic seizure, NICU', text: `Glucose ${Math.round(P.glu)} with a seizure at ${clock(P.goneAt)}. His 07:00 check ${P.checks.length ? 'came late' : 'was never done'}, and he hadn't fed since 04:00.` };

@@ -22,7 +22,7 @@
   // Clickables: covered, too small
   const modal = document.querySelector('.crit, .oops, .sheet, .drawer, .res, .intro, .orient, .ff');
   document.querySelectorAll('[data-act]').forEach((el) => {
-    if (el.dataset.scrim || !el.dataset.act) return; if (!vis(el)) return;
+    if (el.dataset.scrim || !el.dataset.act) return; if (!vis(el) || el.closest('[inert]')) return;
     if (modal && !modal.contains(el) && !(modal.classList.contains('drawer') && el.closest('.drawer'))) return;
     const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > H || r.right < 0 || r.left > W) return;
     // clipped by a scrolling/clipping ancestor: not reachable at this scroll position, not a bug
