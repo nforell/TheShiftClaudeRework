@@ -536,7 +536,7 @@
     bev_b: { who: 'bev', pid: '21', text: `"Thanks, hon." She goes to find the machine.` },
     bev_after: { who: 'bev', pid: '21', text: `"She's been tired for two weeks. I should've made her come sooner."` },
 
-    walt_talk: { who: '22', text: `He looks at you hard and tries. "The — the — " His face crumples. He taps his own mouth with his left hand, frustrated.`, choices: [
+    walt_talk: { who: '22', text: `He looks at you hard and tries. "The — the —" His face crumples. He taps his own mouth with his left hand, frustrated.`, choices: [
       { label: `Take your time. You can squeeze my hand once for yes, twice for no. Did this start today?`, next: 'walt_a', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', 1, `You gave Mr. Brooks a way to communicate.`, `Expressive aphasia: he understands, he can't produce words. Yes/no questions and his good hand let him take part.`, '22'); } },
       { label: `Don't try to talk. Just rest.`, next: 'walt_b', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', -1, `You told Mr. Brooks not to try to communicate.`, `He understands everything. Give him a way to answer.`, '22'); } },
     ] },
