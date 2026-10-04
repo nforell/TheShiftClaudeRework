@@ -18,6 +18,10 @@ The deployed site (Vercel, serving `dist/`) has a beta landing page at `/` (sour
 - **Shift 5 — Evenings on 4 North** (Specialty: Teen psych, 4 North, 15:00–20:00): acute dystonia after a first dose of haloperidol that staff call acting out, refeeding syndrome in anorexia (phosphorus under every call threshold), a missed skin check and a contraband shard on self-harm precautions, protecting a teen's name and pronouns on a call with their father, a disclosure of abuse and a visitor who can't come in (mandated reporting), and a "medically cleared" admission who told a peer about an acetaminophen overdose. A hold for an emergency IM that was never charted as a restraint, with its face-to-face still due. California framing: parent-consent admissions and the 5585 hold for minors.
 - **Shift 6 — Evenings on 5 South** (Specialty: Peds, 5 South, 15:00–20:00): RSV bronchiolitis on high-flow (suction, feeding thresholds, interpreter use), sickle cell crisis to acute chest syndrome (pain bias), a weight entered in pounds as kilograms (2.2x dosing), sentinel bruising and abusive head trauma in a non-mobile infant (mandated reporting), and a silent-chest asthma trap. Age-based vital sign ranges.
 
+## First time
+
+A brand-new player who taps Start gets an eight-step orientation first (`src/orient.js`): the clock, report, deciding who's first (drag and drop), the station and phone, a room and a medication decision, an SBAR call, delegating, and the debrief, each practiced with three demo patients. It's always available from **How it plays**.
+
 ## Every shift
 
 These run on every unit, from `src/flow.js`:

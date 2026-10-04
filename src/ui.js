@@ -1,6 +1,6 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
+  const E = S.engine, OR = S.orient, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'ed-podb-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
@@ -133,6 +133,16 @@
   const PACK = (S.config || {}).pack || {};
   const owned = () => !!(CL && CL.owns && CL.owns('pack'));
   const locked = (id) => !!PACK.on && !(PACK.free || []).includes(id) && !owned();
+  /* Orientation: offered automatically to a brand-new player the first time they start a shift; always available
+     from How it plays. Finishing it from Start goes straight into that shift. */
+  const firstTimer = () => !seen('orient') && !(prof.runs || []).length && !Object.keys(prof.seen || {}).length;
+  function openOrient(start) { if (!OR) return start ? startNew() : (ui.ov = 'help', render()); ui.or = OR.fresh(start); OR._o = ui.or; ui.ov = 'orient'; TEL.track('orient_open', { from: start ? 'start' : 'help' }); render(true); }
+  function closeOrient(finished) {
+    const o = ui.or; markSeen('orient'); TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
+    ui.or = null; ui.ov = null;
+    if (o && o.start) return startNew();
+    render(true);
+  }
   function startNew() { if (locked(caseId)) { ui.ov = 'pack'; TEL.track('pack_view', { case: caseId, from: 'start' }); return render(); } s = E.newGame(caseId); s.wall0 = Date.now(); TEL.track('shift_start', { case: caseId, attempt: ((prof.done || {})[caseId] || 0) + 1, shifts_done: prof.runs.length }); ui.view = 'handoff'; ui.hFresh = true; ui.intro = C().intro && !seen('intro:' + caseId) ? 0 : null; ui.hIdx = 0; ui.rank = null; ui.rankDone = false; ui.ov = null; ui.toasts = []; ui.caption = null; save(); render(true); }
   function resume() { const g = E.store.load(); if (!g) return startNew(); s = g; caseId = g.caseId; E.useCase(caseId); TEL.track('shift_resume', { case: caseId, game_min: Math.round(s.t), view: s.view || 'station' }); ui.view = s.view || 'station'; ui.ov = null; render(true); }
   function goView(v) { ui.view = v; s.view = v; ui.caption = null; save(); render(true); }
@@ -1461,9 +1471,9 @@
   function ovRank() {
     const r = ui.rank, pr = C().priority;
     const done = ui.rankDone;
-    const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Put them in order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
-      ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p>'}
-      <ol class="rank ${done ? 'done' : ''}">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}"><span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(d.dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}<span>Up</span></button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}<span>Down</span></button></span>`}</li>`; }).join('')}</ol>`;
+    const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Drag them into order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
+      ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p><p class="rank-how">Drag a card by its handle to move it. You can also use the arrows.</p>'}
+      <ol class="rank ${done ? 'done' : ''}" data-sort="rank" aria-describedby="rank-live">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" data-key="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}">${done ? '' : `<span class="grip" aria-hidden="true" title="Drag to reorder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`}<span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(d.dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol><p class="sr" id="rank-live" aria-live="polite"></p>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -1510,7 +1520,7 @@
       <p><b>XP, streaks and goals.</b> On-time work and good calls earn care XP. A run of them builds a streak that multiplies it; anything going overdue resets it. Four shift goals, three stars and badges carry across shifts on your career ladder.</p>
       <p><b>People, not just patients.</b> Once someone is stable, talking with them again opens up their story. Trust grows when you listen, answer their call light yourself, or just sit with them, and some of what they tell you matters clinically. The debrief tells you what became of them.</p>
       <p><b>Report.</b> In the last hour, give report to the oncoming nurse on everyone still on the unit. What's pending matters more than what's done.</p>
-      <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `<button class="btn btn-primary" data-act="close">Got it</button>`);
+      <p><b>Consequences.</b> Patients get better or worse based on what you do, and what you don't. The debrief at the end explains why.</p></div>`, `${ui.or ? '<button class="btn" data-act="or-open">Back to orientation</button>' : '<button class="btn" data-act="or-open">Walk me through it</button>'}<button class="btn btn-primary" data-act="close">Got it</button>`);
   }
   function ovTerms(gate) {
     const web = /^https?:/.test(location.protocol);
@@ -1588,6 +1598,7 @@
     else if (ov === 'menu') h += ovMenu();
     else if (ov === 'settings') h += ovSettings();
     else if (ov === 'help') h += ovHelp();
+    else if (ov === 'orient' && ui.or && OR) { OR._o = ui.or; h += OR.view(ui.or); }
     else if (ov === 'confirm') h += ovConfirm();
     else if (ov === 'result' && ui.res && s) h += ovResult();
     else if (ov === 'crit' && ui.crit && s) h += ovCrit();
@@ -1759,11 +1770,13 @@
   const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(s.t - mins)} · ${mins} min` : E.clock(s.t) }; };
   const handlers = {
     'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'home'; ui.ov = null; render(); },
-    new() { if (locked(caseId)) return startNew(); if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
+    new() { if (locked(caseId)) return startNew(); if (firstTimer()) { openOrient(true); return; } if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
     'new-yes'() { E.store.clear(); startNew(); },
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
     restart() { ui.confirm = { title: 'Restart this shift?', text: `You'll go back to ${E.clock(0)} report. Progress in this shift is lost.`, ok: 'Restart', act: 'new-yes', danger: true }; ui.ov = 'confirm'; render(); },
-    menu() { ui.ov = 'menu'; render(); }, help() { ui.ov = 'help'; render(); }, settings() { ui.ov = 'settings'; render(); },
+    menu() { ui.ov = 'menu'; render(); }, help() { openOrient(false); }, 'help-ref'() { ui.ov = 'help'; render(); },
+    'or-open'() { if (ui.or) { ui.ov = 'orient'; render(true); } else openOrient(false); },
+    or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
@@ -2089,6 +2102,7 @@
   addEventListener('unhandledrejection', (e) => crashed(e.reason, 'promise'));
   function onClick(e) {
     armIdle();
+    if (ui.dragJust) { ui.dragJust = false; return; }
     const el = e.target.closest('[data-act]');
     if (!el) return;
     if (el.dataset.scrim && e.target !== el) return; // clicks inside sheet don't close
@@ -2138,9 +2152,70 @@
   function onKey(e) {
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
+    if (ui.ov === 'orient' && ui.or && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { if (e.key === 'Escape') { closeOrient(false); return; } if (e.key === 'ArrowRight' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: ui.or.i === OR.CH.length - 1 ? 'done' : 'next' } }); return; } if (e.key === 'ArrowLeft' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: 'back' } }); return; } }
     if (e.key === 'Escape' && ui.ov && ui.ov !== 'rank') { handlers.close(); return; }
     const el = e.target;
     if ((e.key === 'Enter' || e.key === ' ') && el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); onClick({ target: el, preventDefault() {} }); }
+  }
+
+  /* ------------ drag to reorder: any [data-sort] list whose children carry data-key ------------
+     Mouse and pen drag the whole card; on touch, drag from the handle so the page still scrolls.
+     While dragging, the card follows the pointer and the others slide out of the way; on drop the new
+     order goes to onSorted() and the page re-renders with the card easing into its slot. */
+  let SD = null;
+  function sortDown(e) {
+    if (e.button > 0 || ui.busy) return;
+    const li = e.target.closest && e.target.closest('[data-sort] > [data-key]'); if (!li) return;
+    const list = li.parentElement; if (list.classList.contains('done')) return;
+    if (!e.target.closest('.grip') && (e.pointerType === 'touch' || e.target.closest('button, a, input, textarea, select, summary'))) return;
+    const items = [...list.children].filter((x) => x.dataset.key);
+    if (items.length < 2) return;
+    const tops = items.map((x) => x.offsetTop), hs = items.map((x) => x.offsetHeight);
+    const gap = Math.max(0, tops[1] - tops[0] - hs[0]);
+    const sc = list.closest('.sheet-b, .or-body') || document.scrollingElement;
+    SD = { li, list, items, tops, hs, gap, idx: items.indexOf(li), to: items.indexOf(li), y0: e.clientY, s0: sc.scrollTop, sc, id: e.pointerId, moved: false };
+    try { li.setPointerCapture(e.pointerId); } catch (er) { /* fine */ }
+    e.preventDefault();
+  }
+  function sortMove(e) {
+    if (!SD || e.pointerId !== SD.id) return;
+    const d = SD, dy0 = e.clientY - d.y0 + (d.sc.scrollTop - d.s0);
+    if (!d.moved) { if (Math.abs(dy0) < 4) return; d.moved = true; d.li.classList.add('dragging'); d.list.classList.add('sorting'); FX.play('tap'); }
+    const lo = d.tops[0] - d.tops[d.idx], hi = d.tops[d.items.length - 1] + d.hs[d.items.length - 1] - d.tops[d.idx] - d.hs[d.idx];
+    const dy = Math.max(lo - 12, Math.min(hi + 12, dy0));
+    d.li.style.transform = `translateY(${dy}px) scale(1.02)`;
+    // Cards differ in height: going up, the dragged card's top edge decides; going down, its bottom edge.
+    const top = d.tops[d.idx] + dy, bot = top + d.hs[d.idx];
+    let to = d.idx; d.items.forEach((x, j) => { const mid = d.tops[j] + d.hs[j] / 2; if (j < d.idx && top < mid) to = Math.min(to, j); if (j > d.idx && bot > mid) to = Math.max(to, j); });
+    const step = d.hs[d.idx] + d.gap;
+    d.items.forEach((x, j) => { if (j === d.idx) return; const sh = j > d.idx && j <= to ? -step : j < d.idx && j >= to ? step : 0; x.style.transform = sh ? `translateY(${sh}px)` : ''; });
+    if (to !== d.to) {
+      d.to = to; FX.play('tap');
+      const ord = d.items.map((x, j) => j).filter((j) => j !== d.idx); ord.splice(to, 0, d.idx);
+      const L = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+      ord.forEach((j, pos) => { const n = d.items[j].querySelector('.n'); if (!n) return; const bb = n.querySelector('b'), sm = n.querySelector('small'); if (bb) bb.textContent = pos + 1; if (sm) sm.textContent = pos === 0 ? 'first' : pos === ord.length - 1 ? 'last' : L[pos]; n.classList.toggle('lead', pos === 0); }); const live = document.getElementById('rank-live'); if (live) live.textContent = `Moved to position ${to + 1} of ${d.items.length}.`; }
+    const r = d.sc === document.scrollingElement ? { top: 0, bottom: innerHeight } : d.sc.getBoundingClientRect();
+    if (e.clientY < r.top + 48) d.sc.scrollTop -= 10; else if (e.clientY > r.bottom - 48) d.sc.scrollTop += 10;
+  }
+  function sortUp(e) {
+    if (!SD || e.pointerId !== SD.id) return;
+    const d = SD; SD = null;
+    if (!d.moved) return;
+    ui.dragJust = true; setTimeout(() => { ui.dragJust = false; }, 60);
+    const keys = d.items.map((x) => x.dataset.key), k = keys.splice(d.idx, 1)[0]; keys.splice(d.to, 0, k);
+    const from = d.li.getBoundingClientRect().top;
+    d.items.forEach((x) => { x.style.transform = ''; }); d.list.classList.remove('sorting');
+    onSorted(d.list.dataset.sort, keys, k);
+    const n = document.querySelector(`[data-sort="${d.list.dataset.sort}"] > [data-key="${k}"]`);
+    if (n && !reduced()) { const dy = from - n.getBoundingClientRect().top; n.style.transition = 'none'; n.style.transform = `translateY(${dy}px) scale(1.02)`; requestAnimationFrame(() => { n.style.transition = 'transform .22s cubic-bezier(.2,.8,.2,1)'; n.style.transform = ''; }); }
+    FX.play('commit');
+  }
+  function onSorted(name, keys, moved) {
+    if (name === 'rank' && ui.rank && !ui.rankDone) {
+      ui.rank = keys; ui.rankMoved = moved; ui.rankDragged = true; render();
+      clearTimeout(ui.rankT); ui.rankT = setTimeout(() => { ui.rankMoved = null; const m = document.querySelector('.rank li.moved'); if (m) m.classList.remove('moved'); }, 900);
+      const f = document.querySelector(`.rank li[data-key="${moved}"] .grip`); if (f) f.focus && f.focus({ preventScroll: true });
+    } else if (S.orient && S.orient.sorted(name, keys, moved)) render();
   }
 
   function boot() {
@@ -2151,6 +2226,8 @@
     CASES.forEach((id) => { const k = E.getCase(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
     document.addEventListener('click', onClick);
     document.addEventListener('pointerdown', startHold);
+    document.addEventListener('pointerdown', sortDown); document.addEventListener('pointermove', sortMove);
+    ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, sortUp));
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, cancelHold, true));
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
     document.addEventListener('keydown', onKey); document.addEventListener('keydown', armIdle);

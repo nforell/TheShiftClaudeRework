@@ -30,10 +30,10 @@ with sync_playwright() as p:
             r=pg.evaluate(AUD); r['state']=name+('@'+str(y) if y else ''); res.append(r)
         pg.evaluate("window.scrollTo(0,0)")
         # scroll inside sheets
-        if pg.evaluate("!!document.querySelector('.sheet-b,.chart-b')"):
-            n=pg.evaluate("(()=>{const e=document.querySelector('.sheet-b,.chart-b');return Math.ceil(e.scrollHeight/Math.max(1,e.clientHeight))})()")
+        if pg.evaluate("!!document.querySelector('.sheet-b,.chart-b,.or-body')"):
+            n=pg.evaluate("(()=>{const e=document.querySelector('.sheet-b,.chart-b,.or-body');return Math.ceil(e.scrollHeight/Math.max(1,e.clientHeight))})()")
             for k in range(1, min(n,4)):
-                pg.evaluate(f"(()=>{{const e=document.querySelector('.sheet-b,.chart-b');e.scrollTop=e.clientHeight*{k}}})()"); pg.wait_for_timeout(60)
+                pg.evaluate(f"(()=>{{const e=document.querySelector('.sheet-b,.chart-b,.or-body');e.scrollTop=e.clientHeight*{k}}})()"); pg.wait_for_timeout(60)
                 r=pg.evaluate(AUD); r['state']=name+'#s'+str(k); res.append(r)
     def close():
         ov=pg.evaluate("Shift.ui._ui.ov")

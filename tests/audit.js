@@ -20,7 +20,7 @@
     if (x > 3 && y > 3) out.overlap.push(label(a.el) + '  ×  ' + label(b.el) + ` (${Math.round(x)}×${Math.round(y)})`);
   }
   // Clickables: covered, too small
-  const modal = document.querySelector('.crit, .oops, .sheet, .drawer, .res, .intro, .ff');
+  const modal = document.querySelector('.crit, .oops, .sheet, .drawer, .res, .intro, .orient, .ff');
   document.querySelectorAll('[data-act]').forEach((el) => {
     if (el.dataset.scrim || !el.dataset.act) return; if (!vis(el)) return;
     if (modal && !modal.contains(el) && !(modal.classList.contains('drawer') && el.closest('.drawer'))) return;

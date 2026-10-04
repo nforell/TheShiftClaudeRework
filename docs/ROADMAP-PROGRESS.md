@@ -2,6 +2,29 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 13 — October 3, 2026 (branch `more-shifts`)
+
+Nick's ask: make the "who first" ranking draggable, and give first-time players a real introduction instead of dropping them in.
+
+### Done
+- **Drag to reorder.** The triage ranking is now drag and drop. On a computer, grab any card; on a phone, grab the handle on the left so the page still scrolls. Cards slide out of the way, the numbers renumber live while you drag, the list scrolls if you drag to the edge, and the card eases into place on drop. The arrows are still there (smaller) for keyboard and screen-reader players, and a screen-reader message announces the new position. The engine (`sortDown/sortMove/sortUp` in `src/ui.js`) works for any list marked `data-sort`.
+- **Orientation** (`src/orient.js`). A full-screen first-day walkthrough on 4 West with Nova and three practice patients. Eight steps on a clipboard checklist, each one played, not read:
+  1. How time works: tap actions and a wall clock advances by exactly what each costs.
+  2. Take report: highlight the lines that matter on a brain sheet; see what you caught and missed, and why.
+  3. Decide who's first: drag magnets on the unit whiteboard into order (practice for the real ranking).
+  4. The station: a hallway with a call light, a unit phone with a critical lab and an aide's question to answer, and the team.
+  5. In the room: the Assess / Care / Meds / Talk tabs, and a metoprolol dose to give or hold after counting an apical pulse.
+  6. Call for help: build an SBAR call from findings and noise; the doctor answers based on what you said.
+  7. Your team: assign four tasks to the aide or yourself; scope-of-practice feedback.
+  8. The debrief: animated skill and NCLEX-step meters, stars and patient outcomes.
+  It opens automatically the first time a brand-new player taps Start (finishing goes straight into that shift; "Skip, I've played before" does too). It's always available from **How it plays** on the home screen and in the menu, and the quick reference is one tap from the last step. Arrow keys move between steps, Escape closes. Works on phones (the clipboard becomes a progress strip), in dark mode, and with reduced motion. Telemetry: `orient_open`, `orient_done`, `orient_skip` (with the step), so PostHog shows where people stop.
+- The in-game coach tips and guided first room are unchanged and still run on the first real shift.
+- New `tests/orient.py`: plays every orientation step with real clicks and a real mouse drag, checks it starts the shift, checks triage drag-and-drop and the arrows, on phone and desktop. In `run_all.py`.
+
+### Needs Nick
+- Play it as a first-timer: Menu → Settings → Intro and tips → Show them again, then go home and start a shift (or open a private window).
+- Watch where testers skip (`orient_skip` step number) once PostHog is on.
+
 ## Session 12 — October 3, 2026 (branch `more-shifts`, built on `main`)
 
 Nick's ask: more rooms and cases, as robust as possible. Two new specialty shifts, toward 12–15 for the pack.
