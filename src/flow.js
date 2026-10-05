@@ -15,7 +15,7 @@ window.Shift = window.Shift || {};
     picu: { name: 'Jess Moreno', role: 'PICU RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'ponytail', '#3B2718', 'teal') },
     ed: { name: 'Tom Baird', role: 'ED RN', look: L('#EDCBAE', '#D2AA8B', '#AE665C', '#E69A86', '#43607A', 'short', '#6B4B2E', 'navy', ['beard']) },
     med: { name: 'Ines Carvalho', role: 'Medicine RN', look: L('#E4B894', '#C79A74', '#A45D50', '#DE9378', '#3E2A1A', 'bob', '#2A1C14', 'blue') },
-    cath: { name: 'Ana Ferreira', role: 'Cath lab RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'bun', '#2A1C14', 'teal') },
+    cath: { name: 'Imani Ferreira', role: 'Cath lab RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'bun', '#2A1C14', 'teal') },
     or: { name: 'Mike Dunn', role: 'OR circulating RN', look: L('#EDCBAE', '#D2AA8B', '#AE665C', '#E69A86', '#43607A', 'buzz', '#6B4B2E', 'blue') },
     ld: { name: 'Carmen Ruiz', role: 'L&D RN', look: L('#C99A74', '#AA7C58', '#8E5246', '#C8866C', '#2A1B10', 'bun', '#2A1C14', 'rose') },
     nicu: { name: 'Priya Shah', role: 'NICU RN', look: L('#A7714C', '#875634', '#6E3E2E', '#B7735A', '#20140C', 'long', '#140E0A', 'teal') },
@@ -309,7 +309,7 @@ window.Shift = window.Shift || {};
     }),
     '409': (s, P, A, at) => ({
       unit: 'Pediatrics', nurse: 'med', emergent: false,
-      event: `Acetaminophen hepatotoxicity: about 30 extra-strength tablets yesterday morning, not disclosed in the ED. AST 1,180, INR 1.6. Transferred at ${A.clock(at)} for IV N-acetylcysteine.`,
+      event: `Acetaminophen hepatotoxicity from an ingestion yesterday morning, not disclosed in the ED. AST 1,180, INR 1.6. Transferred at ${A.clock(at)} for IV N-acetylcysteine.`,
       extra: [{ label: 'On a 5585 for suicide risk: sitter at all times, belongings searched', key: true }, { label: 'Disclosed the ingestion to a peer and then to his nurse', key: false }],
       course: [
         { at: 0, st: 'serious', text: 'N-acetylcysteine running. Sitter at the bedside. Nauseous.' },
@@ -374,7 +374,7 @@ window.Shift = window.Shift || {};
       course: [
         { at: 0, st: 'crit', text: 'In the L&D OR. Bimanual massage, bladder catheterized (900 mL), a Bakri balloon placed. Two units of blood running. Fibrinogen 180.' },
         { at: 50, st: 'serious', text: 'Bleeding slowed with the balloon. Cryoprecipitate given. HR 104, BP 102/60. Total blood loss 2,300 mL.' },
-        { at: 130, st: 'improving', text: 'Stable. Balloon stays in for 12 hours. Andre and the baby are with her; she\'s breastfeeding in the recovery bay.' },
+        { at: 130, st: 'improving', text: 'Stable. Balloon stays in for 12 hours. Desmond and the baby are with her; she\'s breastfeeding in the recovery bay.' },
       ],
       later: 'Balloon out the next morning, home on day three with iron and a hemoglobin of 7.6. Atony is the most common cause of postpartum hemorrhage, and a full bladder is one of its most fixable causes. Feeling the fundus and weighing the pads finds it early.',
     }),
@@ -429,8 +429,8 @@ window.Shift = window.Shift || {};
     }),
     '22': (s, P, A, at) => (P.ich ? {
       unit: 'Neuro ICU', nurse: 'icu', emergent: true,
-      event: `Symptomatic intracranial hemorrhage after tenecteplase at ${A.clock(P.tpaGiven)}. True last known well 11:00.`,
-      extra: [{ label: 'Tenecteplase given; cryoprecipitate and tranexamic acid ordered', key: true }, { label: 'Last known well 11:00, found at 14:30', key: true }],
+      event: `Symptomatic intracranial hemorrhage after tenecteplase at ${A.clock(P.tpaGiven)}. True last known well 10:00.`,
+      extra: [{ label: 'Tenecteplase given; cryoprecipitate and tranexamic acid ordered', key: true }, { label: 'Last known well 10:00, found at 14:30', key: true }],
       family: { name: 'Joan', rel: 'wife' },
       course: [
         { at: 0, st: 'crit', text: 'Intubated. Cryoprecipitate and TXA running. Repeat CT: 40 mL hemorrhage in the stroke territory.' },
@@ -440,8 +440,8 @@ window.Shift = window.Shift || {};
       later: 'Thrombolytics (tenecteplase or alteplase) work up to 4.5 hours after a patient was last known well, not after they were found. Outside that window the bleeding risk outweighs the benefit, and a large-vessel clot goes to thrombectomy instead.',
     } : {
       unit: 'IR', nurse: 'icu', emergent: false, push: 40,
-      event: `Left M1 occlusion; last known well 11:00, so no thrombolytic. To neurointerventional radiology for thrombectomy.`,
-      extra: [{ label: 'Last known well 11:00, found at 14:30', key: true }, { label: 'NPO; failed swallow screen' + (P.swallow ? '' : ' not yet done'), key: true }, { label: `BP goal 185/110 or less${P.lab !== null ? '; labetalol given' : ''}`, key: true }],
+      event: `Left M1 occlusion; last known well 10:00, so no thrombolytic. To neurointerventional radiology for thrombectomy.`,
+      extra: [{ label: 'Last known well 10:00, found at 14:30', key: true }, { label: 'NPO; failed swallow screen' + (P.swallow ? '' : ' not yet done'), key: true }, { label: `BP goal 185/110 or less${P.lab !== null ? '; labetalol given' : ''}`, key: true }],
       family: { name: 'Joan', rel: 'wife' },
       course: [
         { at: 0, st: 'serious', text: 'Under conscious sedation. Clot retrieved in one pass, full flow restored to the left middle cerebral artery.' },

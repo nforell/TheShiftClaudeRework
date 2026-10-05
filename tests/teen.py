@@ -57,11 +57,11 @@ with sync_playwright() as p:
         H('h-done')
         if run == 'careful':
             pg.evaluate("Shift.ui._ui.rank=['405','403','401','407']"); H('rank-submit'); H('rank-go')
-            check(judg('rank-first') == 2, 'ranking Marcus first scores best')
+            check(judg('rank-first') == 2, 'ranking Jaylen first scores best')
             act('405', 'postim'); act('405', 'docrev'); sbar('405', ['halo'], 'f2f'); act('405', 'ben')
             talk('403', 0); act('403', 'skin'); act('403', 'wound')
             until(40)
-            check(st("s.p['405'].dys") > 0, 'Marcus develops dystonia after his first haloperidol')
+            check(st("s.p['405'].dys") > 0, 'Jaylen develops dystonia after his first haloperidol')
             talk('405', 0); act('405', 'airway'); give('405', '405-dph')
             until(46); act('409', 'admit'); talk('409', 0); sbar('409', ['admits', 'bottle', 'ruq', 'nolevel'], 'tox')
             act('405', 'reassess'); sbar('405', ['dys', 'halo', 'dph', 'better'], 'eps'); act('405', 'mom')
@@ -91,7 +91,7 @@ with sync_playwright() as p:
             ev = dict(out['steps']).get('eval')
             check(ev is not None and ev >= 80, f'careful: Evaluate outcomes is scored and strong ({ev})')
         else:
-            check(out['o']['405'][0] == 'bad' and 'airway' in out['o']['405'][1], 'skipper: Marcus\'s dystonia reaches his airway')
+            check(out['o']['405'][0] == 'bad' and 'airway' in out['o']['405'][1], 'skipper: Jaylen\'s dystonia reaches his airway')
             check(out['o']['403'][0] == 'bad', 'skipper: Jordan self-harms again')
             check(out['o']['407'][0] == 'bad', 'skipper: Kayla\'s visitor gets in')
             check(out['o']['409'][0] == 'bad', 'skipper: Eli\'s overdose is missed')

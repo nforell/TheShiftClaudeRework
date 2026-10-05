@@ -1,7 +1,7 @@
 """Seclusion, restraint and emergency medication on the psych units: the order, the one-hour face-to-face,
 continuous observation, 15-minute checks, post-IM checks, a debrief, and notes that are checked claim by claim
 against what happened. Plays Jasmine (3 East) by the book with an IM, by the book with seclusion, and with the
-shortcuts that get nurses cited; then Marcus's uncharted hold on 4 North. Usage: python tests/restraint.py"""
+shortcuts that get nurses cited; then Jaylen's uncharted hold on 4 North. Usage: python tests/restraint.py"""
 import sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tests'))

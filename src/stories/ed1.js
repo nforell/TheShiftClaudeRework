@@ -1,4 +1,4 @@
-/* Evenings in the ED. Stories for Rosalind, Joan (Walter's wife), Alicia, Kenji and Harold. ED stays are short,
+/* Evenings in the ED. Stories for Rosalind, Joan (Gerald's wife), Alicia, Kenji and Harold. ED stays are short,
    so each arc is two beats. */
 (function (S) {
   S.story.add('ed-podb-1', {
@@ -24,7 +24,7 @@
       ],
       epi: {
         close: (s, P) => `Rosalind went home on day three with a stent in her right coronary artery. ${P.quit ? 'She quit smoking with the program you referred her to and was still off cigarettes at her six-month visit. ' : ''}Bev walks with her every morning now.`,
-        warm: `Rosalind went home on day three. She tells everyone at the post office reunion that it "wasn't the chili."`,
+        warm: `Rosalind went home on day three. She tells everyone at the laundry's retirement lunch that it "wasn't the chili."`,
         distant: `Rosalind Hughes was discharged on day three after a right coronary stent.`,
         hard: `Rosalind survived her arrest. She doesn't remember the ED. Bev does.`,
       },
@@ -33,7 +33,7 @@
       who: 'joan', watch: true, idle: ['walt_talk', 'joan_after'], after: ['joan_talk'],
       gate: (s, P) => P.lkw,
       guarded: [`Joan is holding his hand and doesn't look up. "In a minute."`, `"Can we talk after? I'm watching him."`],
-      presence: `You sit with Joan for a minute. Walter squeezes her hand twice, then once. She laughs. "That means 'I'm fine.' He made it up just now."`,
+      presence: `You sit with Joan for a minute. Gerald squeezes her hand twice, then once. She laughs. "That means 'I'm fine.' He made it up just now."`,
       beats: [
         { need: 0, learn: `Joan left him alone for three and a half hours and blames herself.`,
           text: `"I left him alone. Three and a half hours. If I'd come home earlier..." She can't finish.`,
@@ -49,10 +49,10 @@
           ] },
       ],
       epi: {
-        close: `Walter's clot came out in one pass. Two weeks later he said "Joan" clearly for the first time since the stroke. By summer he played the first four bars of "Amazing Grace" at church. Joan cried through all four.`,
-        warm: `Walter went to inpatient rehab after a week. His right arm came back; his words are coming back slower.`,
-        distant: `Walter Brooks, thrombectomy for a left M1 occlusion, discharged to rehab.`,
-        hard: `Walter survived the hemorrhage but never regained his speech. Joan still brings the trumpet case to his room, and he still taps it.`,
+        close: `Gerald's clot came out in one pass. Two weeks later he said "Joan" clearly for the first time since the stroke. By summer he played the first four bars of "Amazing Grace" at church. Joan cried through all four.`,
+        warm: `Gerald went to inpatient rehab after a week. His right arm came back; his words are coming back slower.`,
+        distant: `Gerald Haskins, thrombectomy for a left M1 occlusion, discharged to rehab.`,
+        hard: `Gerald survived the hemorrhage but never regained his speech. Joan still brings the trumpet case to his room, and he still taps it.`,
       },
     },
     '23': {
@@ -119,18 +119,18 @@
             { label: `I get that. But you're on a blood thinner, so a fall is more dangerous for you than for most people. Would you try it on the steps, at least?`, rap: 1, set: { walker: true }, reply: `"The steps." He grumbles. "Fine. Just the steps."` },
             { label: `You need to use it.`, rap: -1, reply: `"I don't need to do anything."` },
           ] },
-        { need: 1, learn: `His cat Admiral is alone at home.`,
-          text: `"Who's going to feed Admiral?"`,
+        { need: 1, learn: `His dog Duke is alone at home.`,
+          text: `"Who's going to feed Duke?"`,
           choices: [
-            { label: `Karen, could you swing by tonight? He'll rest better knowing.`, rap: 1, reply: `Karen nods. Harold relaxes into the pillow. "He likes the salmon one."` },
-            { label: `Don't worry about the cat.`, rap: -1, reply: `He worries about the cat.` },
+            { label: `Karen, could you swing by tonight? He'll rest better knowing.`, rap: 1, reply: `Karen nods. Harold relaxes into the pillow. "Two scoops. He'll tell you it's three."` },
+            { label: `Don't worry about the dog.`, rap: -1, reply: `He worries about the dog.` },
           ] },
       ],
       epi: {
         close: (s, P) => `Harold's subdural didn't grow after reversal. He went home after four days with his anticoagulant changed. ${P.walker ? 'He uses the walker on the back steps, and only there, he says.' : ''}`,
-        warm: `Harold went home on day four. Admiral was furious.`,
+        warm: `Harold went home on day four. Duke nearly knocked him over.`,
         distant: `Harold Jensen, subdural hematoma, warfarin reversed, discharged day four.`,
-        hard: `Harold survived the craniotomy and went to a nursing home for rehab. Karen brings Admiral to visit on Sundays.`,
+        hard: `Harold survived the craniotomy and went to a nursing home for rehab. Karen brings Duke to visit on Sundays.`,
       },
     },
   });

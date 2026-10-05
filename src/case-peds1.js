@@ -32,7 +32,7 @@
       { t: -3000, text: 'PO feeds every 3 h if RR ≤ 60. If RR > 60 or increased work of breathing: hold PO, give NG feeds or IV fluids.' },
       { t: -3000, text: 'Call PICU consult for escalating flow, FiO₂ > 50%, apnea, or worsening score.' },
     ],
-    notes: [{ t: -60, author: 'Marcus, day RN', text: 'Working a little harder since lunch. Took 60 mL at 12:30, tired out halfway. Suctioned at 12:30, thick secretions. Mom at bedside, Spanish-speaking; daughter has been interpreting.' }],
+    notes: [{ t: -60, author: 'Callum, day RN', text: 'Working a little harder since lunch. Took 60 mL at 12:30, tired out halfway. Suctioned at 12:30, thick secretions. Mom at bedside, Spanish-speaking; daughter has been interpreting.' }],
     io: { intake: 'PO 240 mL today', output: '4 wet diapers' },
     report: [
       { text: 'Mateo Hernández, four months, RSV bronchiolitis, day three. Full code.', key: false },
@@ -112,12 +112,12 @@
     },
   };
 
-  /* ---------- 503 Aaliyah Brooks: sickle cell crisis, acute chest brewing ---------- */
+  /* ---------- 503 Aaliyah Grant: sickle cell crisis, acute chest brewing ---------- */
   const aalOnset = (P) => 100 + Math.min(2, P.isUses) * 20;
   const acs = (s, P) => P.acs !== null;
   const aalPain = (s, P) => clamp(Math.round(8 - decay(s, P.relief, 180) + (acs(s, P) ? 1 : 0)), 2, 10);
   const aal = {
-    id: '503', room: '503', name: 'Aaliyah Brooks', short: 'Aaliyah', age: 15, sex: 'F', mrn: '01054478',
+    id: '503', room: '503', name: 'Aaliyah Grant', short: 'Aaliyah', age: 15, sex: 'F', mrn: '01054478',
     norms: { T: [36.1, 37.9], HR: [60, 100], RR: [12, 20], SBP: [100, 135], SpO2: [95, 101] },
     look: { skin: '#6F4430', shade: '#553222', lip: '#56281E', blush: '#9A5040', iris: '#24150D', head: { w: 52, h: 60, jaw: .25 }, eye: 10.6, hair: { style: 'curls', color: '#17100B' }, brow: { w: 3.2, color: '#130C08' }, body: { w: 68, cloth: 'rose' }, extras: ['studs'], smile: .3, tired: true,
       lines: { calm: 'Can you turn the heat up in here? Cold makes it worse.', pain: 'It\'s in my back and my legs. It feels like my bones are breaking.', dys: 'My chest hurts when I breathe in.', anxious: 'Please don\'t let them say I\'m faking again.', drowsy: 'Mm. Tired.', none: 'She doesn\'t answer.' } },
@@ -134,10 +134,10 @@
       { t: -1500, text: 'Morphine 2.5 mg IV (0.05 mg/kg) every 2 h as needed for breakthrough pain. Ketorolac 25 mg IV (0.5 mg/kg) every 6 h as needed. Acetaminophen 650 mg PO every 6 h scheduled.' },
       { t: -1500, text: 'Incentive spirometry 10 breaths every hour while awake. Keep SpO₂ ≥ 95%. Notify for fever ≥ 38.5, chest pain, new oxygen need.' },
     ],
-    notes: [{ t: -80, author: 'Marcus, day RN', text: 'Pain 7/10, PCA use frequent. Asks for breakthrough doses often. Hasn\'t used the incentive spirometer much; says it hurts. Afebrile.' }],
+    notes: [{ t: -80, author: 'Callum, day RN', text: 'Pain 7/10, PCA use frequent. Asks for breakthrough doses often. Hasn\'t used the incentive spirometer much; says it hurts. Afebrile.' }],
     io: { intake: 'IV 1,400 mL, PO 400 mL', output: 'Voiding' },
     report: [
-      { text: 'Aaliyah Brooks, 15, sickle cell, pain crisis, day two.', key: false },
+      { text: 'Aaliyah Grant, 15, sickle cell, pain crisis, day two.', key: false },
       { text: 'Pain\'s a 7. She\'s on the morphine PCA and asks for breakthrough a lot.', key: true },
       { text: 'Honestly, some of the staff think she\'s a frequent flyer. She\'s been in eight times.', key: false },
       { text: 'She\'s barely touched her incentive spirometer. Says it hurts.', key: true },
@@ -238,7 +238,7 @@
       { t: -120, text: 'Ceftriaxone 1,550 mg IV (50 mg/kg) daily at 18:00. Metronidazole per pharmacy. Clear liquids, advance as tolerated.' },
       { t: -120, text: 'FLACC pain score every 2 h and 30 min after analgesia.' },
     ],
-    notes: [{ t: -60, author: 'Marcus, day RN', text: 'Back from PACU 13:30, sleepy, FLACC 3. Mom at bedside. Weight is from ED triage; he hasn\'t been weighed on the unit yet.' }],
+    notes: [{ t: -60, author: 'Callum, day RN', text: 'Back from PACU 13:30, sleepy, FLACC 3. Mom at bedside. Weight is from ED triage; he hasn\'t been weighed on the unit yet.' }],
     io: { intake: 'IV 280 mL', output: '1 wet pull-up' },
     report: [
       { text: 'Leo Park, three years old, lap appy for a perforated appendix. Back from the OR at 13:30.', key: false },
@@ -324,10 +324,10 @@
     },
   };
 
-  /* ---------- 507 Noah Whitfield: a fussy baby whose body tells a different story ---------- */
+  /* ---------- 507 Noah Pellegrino: a fussy baby whose body tells a different story ---------- */
   const headSev = (s, P) => (P.ct !== null ? 0 : clamp((s.t - 60) / 110, 0, 1.2));
   const noah = {
-    id: '507', room: '507', name: 'Noah Whitfield', short: 'Noah', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01193310',
+    id: '507', room: '507', name: 'Noah Pellegrino', short: 'Noah', talkLabel: 'Pick him up', age: '4 mo', sex: 'M', mrn: '01193310',
     norms: INFANT,
     look: { skin: '#F1D2B8', shade: '#D8B498', lip: '#C47A70', blush: '#F2A594', iris: '#4C6A84', head: { w: 60, h: 58, jaw: .05 }, eye: 11.6, small: .72,
       hair: { style: 'buzz', color: '#B08A5A' }, brow: { w: 2, color: '#C0A078' }, body: { w: 56, cloth: 'onesie' }, extras: [], smile: .2,
@@ -345,10 +345,10 @@
       { t: -250, text: 'Ondansetron 0.6 mg IV (0.1 mg/kg) every 8 h as needed for vomiting (off-label under 6 months; pharmacy verified).' },
       { t: -250, text: 'Notify provider for lethargy, bilious vomiting, or any change in neuro status.' },
     ],
-    notes: [{ t: -60, author: 'Marcus, day RN', text: 'Fussy all day, hard to console, vomited again at 13:00 (non-bilious). Took 1 oz. Dad at bedside, says he\'s "just a cranky baby." Haven\'t done a full skin check; he screams when undressed.' }],
+    notes: [{ t: -60, author: 'Callum, day RN', text: 'Fussy all day, hard to console, vomited again at 13:00 (non-bilious). Took 1 oz. Dad at bedside, says he\'s "just a cranky baby." Haven\'t done a full skin check; he screams when undressed.' }],
     io: { intake: 'Formula 2 oz, IV 150 mL', output: '2 wet diapers, emesis x1' },
     report: [
-      { text: 'Noah Whitfield, four months, admitted for vomiting and fussiness. Probably a stomach bug.', key: false },
+      { text: 'Noah Pellegrino, four months, admitted for vomiting and fussiness. Probably a stomach bug.', key: false },
       { text: 'He\'s been really hard to console. High-pitched crying. He only took an ounce.', key: true },
       { text: 'He threw up again at one.', key: true },
       { text: 'Dad\'s here. Mom\'s at work. Dad says he\'s just a cranky baby.', key: false },
@@ -440,7 +440,7 @@
       { t: -400, text: 'Dexamethasone 16 mg PO (0.6 mg/kg) once, due 17:00. O₂ to keep SpO₂ ≥ 92%.' },
       { t: -400, text: 'Call for asthma score ≥ 9, SpO₂ < 92% on O₂, need for albuterol more than every hour, or decreased air movement.' },
     ],
-    notes: [{ t: -60, author: 'Marcus, day RN', text: 'Last neb 13:00. Asthma score 8 before, 6 after. Talking in sentences. Mom asking about discharge tomorrow.' }],
+    notes: [{ t: -60, author: 'Callum, day RN', text: 'Last neb 13:00. Asthma score 8 before, 6 after. Talking in sentences. Mom asking about discharge tomorrow.' }],
     io: { intake: 'PO 500 mL', output: 'Voiding' },
     report: [
       { text: 'Zoe Kaplan, eight, asthma flare after a cold. Fourth admission this year.', key: false },
@@ -567,7 +567,7 @@
   const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'kiana-hi', when: (s) => s.t >= 4, run(s, A) { A.msg({ from: 'kiana', text: 'Hi! I\'m Kiana, I\'m your PCT tonight. 501 is working pretty hard and 507 has been crying since I got here. Holler if you need me.', replies: [{ label: 'Open tasks for Kiana', act: 'delegate' }] }); } },
-    { id: 'bias', when: (s) => s.t >= 25, run(s, A) { A.msg({ from: 'kiana', pid: '503', text: '503 is on her call light again asking for pain meds. Marcus said she\'s kind of a frequent flyer, so, FYI.', replies: [{ label: 'Her pain is real. I\'m going to assess her', act: 'bias-assess' }, { label: 'She can wait until something\'s due', act: 'bias-wait' }] }); } },
+    { id: 'bias', when: (s) => s.t >= 25, run(s, A) { A.msg({ from: 'kiana', pid: '503', text: '503 is on her call light again asking for pain meds. Callum said she\'s kind of a frequent flyer, so, FYI.', replies: [{ label: 'Her pain is real. I\'m going to assess her', act: 'bias-assess' }, { label: 'She can wait until something\'s due', act: 'bias-wait' }] }); } },
     { id: 'nova-idle', when: (s) => s.t >= 45 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Almost 16:00 and you haven\'t been in a room. Kids hide how sick they are until they can\'t. Go look.' }); } },
     { id: 'minji', when: (s) => s.t >= 40 && s.p['505'].od === null && !s.p['505'].fixed, run(s, A) { A.msg({ from: 'minji', pid: '505', text: 'Leo\'s mom at the desk: "He\'s crying and holding his tummy. Can he have his pain medicine?"', replies: [{ label: 'Go to 505', act: 'goto', pid: '505' }] }); } },
     { id: 'zoe-bump', when: (s) => s.t >= 90 && !s.p['509'].bumped, run(s, A) { const P = s.p['509']; P.bumped = true; P.br += .45; } },
@@ -666,17 +666,17 @@
     id: 'peds-5s-1', title: 'Evenings on 5 South', unit: '5 South, Pediatrics', unitShort: '5 South', level: 'Specialty: Peds', start: 15 * 60, length: 300, novaCredits: 3,
     card: 'Five kids and their parents: RSV on high flow, a sickle cell crisis, a dosing error, bruises that don\'t fit the story, and asthma.',
     hero: { head: 'Evenings, 5 South. Five kids and their parents.', lede: 'Pediatrics, 15:00 to 20:00, ages four months to fifteen years. Normal vitals depend on age and every dose depends on weight, so check both. The parent in the chair often knows first when something is off.' },
-    intro: { time: '14:58', place: '5 South, Pediatrics, Evening', cta: 'Take report', beats: ['Marcus is giving report by the peds station.', 'Five patients, from four months to fifteen years old.', 'Check the weight behind every dose. Some of these kids can\'t tell you what\'s wrong.'] },
+    intro: { time: '14:58', place: '5 South, Pediatrics, Evening', cta: 'Take report', beats: ['Callum is giving report by the peds station.', 'Five patients, from four months to fifteen years old.', 'Check the weight behind every dose. Some of these kids can\'t tell you what\'s wrong.'] },
     minutes: 20,
-    handoffBy: 'Marcus (day RN)', reportBy: 'marcus', reportRole: 'day shift', provider: 'okafor', cna: 'kiana',
+    handoffBy: 'Callum (day RN)', reportBy: 'marcus', reportRole: 'day shift', provider: 'okafor', cna: 'kiana',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },
       kiana: { name: 'Kiana', role: 'Patient care tech', look: { skin: '#A26B4A', shade: '#825236', lip: '#6E372B', blush: '#B96F57', iris: '#24160E', head: { w: 54, h: 60, jaw: .3 }, eye: 10.4, hair: { style: 'curls', color: '#1E1410' }, brow: { w: 3.2, color: '#1A110C' }, body: { w: 78, cloth: 'wine' }, extras: ['hoops'], smile: .55 } },
-      marcus: { name: 'Marcus', role: 'Day RN', look: { skin: '#E8C7A8', shade: '#CDA586', lip: '#AE6B5E', blush: '#E39A85', iris: '#3F5E7A', head: { w: 57, h: 62, jaw: .55 }, eye: 9.6, hair: { style: 'short', color: '#8A6A44' }, brow: { w: 4.2, color: '#735638' }, body: { w: 86, cloth: 'blue' }, extras: ['beard'], smile: .4, tired: true } },
-      okafor: { name: 'Dr. Okafor', role: 'Pediatric hospitalist', look: { skin: '#5A3624', shade: '#43281A', lip: '#48241A', blush: '#86463A', iris: '#1E120B', head: { w: 55, h: 63, jaw: .4 }, eye: 9.6, hair: { style: 'buzz', color: '#110C09' }, brow: { w: 4, color: '#0E0A08' }, body: { w: 82, cloth: 'coat', steth: true }, extras: ['thinGlasses'], glasses: '#3A3A3A', smile: .3 } },
+      marcus: { name: 'Callum', role: 'Day RN', look: { skin: '#E8C7A8', shade: '#CDA586', lip: '#AE6B5E', blush: '#E39A85', iris: '#3F5E7A', head: { w: 57, h: 62, jaw: .55 }, eye: 9.6, hair: { style: 'short', color: '#8A6A44' }, brow: { w: 4.2, color: '#735638' }, body: { w: 86, cloth: 'blue' }, extras: ['beard'], smile: .4, tired: true } },
+      okafor: { name: 'Dr. Sandoval', role: 'Pediatric hospitalist', look: { skin: '#5A3624', shade: '#43281A', lip: '#48241A', blush: '#86463A', iris: '#1E120B', head: { w: 55, h: 63, jaw: .4 }, eye: 9.6, hair: { style: 'buzz', color: '#110C09' }, brow: { w: 4, color: '#0E0A08' }, body: { w: 82, cloth: 'coat', steth: true }, extras: ['thinGlasses'], glasses: '#3A3A3A', smile: .3 } },
       lucia: { name: 'Lucía Hernández', role: 'Mother, 501', look: { skin: '#C99A70', shade: '#AA7B53', lip: '#94554A', blush: '#D08A6C', iris: '#2B1B10', head: { w: 54, h: 60, jaw: .3 }, eye: 9.8, hair: { style: 'long', color: '#1E140E' }, brow: { w: 3.4, color: '#1A110C' }, body: { w: 80, cloth: 'plum' }, extras: ['gold'], smile: .15, tired: true } },
       minji: { name: 'Min-ji Park', role: 'Mother, 505', look: { skin: '#F0CFB0', shade: '#D6AE8C', lip: '#C0736A', blush: '#F0A08C', iris: '#241810', head: { w: 53, h: 60, jaw: .3 }, eye: 9.6, hair: { style: 'bob', color: '#141012' }, brow: { w: 3.2, color: '#141012' }, body: { w: 78, cloth: 'tee' }, extras: [], smile: .1, tired: true } },
-      travis: { name: 'Travis Whitfield', role: 'Father, 507', look: { skin: '#EAC7AB', shade: '#CFA88A', lip: '#A8645B', blush: '#E0947F', iris: '#4E6A82', head: { w: 58, h: 62, jaw: .6 }, eye: 9.4, hair: { style: 'short', color: '#5A4028' }, brow: { w: 4.4, color: '#4A3420' }, body: { w: 90, cloth: 'hoodie' }, extras: [], smile: .05 } },
+      travis: { name: 'Travis Pellegrino', role: 'Father, 507', look: { skin: '#EAC7AB', shade: '#CFA88A', lip: '#A8645B', blush: '#E0947F', iris: '#4E6A82', head: { w: 58, h: 62, jaw: .6 }, eye: 9.4, hair: { style: 'short', color: '#5A4028' }, brow: { w: 4.4, color: '#4A3420' }, body: { w: 90, cloth: 'hoodie' }, extras: [], smile: .05 } },
       rachel: { name: 'Rachel Kaplan', role: 'Mother, 509', look: { skin: '#E9C3A4', shade: '#CFA585', lip: '#B86A5E', blush: '#EC9888', iris: '#3F5E3C', head: { w: 54, h: 61, jaw: .3 }, eye: 9.6, hair: { style: 'ponytail', color: '#6A3E20' }, brow: { w: 3.2, color: '#5A3418' }, body: { w: 80, cloth: 'blouse' }, extras: ['thinGlasses'], glasses: '#6A5040', smile: .25 } },
       lab: { name: 'Lab', role: 'Laboratory', look: null },
     },

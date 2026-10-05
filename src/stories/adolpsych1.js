@@ -1,4 +1,4 @@
-/* Evening shift, 4 North. Stories for Ella, Jordan, Marcus, Kayla and Eli. */
+/* Evening shift, 4 North. Stories for Ella, Jordan, Jaylen, Kayla and Eli. */
 (function (S) {
   S.story.add('psych-4n-1', {
     '401': {
@@ -90,12 +90,12 @@
         { need: 1, learn: `The window happened after his dad didn't show up for his band concert.`,
           text: `He's quiet for once. "The window thing. It was after my concert. My dad said he'd come. I had a solo." He picks at the bandage on his knuckles. "Mom said 'use your words.' I didn't have any words. I had a fist."`,
           choices: [
-            { label: `That sounds like a lot of disappointment with nowhere to go. What was the solo?`, rap: 1, reply: `"'Saints.' The trumpet part." He hums the first few notes. "I nailed it. Nobody I wanted there heard it."` },
+            { label: `That sounds like a lot of disappointment with nowhere to go. What was the solo?`, rap: 1, reply: `"'Saints.' The drum break." He taps the first few bars on his knee. "I nailed it. Nobody I wanted there heard it."` },
             { label: `Next time try counting to ten.`, rap: 0, reply: `"I know about counting to ten." He's heard it a hundred times.` },
             { label: `You can't punch windows just because you're mad.`, rap: -1, reply: `"I KNOW." The anger is back, fast.` },
           ] },
-        { need: 2, learn: `Wants to play his solo for his little sister Nia at visiting.`,
-          text: `"Can my trumpet come? Not to play here. Just... Nia's coming Saturday. I could play her the solo. In the family room." He looks at you like he's expecting a no.`,
+        { need: 2, learn: `Wants to play his solo for his little sister Zuri at visiting.`,
+          text: `"Can my drumsticks come? Not to play here. Just... Zuri's coming Saturday. I could play her the solo on a practice pad. In the family room." He looks at you like he's expecting a no.`,
           choices: [
             { label: `Let's ask the team together. I think that's a great plan.`, rap: 1, reply: `"Really?" He hugs the T. rex. "She's gonna say it's too loud. It's supposed to be loud."` },
             { label: `Maybe. We'll see.`, rap: 0, reply: `"That means no." He's used to "we'll see."` },
@@ -103,10 +103,10 @@
           ] },
       ],
       epi: {
-        close: `Marcus played "When the Saints Go Marching In" for Nia in the family room on Saturday. It was too loud. She covered her ears and laughed the whole time. Haloperidol is on his allergy list now, and he can explain why, with dinosaur metaphors.`,
-        warm: `Marcus went home after ten days on a new medication plan. His mom says he still loses it sometimes, but he comes and finds her after. Nia has the T. rex back.`,
-        distant: `Marcus was discharged home. The chart says "behavior improved." He doesn't talk much about 4 North.`,
-        hard: (s, P) => (P.icu ? `Marcus spent the night in the ED with his airway watched until the dystonia was gone. He came back to 4 North scared of every pill in a cup. It took a week before he'd take one without asking what it did to necks.` : `Marcus's neck stayed twisted for hours. He doesn't trust anyone who says "faking" now. That's fair.`),
+        close: `Jaylen played "When the Saints Go Marching In" for Zuri in the family room on Saturday. It was too loud. She covered her ears and laughed the whole time. Haloperidol is on his allergy list now, and he can explain why, with dinosaur metaphors.`,
+        warm: `Jaylen went home after ten days on a new medication plan. His mom says he still loses it sometimes, but he comes and finds her after. Zuri has the T. rex back.`,
+        distant: `Jaylen was discharged home. The chart says "behavior improved." He doesn't talk much about 4 North.`,
+        hard: (s, P) => (P.icu ? `Jaylen spent the night in the ED with his airway watched until the dystonia was gone. He came back to 4 North scared of every pill in a cup. It took a week before he'd take one without asking what it did to necks.` : `Jaylen's neck stayed twisted for hours. He doesn't trust anyone who says "faking" now. That's fair.`),
       },
     },
 

@@ -35,7 +35,7 @@
       miss: { text: 'A critical potassium sat on the line until Nova picked it up.', why: 'Critical values can\'t wait for someone to be free. If you can\'t take it, hand it to someone who can, right away.' } },
     { id: 'privacy', k: ['med', 'psych', 'peds', 'ob', 'ed'], from: 'fl-clerk', title: 'Phone call', dom: 'comm', cost: 2, exp: 20,
       ping: 'A caller at the desk is asking about one of your patients.',
-      text: { med: '"I\'m his sister. Is he there? How\'s he doing?" He hasn\'t listed her, and there\'s no privacy code on file.', psych: '"I\'m his sister. Is he on your unit? How\'s he doing?" He hasn\'t listed her, and there\'s no privacy code on file. On a psychiatric unit, even saying someone is a patient needs his consent.', peds: '"I\'m her aunt. Is she there? How\'s she doing?" Her parents haven\'t listed an aunt, and there\'s no privacy code on file.' },
+      text: { med: '"I\'m his sister. Is he there? How\'s he doing?" He hasn\'t listed her, and there\'s no privacy code on file.', psych: '"I\'m his sister. Is he on your unit? How\'s he doing?" He hasn\'t listed her, and there\'s no privacy code on file. On a psychiatric unit, even saying someone is a patient needs his consent.', peds: '"I\'m her aunt. Is she there? How\'s she doing?" Her parents haven\'t listed an aunt, and there\'s no privacy code on file.', ob: '"I\'m her cousin. Did she have the baby? Is it a boy or a girl?" She hasn\'t listed a cousin, and there\'s no privacy code on file.', ed: '"I\'m his brother. Did an ambulance bring him in? Is he okay?" He hasn\'t listed a brother, and there\'s no privacy code on file.' },
       q: 'What do you say?',
       opts: [
         { t: 'Don\'t confirm or deny anything. Offer to take a message', v: 2, fb: 'Privacy starts with whether they\'re here at all. A message lets the patient, or the parents, decide.' },
@@ -77,11 +77,11 @@
       ],
       teach: 'An independent double check means a second nurse verifies the order, drug, dose and syringe or pump before the drug is given. You can\'t verify something after the fact.' },
     { id: 'impaired', k: ['med', 'psych', 'peds', 'ob', 'ed'], from: 'fl-clerk', title: 'A colleague', dom: 'safety', cost: 2, exp: 18,
-      ping: 'Pat: "Can you come to the desk? Something\'s off with Jordan."',
-      text: 'Jordan, a nurse just in for a four-hour add-on shift, is slurring his words and smells of alcohol. He\'s about to take two patients.',
+      ping: 'Pat: "Can you come to the desk? Something\'s off with Craig."',
+      text: 'Craig, a nurse just in for a four-hour add-on shift, is slurring his words and smells of alcohol. He\'s about to take two patients.',
       q: 'What do you do?',
       opts: [
-        { t: 'Tell Nova now, so Jordan is kept away from patients', v: 2, fb: 'Patients first. The charge nurse or supervisor removes him from care and follows policy; most states offer a path to treatment.' },
+        { t: 'Tell Nova now, so Craig is kept away from patients', v: 2, fb: 'Patients first. The charge nurse or supervisor removes him from care and follows policy; most states offer a path to treatment.' },
         { t: 'Talk to him privately after the shift', v: 0, fb: 'Too late: he\'d have patients for four hours. Speak up now.' },
         { t: 'Keep an eye on his patients yourself', v: 0, fb: 'You can\'t watch two extra patients on top of yours. Covering for impairment puts patients at risk.' },
         { t: 'Call the board of nursing yourself, right now', v: 1, fb: 'A report may come later. The first step is getting him away from patients, through the chain of command.' },
@@ -99,7 +99,7 @@
       teach: 'Two identifiers, labeled at the bedside, in front of the patient, before you leave the room.' },
     { id: 'fall', k: ['med', 'psych', 'ed'], from: 'fl-rn', title: 'Patient on the floor', dom: 'safety', cost: 4, exp: 14,
       ping: '{rn}: "My patient is on the floor in the hall. Can you come?"',
-      text: 'Mr. Ruiz, 76, on apixaban, is sitting on the hallway floor by his door. He\'s awake and says he slid down. "Just help me up."',
+      text: 'Mr. Castellanos, 76, on apixaban, is sitting on the hallway floor by his door. He\'s awake and says he slid down. "Just help me up."',
       q: 'What first?',
       opts: [
         { t: 'Stay with him, call for help, and check for injury (head strike, pain, new weakness) before moving him', v: 2, fb: 'Assess before you move. On an anticoagulant, any head strike needs neuro checks and usually a CT.' },
@@ -112,7 +112,7 @@
     // Medical-surgical
     { id: 'hit', k: ['med'], from: 'fl-pharm', title: 'Platelets', dom: 'meds', cost: 2, exp: 20,
       ping: 'Pharmacy is calling about heparin on a patient you\'re covering.',
-      text: 'You\'re covering {rn}\'s patients while she\'s on break. Rene: "Mr. Adeyemi\'s platelets went from 230 to 88 since Monday. He\'s on day 6 of subcutaneous heparin, and it\'s due now."',
+      text: 'You\'re covering {rn}\'s patients while she\'s on break. Rene: "Mr. Kessler\'s platelets went from 230 to 88 since Monday. He\'s on day 6 of subcutaneous heparin, and it\'s due now."',
       q: 'What do you do?',
       opts: [
         { t: 'Hold the heparin and call the provider about possible HIT', v: 2, fb: 'A platelet drop of 50% or more, 5 to 10 days into heparin, is the classic pattern of heparin-induced thrombocytopenia. Stop the exposure and get the team involved.' },
@@ -143,7 +143,7 @@
       teach: 'Blood: two qualified people check at the bedside, matching the patient\'s ID band, the unit tag and the order. ABO mismatch is one of the deadliest preventable errors.' },
     { id: 'thyroid', k: ['med'], from: 'fl-rn', title: 'Tingling lips', dom: 'assess', cost: 4, exp: 15,
       ping: '{rn}\'s post-op patient says her lips are tingling. {rn} is in another room.',
-      text: 'Ms. Lindqvist, 51, is 6 hours after a total thyroidectomy. Her lips and fingertips are tingling. You tap in front of her ear and her upper lip twitches.',
+      text: 'Ms. Halvorsen, 51, is 6 hours after a total thyroidectomy. Her lips and fingertips are tingling. You tap in front of her ear and her upper lip twitches.',
       q: 'What do you do?',
       opts: [
         { t: 'Suspect low calcium: vitals, call the surgeon, and have IV calcium gluconate ready', v: 2, fb: 'Chvostek\'s sign after thyroid surgery points to low calcium from parathyroid injury. It can progress to tetany and laryngospasm.' },
@@ -153,7 +153,7 @@
       teach: 'After thyroidectomy: watch for low calcium (tingling, Chvostek\'s and Trousseau\'s signs, tetany) and neck hematoma. Keep calcium gluconate and a trach tray close.' },
     { id: 'hypo', k: ['med'], from: '@cna', title: 'Low glucose', dom: 'judgment', cost: 3, exp: 15,
       ping: '{cna}: "A fingerstick of 52 on {rn}\'s patient in 406."',
-      text: 'Mr. Patel, 67, type 2 diabetes. Awake, a little sweaty, sitting up in bed. Lunch trays are 40 minutes out. {rn} is on break.',
+      text: 'Mr. Banerjee, 67, type 2 diabetes. Awake, a little sweaty, sitting up in bed. Lunch trays are 40 minutes out. {rn} is on break.',
       q: 'What do you do?',
       opts: [
         { t: 'Give 15 g of fast sugar (4 oz of juice), recheck in 15 minutes', v: 2, fb: 'The rule of 15. He\'s awake and can swallow, so oral is right. Recheck, and repeat if he\'s still under 70.' },
@@ -248,7 +248,7 @@
       teach: 'Voluntary patients may request discharge. The psychiatrist evaluates promptly; a hold is started only if the person meets criteria (danger to self or others, grave disability). Otherwise, discharge with a safety plan.' },
     { id: 'ligature', k: ['psych'], from: '@cna', title: 'Under the mattress', dom: 'safety', cost: 3, exp: 14,
       ping: '{cna} found something under a mattress on B hall.',
-      text: 'A shoelace tied into a loop, under the mattress of Ms. Park, 19, admitted two days ago after an overdose. She\'s in her room.',
+      text: 'A shoelace tied into a loop, under the mattress of Ms. Delaney, 19, admitted two days ago after an overdose. She\'s in her room.',
       q: 'What do you do?',
       opts: [
         { t: 'Remove it, stay with her, ask her directly about suicidal thoughts, and get her nurse and the psychiatrist', v: 2, fb: 'A prepared ligature is a plan. Asking directly doesn\'t plant the idea; it opens the door.' },
@@ -270,7 +270,7 @@
       teach: 'Pediatric doses are weight-based: check mg/kg every time. Acetaminophen is 10–15 mg/kg every 4–6 hours, no more than 75 mg/kg a day or the adult maximum.' },
     { id: 'epiglottis', k: ['peds'], from: 'fl-rn', title: 'Drooling and quiet', dom: 'judgment', cost: 3, exp: 10,
       ping: '{rn}: "New admission in 511. Can you look at him with me?"',
-      text: 'Eli, 4, came up with a high fever. He\'s sitting forward with his chin out, drooling, his voice muffled, and he won\'t lie down. His mom wants you to look at his throat.',
+      text: 'Ravi, 4, came up with a high fever. He\'s sitting forward with his chin out, drooling, his voice muffled, and he won\'t lie down. His mom wants you to look at his throat.',
       q: 'What do you do?',
       opts: [
         { t: 'Don\'t look in his throat. Keep him calm on mom\'s lap, get airway equipment ready, and call the provider now', v: 2, fb: 'Tripod position, drooling, a muffled voice and high fever suggest epiglottitis. A tongue depressor can trigger complete obstruction.' },
@@ -343,7 +343,7 @@
       ],
       teach: 'Baby blues: tearfulness and mood swings starting around day 2 to 3, gone within about two weeks. Postpartum depression lasts longer and interferes with function; postpartum psychosis (confusion, hallucinations, not sleeping at all) is an emergency.' },
     { id: 'cold', k: ['ob'], from: '@cna', title: 'A cool baby', dom: 'assess', cost: 2, exp: 15,
-      ping: '{cna}: "The baby in 212 is 36.1 after his bath. Is that okay?"',
+      ping: '{cna}: "The baby in 222 is 36.1 after his bath. Is that okay?"',
       text: 'A full-term baby, 8 hours old, bathed 30 minutes ago. Axillary temperature 36.1 °C. He\'s a little mottled on his feet and sleepy, but woke to feed an hour ago.',
       q: 'What do you tell {cna}?',
       opts: [
@@ -353,7 +353,7 @@
       ],
       teach: 'Newborns lose heat fast (evaporation after a bath, a cold surface, a draft). Cold stress raises oxygen and glucose use and can lead to hypoglycemia. Dry, hat, skin to skin, recheck.' },
     { id: 'sleep-ob', k: ['ob'], from: '@cna', title: 'Asleep together', dom: 'safety', cost: 2, exp: 15,
-      ping: '{cna}: "The mom in 214 fell asleep in bed with the baby on her chest."',
+      ping: '{cna}: "The mom in 224 fell asleep in bed with the baby on her chest."',
       text: 'The baby is a day old, face down on her chest under the blanket. Mom had a long labor and finally fell asleep mid-feed. The side rail is down.',
       q: 'What do you do?',
       opts: [
