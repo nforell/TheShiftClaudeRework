@@ -29,6 +29,16 @@ Memory is not the constraint. The two costs that matter are:
 - **Bound anything saved.** Lists written to the profile need a cap (the lesson log keeps at most 300).
 - **Content is data.** A new shift is a case file registered with the engine. Engine and UI changes should be rare and tested with the sweep.
 
+## Tasks and follow-up
+
+Every task on a patient's list must lead to something the player can do. `tests/followup.py` enforces it: it plays each shift several ways and taps every overdue or due task; a task fails if it has no button or opens a tab with nothing highlighted.
+
+- **Due tasks** come from a case's `dueExtras(s)`: `{ t, late, text: '<room> ...' }`. The UI routes each to the tab whose action best matches the words. Add `tab` ('care', 'assess', 'meds', 'talk'), `sys` (an assessment, e.g. 'vitals', 'neuro') or `hl` (words of the action to highlight) when the words alone would pick the wrong one.
+- **Heads-ups** (results pending, a visitor expected, the doctor on the way) set `info: true`. They show under Coming up and never count as overdue.
+- **Ordered checks:** when an order or a provider asks for repeated checks ("vitals every 15 minutes × 4", "recheck glucose in 15 minutes"), call `A.watch(pid, { id, text, every, times, vitals: true | rx: '<action label regex>', tab, sys, from, first })` from the case's `tick`. Each check stays on the list until done; unfinished ones are scored at the end of the shift.
+- **PRN reassessment** is automatic for the drug classes in `REASS` in `flow.js`.
+- **An order with an action in it needs that action.** If a provider says "give magnesium" or "pads on", the drug or intervention must exist and become available.
+
 ## Patient stories
 
 Every patient has a short arc in `src/stories/<case>.js`, run by `src/story.js`. The arcs are plain data and cost nothing at runtime; they're installed into each case's dialog table at boot.
@@ -55,6 +65,7 @@ pip install playwright && playwright install chromium
 python tests/run_all.py     # build, sweep 13 configurations, soak; exits 1 on any problem
 python tests/sweep.py peds-5s-1 390          # one shift at phone width
 python tests/soak.py                          # three shifts back to back: memory and redraw times
+python tests/followup.py ed-podb-1             # every task leads to an action (add --quick for two play styles)
 python tests/perf.py medsurg-4w-1             # idle CPU and redraw cost per screen
 ```
 

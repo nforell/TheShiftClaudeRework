@@ -417,7 +417,7 @@
         if (m.due !== undefined && (st.status === 'due' || st.status === 'verify') && m.due <= s.t + 75) out.push({ pid: d.id, t: m.due, late: s.t > m.due + 60, text: `${d.room} ${m.name} ${m.dose}${st.status === 'verify' ? ', awaiting pharmacy' : ''}` });
       });
     });
-    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => out.push(Object.assign({ pid: (x.text.match(/^\d{3}/) || [])[0] }, x)));
+    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if (!x.info) out.push(Object.assign({ pid: (x.text.match(/^\d{2,3}(?=\s)/) || [])[0] }, x)); });
     s.deleg.filter((x) => !x.done).forEach((x) => out.push({ pid: x.pid, t: x.due, late: false, text: `${cna().name}: ${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()}, ${x.pid}` }));
     pts().forEach((d) => { const P = s.p[d.id]; (gone(P) ? F.awayRows(s, A(), d, P) : flowRows(d, P)).filter((r) => !r.done && r.t !== null && (r.late || r.t <= s.t + 75)).forEach((r) => out.push({ pid: d.id, t: r.t, late: r.late, text: `${d.room} ${r.text}`, act: r.key === 'rp' ? 'report' : null })); });
     return out.sort((a, b) => a.t - b.t);
@@ -477,7 +477,7 @@
   /* ------------ the command bar: what needs you, what's next, and a way to let time pass ------------ */
   function nowRows() {
     const out = [];
-    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked }); }); });
+    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && !r.info && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked }); }); });
     const pr = prioList();
     // Something you can act on comes before something you're waiting on.
     return out.sort((a, b) => a.blocked - b.blocked || b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
@@ -683,16 +683,19 @@
     talk: '<svg class="ai" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',
     chart: '<svg class="ai" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16l4-5 3 3 4-6"/></svg>',
   };
-  const tabFor = (text) => (/glucose|BG\b/i.test(text) ? 'care' : /weigh|weight|scan/i.test(text) ? 'care' : /neuro|POSS|sedation|vital|CIWA|mental|assess/i.test(text) ? 'assess' : null);
+  const tabFor = (text) => (/glucose|BG\b/i.test(text) ? 'care' : /weigh|weight|scan/i.test(text) ? 'care' : /neuro|POSS|sedation|vital|mental|assess/i.test(text) ? 'assess' : null);
   // A task the case didn't route: send it to the tab whose action shares the most words with it, so every due task is tappable.
   function paneFor(d, P, text) {
     const w = text.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3), Ax = A();
     const score = (label) => w.filter((x) => label.toLowerCase().includes(x)).length;
     let best = null, bs = 0;
+    // The action whose name best matches the task wins; a care action wins a tie, since it's usually the one written for that task.
     (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { const n = score(x.label); if (n > bs) { bs = n; best = 'care'; } });
+    SYS.forEach(([id, label]) => { if (id === 'full') return; const n = score(sysL(id, label)); if (n > bs) { bs = n; best = 'assess'; } });
     (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { const n = score(x.label); if (n > bs) { bs = n; best = 'talk'; } });
+    (d.meds || []).filter((m) => !m.available || m.available(s, P)).forEach((m) => { const n = score(m.name); if (n > bs) { bs = n; best = 'meds'; } });
     if (best) return best;
-    return /call|page|notify|update|family|provider|SBAR/i.test(text) ? 'talk' : /med|dose|give/i.test(text) ? 'meds' : 'care';
+    return tabFor(text) || (/call|page|notify|update|family|provider|SBAR/i.test(text) ? 'talk' : /med|dose|give/i.test(text) ? 'meds' : 'care');
   }
   /* Completion tracking: every task that leaves the to-do list gets a visible check-off. */
   ui.ghosts = [];
@@ -716,7 +719,7 @@
     const rows = [];
     // Shift assessment: every patient needs one, early.
     const sysDone = Object.keys(P.assessAt || {}).length + (P.vit.some((v) => v.by === 'You') ? 1 : 0);
-    rows.push({ key: 'sa', t: 0, late: s.t > 90 && sysDone < 3, done: sysDone >= 3, text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
+    rows.push({ key: 'sa', t: 0, late: s.t > 90 && sysDone < 3, done: sysDone >= 3, sys: 'full', text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
     (d.meds || []).forEach((m) => {
       const st = s.meds[m.id];
       if (m.available && !m.available(s, P)) return;
@@ -726,7 +729,7 @@
       else if (m.initStatus === 'given') return;
       else rows.push({ key: 'm:' + m.id, t: m.due, late: s.t > m.due + 60, text: `${m.name} ${m.dose} ${m.route}`, sub: st.status === 'verify' ? 'Awaiting pharmacy: it can\'t be given until it\'s released' : m.freq, blocked: st.status === 'verify', go: { act: 'med', id: m.id } });
     });
-    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{3}/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{3}\s*/, ''), tab = tabFor(tx) || paneFor(d, P, tx); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, go: tab ? { act: 'dock', id: tab } : null }); });
+    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{2,3}(?=\s)/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{2,3}\s*/, ''); if (x.info) { rows.push({ key: 'x:' + tx, t: x.t, late: false, info: true, text: tx, sub: 'Heads-up: nothing to do yet' }); return; } const tab = x.tab || (x.sys ? 'assess' : paneFor(d, P, tx)); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, sys: x.sys, hl: x.hl, go: tab ? { act: 'dock', id: tab } : null }); });
     s.deleg.filter((x) => !x.done && x.pid === d.id).forEach((x) => rows.push({ key: 'd:' + x.id + ':' + x.at, at: x.at, t: x.due, prog: true, text: `${cna().name}: ${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()}`, sub: `In progress, back about ${E.clock(x.due)}` }));
     return rows.concat(flowRows(d, P));
   }
@@ -736,6 +739,7 @@
     const rows = [], Ax = A();
     if (P.bell) rows.push({ key: 'bell:' + P.bell.at, t: P.bell.at, late: s.t > P.bell.at + 10, text: `Call light: ${P.bell.who} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${P.bell.text}`, sub: P.bell.cnaAt ? `${cna().name} is on it` : P.bell.cna ? `${cna().name} could take this` : 'Needs a nurse', go: { act: 'bell', id: d.id }, prog: !!P.bell.cnaAt });
     F.prnRows(s, Ax, d, P).forEach((r) => rows.push(r));
+    F.watchRows(s, Ax, d, P).forEach((r) => rows.push(r));
     const rd = F.roundRow(s, Ax, d, P); if (rd && !P.bell) rows.push(rd);
     if (s.t >= C().length - 45) { const rp = s.report && s.report[d.id]; rows.push({ key: 'rp', t: C().length - 30, late: s.t > C().length - 10 && !rp, done: !!rp, text: `Give report to ${oncoming().name}`, sub: rp ? `Given ${E.clock(rp.t)}` : 'At the station', go: { act: 'report', id: d.id } }); }
     return rows;
@@ -745,12 +749,12 @@
   function paneBrain(d, P) {
     const rows = brainRows(d, P);
     const open = rows.filter((r) => !r.done && !r.prog && r.t !== null);
-    const over = open.filter((r) => r.late), now = open.filter((r) => !r.late && r.t <= s.t + 30), soon = open.filter((r) => !r.late && r.t > s.t + 30);
+    const over = open.filter((r) => r.late && !r.info), now = open.filter((r) => !r.late && !r.info && r.t <= s.t + 30), soon = open.filter((r) => r.info || (!r.late && r.t > s.t + 30));
     const later = rows.filter((r) => r.t === null), prog = rows.filter((r) => r.prog);
     const doneLog = s.log.filter((l) => l.pid === d.id && (l.kind === 'find' || l.kind === 'act') && !/^You: "/.test(l.text)).slice().reverse();
     const shown = ui.brainAll ? doneLog : doneLog.slice(0, 5);
     const row = (r, cls) => { const inner = `${cls === 'prog' ? `<span class="b-prog" aria-hidden="true"><i style="width:${Math.min(100, Math.max(4, (s.t - r.at) / Math.max(1, r.t - r.at) * 100)).toFixed(0)}%"></i></span>` : ''}<span class="b-tm">${r.t === null ? esc(r.later) : E.clock(Math.max(r.t, 0))}</span><span class="b-tx"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="b-st">${cls === 'over' ? 'Overdue' : cls === 'now' ? 'Due' : cls === 'soon' ? 'Upcoming' : cls === 'prog' ? 'In progress' : cls === 'later' ? 'Later' : ''}</span>${r.go ? '<span class="b-go" aria-hidden="true">›</span>' : '<span></span>'}`;
-      return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}"${r.go.act === 'dock' ? ` data-hl="${esc(r.text)}"` : ''}>${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
+      return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}"${r.go.act === 'dock' ? ` data-hl="${esc(r.hl || r.text)}"${r.sys ? ` data-sys="${esc(r.sys)}"` : ''}` : ''}>${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
     const grp = (title, list, cls) => (list.length ? `<div class="b-grp ${cls}"><h4>${title}<span>${list.length}</span></h4><ul>${list.map((r) => row(r, cls)).join('')}</ul></div>` : '');
     const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).map((k) => d.report[+k.split(':')[1]].text);
     let h = ghostList(d.id);
@@ -1723,7 +1727,7 @@
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
     if (ui.view === 'room') placeBubbles(root);
-    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const r = cv.getBoundingClientRect(), rt = root.querySelector('.room-top').getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.cv-reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
+    if (ui.convoIn && ui.view === 'room') { ui.convoIn = false; const cv = root.querySelector('.convo'); if (cv) { requestAnimationFrame(() => { const rtEl = root.querySelector('.room-top'); if (!rtEl || !cv.isConnected) return; const r = cv.getBoundingClientRect(), rt = rtEl.getBoundingClientRect(); const sticky = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom)); const dy = Math.min(rt.top - sticky - 8, r.bottom - innerHeight + 16); if (dy > 0 || rt.top < sticky) window.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' }); const f = cv.querySelector('.cv-reply, .btn'); if (f) f.focus({ preventScroll: true }); }); } }
     const T3 = performance.now();
     document.body.classList.toggle('tense', !!(s && !s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
     if (ui.view === 'room' && s) ui.newLogSeen = s.seq;
@@ -1907,8 +1911,8 @@
       ui.dock = el.dataset.id; render();
       // Coming from a task in the brain: point at the action that does it.
       if (el.dataset.hl) {
-        const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = null, bs = 0;
-        document.querySelectorAll('.pane .fs-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
+        const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = el.dataset.sys ? document.querySelector(`.pane .fs-row[data-sys="${el.dataset.sys}"]`) : null, bs = best ? 99 : 0;
+        document.querySelectorAll('.pane .fs-row, .pane .mar-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
         if (best) { best.classList.add('hl'); if (innerWidth <= 760) best.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); return; }
       }
       // On a phone the panel sits below the scene: bring the chosen tab's content into view.

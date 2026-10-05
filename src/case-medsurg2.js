@@ -82,6 +82,10 @@
         run(s, P) { P.abgAt = s.t; return 'ABG drawn from the right radial artery, pressure held for 5 minutes. Result in about 15 minutes.'; },
       },
       {
+        id: 'abg2', label: 'Repeat ABG after an hour on BiPAP (ordered)', cost: 5, avail: (s, P) => P.bipap && s.t - P.bipap >= 45 && P.abg2At == null && !P.icu,
+        run(s, P) { P.abg2At = s.t; return 'Repeat ABG drawn, mask still on. Result in about 15 minutes.'; },
+      },
+      {
         id: 'bipap', label: 'Start BiPAP with respiratory therapy (ordered)', cost: 6, avail: (s, P) => P.bipapOrdered && !P.bipap, urgent: true,
         run(s, P, A) {
           P.bipap = s.t;
@@ -269,9 +273,14 @@
         id: '423-loraz', name: 'Lorazepam (CIWA protocol)', dose: '1 or 2 mg', route: 'IV', freq: 'Per CIWA score', prn: true,
         indication: 'CIWA 10–15: 1 mg. CIWA 16 or more: 2 mg. Reassess 1 h after each dose.',
         doses: [{ id: 1, label: '1 mg (CIWA 10–15)' }, { id: 2, label: '2 mg (CIWA 16 or more)' }],
-        block: (s, P) => (P.lorazAt !== null && s.t - P.lorazAt < 55) ? 'Given at ' + clock(P.lorazAt) + '. The protocol reassesses 1 hour after each dose.' : null,
+        block: (s, P) => (!P.lorazNow && P.lorazAt !== null && s.t - P.lorazAt < 55) ? 'Given at ' + clock(P.lorazAt) + '. The protocol reassesses 1 hour after each dose.' : null,
         checks: (s, P) => [{ label: 'CIWA score', value: recent(s, P.ciwaAt, 30) ? `${P.lastCiwa} at ${clock(P.ciwaAt)}` : 'Not scored in the last 30 min', ok: recent(s, P.ciwaAt, 30) }, { label: 'Sedation, RR', value: 'Awake, RR 18–20', ok: true }],
         give(s, P, A, dose) {
+          if (P.lorazNow) {
+            P.lorazNow = false; P.lorazAt = s.t; P.relief.push({ t: s.t, amt: dose === 2 ? 11 : 6 });
+            A.judge('423-loraz-order', 'meds', dose === 2 ? 1 : -1, dose === 2 ? 'You gave Mr. Tran the 2 mg of IV lorazepam the provider ordered.' : 'You gave 1 mg when the provider ordered 2.', dose === 2 ? 'Hallucinations mean he is heading toward delirium tremens. The new order replaces the protocol dose for now.' : 'An order written for worsening withdrawal is carried out as written, or clarified.', '423');
+            return `Lorazepam ${dose} mg IV given per the new order. Reassess CIWA in 1 hour.`;
+          }
           const want = P.lastCiwa >= 16 ? 2 : P.lastCiwa >= 10 ? 1 : 0;
           if (!recent(s, P.ciwaAt, 30)) A.judge('423-loraz-blind-' + s.t, 'meds', -2, 'You gave protocol lorazepam without a current CIWA score.', 'Symptom-triggered protocols dose from the score. No score, no dose: you risk oversedation or undertreatment.', '423');
           else if (want === 0) A.judge('423-loraz-low-' + s.t, 'meds', -1, `You gave lorazepam for a CIWA of ${P.lastCiwa}, below the treatment threshold.`, 'Symptom-triggered dosing avoids unnecessary benzodiazepines. Under 10, the protocol says reassess, not medicate.', '423');
@@ -289,6 +298,11 @@
           if (recent(s, P.lorazAt, 30)) A.judge('423-hm-stack', 'meds', -1, 'You gave hydromorphone within 30 minutes of lorazepam.', 'Opioids and benzodiazepines together multiply respiratory depression. Space them and watch sedation closely.', '423');
           P.painRelief.push({ t: s.t, amt: 4 }); return 'Hydromorphone 0.5 mg IV given.';
         },
+      },
+      {
+        id: '423-mag', name: 'Magnesium sulfate', dose: '2 g in 50 mL', route: 'IV', freq: 'Once, over 1 hour (new order)', prn: true, available: (s, P) => !!P.magOrdered, block: (s, P) => (P.magAt != null ? 'Started at ' + clock(P.magAt) + '.' : null),
+        checks: () => [{ label: 'Magnesium', value: '1.5 mg/dL (low)', ok: false }],
+        give(s, P, A) { P.magAt = s.t; A.judge('423-mag', 'meds', 1, 'You replaced Mr. Tran\'s magnesium.', 'Heavy drinkers are often low in magnesium, and a low level lowers the seizure threshold during withdrawal.', '423'); return 'Magnesium sulfate 2 g IV running over an hour.'; },
       },
       { id: '423-panto', name: 'Pantoprazole', dose: '40 mg', route: 'IV', freq: 'Daily', due: 120, checks: () => [{ label: 'Indication', value: 'Gastritis, stress ulcer prevention', ok: true }], give: () => 'Pantoprazole 40 mg IV given.' },
     ],
@@ -309,7 +323,7 @@
         if (picked.includes('hall') || (picked.includes('ciwa') && P.lastCiwa >= 16)) {
           if (!P.seizPrec) A.addOrder('423', 'Seizure precautions. Magnesium sulfate 2 g IV. Lorazepam 2 mg IV now, may repeat once in 1 h per CIWA.');
           else A.addOrder('423', 'Magnesium sulfate 2 g IV. Lorazepam 2 mg IV now, may repeat once in 1 h per CIWA.');
-          P.relief.push({ t: s.t + 8, amt: 11 }); P.lorazAt = s.t + 8;
+          P.lorazNow = true; P.magOrdered = true;
           A.judge('423-sbar', 'comm', 2, 'You escalated Mr. Tran\'s worsening withdrawal with the score and the timeline.', 'CIWA, time since last drink and new hallucinations tell the provider exactly where he is on the withdrawal curve.', '423');
           return 'He\'s heading toward DTs. Give 2 of IV lorazepam now, replace his magnesium, seizure precautions. If he needs more than 4 in an hour, he goes to step-down. Thanks for scoring him.';
         }
@@ -570,7 +584,7 @@
       gi: (s, P) => { P.k.io = s.t; return `Urine output about 20 mL/h, dark. ${P.trayIn && !P.traySwapped ? 'Dinner tray has a banana and orange juice.' : 'Tolerating his diet.'}`; },
     },
     interventions: [
-      { id: 'strip', label: 'Look at his monitor strip', cost: 1, run(s, P, A) { P.stripAt = s.t; const k = darnellK(s, P); if (k >= 6.2) A.judge('427-strip', 'assess', 1, 'You looked at Mr. Brooks\'s rhythm strip in the context of his potassium.', 'Peaked T waves are the earliest ECG sign of hyperkalemia. The monitor is an assessment tool, not wallpaper.', '427'); return k >= 6.2 ? 'Tall, narrow, tented T waves in every beat. Rate 76, sinus.' : 'Normal sinus rhythm, normal T waves.'; } },
+      { id: 'strip', label: 'Look at his monitor strip', cost: 1, run(s, P, A) { P.stripAt = s.t; const k = darnellK(s, P); if (k >= 6.2) A.judge('427-strip', 'assess', 1, 'You looked at Mr. Brooks\'s rhythm strip in the context of his potassium.', 'Peaked T waves are the earliest ECG sign of hyperkalemia. The monitor is an assessment tool, not wallpaper.', '427'); return k >= 6.2 ? (P.caAt !== null && s.t - P.caAt < 60 ? 'T waves still tall but less peaked since the calcium. Rate 76, sinus.' : 'Tall, narrow, tented T waves in every beat. Rate 76, sinus.') : 'Normal sinus rhythm, normal T waves.'; } },
       { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const g = darnellBG(s, P); P.bgAt = s.t; P.lastBG = g; P.bgs.push({ t: s.t, val: g, by: 'You' }); if (P.insAt !== null && s.t - P.insAt >= 30 && s.t - P.insAt <= 130) A.judge('427-bg', 'judgment', 1, 'You checked Mr. Brooks\'s glucose after IV insulin.', 'IV insulin shifts potassium into cells and glucose with it. In kidney failure insulin lasts longer, so hypoglycemia can come 1 to 3 hours later. Patients with kidney failure or a starting glucose under about 125 are at highest risk, which is why many protocols lower the insulin dose or add a dextrose infusion for them.', '427'); return `Glucose ${g} mg/dL.${g < 70 ? ' Low.' : ''}`; } },
       { id: 'tray', label: 'Swap the dinner tray for a renal-diet tray', cost: 3, avail: (s, P) => P.trayIn && !P.traySwapped && !P.ate, run(s, P, A) { P.traySwapped = true; A.judge('427-tray', 'safety', 1, 'You caught a high-potassium dinner tray for a hyperkalemic patient.', 'Bananas, orange juice and potatoes are loaded with potassium. Diet orders get mixed up; the nurse at the bedside is the last check.', '427'); return 'Dietary sends up a renal tray: chicken, rice, green beans, apple juice. "Man. I was looking forward to that banana."'; } },
       { id: 'juice', label: 'Give 4 oz apple juice (15 g fast carbs)', cost: 2, avail: (s, P) => darnellBG(s, P) < 70 && (P.juiceAt === null || s.t - P.juiceAt > 20), urgent: true, run(s, P, A) { P.juiceAt = s.t; A.judge('427-juice', 'safety', 2, 'You treated Mr. Brooks\'s low glucose with apple juice.', 'Apple juice is a low-potassium fast carb. Orange juice would have fixed the glucose and fed the hyperkalemia.', '427'); return 'He drinks the apple juice. Recheck in 15 minutes.'; } },
@@ -889,6 +903,7 @@
     { id: 'bea-done', when: (s) => { const P = s.p['425']; return P.transAt !== null && P.transUnit === 'right' && P.stopped === null && s.t >= P.transAt + 120; }, run(s, A) { const P = s.p['425']; P.doneAt = s.t; A.log('425', 'First unit complete.', 'ambient'); } },
     { id: 'bea-hgb', when: (s) => s.p['425'].doneAt !== null && s.t >= s.p['425'].doneAt + 15, run(s, A) { A.addLab('425', { name: 'Hemoglobin', val: 7.9, unit: 'g/dL', ref: '12–16', flag: 'L' }); A.msg({ from: 'lab', pid: '425', text: '425 Nakamura hemoglobin 7.9 after unit 1.' }); } },
     { id: 'bea-icu', when: (s) => s.p['425'].rsev >= 45 && !s.p['425'].icu, run(s, A) { const P = s.p['425']; P.icu = true; A.judge('425-icu', 'safety', -3, 'Mrs. Nakamura went into shock from an acute hemolytic transfusion reaction.', 'Incompatible blood kept running. The first 15 minutes at the bedside, and stopping at the first chill or backache, are what prevent this.', '425'); A.msg({ from: 'luis', pid: '425', urgent: true, text: 'Rapid response in 425. BP 70s, she\'s barely talking. They\'re taking her to the ICU.' }); } },
+    { id: 'abg2', when: (s) => s.p['421'].abg2At != null && s.t >= s.p['421'].abg2At + 15, run(s, A) { const P = s.p['421']; const ph = +(7.37 - (P.co2 - 52) * .006).toFixed(2); A.addLab('421', { name: 'ABG pH (on BiPAP)', val: ph, unit: '', ref: '7.35–7.45', flag: ph < 7.35 ? 'L' : '' }); A.addLab('421', { name: 'ABG PaCO₂ (on BiPAP)', val: Math.round(P.co2), unit: 'mmHg', ref: '35–45 (baseline about 52)', flag: 'H' }); A.msg({ from: 'lab', pid: '421', urgent: ph < 7.32, text: `Repeat ABG 421 Kowalski on BiPAP: pH ${ph}, PaCO₂ ${Math.round(P.co2)}.${P.abgResult ? ` Was ${P.abgResult.ph} and ${P.abgResult.co2}.` : ''}`, replies: ph < 7.32 ? [{ label: 'Call Dr. Farrow with an SBAR', act: 'sbar', pid: '421' }] : null }); } },
     { id: 'abg', when: (s) => s.p['421'].abgAt !== null && s.t >= s.p['421'].abgAt + 15, run(s, A) { const P = s.p['421']; const ph = +(7.37 - (P.co2 - 52) * .006).toFixed(2); P.abgResult = { ph, co2: Math.round(P.co2) }; A.addLab('421', { name: 'ABG pH', val: ph, unit: '', ref: '7.35–7.45', flag: ph < 7.35 ? 'L' : '' }); A.addLab('421', { name: 'ABG PaCO₂', val: Math.round(P.co2), unit: 'mmHg', ref: '35–45 (baseline about 52)', flag: 'H' }); A.msg({ from: 'lab', pid: '421', urgent: ph < 7.32, text: `ABG 421 Kowalski: pH ${ph}, PaCO₂ ${Math.round(P.co2)}.`, replies: ph < 7.32 ? [{ label: 'Call Dr. Farrow with an SBAR', act: 'sbar', pid: '421' }] : null }); } },
     { id: 'pat-sleepy', when: (s) => s.p['421'].co2 >= 64 && !s.p['421'].bipap, run(s, A) { A.msg({ from: 'luis', pid: '421', text: '421 is really sleepy. Hard to wake up for vitals. Her sat\'s great though, 98%.', replies: [{ label: 'Go to 421', act: 'goto', pid: '421' }] }); } },
     { id: 'pat-icu', when: (s) => s.p['421'].co2 >= 84 && !s.p['421'].bipap, run(s, A) { const P = s.p['421']; P.icu = true; A.judge('421-icu', 'safety', -3, 'Mrs. Kowalski went into hypercapnic respiratory failure on 6 L of oxygen.', 'Her sat looked perfect the whole time. In a CO₂ retainer, the dangerous number is the one you don\'t see on the monitor: rising CO₂ shows up as sleepiness, headache, slow breathing.', '421'); A.msg({ from: 'luis', pid: '421', urgent: true, text: 'Rapid response in 421. She won\'t wake up. They\'re taking her to the ICU for BiPAP.' }); } },
@@ -1006,11 +1021,12 @@
     patients: [pat, kevin, bea, darnell, amina],
     dueExtras(s) {
       const out = [], K = s.p['423'], B = s.p['425'], D = s.p['427'], M = s.p['429'];
+      const Pk = s.p['421']; if (Pk.bipap && Pk.abg2At == null && !Pk.icu && s.t >= Pk.bipap + 40) out.push({ t: Pk.bipap + 60, late: s.t > Pk.bipap + 80, text: '421 Repeat ABG after an hour on BiPAP' });
       if (K.dexAt === null) out.push({ t: 60, late: s.t > 90, text: '423 Change IV to D5 ½NS (thiamine first)' });
       if (K.ciwaAt === null || s.t - K.ciwaAt >= 60 && (K.lastCiwa || 0) >= 10) out.push({ t: K.ciwaAt === null ? 0 : K.ciwaAt + 60, late: K.ciwaAt === null ? s.t > 60 : s.t > K.ciwaAt + 90, text: '423 CIWA-Ar score' });
-      if (B.transAt === null && !B.icu && s.t >= 20) out.push({ t: 20, late: s.t > 80, text: '425 Transfuse PRBC unit 1' });
+      if (B.transAt === null && !B.icu && s.t >= 20) out.push(B.returned && s.t < B.rightUnitAt ? { t: B.rightUnitAt, late: false, info: true, text: '425 Corrected unit coming up from blood bank' } : { t: 20, late: s.t > 80, text: '425 Transfusion: PRBC unit 1' });
       if (D.insAt !== null) { const next = D.insAt + 60 * (1 + D.bgs.filter((b) => b.t > D.insAt).length); if (next <= D.insAt + 240) out.push({ t: next, late: s.t > next + 20, text: '427 Glucose check after insulin' }); }
-      if (M.arrived && !M.gone && M.anaph === 0 && M.abxGiven === null) out.push({ t: 180, late: s.t > 235, text: '429 Pre-op antibiotic, within 60 min of incision' });
+      if (M.arrived && !M.gone && M.anaph === 0 && M.abxGiven === null) out.push({ t: 180, late: s.t > 235, tab: 'meds', hl: M.abxChanged ? 'Ciprofloxacin metronidazole' : 'Ampicillin sulbactam', text: '429 Pre-op antibiotic, within 60 min of incision' });
       if (M.arrived && !M.gone && M.anaph === 0) out.push({ t: 240, late: false, text: '429 To OR, pre-op checklist complete' });
       return out;
     },
@@ -1040,6 +1056,12 @@
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const Pa = s.p['421'];
+      if (Pa.o2Fixed != null && !Pa.bipap && !Pa.icu) A.watch('421', { id: '421-o2', text: 'Reassess how awake she is after the oxygen change', first: 10, every: 30, times: 1, rx: 'neuro|mental', sys: 'neuro', from: Pa.o2Fixed });
+      const Dj = s.p['427']; if (Dj.juiceAt != null && !Dj.icu) A.watch('427', { id: '427-juice-' + Dj.juiceAt, text: 'Recheck glucose 15 minutes after the juice', every: 15, times: 1, rx: 'glucose', tab: 'care', from: Dj.juiceAt });
+      if (Pa.bipap && !Pa.icu) A.watch('421', { id: '421-bipap', text: 'Reassess her mental status and breathing on BiPAP', every: 30, times: 1, rx: 'neuro|lung|breath', sys: 'neuro', from: Pa.bipap });
+      const Bw = s.p['425'];
+      if (Bw.doneAt !== null && !Bw.icu) A.watch('425', { id: '425-post', text: 'Vital signs after the unit', first: 0, every: 30, times: 1, vitals: true, from: Bw.doneAt });
+      if (Bw.reactionAt !== null && Bw.stopped !== null && !Bw.icu) A.watch('425', { id: '425-uo', text: 'Urine output, goal over 100 mL/h', every: 60, times: 2, rx: '^GI|output', sys: 'gi', from: Bw.stopped });
       if (!Pa.icu) {
         if (Pa.bipap) Pa.co2 = Math.max(52, Pa.co2 - .6);
         else if (Pa.o2 > 3) Pa.co2 += .06 * (Pa.o2 - 2);

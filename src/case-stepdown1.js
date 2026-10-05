@@ -433,6 +433,7 @@
     },
     interventions: [
       { id: 'strip', label: 'Look at his monitor strip and measure the QT', cost: 2, run(s, P, A) { P.stripSeen = true; P.k.stripAt = s.t; A.judge('607-strip', 'assess', 1, `You measured Mr. Lindqvist's QT yourself.`, `A long QT is the setup for torsades de pointes. The number on this morning's ECG is a snapshot; the strip tells you whether it's getting longer.`, '607'); return `Sinus rhythm ${A.vitals('607').HR}. QTc about ${qtc(P)} ms. ${P.run ? 'Frequent PVCs, some landing on the T wave, and a short run of polymorphic beats earlier.' : 'Occasional PVCs.'}`; } },
+      { id: 'sips', label: 'Ginger ale in small sips, cool cloth, sit him up', cost: 3, avail: (s, P) => s.t >= 100 && !P.sips && !P.icu, run(s, P, A) { P.sips = true; A.judge('607-sips', 'judgment', 1, `You eased Mr. Lindqvist's nausea without another QT drug.`, `With a QTc over 500, comfort measures come first. Ask the provider before any antiemetic.`, '607'); return `He sips the ginger ale, the cloth on his neck. "Better. Ingrid swears by this." He hums a bar of something.`; } },
       { id: 'ortho', label: 'Orthostatic vital signs, with a second person', cost: 5, avail: (s, P) => !P.ortho, run(s, P, A) { P.ortho = true; A.judge('607-ortho', 'assess', 1, `You checked Mr. Lindqvist's orthostatics safely.`, `Part of any syncope workup, done with help and a chair behind him.`, '607'); return `Lying 128/70, HR 64. Standing at 3 minutes 120/68, HR 70. No orthostatic drop; no symptoms. Points away from dehydration, toward his heart.`; } },
     ],
     meds: [
@@ -451,7 +452,7 @@
         hold(s, P, A) { P.lasixHeld = true; A.judge('607-lasix-hold', 'meds', 1, `You held furosemide for a potassium under 3.5.`, `Parameter met. Notify the provider; he still has heart failure, so it's a plan, not just a hold.`, '607'); return 'Held: K 3.2. Notify the provider.'; },
       },
       {
-        id: '607-ond', name: 'Ondansetron', dose: '4 mg', route: 'IV', freq: 'Every 6 h as needed, nausea', prn: true,
+        id: '607-ond', name: 'Ondansetron', dose: '4 mg', route: 'IV', freq: 'Every 6 h as needed, nausea', prn: true, available: (s, P) => !P.called,
         checks: (s, P) => [{ label: 'Nausea', value: s.t >= 100 ? 'Since breakfast' : 'None', ok: s.t >= 100 }, { label: 'QTc', value: `${P.stripSeen ? qtc(P) : 516} ms`, ok: false }],
         give(s, P, A) { P.ond = true; A.judge('607-ond', 'meds', -2, `You gave ondansetron with a QTc over 500.`, `Ondansetron lengthens the QT too. Ask for a different plan: small sips, ginger ale, and whatever the provider thinks is safest.`, '607'); return `Ondansetron 4 mg IV given.`; },
       },
@@ -660,12 +661,11 @@
     patients: [gloria, raymond, dolores, theo],
     dueExtras(s) {
       const out = [], G = s.p['601'], R = s.p['603'], D = s.p['605'], T = s.p['607'];
-      if (!R.icu) { const next = R.lastCheck + (R.lastCheck < 75 ? 30 : 60); if (next <= 300) out.push({ t: next, late: s.t > next + 15, text: '603 Groin site, distal pulses and vital signs' }); }
-      if (G.diltOn && !G.icu) out.push({ t: 0, late: s.t > 30 && !G.k.card && !G.stripSeen, text: '601 Diltiazem titration: HR and BP every 15 minutes' });
+      if (!R.icu) { const next = R.lastCheck + (R.lastCheck < 75 ? 30 : 60); if (next <= 300) out.push({ t: next, late: s.t > next + 15, tab: 'care', text: '603 Groin site, distal pulses and vital signs' }); }
+      if (G.diltOn && !G.icu) { const lv = Math.max(-15, ...G.vit.map((v) => v.t)); out.push({ t: lv + 15, late: s.t > lv + 30, sys: 'vitals', text: '601 Diltiazem drip: HR and BP every 15 minutes' }); }
       if (s.t >= 15 && !G.echoSeen && !G.icu) out.push({ t: 15, late: s.t > 45, text: '601 Echo report resulted' });
-      if (D.nomo === null && D.stopped === null && !D.gone) out.push({ t: 0, late: s.t > 30, text: '605 aPTT 104: adjust heparin per nomogram' });
+      if (D.nomo === null && D.stopped === null && !D.gone) out.push({ t: 0, late: s.t > 30, tab: 'meds', hl: 'Heparin infusion', text: '605 aPTT 104: adjust heparin per nomogram' });
       if (T.kGiven === null && !T.icu) out.push({ t: 0, late: s.t > 60, text: '607 K 3.2, Mg 1.4: electrolyte protocol' });
-      if (s.t < 125) out.push({ t: 125, late: false, text: '603 09:00 CBC resulting' });
       return out;
     },
     replies,

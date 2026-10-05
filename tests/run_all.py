@@ -33,5 +33,17 @@ for extra in ('telemetry.py', 'pwa.py', 'cloud.py', 'review.py', 'guide.py', 'la
         bad += 1
         for ln in r.stdout.splitlines():
             if ln.startswith('FAIL'): print(f"::error title={extra}::{ln[5:300]}")
+# Dead ends: every task on a patient's list must lead to an action (quick mode, shifts in parallel).
+def fu(c):
+    r = subprocess.run([sys.executable, str(ROOT / 'tests' / 'followup.py'), '--quick', c], capture_output=True, text=True)
+    return c, r
+with cf.ThreadPoolExecutor(3) as ex:
+    for c, r in ex.map(fu, CASES):
+        lines = r.stdout.strip().splitlines() or [r.stderr.strip()[-300:]]
+        print(c, lines[-1])
+        if r.returncode:
+            bad += 1
+            for ln in lines:
+                if ln.startswith('FAIL'): print(f"::error title=followup {c}::{ln[5:300]}")
 print('FAILED' if bad else 'ALL CLEAN', bad)
 sys.exit(1 if bad else 0)

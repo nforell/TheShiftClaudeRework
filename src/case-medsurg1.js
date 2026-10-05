@@ -203,7 +203,7 @@
       },
       respond(s, P, A, picked) {
         if (picked.includes('crackles') || (picked.includes('vit') && P.atel)) {
-          A.addOrder('412', 'Incentive spirometry every hour while awake with RN check. Ambulate 3 to 4 times today. Chest X-ray if T > 38.5.');
+          P.isOrder = true; A.addOrder('412', 'Incentive spirometry every hour while awake with RN check. Ambulate 3 to 4 times today. Chest X-ray if T > 38.5.');
           A.judge('412-sbar-atel', 'comm', 1, 'You reported Mr. Bell\'s fever, low SpO₂ and crackles together.', 'Post-op day 1 fever with crackles and falling saturation points to atelectasis or an early pneumonia. Atelectasis alone doesn\'t reliably explain a fever, which is why the provider needs the whole picture instead of isolated numbers.', '412');
           return 'Probably atelectasis, but I want to rule out pneumonia. Push the IS every hour and get him walking. Chest X-ray if he spikes over 38.5. Thanks for catching it.';
         }
@@ -400,7 +400,7 @@
         const out = [];
         if (picked.includes('nausea')) { P.ondOrdered = true; A.addOrder('414', 'Ondansetron 4 mg IV every 6 h as needed for nausea.'); out.push('Give her ondansetron 4 mg IV for the nausea; I\'ve put the order in.'); A.judge('414-sbar-nausea', 'comm', 1, 'You reported the nausea behind Mrs. Okafor\'s poor intake and got it treated.', 'You gave the provider the cause, not just the consequence.', '414'); }
         if (picked.includes('held')) { P.notifiedHold = true; out.push('Good call holding the lispro. Keep holding if she eats less than half.'); }
-        if (picked.includes('hypo')) { P.notifiedHold = true; A.addOrder('414', 'Hold mealtime lispro if intake < 50%. Glucose checks every hour for 2 hours.'); out.push('Glucose checks every hour for 2 hours, and hold the mealtime dose unless she eats.'); A.judge('414-sbar-hypo', 'comm', 1, 'You reported Mrs. Okafor\'s hypoglycemic episode to the provider.', 'Any hypoglycemia on insulin needs the provider to know: the regimen may need changing.', '414'); }
+        if (picked.includes('hypo')) { P.notifiedHold = true; P.hourlyBG = true; A.addOrder('414', 'Hold mealtime lispro if intake < 50%. Glucose checks every hour for 2 hours.'); out.push('Glucose checks every hour for 2 hours, and hold the mealtime dose unless she eats.'); A.judge('414-sbar-hypo', 'comm', 1, 'You reported Mrs. Okafor\'s hypoglycemic episode to the provider.', 'Any hypoglycemia on insulin needs the provider to know: the regimen may need changing.', '414'); }
         return out.length ? out.join(' ') : 'Okay. Anything you need from me for her?';
       },
     },
@@ -687,6 +687,7 @@
       { id: 'hob', label: 'Raise head of bed to high Fowler\'s', cost: 1, avail: (s, P) => !P.hob, run(s, P, A) { P.hob = true; if (P.fl >= 60) A.judge('418-hob', 'safety', 1, 'You sat Mr. Ortiz upright when he became short of breath.', 'High Fowler\'s drops venous return and lets the diaphragm work: the fastest free intervention in pulmonary congestion.', '418'); return 'Bed up to 80 degrees, legs dependent. "Better, mijo."'; } },
       { id: 'o2', label: 'Increase oxygen to 4 L (order: titrate to ≥ 92%)', cost: 1, avail: (s, P) => P.o2 < 4, run(s, P, A) { const v = A.vitals('418'); P.o2 = 4; if (v.SpO2 < 92) A.judge('418-o2', 'safety', 1, 'You titrated Mr. Ortiz\'s oxygen for SpO₂ below 92%.', 'The order gives you a target. Titrating to it is a nursing action, then you reassess.', '418'); return v.SpO2 < 92 ? 'Up to 4 L. Give it a few minutes, then recheck.' : 'Up to 4 L. His SpO₂ was already at goal. The order titrates to 92%, not to 100.'; } },
       { id: 'apical', label: 'Count apical pulse and check BP', cost: 2, run(s, P, A) { const v = A.recordVitals('418', 'You'); P.k.hrAt = s.t; P.k.hr = v.HR; return `Apical ${v.HR}, irregularly irregular, full minute. BP ${v.SBP}/${v.DBP}.`; } },
+      { id: 'atropine', label: 'Bring atropine and pads to the bedside (ordered)', cost: 2, avail: (s, P) => P.bradyOrder && !P.atropineReady, run(s, P, A) { P.atropineReady = true; A.judge('418-atropine', 'safety', 1, `You had atropine and pads ready for Mr. Ortiz.`, `If his rate falls further or his pressure drops, the first drug and the pads are already in the room.`, '418'); return `Atropine 1 mg drawn up and labeled on the bedside table. Pads on his chest, connected to the monitor-defibrillator. Rosa watches you place them without a word.`; } },
       { id: 'brady', label: 'Lower the head of the bed as he tolerates, hold further doses, stay with him', cost: 3, avail: (s, P) => ortizBrady(s, P) && !P.bradyCare, run(s, P, A) { P.bradyCare = true; A.judge('418-brady-care', 'safety', 1, 'You lowered Mr. Ortiz\'s head of bed and stayed with him through his symptomatic bradycardia.', 'Lowering the head helps cerebral perfusion, but with fluid on his lungs he may not tolerate flat: go as low as he can breathe. Then notify the provider, and have atropine and pads nearby if he worsens.', '418'); return 'Head of bed down as far as his breathing allows, about 20 degrees. Call light in his hand, Rosa beside him. Monitor reads 44. He\'s talking, lightheaded, no chest pain.'; } },
     ],
     family: { name: 'Rosa', rel: 'Wife', mode: 'bedside', cost: 3, dialog: (s, P) => P.educated ? 'rosa_after' : 'rosa_talk' },
@@ -747,7 +748,7 @@
         const out = [];
         if (picked.includes('k')) { P.notifiedK = true; P.kxOrdered = true; A.addOrder('418', 'Potassium chloride 40 mEq PO once now. Recheck BMP at 16:00.'); out.push('Give an extra 40 of KCl now and recheck this afternoon.'); A.judge('418-sbar-k', 'comm', 1, 'You flagged Mr. Ortiz\'s low potassium to the provider.', 'A low K on a loop diuretic in a heart patient is worth a call.', '418'); }
         if (picked.includes('held')) { P.notifiedMeto = true; out.push('Agree with holding the metoprolol. I\'ll drop it to 25 on rounds.'); A.judge('418-sbar-meto', 'comm', 1, 'You told the provider you held Mr. Ortiz\'s metoprolol.', 'Closing the loop on a held medication lets the plan change.', '418'); }
-        if (picked.includes('brady')) { P.notifiedMeto = true; A.addOrder('418', 'Hold metoprolol. Vitals every 15 min × 4. Atropine and pads at bedside. Call if SBP < 85 or chest pain.'); out.push('Hold any more beta-blocker, vitals every 15, atropine to the bedside. Call me if his SBP drops below 85.'); A.judge('418-sbar-brady', 'comm', 2, 'You escalated Mr. Ortiz\'s symptomatic bradycardia promptly.', 'Symptomatic bradycardia with hypotension needs the provider now, with the drug, the time and the numbers.', '418'); }
+        if (picked.includes('brady')) { P.notifiedMeto = true; P.bradyOrder = true; A.addOrder('418', 'Hold metoprolol. Vitals every 15 min × 4. Atropine and pads at bedside. Call if SBP < 85 or chest pain.'); out.push('Hold any more beta-blocker, vitals every 15, atropine to the bedside. Call me if his SBP drops below 85.'); A.judge('418-sbar-brady', 'comm', 2, 'You escalated Mr. Ortiz\'s symptomatic bradycardia promptly.', 'Symptomatic bradycardia with hypotension needs the provider now, with the drug, the time and the numbers.', '418'); }
         if ((picked.includes('resp') || picked.includes('wt')) && P.fl >= 58) { P.lx80 = true; A.addOrder('418', 'Furosemide 80 mg IV once now. Chest X-ray. Strict I&O.'); out.push('Give 80 of IV furosemide now and get a chest film.'); A.judge('418-sbar-fl', 'comm', 1, 'You reported worsening congestion with the data to support it.', 'Crackles, saturation, weight and intake together describe fluid overload far better than "he\'s short of breath."', '418'); }
         return out.length ? out.join(' ') : 'Okay. What do you need from me?';
       },
@@ -1005,6 +1006,14 @@
     },
     events, delegation, dialogs, novaHint, endChecks, tick(s, A) {
       const W = s.p['416'];
+      if (W.bundle && !W.icu) A.watch('416', { id: '416-q15', text: 'Vitals every 15 minutes, sepsis bundle', every: 15, times: 4, vitals: true });
+      const G = s.p['414'];
+      if (G.juiceAt !== null && !G.d50At) A.watch('414', { id: '414-recheck', text: 'Recheck glucose 15 minutes after the juice', every: 15, times: 1, rx: 'glucose', tab: 'care', from: G.juiceAt });
+      if (G.d50At) A.watch('414', { id: '414-recheck-d50', text: 'Recheck glucose 15 minutes after the dextrose', every: 15, times: 1, rx: 'glucose', tab: 'care', from: G.d50At });
+      if (G.hourlyBG) A.watch('414', { id: '414-hourly', text: 'Glucose check every hour', every: 60, times: 2, rx: 'glucose', tab: 'care' });
+      const O = s.p['418'];
+      if (O.bradyOrder) A.watch('418', { id: '418-q15', text: 'Vitals every 15 minutes, bradycardia', every: 15, times: 4, vitals: true });
+      if (s.p['412'].isOrder) A.watch('412', { id: '412-is', text: 'Incentive spirometry check, every hour', every: 60, times: 2, rx: 'spirometry', tab: 'care' });
       if (!W.icu) {
         let r = 0.26; const abxOn = W.abxAt !== null && s.t > W.abxAt + 30; if (abxOn) r = 0.1;
         if (W.bolusAt !== null) { const d = s.t - W.bolusAt; if (d > 0 && d <= 60) r = -0.45; else if (d > 60) r = abxOn ? -0.08 : 0.12; }

@@ -850,9 +850,10 @@
     dueExtras(s) {
       const out = [], K = s.p['435'], F = s.p['437'], R = s.p['439'];
       if (K.dripOn) { const last = K.bgs.length ? K.bgs[K.bgs.length - 1].t : -60; out.push({ t: last + 60, late: s.t > last + 75, text: '435 Glucose (hourly on insulin drip)' }); }
+      if (K.dripOn && K.glarAt !== null && K.glarAt !== undefined) out.push({ t: K.glarAt + 120, late: s.t > K.glarAt + 140, text: '435 Stop the insulin drip, 2 h after glargine' });
       if (K.dripOn && !K.dex && K.bg < 260) out.push({ t: s.t, late: false, text: '435 Check if glucose < 250: D5 ½NS per protocol' });
       if (F.lastNormal < 0 && !stroke(F)) out.push({ t: 60, late: s.t > 90, text: '437 Neuro check (every 4 h)' });
-      const pl = R.k.possAt !== undefined ? R.k.possAt : -60; if (!R.icu) out.push({ t: pl + 60, late: s.t > pl + 75, text: '439 Sedation (POSS) and RR (hourly on PCA)' });
+      const pl = R.k.possAt !== undefined ? R.k.possAt : -60; if (!R.icu) out.push({ t: pl + 60, late: s.t > pl + 75, sys: 'neuro', text: '439 Sedation (POSS) and RR (hourly on PCA)' });
       return out;
     },
     replies: {},
@@ -873,6 +874,9 @@
     },
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
+      const Fd = s.p['437'];
+      if (Fd.tpa !== null && !Fd.icu && !Fd.gone) A.watch('437', { id: '437-bp', text: 'BP every 15 minutes after tenecteplase', every: 15, times: 4, vitals: true, from: Fd.tpa });
+      if (Fd.alert !== null && !Fd.icu && !Fd.gone) A.watch('437', { id: '437-neuro', text: 'Neuro check every 15 minutes, stroke alert', every: 15, times: 4, rx: 'neuro', sys: 'neuro', from: Fd.alert });
       // 435: insulin, dextrose, potassium
       const K = s.p['435'];
       const running = K.dripOn && !K.paused;

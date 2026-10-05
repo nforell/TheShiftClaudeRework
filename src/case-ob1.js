@@ -550,7 +550,8 @@
     interventions: [
       { id: 'epds', label: 'Read her depression screen, answer by answer', cost: 2, run(s, P, A) { P.epdsSeen = true; A.judge('218-epds', 'assess', 2, `You read Ms. Mercer's depression screen item by item.`, `The total tells you how much; item 10 tells you whether she's safe. Any positive answer to item 10 needs a direct conversation the same day, whatever the total.`, '218'); return `EPDS 15. Item 3 (blamed myself unnecessarily): "Yes, most of the time." Item 4 (anxious or worried): "Yes, very often." Item 8 (sad or miserable): "Yes, quite often." Item 10, "The thought of harming myself has occurred to me": "Hardly ever."`; } },
       { id: 'itm', label: 'Respiratory rate and sedation check (intrathecal morphine)', cost: 2, run(s, P, A) { const late = s.t - P.itm[P.itm.length - 1] > 150; P.itm.push(s.t); if (P.itm.length === 2) A.judge('218-itm', 'assess', late ? 0 : 1, `You did Ms. Mercer's intrathecal morphine check${late ? ', late' : ''}.`, `Intrathecal morphine can cause delayed respiratory depression up to 24 hours after the dose. Count the breaths for a full minute and score sedation.`, '218'); return `RR 16, counted a full minute. Sedation: awake and alert (POSS 1). SpO₂ 98%.`; } },
-      { id: 'safety', label: 'Safety: remove cords and extra meds, arrange a companion until psychiatry sees her', cost: 4, avail: (s, P) => P.si && !P.safety, run(s, P, A) { P.safety = true; A.judge('218-safety', 'safety', 2, `You made Ms. Mercer's room safer and arranged for someone to stay with her.`, `With any suicidal thought, the environment is part of the care: no cords, no stockpiled pills, and someone with her until she's been evaluated.`, '218'); return `Phone charger cords and the breast pump tubing kit moved to the station. Her bag checked with her permission: no medications. Mei will sit with her until Tom arrives.`; } },
+      { id: 'resources', label: 'Give her and Tom the Postpartum Support International and 988 information', cost: 4, avail: (s, P) => P.consult && !P.resources, run(s, P, A) { P.resources = true; A.judge('218-resources', 'comm', 1, `You gave Ms. Mercer and her husband the support numbers.`, `Families are often the first to notice things getting worse at home. Both of them should know who to call, day or night.`, '218'); return `You write both numbers on the whiteboard and on a card for Tom's wallet. He photographs the card. Sarah says, quietly, "Okay."`; } },
+      { id: 'safety', label: 'Safety: remove cords and extra meds, arrange a companion until psychiatry sees her', cost: 4, avail: (s, P) => (P.si || P.consult) && !P.safety, run(s, P, A) { P.safety = true; A.judge('218-safety', 'safety', 2, `You made Ms. Mercer's room safer and arranged for someone to stay with her.`, `With any suicidal thought, the environment is part of the care: no cords, no stockpiled pills, and someone with her until she's been evaluated.`, '218'); return `Phone charger cords and the breast pump tubing kit moved to the station. Her bag checked with her permission: no medications. Mei will sit with her until Tom arrives.`; } },
     ],
     meds: [
       {
@@ -813,17 +814,17 @@
     patients: [keisha, lani, baby, sarah],
     dueExtras(s) {
       const out = [], K = s.p['212'], L = s.p['214'], B = s.p['216'], W = s.p['218'];
-      if (!K.gone) { const nx = (K.fundusAt === null ? -75 : K.fundusAt) + 60; out.push({ t: Math.max(0, nx), late: s.t > nx + 20, text: '212 Fundus, lochia and vital signs' }); if (K.bladder) out.push({ t: 0, late: s.t > 60, text: '212 No void since birth (due by 10:40)' }); }
+      if (!K.gone) { const nx = (K.fundusAt === null ? -75 : K.fundusAt) + 60; out.push({ t: Math.max(0, nx), late: s.t > nx + 20, tab: 'care', text: '212 Fundus, lochia and vital signs' }); if (K.bladder) out.push({ t: 0, late: s.t > 60, text: '212 No void since birth (due by 10:40)' }); }
       if (!L.icu) { const nx = (L.checkAt === null ? -60 : L.checkAt) + 60; out.push({ t: Math.max(0, nx), late: s.t > nx + 15, text: '214 Magnesium checks: reflexes, RR, LOC, urine output' }); }
-      if (L.sevAt !== null && L.firstBpMed === null && !L.icu) out.push({ t: L.sevAt, late: s.t > L.sevAt + 30, text: '214 Severe-range BP: confirm within 15 min, treat within 60' });
+      if (L.sevAt !== null && L.firstBpMed === null && !L.icu) out.push({ t: L.sevAt, late: s.t > L.sevAt + 30, text: '214 Severe-range BP: recheck within 15 min, treat within 60' });
       if (!B.gone) {
         if (!B.checks.length) out.push({ t: 0, late: s.t > 30, text: '216 Glucose due before his feed' });
         const after = Math.max(B.gels.length ? B.gels[B.gels.length - 1] : -999, B.fed.length ? B.fed[B.fed.length - 1] : -999);
         if (after > 0 && B.checks[B.checks.length - 1] < after) out.push({ t: after + 60, late: s.t > after + 80, text: '216 Recheck glucose 1 hour after treatment' });
         out.push({ t: Math.max(0, B.fedAt + 180), late: s.t > B.fedAt + 200, text: '216 Feed (every 2–3 hours)' });
       }
-      const nx = W.itm[W.itm.length - 1] + 120; if (nx <= 420) out.push({ t: nx, late: s.t > nx + 20, text: '218 Intrathecal morphine: RR and sedation' });
-      if (W.asked === null && !W.disclosureSeen) out.push({ t: 0, late: s.t > 90, text: '218 EPDS 15, item 10 positive: talk with her' });
+      const nx = W.itm[W.itm.length - 1] + 120; if (nx <= 420) out.push({ t: nx, late: s.t > nx + 20, tab: 'care', text: '218 Intrathecal morphine: RR and sedation' });
+      if (W.asked === null && !W.disclosureSeen) out.push({ t: 0, late: s.t > 90, tab: 'talk', text: '218 EPDS 15, item 10 positive: talk with her' });
       return out;
     },
     replies,
@@ -844,6 +845,7 @@
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const K = s.p['212'];
+      if (K.called !== null && !K.gone) A.watch('212', { id: '212-qbl', text: 'Weigh pads and underpads every 30 minutes', every: 30, times: 3, rx: 'QBL|pads', tab: 'care', from: K.called });
       if (!K.gone) { K.tone += (kTarget(K) - K.tone) * .015; K.qbl += kRate(K); }
       const L = s.p['214'];
       if (!L.icu) {

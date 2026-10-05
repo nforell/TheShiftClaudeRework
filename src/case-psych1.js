@@ -1000,14 +1000,14 @@
     dueExtras(s) {
       const out = [], B = s.p['305'], L = s.p['309'], D = s.p['301'], M = s.p['307'];
       if (!L.weighed && !L.gone && !L.icu) out.push({ t: 0, late: s.t > 60, text: '309 Protocol weight (refused at 06:00)' });
-      if (s.t < 30) out.push({ t: 30, late: false, text: '305 Lithium level (drawn 06:00) resulting' });
-      if (s.t < 180 && !D.attempt) out.push({ t: 180, late: false, text: '301 Psychiatrist rounds: hold ends 14:00' });
-      if (M.visit === null && s.t < 140) out.push({ t: 120, late: false, text: '307 Visitor expected: Ana Santos' });
-      if (L.statAt !== null && !L.statDone) out.push({ t: L.statAt + 30, late: false, text: '309 STAT BMP resulting' });
+      if (s.t < 30) out.push({ t: 30, late: false, info: true, text: '305 Lithium level (drawn 06:00) resulting' });
+      if (s.t < 180 && !D.attempt) out.push({ t: 180, late: false, info: true, text: '301 Psychiatrist rounds: hold ends 14:00' });
+      if (M.visit === null && s.t < 140) out.push({ t: 120, late: false, info: true, text: '307 Visitor expected: Ana Santos' });
+      if (L.statAt !== null && !L.statDone) out.push({ t: L.statAt + 30, late: false, info: true, text: '309 STAT BMP resulting' });
       const J3 = s.p['303'], e = J3.ep;
-      if (e && e.f2fAt === null) out.push({ t: e.at + 60, late: s.t > e.at + 60, text: e.f2fCalled === null ? '303 Face-to-face evaluation: call Dr. Iyer (due within 1 hour)' : '303 Dr. Iyer coming for the face-to-face' });
+      if (e && e.f2fAt === null) out.push(e.f2fCalled === null ? { t: e.at + 60, late: s.t > e.at + 60, tab: 'talk', hl: 'Call Dr. Iyer', text: '303 Face-to-face evaluation: call Dr. Iyer (due within 1 hour)' } : { t: e.at + 60, late: false, info: true, text: '303 Dr. Iyer coming for the face-to-face' });
       if (e && J3.secluded) { const last = Math.max(e.seclStart, ...e.checks); out.push({ t: last + 15, late: s.t > last + 15, text: '303 Seclusion check (every 15 minutes)' }); }
-      if (J3.im !== null && J3.postIM === null) out.push({ t: J3.im + 30, late: s.t > J3.im + 45, text: '303 Post-IM check: vitals, sedation, breathing' });
+      if (J3.im !== null && J3.postIM === null) out.push({ t: J3.im + 30, late: s.t > J3.im + 45, tab: 'care', text: '303 Post-IM check: vitals, sedation, breathing' });
       if (e && !e.note) out.push({ t: e.at + 60, late: false, text: '303 Seclusion and restraint note' });
       if (e && J3.im !== null && !e.imNote) out.push({ t: J3.im + 60, late: false, text: '303 Emergency medication note' });
       return out;

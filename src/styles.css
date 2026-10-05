@@ -1547,7 +1547,7 @@ table.health td{white-space:normal}
 .cmd-st small.cmd-sub{display:block;font-size:.82rem;margin-top:.05rem}
 .cmd-sub em{font-style:normal;color:var(--red);font-weight:700}
 .cmd-st.clear .cmd-go{white-space:normal}
-.fs-row.hl{border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 28%,transparent);background:color-mix(in srgb,var(--teal) 7%,var(--surface-2))}
+.fs-row.hl,.mar-row.hl{border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 28%,transparent);background:color-mix(in srgb,var(--teal) 7%,var(--surface-2))}
 .rk-peek{display:block;width:fit-content}
 .cmd-go.nudge{position:relative;animation:nudgeBob 1.6s ease-in-out 3}
 @keyframes nudgeBob{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}

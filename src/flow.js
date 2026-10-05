@@ -693,7 +693,7 @@ window.Shift = window.Shift || {};
     return rows;
   }
   // PRN reassessment: every as-needed dose earns a look at whether it worked.
-  const REASS = [[/morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|PCA|tylenol/i, 'pain'], [/ondansetron|prometh|metoclop/i, 'gi'], [/albuterol|ipratrop|neb/i, 'resp'], [/lorazepam|haloperidol|olanzapine|diphenhyd|hydroxyz|chlordiaz|ziprasid/i, 'neuro'], [/naloxone/i, 'resp']];
+  const REASS = [[/morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|PCA|tylenol/i, 'pain'], [/ondansetron|prometh|metoclop/i, 'gi'], [/albuterol|ipratrop|neb/i, 'resp'], [/lorazepam|haloperidol|olanzapine|diphenhyd|hydroxyz|chlordiaz|ziprasid/i, 'neuro'], [/naloxone/i, 'resp'], [/epinephrine/i, 'resp'], [/furosemide/i, 'resp'], [/labetalol|hydralazine|nifedipine|nitroglycerin|diltiazem|amiodarone|saline bolus/i, 'vitals']];
   const reassessed = (s, pid, after) => s.log.some((l) => l.pid === pid && l.kind === 'find' && l.t >= after && (l.label === 'Vital signs' || /assess|score|pain|breath|lung|neuro|mental|sedation|CIWA|POSS|check|count|look|GI/i.test(l.label || '')));
   function prnRows(s, A, d, P) {
     const rows = [];
@@ -704,6 +704,19 @@ window.Shift = window.Shift || {};
       rows.push({ key: 'rx:' + m.id + ':' + g, t: due, late: s.t > due + 30, done: reassessed(s, d.id, g + gap), text: `Reassess after ${m.name}`, sub: `Given ${A.clock(g)}. Did it work?`, go: { act: 'dock', id: 'assess' }, sys });
     });
     return rows;
+  }
+  // Ordered checks (A.watch): each one stays on the list until it's done the ordered number of times.
+  function watchHits(s, d, P, w) {
+    if (w.vitals) return P.vit.filter((v) => v.t > w.from).map((v) => v.t);
+    const rx = new RegExp(w.rx, 'i');
+    return s.log.filter((l) => l.pid === d.id && l.kind === 'find' && l.t > w.from && rx.test(l.label || '')).map((l) => l.t);
+  }
+  function watchRows(s, A, d, P) {
+    return (s.watch || []).filter((w) => w.pid === d.id).map((w) => {
+      const hits = watchHits(s, d, P, w), n = hits.length, done = n >= w.times;
+      const t = n ? hits[n - 1] + w.every : w.from + (w.first !== undefined ? w.first : w.every);
+      return { key: 'w:' + w.id + ':' + Math.min(n, w.times), t, late: !done && s.t > t + Math.max(10, Math.round(w.every / 2)), done, text: w.times > 1 ? `${w.text}: ${Math.min(n + 1, w.times)} of ${w.times}` : w.text, sub: done ? 'Done' : `Ordered ${A.clock(w.from)}`, go: { act: 'dock', id: w.tab || 'assess' }, sys: w.sys || (w.vitals ? 'vitals' : undefined) };
+    });
   }
   function roundRow(s, A, d, P) {
     if (outOf(P) || s.t < 55 || (NOBELL[s.caseId] || []).includes(d.id) || P.oneToOne || P.secluded) return null;
@@ -758,6 +771,8 @@ window.Shift = window.Shift || {};
         if (sp.family && o.fam === null && left >= 45) A.judge(`${d.id}-xfer-fam`, 'comm', -0.5, `${sp.family.name} never heard from you about ${d.short}'s transfer.`, 'After a transfer, families often hear nothing for hours. A two-minute call from the nurse who was there matters.', d.id);
         return;
       }
+      // Ordered checks that were never finished.
+      watchRows(s, A, d, P).filter((r) => !r.done && r.t <= s.t - 20).slice(0, 1).forEach((r) => A.judge(`${d.id}-watch-${r.key.split(':')[1]}`, 'assess', -1, `${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.`, 'An order for repeated checks is how the team finds out whether the treatment worked. Each one is a task with a time on it.', d.id));
       // PRNs nobody went back to check.
       if (!s.judg.some((j) => j.pid === d.id && /reassess/.test(j.key || ''))) {
         const miss = prnRows(s, A, d, P).filter((r) => !r.done && r.t <= s.t - 15);
@@ -776,5 +791,5 @@ window.Shift = window.Shift || {};
     return { unit: sp.unit, at: o.at, entries: sp.course.map((e) => ({ t: o.at + e.at, st: e.st, text: e.text, after: o.at + e.at > end })), later: sp.later };
   }
 
-  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, roundRow, reportItems, giveReport, nextFor, entryAt, STAFF };
+  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, reportItems, giveReport, nextFor, entryAt, STAFF };
 })(window.Shift);
