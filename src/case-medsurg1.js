@@ -174,7 +174,7 @@
       {
         id: '412-enox', name: 'Enoxaparin', dose: '40 mg', route: 'SubQ', freq: 'Daily', due: 120,
         checks: () => [{ label: 'Platelets', value: '214 K/µL', ok: true }, { label: 'Incision', value: 'No active bleeding', ok: true }],
-        give: () => 'Given subQ in the abdomen, 2 inches from the incision. No rubbing.',
+        give: () => 'Given subQ in the abdomen, at least 2 inches from the umbilicus and well clear of the incision. No rubbing.',
         hold(s, P, A) { A.judge('412-enox-hold', 'meds', -1, 'You held Mr. Bell\'s enoxaparin without a clinical reason.', 'After abdominal surgery, in a recent smoker with limited mobility, VTE prophylaxis matters. Platelets were normal and there was no bleeding.', '412'); return 'Held.'; },
       },
       {
@@ -204,8 +204,8 @@
       respond(s, P, A, picked) {
         if (picked.includes('crackles') || (picked.includes('vit') && P.atel)) {
           A.addOrder('412', 'Incentive spirometry every hour while awake with RN check. Ambulate 3 to 4 times today. Chest X-ray if T > 38.5.');
-          A.judge('412-sbar-atel', 'comm', 1, 'You reported Mr. Bell\'s fever, low SpO₂ and crackles together.', 'Post-op day 1 fever with crackles and falling saturation points to atelectasis. Pairing findings gives the provider a picture instead of isolated numbers.', '412');
-          return 'Sounds like atelectasis. Push the IS every hour and get him walking. Chest X-ray if he spikes over 38.5. Thanks for catching it.';
+          A.judge('412-sbar-atel', 'comm', 1, 'You reported Mr. Bell\'s fever, low SpO₂ and crackles together.', 'Post-op day 1 fever with crackles and falling saturation points to atelectasis or an early pneumonia. Atelectasis alone doesn\'t reliably explain a fever, which is why the provider needs the whole picture instead of isolated numbers.', '412');
+          return 'Probably atelectasis, but I want to rule out pneumonia. Push the IS every hour and get him walking. Chest X-ray if he spikes over 38.5. Thanks for catching it.';
         }
         if (picked.includes('pain')) return 'His oral oxycodone should cover that. Use the 10 mg for a 7 and let me know if it doesn\'t touch it.';
         return 'Okay, sounds like post-op day 1. Anything you need from me?';
@@ -273,18 +273,18 @@
     orders: [
       { t: -1400, text: 'Point-of-care glucose before meals and at bedtime.' },
       { t: -1400, text: 'Insulin lispro 6 units subQ with meals. Give within 15 minutes after the meal if intake is at least 50%. If intake is under 50%, hold and notify provider.' },
-      { t: -1400, text: 'Insulin lispro correction scale before meals: 150–199 give 2 units; 200–249, 4; 250–299, 6; 300 or higher, 8 units and call.' },
+      { t: -1400, text: 'Insulin lispro correction scale before meals: 150–199 give 2 units; 200–249, 4; 250–299, 6; 300 or higher, 8 units and call. At bedtime, half the meal dose.' },
       { t: -1400, text: 'Insulin glargine 18 units subQ at 21:00.' },
       { t: -1400, text: 'Cefazolin 2 g IV every 8 h.' },
       { t: -1400, text: 'Hypoglycemia protocol. Elevate left leg. Mark erythema borders every shift.' },
     ],
     notes: [
-      { t: -120, author: 'Dana, night RN', text: 'Bedtime glucose 212, 4 units correction given. Slept fair. Queasy after the midnight cefazolin, no vomiting. Erythema still inside yesterday\'s pen line. Asked a lot of questions about amputation.' },
+      { t: -120, author: 'Dana, night RN', text: 'Bedtime glucose 212, 2 units correction given per the bedtime scale. Slept fair. Queasy after the midnight cefazolin, no vomiting. Erythema still inside yesterday\'s pen line. Asked a lot of questions about amputation.' },
     ],
     io: { intake: 'PO 900 mL, IV 100 mL', output: 'Voiding, 3 times' },
     report: [
       { text: 'Grace Okafor, 46, left foot cellulitis on IV cefazolin. Type 2 diabetes, A1c 9.8. Sulfa allergy, hives.', key: false },
-      { text: 'Bedtime glucose was 212. She got 4 units of correction.', key: false },
+      { text: 'Bedtime glucose was 212. She got 2 units of correction.', key: false },
       { text: 'Pre-breakfast glucose is due at 07:30. Mealtime lispro 6 units, but only if she eats at least half.', key: true },
       { text: 'She got nauseous after the midnight cefazolin. Next dose is at 08:00.', key: true },
       { text: 'Redness is still inside the pen line. Not spreading.', key: false },
@@ -324,7 +324,8 @@
       {
         id: 'snack', label: 'Give a snack with protein', cost: 2, avail: (s, P) => P.hypo && !P.hypoResolved && P.juiceAt !== null && s.t - P.juiceAt >= 10,
         run(s, P, A) {
-          if (okaforBG(s, P) < 70) return 'Recheck first. You don\'t know she\'s back above 70 yet.';
+          if (P.bgAt === null || P.bgAt <= P.juiceAt) return 'Recheck first. You don\'t know she\'s back above 70 yet.';
+          if (P.lastBG < 70) return `Her recheck was ${P.lastBG}. Not above 70 yet: give the juice time, then recheck again.`;
           P.snackAt = s.t; P.hypoResolved = true;
           A.judge('414-snack', 'judgment', 1, 'You followed the recovery with a protein-and-carb snack.', 'Fast carbs fix the number. A snack with protein keeps it fixed until the next meal, since the insulin she received is still working.', '414');
           return 'Peanut butter and crackers. Color comes back to her face. "That was scary."';
@@ -352,10 +353,10 @@
       },
       {
         id: '414-corr', conditional: true, name: 'Insulin lispro, correction', dose: 'per scale', route: 'SubQ', freq: 'Before meals', due: 60,
-        checks: (s, P) => [{ label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} mg/dL at ${clock(P.bgAt)}` : 'Not checked this shift', ok: recent(s, P.bgAt, 60) }, { label: 'Scale', value: '150–199: 2 u, 200–249: 4 u, 250–299: 6 u', ok: null }],
+        checks: (s, P) => [{ label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} mg/dL at ${clock(P.bgAt)}` : 'Not checked this shift', ok: recent(s, P.bgAt, 60) }, { label: 'Scale', value: '150–199: 2 u, 200–249: 4 u, 250–299: 6 u, 300+: 8 u and call', ok: null }],
         block(s, P) { if (P.bgAt !== null && recent(s, P.bgAt, 60) && P.lastBG < 150) return `Glucose ${P.lastBG} is below the scale. No correction insulin is due.`; if (P.corrAt !== null) return 'Given at ' + clock(P.corrAt) + '.'; return null; },
         give(s, P, A) {
-          const v = okaforBG(s, P); const u = v >= 250 ? 6 : v >= 200 ? 4 : v >= 150 ? 2 : 0;
+          const v = okaforBG(s, P); const u = v >= 300 ? 8 : v >= 250 ? 6 : v >= 200 ? 4 : v >= 150 ? 2 : 0;
           if (!recent(s, P.bgAt, 60)) A.judge('414-corr-blind', 'meds', -2, 'You gave correction insulin without a current glucose.', 'A correction scale is dosed from a number. Without a fresh point-of-care glucose, the dose is a guess.', '414');
           P.corrAt = s.t; return `Lispro ${u} units given in the abdomen.`;
         },
@@ -458,7 +459,7 @@
     report: [
       { text: 'Eleanor Whitfield, 82, came up at 2 a.m. with a UTI. Full code. Penicillin allergy, reaction unknown.', key: false },
       { text: 'She\'s pleasantly confused. Kept asking about feeding her cat. Pulled at her IV once.', key: true },
-      { text: 'Temp 37.9, heart rate 98. Pressure was 116/68 at 06:30.', key: true },
+      { text: 'Temp 37.9, heart rate 98. Pressure was 116/68 at 06:35.', key: true },
       { text: 'She only voided once, 150 mL at 5, dark.', key: true },
       { text: 'Her ceftriaxone hasn\'t gone in. Pharmacy is holding it for the penicillin allergy.', key: true },
       { text: 'Daughter Ruth is on the facesheet. I didn\'t get a chance to call her.', key: false },
@@ -501,7 +502,7 @@
       },
       {
         id: 'bolus', label: 'Start 1,000 mL normal saline bolus (ordered)', cost: 4, avail: (s, P) => P.bundle && P.bolusAt === null,
-        run(s, P, A) { P.bolusAt = s.t; A.judge('416-bolus', 'judgment', 2, 'You started Mrs. Whitfield\'s fluid bolus.', 'Sepsis-induced hypotension is a volume problem first: dilated vessels and leaky capillaries. Fluids restore perfusion; the lactate tells you whether it worked.', '416'); return 'Bolus running wide open on the pump, 1,000 mL over an hour. Watch her lungs as it goes in.'; },
+        run(s, P, A) { P.bolusAt = s.t; A.judge('416-bolus', 'judgment', 2, 'You started Mrs. Whitfield\'s fluid bolus.', 'Sepsis-induced hypotension is a volume problem first: dilated vessels and leaky capillaries. Fluids restore perfusion; the lactate tells you whether it worked.', '416'); return 'Bolus running on the pump at 1,000 mL/h. Watch her lungs as it goes in.'; },
       },
     ],
     comms: [
@@ -539,7 +540,8 @@
         checks: (s, P) => [{ label: 'Allergy', value: P.allergyInfo ? 'Penicillin: childhood rash. Tolerated cephalexin in 2024.' : 'Penicillin, reaction unknown', ok: P.allergyInfo ? true : null }],
         give(s, P, A) {
           P.abxAt = s.t;
-          if (s.t <= 150) A.judge('416-abx-time', 'time', 1, 'Mrs. Whitfield\'s first antibiotic dose went in by mid-morning.', 'Surviving Sepsis guidance: antibiotics within 1 hour when sepsis is probable or shock is present, and within 3 hours when sepsis is possible without shock. Her dose started 6 hours after admission because of the allergy hold.', '416');
+          if (s.t <= 90) A.judge('416-abx-time', 'time', 1, 'You cleared the allergy hold and got Mrs. Whitfield\'s first antibiotic in early in the shift.', 'She had already waited five hours since arriving at 02:00 on an unanswered allergy question. Surviving Sepsis guidance wants the first dose within 1 hour when sepsis is probable or shock is present, and within 3 hours when it is only possible. The delay before your shift wasn\'t yours; every hour after it is.', '416');
+          else if (s.t <= 150) A.judge('416-abx-time', 'time', 0, 'Mrs. Whitfield\'s first antibiotic went in by mid-morning, about seven hours after she arrived.', 'Better than later, but she was already well past the 3-hour target. Clearing the allergy question is the first job of this shift, not the third.', '416');
           else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality, and current guidance wants the first dose within 1 to 3 hours of recognition. The block was a phone call to her daughter.', '416');
           return 'Ceftriaxone 1 g IV over 30 minutes. Watching for any reaction.';
         },
@@ -685,7 +687,7 @@
       { id: 'hob', label: 'Raise head of bed to high Fowler\'s', cost: 1, avail: (s, P) => !P.hob, run(s, P, A) { P.hob = true; if (P.fl >= 60) A.judge('418-hob', 'safety', 1, 'You sat Mr. Ortiz upright when he became short of breath.', 'High Fowler\'s drops venous return and lets the diaphragm work: the fastest free intervention in pulmonary congestion.', '418'); return 'Bed up to 80 degrees, legs dependent. "Better, mijo."'; } },
       { id: 'o2', label: 'Increase oxygen to 4 L (order: titrate to ≥ 92%)', cost: 1, avail: (s, P) => P.o2 < 4, run(s, P, A) { const v = A.vitals('418'); P.o2 = 4; if (v.SpO2 < 92) A.judge('418-o2', 'safety', 1, 'You titrated Mr. Ortiz\'s oxygen for SpO₂ below 92%.', 'The order gives you a target. Titrating to it is a nursing action, then you reassess.', '418'); return v.SpO2 < 92 ? 'Up to 4 L. Give it a few minutes, then recheck.' : 'Up to 4 L. His SpO₂ was already at goal. The order titrates to 92%, not to 100.'; } },
       { id: 'apical', label: 'Count apical pulse and check BP', cost: 2, run(s, P, A) { const v = A.recordVitals('418', 'You'); P.k.hrAt = s.t; P.k.hr = v.HR; return `Apical ${v.HR}, irregularly irregular, full minute. BP ${v.SBP}/${v.DBP}.`; } },
-      { id: 'brady', label: 'Lay him back, hold further doses, stay with him', cost: 3, avail: (s, P) => ortizBrady(s, P) && !P.bradyCare, run(s, P, A) { P.bradyCare = true; A.judge('418-brady-care', 'safety', 1, 'You kept Mr. Ortiz supine and monitored his symptomatic bradycardia.', 'Lying flat supports cerebral perfusion. Then notify the provider, and have atropine and pads nearby if he worsens.', '418'); return 'Head of bed down, call light in his hand, Rosa beside him. Monitor reads 44. He\'s talking, lightheaded, no chest pain.'; } },
+      { id: 'brady', label: 'Lower the head of the bed as he tolerates, hold further doses, stay with him', cost: 3, avail: (s, P) => ortizBrady(s, P) && !P.bradyCare, run(s, P, A) { P.bradyCare = true; A.judge('418-brady-care', 'safety', 1, 'You lowered Mr. Ortiz\'s head of bed and stayed with him through his symptomatic bradycardia.', 'Lowering the head helps cerebral perfusion, but with fluid on his lungs he may not tolerate flat: go as low as he can breathe. Then notify the provider, and have atropine and pads nearby if he worsens.', '418'); return 'Head of bed down as far as his breathing allows, about 20 degrees. Call light in his hand, Rosa beside him. Monitor reads 44. He\'s talking, lightheaded, no chest pain.'; } },
     ],
     family: { name: 'Rosa', rel: 'Wife', mode: 'bedside', cost: 3, dialog: (s, P) => P.educated ? 'rosa_after' : 'rosa_talk' },
     meds: [
@@ -755,7 +757,7 @@
       const v = A.vitals('418');
       return {
         monitor: `Telemetry: ${v.rhythm}, rate ${v.HR}. SpO₂ ${v.SpO2}%.`,
-        soda: 'A 32-oz fountain soda, half gone. That\'s nearly a liter of his 1.5 L limit.',
+        soda: 'A 32-oz fountain soda, half gone. About 475 mL so far, a third of his 1.5 L limit. Nearly a liter if he finishes it.',
         tray: 'A thermos of homemade caldo de res next to the hospital tray. Delicious, and salty.',
         o2: `Nasal cannula at ${P.o2} L.`,
         family: 'Rosa, knitting, one eye on the monitor.',

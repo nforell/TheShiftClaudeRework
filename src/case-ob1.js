@@ -28,7 +28,7 @@
     look: { skin: '#7A4E36', shade: '#5E3A27', lip: '#5A3024', blush: '#A0604A', iris: '#24160D', head: { w: 56, h: 61, jaw: .3 }, eye: 9.8,
       hair: { style: 'bun', color: '#1A120E' }, brow: { w: 3.4, color: '#140E0A' }, body: { w: 82, cloth: 'gown' }, extras: ['studs'], smile: .45, tired: true,
       lines: { calm: `He's finally asleep. Is it bad that I just want to stare at him?`, pain: `The cramping's getting worse. Is that normal?`, anxious: `I feel kind of light-headed. And wet.`, drowsy: `I'm so tired I can't keep my eyes open.`, dys: `My chest is tight. I can't get air in.`, none: `She doesn't answer.` } },
-    bio: `Middle-school math teacher. Second baby; her daughter Nia is six and has already named the baby "Pickle." Her husband Andre went home at five to get Nia to school.`,
+    bio: `Middle-school math teacher. Second baby; her daughter Nia is six and has already named the baby "Pickle." Her husband Desmond went home at five to get Nia to school.`,
     dx: `Postpartum, vaginal birth 04:40`, reason: `Vaginal birth at 04:40 after a 20-hour oxytocin induction at 41 weeks. Baby boy, 4.3 kg. Second-degree laceration, repaired.`,
     hx: [`Asthma: albuterol inhaler, one ED visit for asthma two years ago`, `G2P2. First birth uncomplicated`, `Epidural in labor, removed at 05:30`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `84 kg`,
@@ -48,7 +48,7 @@
       { t: -140, text: `Ibuprofen 600 mg PO every 6 hours. Albuterol inhaler 2 puffs every 4 hours as needed, wheeze.` },
     ],
     notes: [
-      { t: -75, author: 'Grace, night RN', text: `Recovery checks done. Fundus firm at the umbilicus at 05:45, lochia moderate. Epidural out 05:30, legs back. Hasn't voided; says she doesn't feel the urge. Breastfed at 06:00 with good latch.` },
+      { t: -75, author: 'Paloma, night RN', text: `Recovery checks done. Fundus firm at the umbilicus at 05:45, lochia moderate. Epidural out 05:30, legs back. Hasn't voided; says she doesn't feel the urge. Breastfed at 06:00 with good latch.` },
     ],
     io: { intake: `IV oxytocin at 125 mL/h; juice and toast at 06:15`, output: `No void since birth (catheterized once in labor at 02:00)` },
     report: [
@@ -223,7 +223,7 @@
       { t: -800, text: `Strict intake and output. Total IV fluid 80 mL/h. Seizure precautions. Acetaminophen 1,000 mg PO every 6 h as needed, mild pain or headache.` },
     ],
     notes: [
-      { t: -70, author: 'Grace, night RN', text: `Urine 25 mL at 04:00, 20 at 05:00, 20 at 06:00. Paged the resident at 05:10; he said keep watching and recheck labs. Reflexes 1+ at 06:00 (2+ at midnight). RR 16. Sleepy but rousable. BP 140s–150s/90s.` },
+      { t: -70, author: 'Paloma, night RN', text: `Urine 25 mL at 04:00, 20 at 05:00, 20 at 06:00. Paged the resident at 05:10; he said keep watching and recheck labs. Reflexes 1+ at 06:00 (2+ at midnight). RR 16. Sleepy but rousable. BP 140s–150s/90s.` },
     ],
     io: { intake: `IV 80 mL/h total`, output: `Foley: 25, 20, 20 mL the last three hours` },
     report: [
@@ -385,11 +385,11 @@
     ],
     orders: [
       { t: -350, text: `Newborn hypoglycemia protocol (infant of a diabetic mother, LGA): glucose before feeds for 24 hours. Feed within the first hour and every 2–3 hours. Birth to 4 h: target 25 or more. 4–24 h: target 45 or more.` },
-      { t: -350, text: `4–24 h, glucose 25–44 and no symptoms: dextrose 40% oral gel 0.5 mL/kg buccal, then feed (breast milk, donor milk or formula per parents), recheck 1 hour after. Maximum two gel doses, then notify pediatrician. Notify immediately for symptoms (jitteriness, poor feeding, lethargy, temperature under 36.5, apnea, seizure) or glucose under 25.` },
+      { t: -350, text: `4–24 h, glucose 35–44 and no symptoms: dextrose 40% oral gel 0.5 mL/kg buccal, then feed (breast milk, donor milk or formula per parents), recheck 1 hour after. Maximum two gel doses, then notify pediatrician. Notify immediately for symptoms (jitteriness, poor feeding, lethargy, temperature under 36.5, apnea, seizure) or glucose under 35.` },
       { t: -350, text: `Hepatitis B vaccine 0.5 mL IM within 24 hours of birth (consent signed). Axillary temperature every 4 hours and as needed; skin to skin encouraged.` },
     ],
     notes: [
-      { t: -60, author: 'Grace, night RN', text: `Glucose 46 at 06:00, before a feed. Breastfed 04:00 for 10 minutes, sleepy at the breast. Mom wants to exclusively breastfeed. Due for glucose before his next feed.` },
+      { t: -60, author: 'Paloma, night RN', text: `Glucose 46 at 06:00, before a feed. Breastfed 04:00 for 10 minutes, sleepy at the breast. Mom wants to exclusively breastfeed. Due for glucose before his next feed.` },
     ],
     io: { intake: `Breastfed 01:30, 04:00 (10 min, sleepy)`, output: `1 void, 1 meconium` },
     report: [
@@ -413,7 +413,7 @@
     interventions: [
       {
         id: 'glu', label: 'Heel-stick glucose', cost: 3,
-        run(s, P, A) { checkGlu(s, P, A, 'You'); const g = Math.round(P.glu); return `Glucose ${g} mg/dL at ${Math.floor((s.t + 355) / 60)} hours old. ${g < 25 ? 'Critically low.' : g < 45 ? 'Under the 45 target for 4–24 hours.' : 'At target.'} ${sym(P) ? 'He\'s jittery.' : 'No symptoms you can see.'}`; },
+        run(s, P, A) { checkGlu(s, P, A, 'You'); const g = Math.round(P.glu); return `Glucose ${g} mg/dL at ${Math.floor((s.t + 355) / 60)} hours old. ${g < 35 ? 'Under 35: the protocol says notify the pediatrician.' : g < 45 ? 'Under the 45 target for 4–24 hours.' : 'At target.'} ${sym(P) ? 'He\'s jittery.' : 'No symptoms you can see.'}`; },
       },
       {
         id: 'feed', label: 'Help Linh breastfeed now; hand-express colostrum', cost: 8,
@@ -425,13 +425,13 @@
     ],
     meds: [
       {
-        id: '216-gel', name: 'Dextrose 40% oral gel', dose: '0.5 mL/kg', route: 'Buccal', freq: 'Protocol: glucose 25–44, no symptoms; max 2 doses', prn: true,
+        id: '216-gel', name: 'Dextrose 40% oral gel', dose: '0.5 mL/kg', route: 'Buccal', freq: 'Protocol: glucose 35–44, no symptoms; max 2 doses', prn: true,
         block: (s, P) => (P.gels.length >= 2 ? 'Two doses given: notify the pediatrician.' : null),
-        checks: (s, P) => [{ label: 'Weight', value: '4.45 kg', ok: null }, { label: 'Last glucose', value: P.lastGlu === null ? 'Not checked this shift' : `${P.lastGlu} at ${clock(P.checks[P.checks.length - 1])}`, ok: P.lastGlu === null ? false : P.lastGlu < 45 && P.lastGlu >= 25 }, { label: 'Symptoms', value: sym(P) ? 'Jittery' : 'None', ok: !sym(P) }],
+        checks: (s, P) => [{ label: 'Weight', value: '4.45 kg', ok: null }, { label: 'Last glucose', value: P.lastGlu === null ? 'Not checked this shift' : `${P.lastGlu} at ${clock(P.checks[P.checks.length - 1])}`, ok: P.lastGlu === null ? false : P.lastGlu < 45 && P.lastGlu >= 35 }, { label: 'Symptoms', value: sym(P) ? 'Jittery' : 'None', ok: !sym(P) }],
         doses: [{ id: 1, label: '2.2 mL (0.5 mL/kg, 0.9 g)' }, { id: 2, label: '0.5 mL' }, { id: 3, label: '4.5 mL (1 mL/kg)' }],
         give(s, P, A, dose) {
           P.gels.push(s.t); P.gelDose = dose; P.boost.push({ t: s.t, amt: dose === 1 ? 10 : dose === 2 ? 3 : 14, over: 15 });
-          if (P.lastGlu === null || !recent(s, P.checks[P.checks.length - 1], 30)) A.judge('216-gel-' + P.gels.length, 'meds', -1, `You gave dextrose gel without a current glucose.`, `The protocol starts with a number: gel for 25 to 44, with no symptoms. Check first.`, '216');
+          if (P.lastGlu === null || !recent(s, P.checks[P.checks.length - 1], 30)) A.judge('216-gel-' + P.gels.length, 'meds', -1, `You gave dextrose gel without a current glucose.`, `The protocol starts with a number: gel for 35 to 44, with no symptoms. Check first.`, '216');
           else if (dose === 1) A.judge('216-gel-' + P.gels.length, 'meds', 2, `You gave Baby Nguyen the right dose of dextrose gel.`, `0.5 mL/kg of 40% gel is 200 mg/kg: 2.2 mL for 4.45 kg. Rub it into the cheek, then feed.`, '216');
           else A.judge('216-gel-' + P.gels.length, 'meds', -1, `You gave the wrong dose of dextrose gel.`, `The dose is weight-based: 0.5 mL/kg, so 2.2 mL for 4.45 kg. ${dose === 2 ? 'Half a mL is a quarter of the dose.' : 'Double the dose overshoots and can rebound.'}`, '216');
           if (sym(P)) A.judge('216-gel-sym', 'judgment', -1, `You treated a symptomatic baby with gel alone.`, `Jitteriness makes this symptomatic hypoglycemia: the protocol says call the pediatrician now. Gel can bridge, but he needs an evaluation for IV dextrose.`, '216');
@@ -442,7 +442,7 @@
         id: '216-hepb', name: 'Hepatitis B vaccine', dose: '0.5 mL', route: 'IM', freq: 'Once, within 24 h of birth', due: 120,
         checks: () => [{ label: 'Consent', value: 'Signed', ok: true }, { label: 'Mother HBsAg', value: 'Negative', ok: true }, { label: 'Weight', value: '4.45 kg (2 kg or more)', ok: true }],
         doses: [{ id: 1, label: '0.5 mL IM, vastus lateralis (anterolateral thigh)' }, { id: 2, label: '0.5 mL IM, ventrogluteal' }, { id: 3, label: '0.5 mL IM, deltoid' }, { id: 4, label: '0.5 mL subcutaneous, thigh' }],
-        give(s, P, A, dose) { P.hepb = dose; A.judge('216-hepb', 'meds', dose === 1 ? 1 : -1, dose === 1 ? `You gave the hepatitis B vaccine in the vastus lateralis.` : `You gave the hepatitis B vaccine in the wrong site.`, `In a newborn, the vastus lateralis (anterolateral thigh) is the only well-developed muscle for an IM injection. The deltoid and gluteal muscles are too small; the vaccine is made for IM, not subcutaneous.`, '216'); return `Hepatitis B vaccine 0.5 mL IM, ${['', 'left anterolateral thigh', 'ventrogluteal', 'deltoid', 'subcutaneous thigh'][dose]}, 25 mm needle, 25 gauge${dose === 1 ? '' : ''}. Linh holds him and he nurses after.`; },
+        give(s, P, A, dose) { P.hepb = dose; A.judge('216-hepb', 'meds', dose === 1 ? 1 : -1, dose === 1 ? `You gave the hepatitis B vaccine in the vastus lateralis.` : `You gave the hepatitis B vaccine in the wrong site.`, `In a newborn, the vastus lateralis (anterolateral thigh) is the only well-developed muscle for an IM injection. The deltoid and gluteal muscles are too small; the vaccine is made for IM, not subcutaneous.`, '216'); return `Hepatitis B vaccine 0.5 mL IM, ${['', 'left anterolateral thigh', 'ventrogluteal', 'deltoid', 'subcutaneous thigh'][dose]}, 5/8-inch (16 mm) needle, 25 gauge. Linh holds him and he nurses after.`; },
         hold(s, P, A) { A.judge('216-hepb-hold', 'meds', 0, `You held Baby Nguyen's hepatitis B vaccine.`, `Fine to delay a few hours while you deal with his glucose; it needs to be in within 24 hours of birth.`, '216'); return 'Held for now; due before 01:05 tomorrow.'; },
       },
     ],
@@ -468,11 +468,11 @@
       respond(s, P, A, picked, req) {
         if (P.lastGlu === null) return `What's his glucose?`;
         if (P.called === null) P.called = s.t;
-        const needIV = sym(P) || P.lastGlu < 25 || (P.gels.length >= 2 && P.lastGlu < 45);
+        const needIV = sym(P) || P.lastGlu < 35 || (P.gels.length >= 2 && P.lastGlu < 45);
         if (req === 'iv' || needIV) {
           if (!needIV) { A.judge('216-sbar', 'comm', 0, `You asked for IV dextrose for an asymptomatic baby at ${P.lastGlu}.`, `Reasonable to call, but the protocol covers this: gel, feed, recheck in an hour.`, '216'); return `He's asymptomatic at ${P.lastGlu}? Gel and feed per protocol, recheck in an hour. Call me if he's under 45 again or if he gets jittery.`; }
           if (!P.nicuPlan) { P.nicuPlan = true; P.nicuAt = s.t + 20; A.addOrder('216', `Admit to NICU for IV dextrose: D10W 2 mL/kg bolus, then 80 mL/kg/day. Glucose 30 minutes after. Mother may breastfeed in the NICU.`); }
-          A.judge('216-sbar', 'comm', picked.includes('sym') || picked.includes('glu') ? 2 : 1, `You escalated Baby Nguyen's hypoglycemia.`, `Symptoms, a glucose under 25, or failure after two gels mean IV dextrose. Calling early keeps it from becoming a seizure.`, '216');
+          A.judge('216-sbar', 'comm', picked.includes('sym') || picked.includes('glu') ? 2 : 1, `You escalated Baby Nguyen's hypoglycemia.`, `Symptoms, a glucose under 35, or failure after two gels mean IV dextrose. Calling early keeps it from becoming a seizure.`, '216');
           return `I'm coming. He needs IV dextrose: NICU's setting up a warmer. Keep him skin to skin until they come, and let Linh go with him.`;
         }
         A.judge('216-sbar', 'comm', 1, `You updated the pediatrician on Baby Nguyen's protocol.`, `Not required by the protocol, but a clear update with a plan is never wrong.`, '216');
@@ -500,22 +500,22 @@
     if (by !== 'You') A.log('216', `${by}: glucose ${g} mg/dL.`, 'find');
   }
 
-  /* ---------- 218 Sarah Whitfield: day 1 after a cesarean; a positive depression screen; Rh negative ---------- */
+  /* ---------- 218 Sarah Mercer: day 1 after a cesarean; a positive depression screen; Rh negative ---------- */
   const sarah = {
-    id: '218', room: '218', name: 'Sarah Whitfield', short: 'Ms. Whitfield', age: 36, sex: 'F', mrn: '00731377', provider: 'brennan',
+    id: '218', room: '218', name: 'Sarah Mercer', short: 'Ms. Mercer', age: 36, sex: 'F', mrn: '00731377', provider: 'brennan',
     look: { skin: '#EFD0B8', shade: '#D4AE96', lip: '#B4675F', blush: '#E99A8A', iris: '#5A7A5A', head: { w: 54, h: 61, jaw: .3 }, eye: 9.6,
       hair: { style: 'ponytail', color: '#7A5638' }, brow: { w: 3, color: '#5A3E28' }, body: { w: 80, cloth: 'gown' }, extras: ['thinGlasses'], glasses: '#6A5040', smile: .05, tired: true,
       lines: { calm: `I'm fine. Is it time to go home yet?`, pain: `The incision pulls when I move.`, anxious: `I'm just tired. Everyone keeps asking.`, drowsy: `Sorry, I didn't sleep.`, none: `She doesn't answer.` } },
-    bio: `Architect. First baby, Leo, after three years of trying. Her husband Tom flew back from a work trip last night; her mother is in Ohio.`,
+    bio: `Architect. First baby, Miles, after three years of trying. Her husband Tom flew back from a work trip last night; her mother is in Ohio.`,
     dx: `Day 1 after cesarean`, reason: `Scheduled cesarean yesterday at 14:00 for breech at 39 weeks. Spinal anesthesia with intrathecal morphine. Rh negative.`,
-    hx: [`Depression since her 20s; sertraline 100 mg, stopped when she found out she was pregnant`, `Three years of infertility treatment`, `Rh negative; baby Leo is Rh positive`],
+    hx: [`Depression since her 20s; sertraline 100 mg, stopped when she found out she was pregnant`, `Three years of infertility treatment`, `Rh negative; baby Miles is Rh positive`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `68 kg`,
     lines: [`PIV 20g left hand: saline lock`, `Low transverse incision, dressing dry`], mobility: `Up in the room; walked twice`, diet: `Regular`,
     init: { epdsSeen: false, asked: null, si: false, planAsked: false, dismissed: false, called: null, consult: false, safety: false, comp: false, rhig: null, itm: [-60], disclosed: false, disclosureSeen: false, oxyAt: null, dcAsk: false },
     nightVitals: { T: 36.9, HR: 78, SBP: 112, DBP: 68, RR: 16, SpO2: 98, O2: 'Room air', pain: 3 },
     labs: [
       { name: 'Blood type', val: 'A negative, antibody screen negative', unit: '', ref: '', flag: 'A', t: -1500 },
-      { name: 'Cord blood (Leo)', val: 'B positive', unit: '', ref: '', flag: 'A', t: -1000 },
+      { name: 'Cord blood (Miles)', val: 'B positive', unit: '', ref: '', flag: 'A', t: -1000 },
       { name: 'Fetal bleed screen (rosette)', val: 'Negative', unit: '', ref: '', flag: '', t: -600 },
       { name: 'Hemoglobin', val: 10.8, unit: 'g/dL', ref: '12.0–15.5', flag: 'L', t: -60 },
       { name: 'Edinburgh Postnatal Depression Scale', val: '15 (item 10 positive)', unit: '', ref: '10 or more, or any positive item 10: further assessment', flag: 'A', t: -30 },
@@ -526,11 +526,11 @@
       { t: -300, text: `Anticipate discharge today, 14:00, if meeting milestones.` },
     ],
     notes: [
-      { t: -30, author: 'Grace, night RN', text: `Walked to the bathroom twice. Pain 3–4/10 on scheduled meds. Leo breastfeeding every 2–3 h. EPDS done at 06:30 per the discharge checklist: 15. Will need follow-up. Tom arriving about 10:00.` },
+      { t: -30, author: 'Paloma, night RN', text: `Walked to the bathroom twice. Pain 3–4/10 on scheduled meds. Miles breastfeeding every 2–3 h. EPDS done at 06:30 per the discharge checklist: 15. Will need follow-up. Tom arriving about 10:00.` },
     ],
     io: { intake: `Eating and drinking`, output: `Voiding after Foley removal` },
     report: [
-      { text: `Sarah Whitfield, 36, day one after a scheduled C-section for breech. Doing well physically. She's walked twice.`, key: false },
+      { text: `Sarah Mercer, 36, day one after a scheduled C-section for breech. Doing well physically. She's walked twice.`, key: false },
       { text: `I did her depression screen this morning for discharge. It came out kind of high, fifteen. I didn't get to talk to her about it. She's probably just exhausted.`, key: true },
       { text: `She wants to go home today. Her husband's flying in; he'll be here around ten.`, key: true },
       { text: `She's Rh negative and the baby's positive. Her RhoGAM's coming up from blood bank.`, key: true },
@@ -539,18 +539,18 @@
     ],
     vitals(s, P) { return { T: 36.9, HR: 78 + jit(s, 8) * 2, SBP: 112 + jit(s, 9) * 2, DBP: 68, RR: 16, SpO2: 98, O2: 'Room air', pain: 3 }; },
     assess: {
-      general: (s, P) => (P.si && !P.called ? `Sitting very still, staring at the window. Leo is asleep in the bassinet, turned away from her.` : `Sitting up, tidy, polite. Flat voice. Doesn't look at the bassinet much.`),
+      general: (s, P) => (P.si && !P.called ? `Sitting very still, staring at the window. Miles is asleep in the bassinet, turned away from her.` : `Sitting up, tidy, polite. Flat voice. Doesn't look at the bassinet much.`),
       resp: () => `RR 16, unlabored. Clear.`,
       cardiac: () => `HR 78, regular. No calf tenderness or swelling.`,
-      neuro: (s, P) => { P.k.mood = s.t; return `Alert, oriented. Affect flat, answers short. Says she's sleeping "maybe two hours, even when he sleeps." Feels "nothing" when she holds Leo. ${P.asked !== null ? '' : 'You haven\'t asked her about the screen yet.'}`; },
+      neuro: (s, P) => { P.k.mood = s.t; return `Alert, oriented. Affect flat, answers short. Says she's sleeping "maybe two hours, even when he sleeps." Feels "nothing" when she holds Miles. ${P.asked !== null ? '' : 'You haven\'t asked her about the screen yet.'}`; },
       pain: () => `Incision 3/10 on scheduled ibuprofen and acetaminophen.`,
       skin: () => `Incision dressing dry and intact. Fundus firm, 1 cm below the umbilicus. Lochia moderate.`,
       gi: () => `Passing gas, eating. Bowel sounds present.`,
     },
     interventions: [
-      { id: 'epds', label: 'Read her depression screen, answer by answer', cost: 2, run(s, P, A) { P.epdsSeen = true; A.judge('218-epds', 'assess', 2, `You read Ms. Whitfield's depression screen item by item.`, `The total tells you how much; item 10 tells you whether she's safe. Any positive answer to item 10 needs a direct conversation the same day, whatever the total.`, '218'); return `EPDS 15. Item 3 (blamed myself unnecessarily): "Yes, most of the time." Item 4 (anxious or worried): "Yes, very often." Item 8 (sad or miserable): "Yes, quite often." Item 10, "The thought of harming myself has occurred to me": "Hardly ever."`; } },
-      { id: 'itm', label: 'Respiratory rate and sedation check (intrathecal morphine)', cost: 2, run(s, P, A) { const late = s.t - P.itm[P.itm.length - 1] > 150; P.itm.push(s.t); if (P.itm.length === 2) A.judge('218-itm', 'assess', late ? 0 : 1, `You did Ms. Whitfield's intrathecal morphine check${late ? ', late' : ''}.`, `Intrathecal morphine can cause delayed respiratory depression up to 24 hours after the dose. Count the breaths for a full minute and score sedation.`, '218'); return `RR 16, counted a full minute. Sedation: awake and alert (POSS 1). SpO₂ 98%.`; } },
-      { id: 'safety', label: 'Safety: remove cords and extra meds, arrange a companion until psychiatry sees her', cost: 4, avail: (s, P) => P.si && !P.safety, run(s, P, A) { P.safety = true; A.judge('218-safety', 'safety', 2, `You made Ms. Whitfield's room safer and arranged for someone to stay with her.`, `With any suicidal thought, the environment is part of the care: no cords, no stockpiled pills, and someone with her until she's been evaluated.`, '218'); return `Phone charger cords and the breast pump tubing kit moved to the station. Her bag checked with her permission: no medications. Mei will sit with her until Tom arrives.`; } },
+      { id: 'epds', label: 'Read her depression screen, answer by answer', cost: 2, run(s, P, A) { P.epdsSeen = true; A.judge('218-epds', 'assess', 2, `You read Ms. Mercer's depression screen item by item.`, `The total tells you how much; item 10 tells you whether she's safe. Any positive answer to item 10 needs a direct conversation the same day, whatever the total.`, '218'); return `EPDS 15. Item 3 (blamed myself unnecessarily): "Yes, most of the time." Item 4 (anxious or worried): "Yes, very often." Item 8 (sad or miserable): "Yes, quite often." Item 10, "The thought of harming myself has occurred to me": "Hardly ever."`; } },
+      { id: 'itm', label: 'Respiratory rate and sedation check (intrathecal morphine)', cost: 2, run(s, P, A) { const late = s.t - P.itm[P.itm.length - 1] > 150; P.itm.push(s.t); if (P.itm.length === 2) A.judge('218-itm', 'assess', late ? 0 : 1, `You did Ms. Mercer's intrathecal morphine check${late ? ', late' : ''}.`, `Intrathecal morphine can cause delayed respiratory depression up to 24 hours after the dose. Count the breaths for a full minute and score sedation.`, '218'); return `RR 16, counted a full minute. Sedation: awake and alert (POSS 1). SpO₂ 98%.`; } },
+      { id: 'safety', label: 'Safety: remove cords and extra meds, arrange a companion until psychiatry sees her', cost: 4, avail: (s, P) => P.si && !P.safety, run(s, P, A) { P.safety = true; A.judge('218-safety', 'safety', 2, `You made Ms. Mercer's room safer and arranged for someone to stay with her.`, `With any suicidal thought, the environment is part of the care: no cords, no stockpiled pills, and someone with her until she's been evaluated.`, '218'); return `Phone charger cords and the breast pump tubing kit moved to the station. Her bag checked with her permission: no medications. Mei will sit with her until Tom arrives.`; } },
     ],
     meds: [
       {
@@ -559,11 +559,11 @@
         doses: [{ id: 1, label: '300 mcg IM, deltoid' }, { id: 2, label: '300 mcg IV push' }, { id: 3, label: 'Hold it for her 6-week visit' }],
         give(s, P, A, dose) {
           P.rhig = dose;
-          if (dose === 3) { A.judge('218-rhig', 'meds', -2, `You postponed Ms. Whitfield's Rh immune globulin to her 6-week visit.`, `It has to be given within 72 hours of birth to prevent sensitization. Miss the window and her next Rh-positive baby is at risk.`, '218'); return `Held.`; }
-          A.judge('218-rhig', 'meds', dose === 1 ? 1 : -2, dose === 1 ? `You gave Ms. Whitfield her Rh immune globulin.` : `You gave RhoGAM IV.`, dose === 1 ? `Rh negative mother, Rh positive baby, negative antibody screen: 300 mcg IM within 72 hours keeps her from making antibodies that would attack a future baby.` : `RhoGAM is for IM use only. Some Rh immune globulins can be given IV; this one can't.`, '218');
+          if (dose === 3) { A.judge('218-rhig', 'meds', -2, `You postponed Ms. Mercer's Rh immune globulin to her 6-week visit.`, `It has to be given within 72 hours of birth to prevent sensitization. Miss the window and her next Rh-positive baby is at risk.`, '218'); return `Held.`; }
+          A.judge('218-rhig', 'meds', dose === 1 ? 1 : -2, dose === 1 ? `You gave Ms. Mercer her Rh immune globulin.` : `You gave RhoGAM IV.`, dose === 1 ? `Rh negative mother, Rh positive baby, negative antibody screen: 300 mcg IM within 72 hours keeps her from making antibodies that would attack a future baby.` : `RhoGAM is for IM use only. Some Rh immune globulins can be given IV; this one can't.`, '218');
           return dose === 1 ? `RhoGAM 300 mcg IM, left deltoid, after the two-nurse check. Wallet card given.` : `RhoGAM 300 mcg IV.`;
         },
-        hold(s, P, A) { A.judge('218-rhig-hold', 'meds', -1, `You held Ms. Whitfield's Rh immune globulin.`, `There's a 72-hour window, and she's hoping to go home today. Give it before discharge.`, '218'); return 'Held.'; },
+        hold(s, P, A) { A.judge('218-rhig-hold', 'meds', -1, `You held Ms. Mercer's Rh immune globulin.`, `There's a 72-hour window, and she's hoping to go home today. Give it before discharge.`, '218'); return 'Held.'; },
       },
       { id: '218-ibu', name: 'Ibuprofen', dose: '600 mg', route: 'PO', freq: 'Every 6 h', due: 60, checks: () => [{ label: 'Creatinine', value: '0.7', ok: true }], give: () => `Ibuprofen 600 mg with breakfast.` },
       { id: '218-oxy', name: 'Oxycodone', dose: '5 mg', route: 'PO', freq: 'Every 4 h as needed, moderate to severe pain', prn: true, checks: (s, P) => [{ label: 'Pain', value: '3/10', ok: false }, { label: 'Last sedation check', value: clock(P.itm[P.itm.length - 1]), ok: s.t - P.itm[P.itm.length - 1] <= 120 }], give(s, P, A) { P.oxyAt = s.t; A.judge('218-oxy', 'meds', -1, `You gave oxycodone for pain of 3/10.`, `Her pain is mild and controlled on scheduled medicines, and the intrathecal morphine is still active. Opioids on top add sedation without a reason.`, '218'); return `Oxycodone 5 mg.`; } },
@@ -587,16 +587,16 @@
         { id: 'fyi', label: 'Just keeping you updated.' },
       ],
       respond(s, P, A, picked, req) {
-        if (req === 'dc') { A.judge('218-sbar-dc', 'judgment', P.si || P.epdsSeen ? -3 : -2, `You asked to discharge Ms. Whitfield with a positive item 10.`, `A positive answer to the self-harm question needs a same-day assessment before she leaves. A handout isn't a safety plan.`, '218'); return P.si ? `Wait, she's having suicidal thoughts? No. Nobody discharges her until psychiatry sees her.` : `What was her EPDS? Did anyone ask her about item 10?`; }
+        if (req === 'dc') { A.judge('218-sbar-dc', 'judgment', P.si || P.epdsSeen ? -3 : -2, `You asked to discharge Ms. Mercer with a positive item 10.`, `A positive answer to the self-harm question needs a same-day assessment before she leaves. A handout isn't a safety plan.`, '218'); return P.si ? `Wait, she's having suicidal thoughts? No. Nobody discharges her until psychiatry sees her.` : `What was her EPDS? Did anyone ask her about item 10?`; }
         if (!picked.includes('item10') && !picked.includes('si')) return `A 15 is high. What did she say on the self-harm question? Has anyone asked her directly?`;
         if (P.called === null) P.called = s.t;
         if (!P.consult) { P.consult = true; A.addOrder('218', `Hold discharge. Psychiatry consult today. Safety companion until psychiatry has seen her. Sertraline 50 mg PO daily may start after the consult (compatible with breastfeeding). Social work. Postpartum Support International and 988 information to patient and husband.`); }
-        A.judge('218-sbar', 'comm', P.si ? 2 : 1, `You called about Ms. Whitfield's positive screen.`, `Screen, ask, then escalate: a positive item 10 isn't a judgment call to keep on the unit. ${P.si ? 'You brought what she actually told you.' : 'Ask her directly, too; the provider will.'}`, '218');
+        A.judge('218-sbar', 'comm', P.si ? 2 : 1, `You called about Ms. Mercer's positive screen.`, `Screen, ask, then escalate: a positive item 10 isn't a judgment call to keep on the unit. ${P.si ? 'You brought what she actually told you.' : 'Ask her directly, too; the provider will.'}`, '218');
         return P.si ? `Thank you for asking her. Discharge is on hold; I'll call psychiatry now. Someone with her until they see her. Her history matters: she'll likely do well back on sertraline.` : `Okay. Have you asked her directly about suicidal thoughts? Do that now. I'm calling psychiatry either way; discharge is on hold.`;
       },
     },
     scene: (s, P) => ({ crib: true, iv: 'lock', tray: 'eaten', flowers: true, consent: true, family: null, empty: false }),
-    clues: (s, P) => ({ flowers: `A huge bouquet from her firm. The card is unopened.`, crib: `Leo asleep in the bassinet. It's been turned so he faces the window, away from her bed.`, consent: `Discharge checklist on a clipboard. Every box ticked except "EPDS reviewed with patient."`, tray: `Breakfast, eaten neatly. Napkin folded.` }),
+    clues: (s, P) => ({ flowers: `A huge bouquet from her firm. The card is unopened.`, crib: `Miles asleep in the bassinet. It's been turned so he faces the window, away from her bed.`, consent: `Discharge checklist on a clipboard. Every box ticked except "EPDS reviewed with patient."`, tray: `Breakfast, eaten neatly. Napkin folded.` }),
     rig: () => ({ anxious: .2, pain: 3 }),
     status: (s, P) => (P.si && !P.safety && P.called === null ? 'urgent' : P.asked === null || P.rhig === null ? 'watch' : 'stable'),
     outcome(s, P) {
@@ -613,7 +613,7 @@
       { label: `Afterpains are often stronger with a second baby, and when you breastfeed. But cramping can also mean your uterus is working to stay firm, so let me feel it and look at your bleeding.`, next: 'kei_a', fx: (s, A) => { s.p['212'].k.talked = s.t; A.judge('212-talk', 'assess', 1, `You checked before you reassured Ms. Brown about her cramping.`, `Afterpains are common. So is atony. The difference is the fundus.`, '212'); } },
       { label: `That's just afterpains. Totally normal with a second baby.`, next: 'kei_b', fx: (s, A) => { s.p['212'].k.talked = s.t; A.judge('212-talk', 'judgment', -1, `You called Ms. Brown's cramping afterpains without checking.`, `Probably right, and still a guess until you've felt her fundus.`, '212'); } },
     ] },
-    kei_a: { who: '212', text: `"Okay." She lifts the blanket. "Andre will be back by nine. He'll want to know everything you're doing."` },
+    kei_a: { who: '212', text: `"Okay." She lifts the blanket. "Desmond will be back by nine. He'll want to know everything you're doing."` },
     kei_b: { who: '212', text: `"Okay. If you say so." She shifts and winces.` },
     kei_gush: { who: '212', text: `"I just felt a big gush when I shifted. Like I wet myself, but warm." She looks at the blanket. "Is that a lot?"`, choices: [
       { label: `Let me look at your pad and feel your uterus right now.`, next: 'kei_c', fx: (s, A) => { const P = s.p['212']; P.k.talkGush = s.t; A.judge('212-gush', 'assess', 2, `You assessed Ms. Brown when she reported a gush.`, `A gush when she moves can be pooled blood, or it can be a hemorrhage starting. Look, feel, weigh.`, '212'); } },
@@ -658,17 +658,17 @@
     linh_after: { who: 'linh', pid: '216', text: `"I've written down every feed." She shows you the log. "I know. I'm a pharmacy tech. I can't help it."` },
 
     sarah_talk: { who: '218', text: `"I'm fine. Really. Can I go home today?" She folds and refolds the edge of the blanket.`, choices: [
-      { label: `I'd like to talk about the questionnaire you filled out this morning. You marked that thoughts of harming yourself have come up. Are you having thoughts of killing yourself?`, next: 'sarah_si', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.si = true; A.judge('218-ask', 'assess', 2, `You asked Ms. Whitfield directly about suicide.`, `Asking directly doesn't plant the idea. It opens the door. A positive item 10 is the reason to ask today, in plain words.`, '218'); } },
-      { label: `You scored a little high on the mood screen. That's really common; it's the baby blues. You'll feel better once you're home.`, next: 'sarah_b', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.dismissed = true; A.judge('218-ask', 'comm', -2, `You called Ms. Whitfield's positive screen the baby blues.`, `A score of 15 and a positive item 10, with a history of depression, isn't the blues. The door you closed was the one she needed open.`, '218'); } },
-      { label: `You're not thinking about hurting yourself, are you?`, next: 'sarah_c', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.leading = true; A.judge('218-ask', 'comm', -1, `You asked Ms. Whitfield about self-harm in a way that expected "no."`, `"You're not..., are you?" tells her the answer you want. Ask plainly and neutrally.`, '218'); } },
+      { label: `I'd like to talk about the questionnaire you filled out this morning. You marked that thoughts of harming yourself have come up. Are you having thoughts of killing yourself?`, next: 'sarah_si', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.si = true; A.judge('218-ask', 'assess', 2, `You asked Ms. Mercer directly about suicide.`, `Asking directly doesn't plant the idea. It opens the door. A positive item 10 is the reason to ask today, in plain words.`, '218'); } },
+      { label: `You scored a little high on the mood screen. That's really common; it's the baby blues. You'll feel better once you're home.`, next: 'sarah_b', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.dismissed = true; A.judge('218-ask', 'comm', -2, `You called Ms. Mercer's positive screen the baby blues.`, `A score of 15 and a positive item 10, with a history of depression, isn't the blues. The door you closed was the one she needed open.`, '218'); } },
+      { label: `You're not thinking about hurting yourself, are you?`, next: 'sarah_c', fx: (s, A) => { const P = s.p['218']; P.asked = s.t; P.leading = true; A.judge('218-ask', 'comm', -1, `You asked Ms. Mercer about self-harm in a way that expected "no."`, `"You're not..., are you?" tells her the answer you want. Ask plainly and neutrally.`, '218'); } },
     ] },
-    sarah_si: { who: '218', text: `She's quiet for a long time. "Not killing myself. I wouldn't. It's just... sometimes I think Tom and Leo would be better off without me. That someone else would be a better mother." She doesn't look at the bassinet.`, choices: [
-      { label: `Thank you for telling me. That took courage. Have you thought about how you might hurt yourself, or made any plans?`, next: 'sarah_plan', fx: (s, A) => { const P = s.p['218']; P.planAsked = true; A.judge('218-plan', 'assess', 2, `You asked Ms. Whitfield about a plan.`, `Thoughts, plan, intent, means, past attempts. The answers set how urgent the next step is.`, '218'); } },
-      { label: `Leo needs you. Think about how much he needs his mom.`, next: 'sarah_d', fx: (s, A) => { const P = s.p['218']; P.planAsked = true; A.judge('218-plan', 'comm', -1, `You answered Ms. Whitfield's suicidal thoughts with her baby.`, `Well meant, but it adds guilt, which is already part of what she's feeling. Thank her, then ask about a plan.`, '218'); } },
+    sarah_si: { who: '218', text: `She's quiet for a long time. "Not killing myself. I wouldn't. It's just... sometimes I think Tom and Miles would be better off without me. That someone else would be a better mother." She doesn't look at the bassinet.`, choices: [
+      { label: `Thank you for telling me. That took courage. Have you thought about how you might hurt yourself, or made any plans?`, next: 'sarah_plan', fx: (s, A) => { const P = s.p['218']; P.planAsked = true; A.judge('218-plan', 'assess', 2, `You asked Ms. Mercer about a plan.`, `Thoughts, plan, intent, means, past attempts. The answers set how urgent the next step is.`, '218'); } },
+      { label: `Miles needs you. Think about how much he needs his mom.`, next: 'sarah_d', fx: (s, A) => { const P = s.p['218']; P.planAsked = true; A.judge('218-plan', 'comm', -1, `You answered Ms. Mercer's suicidal thoughts with her baby.`, `Well meant, but it adds guilt, which is already part of what she's feeling. Thank her, then ask about a plan.`, '218'); } },
     ] },
     sarah_plan: { who: '218', text: `"No. Nothing like that. I'd never. I just can't make the thought stop." She looks at you. "Please don't tell anyone. They'll think I can't take care of him. They'll take him."`, choices: [
-      { label: `I can't keep this between us, because it's about your safety. Nobody is taking Leo. This is common, it's treatable, and your history tells us what helps. I'm going to get your doctor, and someone will stay with you.`, next: 'sarah_e', fx: (s, A) => { A.judge('218-secret', 'comm', 2, `You were honest with Ms. Whitfield about what happens next.`, `Never promise secrecy about safety. Say what you'll do and why, and answer the fear underneath: that she'll lose her baby.`, '218'); } },
-      { label: `Okay. It can stay between us if you promise to tell your OB at your checkup.`, next: 'sarah_f', fx: (s, A) => { const P = s.p['218']; P.secret = true; A.judge('218-secret', 'safety', -3, `You promised Ms. Whitfield you'd keep her suicidal thoughts secret.`, `Suicidal thoughts are never kept confidential from the team. A six-week checkup is too far away.`, '218'); } },
+      { label: `I can't keep this between us, because it's about your safety. Nobody is taking Miles. This is common, it's treatable, and your history tells us what helps. I'm going to get your doctor, and someone will stay with you.`, next: 'sarah_e', fx: (s, A) => { A.judge('218-secret', 'comm', 2, `You were honest with Ms. Mercer about what happens next.`, `Never promise secrecy about safety. Say what you'll do and why, and answer the fear underneath: that she'll lose her baby.`, '218'); } },
+      { label: `Okay. It can stay between us if you promise to tell your OB at your checkup.`, next: 'sarah_f', fx: (s, A) => { const P = s.p['218']; P.secret = true; A.judge('218-secret', 'safety', -3, `You promised Ms. Mercer you'd keep her suicidal thoughts secret.`, `Suicidal thoughts are never kept confidential from the team. A six-week checkup is too far away.`, '218'); } },
     ] },
     sarah_b: { who: '218', text: `"Right. The blues." She nods and looks at the window. "That's what I figured."` },
     sarah_c: { who: '218', text: `"No. Of course not." She smiles too quickly.` },
@@ -684,7 +684,7 @@
     { id: 'aide-hi', when: (s) => s.t >= 3, run(s, A) { A.msg({ from: 'mei', text: `Morning! I've got your four rooms. 216's sugar is due and he's out cold. Want me to start vitals?`, replies: [{ label: 'Open tasks for Mei', act: 'delegate' }] }); } },
     { id: 'linh-sleepy', when: (s) => s.t >= 10 && !s.p['216'].checks.length, run(s, A) { A.msg({ from: 'mei', pid: '216', text: `216's mom says he won't wake up to eat and she's asking if that's normal.`, replies: [{ label: 'I\'ll go see him', act: 'goto', pid: '216' }, { label: 'First day, babies sleep. It\'s fine.', act: 'baby-fine' }] }); } },
     { id: 'kei-gush', when: (s) => { const P = s.p['212']; return s.t >= 20 && !P.gone && P.tone > .55 && P.fundusAt === null; }, run(s, A) { A.msg({ from: 'mei', pid: '212', text: `212 says she felt a big gush when she moved. Her pad's pretty full. Want me to change it?`, replies: [{ label: 'Weigh it before you toss it. I\'m coming.', act: 'kei-weigh' }, { label: 'Yes, change it, thanks', act: 'kei-change' }] }); } },
-    { id: 'bb-rhig', when: (s) => s.t >= 45, run(s, A) { A.msg({ from: 'bb', pid: '218', text: `Blood bank. RhoGAM 300 mcg for 218 Whitfield is ready. Pick up with a second RN to verify.` }); } },
+    { id: 'bb-rhig', when: (s) => s.t >= 45, run(s, A) { A.msg({ from: 'bb', pid: '218', text: `Blood bank. RhoGAM 300 mcg for 218 Mercer is ready. Pick up with a second RN to verify.` }); } },
     { id: 'kei-faint', when: (s) => { const P = s.p['212']; return !P.gone && P.qbl >= 1000 && P.called === null; }, run(s, A) { A.msg({ from: 'mei', pid: '212', urgent: true, text: `212 is really pale and says she feels faint. There's blood on the floor by the bed.`, replies: [{ label: 'Go to 212', act: 'goto', pid: '212' }] }); } },
     { id: 'kei-out', when: (s) => { const P = s.p['212']; return !P.gone && P.qbl >= 1600; }, run(s, A) { const P = s.p['212']; P.gone = true; P.goneAt = s.t; P.goneText = 'Back to Labor and Delivery for a hemorrhage'; A.judge('212-pph', 'safety', -3, `Ms. Brown hemorrhaged.`, `A full bladder, a long oxytocin induction, a big baby: the risk factors were in report. A boggy, displaced fundus is found by feeling for it.`, '212'); A.msg({ from: 'nova', pid: '212', urgent: true, text: `Obstetric hemorrhage in 212. QBL over 1,600, BP ${kSBP(P)}. She's going back to L&D for a balloon and blood.` }); } },
     { id: 'kei-wheeze', when: (s) => { const P = s.p['212']; return P.bronch && s.t >= P.bronchAt + 8 && !P.gone; }, run(s, A) { A.msg({ from: 'mei', pid: '212', urgent: true, text: `212 is wheezing really loud and her sat is 89. She says her chest is tight.`, replies: [{ label: 'Go to 212', act: 'goto', pid: '212' }] }); } },
@@ -707,8 +707,8 @@
     'kei-weigh'(s, A) { const P = s.p['212']; P.qblSeen = true; P.qblAt = s.t; P.qblPrev = null; P.qblLast = Math.round(P.qbl); A.judge('212-weigh', 'assess', 1, `You had Ms. Brown's pad weighed before it was thrown out.`, `A pad in the trash is blood loss nobody counted.`, '212'); A.msg({ from: 'mei', pid: '212', text: `Pad and chux weighed: ${Math.round(kRate(P) * 30 + 140)} grams. QBL since birth is now about ${Math.round(P.qbl)}.` }); },
     'kei-change'(s, A) { A.judge('212-weigh', 'assess', -1, `The pad from Ms. Brown's gush went in the trash unweighed.`, `Weigh everything: 1 gram is 1 mL. Estimating by eye misses half of postpartum hemorrhages.`, '212'); },
     'lani-later'(s, A) { s.p['214'].delayed = true; A.judge('214-delay', 'judgment', -2, `You asked for Ms. Kealoha's severe pressure to be rechecked in 30 minutes.`, `Confirm within 15 minutes and treat within 60. And a severe-range pressure with a headache needs a nurse's assessment now.`, '214'); },
-    'sarah-go'(s, A) { const P = s.p['218']; P.disclosureSeen = true; P.si = true; P.comp = true; A.judge('218-disclosed', 'safety', 1, `You had Mei stay with Ms. Whitfield and went to her.`, `When someone says the people they love would be better off without them, that's suicidal thinking. Someone stays, and you go.`, '218'); },
-    'sarah-blues'(s, A) { const P = s.p['218']; P.disclosureSeen = true; P.si = true; A.judge('218-disclosed', 'safety', -3, `You called Ms. Whitfield's statement emotional.`, `"They'd be better off without me" is suicidal thinking. It needs a nurse at the bedside and a call, today.`, '218'); },
+    'sarah-go'(s, A) { const P = s.p['218']; P.disclosureSeen = true; P.si = true; P.comp = true; A.judge('218-disclosed', 'safety', 1, `You had Mei stay with Ms. Mercer and went to her.`, `When someone says the people they love would be better off without them, that's suicidal thinking. Someone stays, and you go.`, '218'); },
+    'sarah-blues'(s, A) { const P = s.p['218']; P.disclosureSeen = true; P.si = true; A.judge('218-disclosed', 'safety', -3, `You called Ms. Mercer's statement emotional.`, `"They'd be better off without me" is suicidal thinking. It needs a nurse at the bedside and a call, today.`, '218'); },
   };
 
   /* ---------- delegation ---------- */
@@ -729,7 +729,7 @@
       if (task.id === 'fundus') { A.judge('deleg-fundus', 'deleg', -1, `You asked the CNA to assess a fundus.`, `Fundal assessment is an RN assessment: what's firm, what's boggy, and what it means.`); return `Mei: "I can weigh her pads, but the fundus check is yours."`; }
       if (task.id === 'reflex') { A.judge('deleg-reflex', 'deleg', -2, `You asked the CNA to do magnesium checks.`, `Reflexes, respiratory effort and level of consciousness on a high-alert drip are nursing assessments.`); return `Mei: "I'm not trained on reflexes. I can get her vitals."`; }
       if (task.id === 'gel') { A.judge('deleg-gel', 'deleg', -1, `You asked the CNA to give a medication.`, `Dextrose gel is a medication: dosed by weight, given after a glucose an RN interprets.`); return `Mei: "I can't give meds. I'll do his glucose though."`; }
-      if (task.id === 'sit') { const P = s.p['218']; if (P.si || P.disclosed) { P.comp = true; A.judge('deleg-sit', 'deleg', 1, `You had Mei stay with Ms. Whitfield.`, `A safety companion is an appropriate task for a CNA, with clear instructions: stay in the room, call you for any change.`); return `Mei: "I'll stay with her. I'll call if anything changes."`; } return `Mei: "Sure, though she says she's fine. I'll check on her."`; }
+      if (task.id === 'sit') { const P = s.p['218']; if (P.si || P.disclosed) { P.comp = true; A.judge('deleg-sit', 'deleg', 1, `You had Mei stay with Ms. Mercer.`, `A safety companion is an appropriate task for a CNA, with clear instructions: stay in the room, call you for any change.`); return `Mei: "I'll stay with her. I'll call if anything changes."`; } return `Mei: "Sure, though she says she's fine. I'll check on her."`; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return `Mei: "Give me a minute, I'm still on the last thing."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
       A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, 'Hand off the measurements; keep the interpretation.');
@@ -777,9 +777,9 @@
     if (L.sevAt !== null && L.firstBpMed === null && !L.icu) A.judge('214-bp-never', 'meds', -3, `Ms. Kealoha's severe-range pressure was never treated.`, `Severe hypertension in preeclampsia is treated within 60 minutes. It's how strokes are prevented.`, '214');
     if (!B.gone && B.checks.length && (B.gels.length || B.fed.length) && B.checks.length < 2) A.judge('216-norecheck', 'judgment', -1, `Baby Nguyen's glucose was never rechecked after treatment.`, `Gel and a feed, then a glucose an hour later. That's how you know.`, '216');
     if (!B.gone && !B.checks.length) A.judge('216-nocheck', 'assess', -3, `Baby Nguyen's glucose was never checked.`, `An infant of a diabetic mother on a hypoglycemia protocol, due at 07:00.`, '216');
-    if (W.asked === null && !W.disclosureSeen) A.judge('218-never', 'safety', -3, `Nobody talked with Ms. Whitfield about her positive screen.`, `A positive item 10 means a same-day conversation, in plain words, before discharge.`, '218');
-    if (W.si && W.called === null) A.judge('218-norep', 'comm', -3, `Ms. Whitfield's suicidal thoughts never reached her provider.`, `Passive suicidal thoughts still need an evaluation before she goes home.`, '218');
-    if (W.itm.length < 3) A.judge('218-itm-missed', 'assess', -1, `Ms. Whitfield's intrathecal morphine checks fell behind.`, `Every 2 hours for 24 hours: respiratory depression can come late.`, '218');
+    if (W.asked === null && !W.disclosureSeen) A.judge('218-never', 'safety', -3, `Nobody talked with Ms. Mercer about her positive screen.`, `A positive item 10 means a same-day conversation, in plain words, before discharge.`, '218');
+    if (W.si && W.called === null) A.judge('218-norep', 'comm', -3, `Ms. Mercer's suicidal thoughts never reached her provider.`, `Passive suicidal thoughts still need an evaluation before she goes home.`, '218');
+    if (W.itm.length < 3) A.judge('218-itm-missed', 'assess', -1, `Ms. Mercer's intrathecal morphine checks fell behind.`, `Every 2 hours for 24 hours: respiratory depression can come late.`, '218');
     const keys = []; A.c.patients.forEach((d) => (d.report || []).forEach((r, i) => { if (r.key) keys.push(d.id + ':' + i); }));
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
@@ -795,14 +795,14 @@
     id: 'ob-2n-1', title: 'Days on 2 North', unit: '2 North, Mother-Baby', unitShort: '2 North', level: 'Specialty: Mother-baby', start: 7 * 60, length: 300, novaCredits: 3,
     card: 'Mother-baby until noon: a soft uterus behind a full bladder, magnesium that isn\'t clearing, a sleepy baby of a diabetic mother, and a depression screen nobody discussed.',
     hero: { head: 'Days, 2 North. Three mothers and a baby.', lede: 'Mother-baby, 07:00 to noon. Everyone looks fine from the doorway. The numbers that matter here are the ones you go and get: a fundus, a reflex, a heel stick, an answer on a screen.' },
-    intro: { time: '06:58', place: '2 North, Mother-Baby', cta: 'Take report', beats: ['Grace is finishing nights and giving report at the desk, a coffee in each hand.', 'Three mothers and one baby until noon. Births at 01:05, 04:40 and last evening, and a cesarean yesterday.', 'The first day after birth is when the quiet emergencies happen: bleeding, a drug building up, a low sugar, a thought someone hasn\'t said out loud.'] },
+    intro: { time: '06:58', place: '2 North, Mother-Baby', cta: 'Take report', beats: ['Paloma is finishing nights and giving report at the desk, a coffee in each hand.', 'Three mothers and one baby until noon. Births at 01:05, 04:40 and last evening, and a cesarean yesterday.', 'The first day after birth is when the quiet emergencies happen: bleeding, a drug building up, a low sugar, a thought someone hasn\'t said out loud.'] },
     minutes: 20,
     sysLabels: { gi: 'Bladder, bowels and feeding', skin: 'Skin, fundus and incision' },
-    handoffBy: 'Grace (night RN)', reportBy: 'grace', reportRole: 'night shift', provider: 'brennan', providerLabel: 'a provider', cna: 'mei',
+    handoffBy: 'Paloma (night RN)', reportBy: 'grace', reportRole: 'night shift', provider: 'brennan', providerLabel: 'a provider', cna: 'mei',
     staff: {
       nova: { name: 'Nova Reyes', role: 'Charge nurse', look: { skin: '#B98A63', shade: '#976D4B', lip: '#7C4435', blush: '#C77B5E', iris: '#3D2A1C', head: { w: 55, h: 62, jaw: .35 }, eye: 10, hair: { style: 'bun', color: '#3A2E2A', streak: true }, brow: { w: 3.6, color: '#2E2421' }, body: { w: 80, cloth: 'navy' }, extras: ['studs'], smile: .35 } },
       mei: { name: 'Mei', role: 'CNA', look: LK('#EDC9A6', '#D0A884', '#B06A5E', '#E8977F', '#1E140C', 'ponytail', '#140E0A', 'rose', [], .55) },
-      grace: { name: 'Grace', role: 'Night RN', look: Object.assign(LK('#5E3A27', '#47291B', '#4A2418', '#86493A', '#1A100A', 'curlyshort', '#140E0A', 'navy', ['hoops']), { tired: true }) },
+      grace: { name: 'Paloma', role: 'Night RN', look: Object.assign(LK('#5E3A27', '#47291B', '#4A2418', '#86493A', '#1A100A', 'curlyshort', '#140E0A', 'navy', ['hoops']), { tired: true }) },
       brennan: { name: 'Dr. Brennan', role: 'OB hospitalist', look: LK('#F0D2BC', '#D4AE96', '#B4675F', '#EA998A', '#4E6A84', 'bob', '#A07850', 'coat', ['thinGlasses']) },
       lin: { name: 'Dr. Lin', role: 'Pediatrician', look: LK('#EBC6A2', '#CFA582', '#AE6A5C', '#E3967E', '#1E140C', 'short', '#1A1410', 'coat', ['glasses']) },
       linh: { name: 'Linh', role: 'Mother, 216', look: LK('#EBC6A2', '#CFA582', '#B06A5E', '#E8977F', '#1E140C', 'long', '#140E0A', 'gown', [], .3) },
@@ -831,7 +831,7 @@
       judge(r, A) {
         if (r[0] === '214') A.judge('rank-first', 'priority', 2, `You chose to see Ms. Kealoha first.`, `A high-alert drug that's accumulating: three hours of oliguria, a rising creatinine and reflexes already down. The next sign is her breathing.`, '214');
         else if (r[0] === '212' || r[0] === '216') A.judge('rank-first', 'priority', 1, `You chose to see ${r[0] === '212' ? 'Ms. Brown' : 'Baby Nguyen'} first.`, `Reasonable: ${r[0] === '212' ? 'a fresh postpartum patient with every risk factor for atony' : 'a glucose due on a baby at risk'}. But magnesium with failing kidneys was already showing toxicity.`, '214');
-        else A.judge('rank-first', 'priority', -1, `You put Ms. Whitfield first.`, `Her screen needs a conversation today, and it can wait an hour. The physical risks on the hall can't.`, '214');
+        else A.judge('rank-first', 'priority', -1, `You put Ms. Mercer first.`, `Her screen needs a conversation today, and it can wait an hour. The physical risks on the hall can't.`, '214');
       },
       correct: ['214', '212', '216', '218'],
       why: {

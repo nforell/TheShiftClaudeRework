@@ -2,8 +2,8 @@
    Themes: time is tissue, and the facts that decide treatment come from asking, not from the triage note.
    21: "Indigestion" in a 64-year-old with diabetes. Troponin creeping, then an inferior STEMI on the repeat ECG, with
        right ventricular involvement: nitroglycerin will drop her pressure. Aspirin was never given at triage.
-   22: Stroke alert. EMS says onset 14:30, which is when his wife found him. She last saw him normal at 11:00, so the
-       thrombolysis window closed at 15:30. The order is coming anyway. The right answer is a thrombectomy.
+   22: Stroke alert. EMS says onset 14:30, which is when his wife found him. She last saw him normal at 10:00, so the
+       thrombolysis window closed at 14:30, before he even arrived. The order is coming anyway. The right answer is a thrombectomy.
    23: Lower abdominal pain, positive pregnancy test, "period cramps." Waiting for an ultrasound while she bleeds into
        her abdomen: shoulder pain, dizziness, a heart rate that climbs. Her partner answers every question for her.
    24 (arrives 16:10): Anaphylaxis after peanut sauce. EMS gave diphenhydramine, not epinephrine.
@@ -22,7 +22,7 @@
     look: { skin: '#E9C6A8', shade: '#CDA488', lip: '#B06A5E', blush: '#E39883', iris: '#4A5E70', head: { w: 56, h: 61, jaw: .35 }, eye: 9.4,
       hair: { style: 'bob', color: '#B8B0A8' }, brow: { w: 3, color: '#8A8078' }, body: { w: 84, cloth: 'gown' }, extras: ['wrinkles', 'gold'], smile: .3,
       lines: { calm: `It's just indigestion. I shouldn't have had the chili at lunch.`, pain: `The pressure's back. Up into my jaw now.`, anxious: `I feel awful. Something's wrong.`, nausea: `I'm going to be sick.`, drowsy: `I'm so tired.`, none: `She doesn't respond.` } },
-    bio: `Retired postal carrier, 31 years. Type 2 diabetes, smokes half a pack a day "down from two." Lives with her sister Bev, who drove her in.`,
+    bio: `Ran the laundry at St. Vincent's for 31 years. Type 2 diabetes, smokes half a pack a day "down from two." Lives with her sister Bev, who drove her in.`,
     dx: `Epigastric pain, rule out ACS`, reason: `"Indigestion" since lunch, nausea, unusual tiredness. Triaged at 14:40, ESI 3. First ECG nonspecific; troponin pending.`,
     hx: [`Type 2 diabetes for 15 years`, `Hypertension, high cholesterol`, `Smoker, 40 pack-years`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `79 kg`,
@@ -106,7 +106,7 @@
           { id: 'vs', label: `HR ${v.HR}, BP ${v.SBP}/${v.DBP}`, key: true, need: true },
           { id: 'asa', label: P.asa !== null ? `Aspirin 324 mg at ${clock(P.asa)}` : 'Aspirin not yet given', key: true, need: true },
           { id: 'trop', label: P.tropSeen ? 'Troponin 0 h: 38' : 'Troponin pending', key: P.tropSeen, need: true },
-          { id: 'mail', label: 'Retired postal carrier', key: false, need: true },
+          { id: 'mail', label: 'Retired laundry supervisor', key: false, need: true },
         ];
       },
       requests: [
@@ -134,11 +134,11 @@
     },
   };
 
-  /* ---------- 22 Walter Brooks: stroke alert; "onset 14:30" is when he was found, not when he was last normal ---------- */
+  /* ---------- 22 Gerald Haskins: stroke alert; "onset 14:30" is when he was found, not when he was last normal ---------- */
   const wNIH = (P) => Math.round(P.nih + (P.ich ? 8 : 0));
   const wSBP = (P) => Math.round(198 - P.bpDrop + (P.ich ? 22 : 0));
   const walter = {
-    id: '22', room: '22', name: 'Walter Brooks', short: 'Mr. Brooks', age: 72, sex: 'M', mrn: '01844173',
+    id: '22', room: '22', name: 'Gerald Haskins', short: 'Mr. Haskins', age: 72, sex: 'M', mrn: '01844173',
     look: { skin: '#6A4430', shade: '#4F3122', lip: '#502A1E', blush: '#94503E', iris: '#1E130C', head: { w: 58, h: 63, jaw: .6 }, eye: 9.4,
       hair: { style: 'balding', color: '#D8D2CC' }, brow: { w: 4, color: '#C8C0B8' }, body: { w: 86, cloth: 'gown' }, extras: ['mustache', 'wrinkles'], smile: .1,
       lines: { calm: `Mm. Mm-hm.`, confused: `Wha— the, the... (he can't find the word)`, anxious: `(He grips your hand with his left. His right lies still.)`, drowsy: `(He doesn't open his eyes when you say his name.)`, none: `He doesn't respond.` } },
@@ -163,7 +163,7 @@
     ],
     io: { intake: `NPO`, output: `—` },
     report: [
-      { text: `Walter Brooks, 72, stroke alert, came in at two-fifty-two. Right-sided weakness and he can't get his words out.`, key: true },
+      { text: `Gerald Haskins, 72, stroke alert, came in at two-fifty-two. Right-sided weakness and he can't get his words out.`, key: true },
       { text: `EMS says onset at two-thirty. CT's done, waiting on the read.`, key: true },
       { text: `His pressure's high, 198 over 108.`, key: true },
       { text: `Glucose was fine with EMS. He's NPO.`, key: false },
@@ -175,37 +175,37 @@
       general: (s, P) => (P.ich ? `Vomiting. Eyes closed, groaning, hard to rouse.` : `Lying on the stretcher, right arm limp beside him, trying to talk and frowning when the words don't come.`),
       resp: () => `Unlabored. Clear.`,
       cardiac: (s, P, A) => { const v = A.vitals('22'); return `HR ${v.HR}, regular. BP ${v.SBP}/${v.DBP}. No carotid bruit.`; },
-      neuro: (s, P, A) => { P.checks.push(s.t); P.k.neuro = s.t; if (P.checks.length === 1) A.judge('22-nih', 'assess', s.t <= 15 ? 2 : 1, `You did Mr. Brooks's NIHSS.`, `The NIH Stroke Scale is the baseline every later check is compared against, and part of the decision about treatment.`, '22'); return P.ich ? `NIHSS ${wNIH(P)}. Responds only to pain. Right pupil 3 mm, left 5 mm and sluggish.` : `NIHSS ${wNIH(P)}: right arm drifts down in 5 seconds, right leg can't lift against gravity, right facial droop, expressive aphasia (understands, can't produce words), no neglect. Gaze conjugate. Pupils equal.`; },
+      neuro: (s, P, A) => { P.checks.push(s.t); P.k.neuro = s.t; if (P.checks.length === 1) A.judge('22-nih', 'assess', s.t <= 15 ? 2 : 1, `You did Mr. Haskins's NIHSS.`, `The NIH Stroke Scale is the baseline every later check is compared against, and part of the decision about treatment.`, '22'); return P.ich ? `NIHSS ${wNIH(P)}. Responds only to pain. Right pupil 3 mm, left 5 mm and sluggish.` : `NIHSS ${wNIH(P)}: right arm drifts down in 5 seconds, right leg can't lift against gravity, right facial droop, expressive aphasia (understands, can't produce words), no neglect. Gaze conjugate. Pupils equal.`; },
       pain: (s, P) => (P.ich ? `Grimaces; holds his head.` : `Shakes his head no.`),
       skin: () => `Warm, dry. No signs of trauma.`,
       gi: (s, P) => (P.water ? `Coughing after a sip of water. Wet voice.` : `NPO. Abdomen soft.`),
     },
     interventions: [
-      { id: 'lkw', label: 'Ask Joan exactly when he was last seen normal', cost: 2, avail: (s, P) => !P.lkw, run(s, P, A) { P.lkw = true; A.judge('22-lkw', 'assess', 2, `You established Mr. Brooks's true last known well.`, `Last known well is the last time someone saw him at his baseline, not the time he was found. Every treatment window starts there.`, '22'); return `Joan: "He was fine when I left for my sister's at eleven. He waved from the porch. When I came home at two-thirty he was on the couch like this." Last known well: 11:00, not 14:30.`; } },
-      { id: 'reassess', label: 'Recheck his BP and NIHSS after labetalol', cost: 3, avail: (s, P) => P.lab !== null && !P.reassessed && s.t - P.lab >= 8, run(s, P, A) { P.reassessed = true; P.checks.push(s.t); const v = A.vitals('22'); A.judge('22-reassess', 'judgment', 2, `You rechecked Mr. Brooks after lowering his pressure.`, `Did it reach the goal without dropping too far? And did his deficits change? Both decide what happens next.`, '22'); return `BP ${v.SBP}/${v.DBP}${v.SBP <= 185 ? ', under the goal' : ', still over 185: second dose'}. NIHSS ${wNIH(P)}, unchanged.`; } },
-      { id: 'swallow', label: 'Bedside swallow screen', cost: 3, avail: (s, P) => !P.swallow, run(s, P, A) { P.swallow = true; A.judge('22-swallow', 'safety', 1, `You did Mr. Brooks's swallow screen before giving him anything by mouth.`, `Up to half of stroke patients have trouble swallowing. Screen before water, food or pills: aspiration pneumonia is a leading complication.`, '22'); return `Fails: coughing and a wet voice after a teaspoon of water. Stays NPO; speech therapy consult.`; } },
+      { id: 'lkw', label: 'Ask Joan exactly when he was last seen normal', cost: 2, avail: (s, P) => !P.lkw, run(s, P, A) { P.lkw = true; A.judge('22-lkw', 'assess', 2, `You established Mr. Haskins's true last known well.`, `Last known well is the last time someone saw him at his baseline, not the time he was found. Every treatment window starts there.`, '22'); return `Joan: "He was fine when I left for my sister's at ten. He waved from the porch. When I came home at two-thirty he was on the couch like this." Last known well: 10:00, not 14:30.`; } },
+      { id: 'reassess', label: 'Recheck his BP and NIHSS after labetalol', cost: 3, avail: (s, P) => P.lab !== null && !P.reassessed && s.t - P.lab >= 8, run(s, P, A) { P.reassessed = true; P.checks.push(s.t); const v = A.vitals('22'); A.judge('22-reassess', 'judgment', 2, `You rechecked Mr. Haskins after lowering his pressure.`, `Did it reach the goal without dropping too far? And did his deficits change? Both decide what happens next.`, '22'); return `BP ${v.SBP}/${v.DBP}${v.SBP <= 185 ? ', under the goal' : ', still over 185: second dose'}. NIHSS ${wNIH(P)}, unchanged.`; } },
+      { id: 'swallow', label: 'Bedside swallow screen', cost: 3, avail: (s, P) => !P.swallow, run(s, P, A) { P.swallow = true; A.judge('22-swallow', 'safety', 1, `You did Mr. Haskins's swallow screen before giving him anything by mouth.`, `Up to half of stroke patients have trouble swallowing. Screen before water, food or pills: aspiration pneumonia is a leading complication.`, '22'); return `Fails: coughing and a wet voice after a teaspoon of water. Stays NPO; speech therapy consult.`; } },
     ],
     meds: [
       {
         id: '22-lab', name: 'Labetalol', dose: '10 mg over 2 min', route: 'IV', freq: 'For BP over 185/110; may repeat once', prn: true,
         checks: (s, P, A) => { const v = A.vitals('22'); return [{ label: 'Blood pressure', value: `${v.SBP}/${v.DBP}`, ok: v.SBP > 185 || v.DBP > 110 }, { label: 'Heart rate', value: `${v.HR}`, ok: v.HR >= 60 }, { label: 'Asthma or heart block', value: 'None', ok: true }]; },
-        give(s, P, A) { const v = A.vitals('22'); P.bpDrop += 16; if (P.lab === null) P.lab = s.t; if (v.SBP <= 185 && v.DBP <= 110) A.judge('22-lab-' + s.t, 'meds', -1, `You gave labetalol with a pressure of ${v.SBP}/${v.DBP}.`, `In acute stroke the brain around the clot depends on pressure. Lower it only to the threshold the treatment needs.`, '22'); else A.judge('22-lab', 'meds', 1, `You lowered Mr. Brooks's pressure toward the reperfusion goal.`, `Under 185/110 before thrombolysis or thrombectomy, and under 180/105 for 24 hours after.`, '22'); return `Labetalol 10 mg IV over 2 minutes. Recheck in 10.`; },
+        give(s, P, A) { const v = A.vitals('22'); P.bpDrop += 16; if (P.lab === null) P.lab = s.t; if (v.SBP <= 185 && v.DBP <= 110) A.judge('22-lab-' + s.t, 'meds', -1, `You gave labetalol with a pressure of ${v.SBP}/${v.DBP}.`, `In acute stroke the brain around the clot depends on pressure. Lower it only to the threshold the treatment needs.`, '22'); else A.judge('22-lab', 'meds', 1, `You lowered Mr. Haskins's pressure toward the reperfusion goal.`, `Under 185/110 before thrombolysis or thrombectomy, and under 180/105 for 24 hours after.`, '22'); return `Labetalol 10 mg IV over 2 minutes. Recheck in 10.`; },
       },
       {
         id: '22-tpa', name: 'Tenecteplase', dose: '0.25 mg/kg (max 25 mg), single IV bolus', route: 'IV', freq: 'Once (new order)', prn: true, available: (s, P) => P.tpaOrder && !P.tpaClarified,
         block: (s, P) => (P.tpaGiven !== null ? 'Started at ' + clock(P.tpaGiven) + '.' : null),
-        checks: (s, P, A) => { const v = A.vitals('22'); return [{ label: 'Last known well', value: P.lkw ? '11:00 (found at 14:30)' : '14:30 per EMS', ok: P.lkw ? false : null }, { label: 'Window', value: P.lkw ? 'Closed at 15:30 (4.5 hours from 11:00)' : 'Open until 19:00 if onset is 14:30', ok: P.lkw ? false : null }, { label: 'Blood pressure', value: `${v.SBP}/${v.DBP}`, ok: v.SBP <= 185 && v.DBP <= 110 }, { label: 'CT', value: 'No hemorrhage', ok: true }, { label: 'Glucose', value: '142', ok: true }]; },
+        checks: (s, P, A) => { const v = A.vitals('22'); return [{ label: 'Last known well', value: P.lkw ? '10:00 (found at 14:30)' : '14:30 per EMS', ok: P.lkw ? false : null }, { label: 'Window', value: P.lkw ? 'Closed at 14:30 (4.5 hours from 10:00)' : 'Open until 19:00 if onset is 14:30', ok: P.lkw ? false : null }, { label: 'Blood pressure', value: `${v.SBP}/${v.DBP}`, ok: v.SBP <= 185 && v.DBP <= 110 }, { label: 'CT', value: 'No hemorrhage', ok: true }, { label: 'Glucose', value: '142', ok: true }]; },
         doses: [{ id: 1, label: '20.5 mg (0.25 mg/kg) IV push over 5 seconds' }, { id: 2, label: '25 mg (the maximum)' }, { id: 3, label: '41 mg (0.5 mg/kg, the cardiac dose)' }],
         give(s, P, A, dose) {
           P.tpaGiven = s.t; const v = A.vitals('22'), late = s.t > 30;
-          A.judge('22-tpa', 'meds', -3, `You gave tenecteplase to Mr. Brooks, ${late ? 'more than' : 'about'} 4.5 hours after he was last known well.`, `His wife last saw him normal at 11:00. "Found at 14:30" isn't onset. Outside the window the bleeding risk outweighs the benefit; a clot in a large artery goes to thrombectomy instead.${P.lkw ? ' You knew the real time.' : ' Asking her was the check.'}`, '22');
+          A.judge('22-tpa', 'meds', -3, `You gave tenecteplase to Mr. Haskins, more than 4.5 hours after he was last known well.`, `His wife last saw him normal at 10:00. "Found at 14:30" isn't onset. Outside the window the bleeding risk outweighs the benefit; a clot in a large artery goes to thrombectomy instead.${P.lkw ? ' You knew the real time.' : ' Asking her was the check.'}`, '22');
           if (dose !== 1) A.judge('22-tpa-dose', 'meds', -1, `You gave the wrong tenecteplase dose.`, `For stroke, 0.25 mg/kg to a maximum of 25 mg: 20.5 mg for 82 kg. The higher MI dose doesn't apply.`, '22');
           if (v.SBP > 185) A.judge('22-tpa-bp', 'meds', -2, `You gave tenecteplase with a pressure over 185.`, `Above 185/110, the risk of brain hemorrhage climbs. Lower it first.`, '22');
           P.ichAt = s.t + 45;
           return `Tenecteplase 20.5 mg IV push.`;
         },
       },
-      { id: '22-asa', name: 'Aspirin', dose: '325 mg', route: 'PO', freq: 'Once (stroke order set)', prn: true, available: (s, P) => P.ir !== null || P.called !== null, checks: (s, P) => [{ label: 'Swallow screen', value: P.swallow ? 'Failed' : 'Not done', ok: false }, { label: 'Thrombolytic', value: P.tpaGiven !== null ? 'Given: no antiplatelets for 24 h' : 'Not given', ok: P.tpaGiven === null }], give(s, P, A) { P.water = true; A.judge('22-asa', 'meds', -2, `You gave Mr. Brooks an oral pill ${P.swallow ? 'after he failed' : 'without'} a swallow screen.`, `Nothing by mouth until he passes a swallow screen. Aspirin can go rectally, and not at all before thrombectomy unless the team says so.`, '22'); return `He coughs and sputters on the pill.`; } },
+      { id: '22-asa', name: 'Aspirin', dose: '325 mg', route: 'PO', freq: 'Once (stroke order set)', prn: true, available: (s, P) => P.ir !== null || P.called !== null, checks: (s, P) => [{ label: 'Swallow screen', value: P.swallow ? 'Failed' : 'Not done', ok: false }, { label: 'Thrombolytic', value: P.tpaGiven !== null ? 'Given: no antiplatelets for 24 h' : 'Not given', ok: P.tpaGiven === null }], give(s, P, A) { P.water = true; A.judge('22-asa', 'meds', -2, `You gave Mr. Haskins an oral pill ${P.swallow ? 'after he failed' : 'without'} a swallow screen.`, `Nothing by mouth until he passes a swallow screen. Aspirin can go rectally, and not at all before thrombectomy unless the team says so.`, '22'); return `He coughs and sputters on the pill.`; } },
     ],
     talk: (s, P) => (P.gone ? null : 'walt_talk'),
     family: { name: 'Joan', rel: 'Wife', mode: 'bedside', cost: 3, avail: (s, P) => !P.gone || P.ir !== null, dialog: (s, P) => (P.lkw ? 'joan_after' : 'joan_talk') },
@@ -213,7 +213,7 @@
       items(s, P, A) {
         const v = A.vitals('22');
         return [
-          { id: 'lkw', label: 'Last known well 11:00 (wife); found at 14:30', key: true, need: P.lkw, lock: 'Ask his wife' },
+          { id: 'lkw', label: 'Last known well 10:00 (wife); found at 14:30', key: true, need: P.lkw, lock: 'Ask his wife' },
           { id: 'found', label: 'Onset 14:30 per EMS', key: false, need: true },
           { id: 'nih', label: `NIHSS ${wNIH(P)}: right hemiparesis, expressive aphasia`, key: true, need: P.checks.length > 0, lock: 'Do his NIHSS' },
           { id: 'bp', label: `BP ${v.SBP}/${v.DBP}${P.lab !== null ? ', after labetalol' : ''}`, key: true, need: true },
@@ -223,7 +223,7 @@
         ];
       },
       requests: [
-        { id: 'tx', label: 'His real last known well is 11:00, so he\'s outside the thrombolysis window. With a large-vessel occlusion, is he a thrombectomy candidate?' },
+        { id: 'tx', label: 'His real last known well is 10:00, so he\'s outside the thrombolysis window. With a large-vessel occlusion, is he a thrombectomy candidate?' },
         { id: 'tpa', label: 'BP is under 185/110. Ready to give the tenecteplase?' },
         { id: 'fyi', label: 'Just keeping you updated.' },
       ],
@@ -231,9 +231,9 @@
         if (picked.includes('lkw')) {
           if (P.called === null) P.called = s.t;
           P.tpaClarified = true;
-          if (P.ir === null && P.tpaGiven === null) { P.ir = s.t + 25; A.addOrder('22', `Cancel thrombolysis: last known well 11:00, outside the 4.5-hour window. CTA ${P.cta ? 'shows' : 'pending, likely'} left M1 occlusion: neurointerventional radiology activated for thrombectomy. BP at or under 185/110 for the procedure. Keep NPO.`); }
-          A.judge('22-sbar', 'comm', req === 'tx' ? 2 : 1, `You told the team Mr. Brooks's true last known well.`, `The EMS time was when he was found. One question to his wife changed the treatment from thrombolysis, outside its window, to a thrombectomy, which works up to 24 hours out for a large clot.`, '22');
-          return P.tpaGiven !== null ? `11:00? It's already running. Stop it now. I'm calling neurosurgery and getting a CT.` : `Eleven? Then no thrombolysis, thank you. Good thing you asked. He's got an M1 clot: I'm activating IR for thrombectomy. Keep his pressure under 185.`;
+          if (P.ir === null && P.tpaGiven === null) { P.ir = s.t + 25; A.addOrder('22', `Cancel thrombolysis: last known well 10:00, outside the 4.5-hour window. CTA ${P.cta ? 'shows' : 'pending, likely'} left M1 occlusion: neurointerventional radiology activated for thrombectomy. BP at or under 185/110 for the procedure. Keep NPO.`); }
+          A.judge('22-sbar', 'comm', req === 'tx' ? 2 : 1, `You told the team Mr. Haskins's true last known well.`, `The EMS time was when he was found. One question to his wife changed the treatment from thrombolysis, outside its window, to a thrombectomy, which works up to 24 hours out for a large clot.`, '22');
+          return P.tpaGiven !== null ? `10:00? It's already running. Stop it now. I'm calling neurosurgery and getting a CT.` : `Ten? Then no thrombolysis, thank you. Good thing you asked. He's got an M1 clot: I'm activating IR for thrombectomy. Keep his pressure under 185.`;
         }
         if (req === 'tpa') { if (P.tpaOrder) return `Yes, start it. Onset 14:30, we're well inside the window.`; return `CT's not read yet. Get me his NIHSS and pressure.`; }
         return `Okay. What's his last known well, exactly? EMS said 14:30.`;
@@ -245,7 +245,7 @@
     status: (s, P) => (P.gone ? 'gone' : 'urgent'),
     outcome(s, P) {
       if (P.ich) return { tone: 'bad', title: 'Brain hemorrhage after thrombolysis', text: `Tenecteplase went in at ${clock(P.tpaGiven)}, more than 4.5 hours after his wife last saw him normal. He bled into the stroke. ${P.lkw ? 'The real last known well was in his chart.' : 'Nobody asked her.'}` };
-      if (P.ir !== null && P.gone) { const fast = P.called <= 45; return { tone: fast ? 'good' : 'mixed', title: fast ? 'Thrombectomy, not thrombolysis' : 'Thrombectomy, after a delay', text: `Last known well clarified as 11:00, thrombolysis cancelled, to IR at ${clock(P.ir)}. The M1 clot came out in one pass.${P.water ? ' He did aspirate a little water before his swallow screen.' : ''}` }; }
+      if (P.ir !== null && P.gone) { const fast = P.called <= 45; return { tone: fast ? 'good' : 'mixed', title: fast ? 'Thrombectomy, not thrombolysis' : 'Thrombectomy, after a delay', text: `Last known well clarified as 10:00, thrombolysis cancelled, to IR at ${clock(P.ir)}. The M1 clot came out in one pass.${P.water ? ' He did aspirate a little water before his swallow screen.' : ''}` }; }
       return { tone: 'bad', title: 'Large-vessel stroke, no reperfusion', text: `His M1 clot was never treated: ${P.lkw ? 'the team never heard his real last known well' : 'nobody asked when he was last normal'}.` };
     },
   };
@@ -443,7 +443,7 @@
     id: '25', room: '25', name: 'Harold Jensen', short: 'Mr. Jensen', age: 81, sex: 'M', mrn: '01844318', arrives: 150, arriveAs: 'Arrival', from: 'triage', arrivedText: '25 Harold Jensen is in the bay from triage: fall, head strike, on warfarin.',
     look: { skin: '#EECFB6', shade: '#D2AE96', lip: '#B0675F', blush: '#E59A8A', iris: '#5A7A9A', head: { w: 56, h: 63, jaw: .55 }, eye: 9, hair: { style: 'balding', color: '#E6E2DE' }, brow: { w: 4, color: '#D6D0CA' }, body: { w: 80, cloth: 'flannel' }, extras: ['glasses', 'wrinkles'], glasses: '#3A3A3E', smile: .35,
       lines: { calm: `It's just a bump. I've had worse in the Navy.`, pain: `My head's really pounding now.`, confused: `Where's Karen? What day is it?`, nausea: `I think I'm going to be sick.`, drowsy: `Let me sleep a bit.`, none: `He doesn't respond.` } },
-    bio: `Retired Navy machinist, 81. Widowed, lives alone with a cat named Admiral. His daughter Karen checks on him daily.`,
+    bio: `Retired Navy machinist, 81. Widowed, lives alone with an old shepherd mix named Duke. His daughter Karen checks on him daily.`,
     dx: `Fall with head strike, on warfarin`, reason: `Tripped on the back steps at 16:45, hit the back of his head. No loss of consciousness. On warfarin for atrial fibrillation. Triaged ESI 2.`,
     hx: [`Atrial fibrillation on warfarin (INR goal 2–3)`, `Hypertension`, `Mild hearing loss`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `78 kg`,
@@ -527,7 +527,7 @@
       { label: `I'm getting an ECG right now and the doctor in here.`, next: null, fx: (s, A) => { s.p['21'].k.talkJaw = s.t; A.judge('21-jaw', 'assess', 1, `You acted on Ms. Hughes's changed symptoms.`, `New radiation, sweating and nausea: repeat the ECG now, not at the scheduled time.`, '21'); } },
       { label: `Let me get you something for the nausea.`, next: null, fx: (s, A) => { s.p['21'].k.talkJaw = s.t; A.judge('21-jaw', 'judgment', -2, `You treated Ms. Hughes's nausea instead of her changed chest symptoms.`, `Jaw pain, arm heaviness and diaphoresis are ischemia. ECG first.`, '21'); } },
     ] },
-    ros_after: { who: '21', text: `"Thirty-one years of carrying mail and I never missed a day for anything." She almost smiles. "I'll tell the girls at the post office it was my heart, not the chili."` },
+    ros_after: { who: '21', text: `"Thirty-one years running that laundry and I never missed a day for anything." She almost smiles. "I'll tell the girls at the laundry it was my heart, not the chili."` },
     bev_talk: { who: 'bev', pid: '21', text: `Bev holds up a paper cup. "Can she have a coffee? She's been asking. It's just indigestion, right?"`, choices: [
       { label: `Not yet. She needs to stay NPO while we rule out her heart. If she gets sweaty, short of breath, or the pressure spreads, press the call light right away.`, next: 'bev_a', fx: (s, A) => { s.p['21'].k.bev = s.t; A.judge('21-bev', 'comm', 1, `You kept Ms. Hughes NPO and taught Bev what to watch for.`, `She may be going to the cath lab. And family see changes first.`, '21'); } },
       { label: `Sure, a little coffee is fine.`, next: 'bev_b', fx: (s, A) => { s.p['21'].k.bev = s.t; A.judge('21-bev', 'safety', -1, `You let Ms. Hughes have coffee while ACS was being ruled out.`, `NPO until the plan is clear: a cath lab or surgery may be minutes away.`, '21'); } },
@@ -537,16 +537,16 @@
     bev_after: { who: 'bev', pid: '21', text: `"She's been tired for two weeks. I should've made her come sooner."` },
 
     walt_talk: { who: '22', text: `He looks at you hard and tries. "The — the —" His face crumples. He taps his own mouth with his left hand, frustrated.`, choices: [
-      { label: `Take your time. You can squeeze my hand once for yes, twice for no. Did this start today?`, next: 'walt_a', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', 1, `You gave Mr. Brooks a way to communicate.`, `Expressive aphasia: he understands, he can't produce words. Yes/no questions and his good hand let him take part.`, '22'); } },
-      { label: `Don't try to talk. Just rest.`, next: 'walt_b', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', -1, `You told Mr. Brooks not to try to communicate.`, `He understands everything. Give him a way to answer.`, '22'); } },
+      { label: `Take your time. You can squeeze my hand once for yes, twice for no. Did this start today?`, next: 'walt_a', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', 1, `You gave Mr. Haskins a way to communicate.`, `Expressive aphasia: he understands, he can't produce words. Yes/no questions and his good hand let him take part.`, '22'); } },
+      { label: `Don't try to talk. Just rest.`, next: 'walt_b', fx: (s, A) => { s.p['22'].k.talked = s.t; A.judge('22-talk', 'comm', -1, `You told Mr. Haskins not to try to communicate.`, `He understands everything. Give him a way to answer.`, '22'); } },
     ] },
     walt_a: { who: '22', text: `One squeeze. Then he points at the door where Joan is standing, and squeezes again, harder.` },
     walt_b: { who: '22', text: `He closes his eyes. A tear runs into his ear.` },
     joan_talk: { who: 'joan', pid: '22', text: `Joan grips the rail. "The paramedics asked when it happened and I said when I found him. Two-thirty. Is that what you need?"`, choices: [
-      { label: `What I need is the last time you saw him completely normal. Not when you found him. When was that?`, next: 'joan_a', fx: (s, A) => { const P = s.p['22']; P.lkw = true; A.judge('22-lkw', 'assess', 2, `You established Mr. Brooks's true last known well.`, `Last known well is the last time someone saw him at baseline. Every treatment window starts there, not when he was found.`, '22'); } },
-      { label: `Two-thirty, got it. Thank you.`, next: 'joan_b', fx: (s, A) => { A.judge('22-lkw-miss', 'assess', -2, `You accepted "when I found him" as Mr. Brooks's onset.`, `Found at 14:30 isn't last known well. Ask when he was last seen normal.`, '22'); } },
+      { label: `What I need is the last time you saw him completely normal. Not when you found him. When was that?`, next: 'joan_a', fx: (s, A) => { const P = s.p['22']; P.lkw = true; A.judge('22-lkw', 'assess', 2, `You established Mr. Haskins's true last known well.`, `Last known well is the last time someone saw him at baseline. Every treatment window starts there, not when he was found.`, '22'); } },
+      { label: `Two-thirty, got it. Thank you.`, next: 'joan_b', fx: (s, A) => { A.judge('22-lkw-miss', 'assess', -2, `You accepted "when I found him" as Mr. Haskins's onset.`, `Found at 14:30 isn't last known well. Ask when he was last seen normal.`, '22'); } },
     ] },
-    joan_a: { who: 'joan', pid: '22', text: `She thinks. "Eleven. He waved at me from the porch when I left for my sister's. I came home at two-thirty and he was on the couch like this." Her face falls. "Does that matter?"` },
+    joan_a: { who: 'joan', pid: '22', text: `She thinks. "Ten. He waved at me from the porch when I left for my sister's. I came home at two-thirty and he was on the couch like this." Her face falls. "Does that matter?"` },
     joan_b: { who: 'joan', pid: '22', text: `"Okay." She sits down and holds his good hand.` },
     joan_after: { who: 'joan', pid: '22', text: `"Forty-eight years. He proposed with a trumpet solo." She squeezes his hand. "He'll want to play again."` },
 
@@ -584,12 +584,12 @@
     ken_d: { who: '24', text: `"Sweet." He's already texting.` },
     ken_after: { who: '24', text: `"I'm going to label everything in the dorm fridge." He shows you a photo of his roommate's peanut butter. "This is getting thrown out."` },
 
-    har_talk: { who: '25', text: `"I keep telling Karen, it's a bump. I've hit my head on worse in an engine room." He winks. "Can I go home and feed Admiral?"`, choices: [
+    har_talk: { who: '25', text: `"I keep telling Karen, it's a bump. I've hit my head on worse in an engine room." He winks. "Can I go home and feed Duke?"`, choices: [
       { label: `On a blood thinner, bleeding in the head can be slow and show up hours later. That's why we're scanning you and checking you often. Tell me right away if your headache gets worse or you feel sick.`, next: 'har_a', fx: (s, A) => { s.p['25'].k.talked = s.t; A.judge('25-talk', 'comm', 1, `You explained the risk of a delayed bleed to Mr. Jensen.`, `He's your monitor between checks. A worse headache or vomiting is what he needs to report.`, '25'); } },
       { label: `You'll probably be home tonight.`, next: 'har_b', fx: (s, A) => { s.p['25'].k.talked = s.t; A.judge('25-talk', 'comm', -1, `You promised Mr. Jensen he'd go home tonight.`, `Too early to know. A promise makes him less likely to tell you when something changes.`, '25'); } },
     ] },
     har_a: { who: '25', text: `"Aye aye." He salutes with the hand that isn't holding the ice pack.` },
-    har_b: { who: '25', text: `"Good. Admiral gets cranky after six."` },
+    har_b: { who: '25', text: `"Good. Duke gets cranky after six."` },
     har_out: { who: '25', text: `He doesn't answer. One pupil is larger than the other.` },
     har_after: { who: '25', text: `"Thirty years on ships and I trip on my own back steps." He shakes his head, carefully.` },
     karen_talk: { who: 'karen', pid: '25', text: `"If the scan's okay, can I just take him home? He hates hospitals. I'll watch him."`, choices: [
@@ -605,11 +605,11 @@
   const A0 = (s) => ['21', '22', '23'].every((id) => s.p[id].seenAt === null);
   const events = [
     { id: 'tech-hi', when: (s) => s.t >= 2, run(s, A) { A.msg({ from: 'rico', text: `Hey, I'm your tech for Pod B tonight. 21's repeat ECG is due at 3:15. Want me to start vitals?`, replies: [{ label: 'Open tasks for Rico', act: 'delegate' }] }); } },
-    { id: 'ct-22', when: (s) => s.t >= 10, run(s, A) { const P = s.p['22']; P.ctRead = true; A.addLab('22', { name: 'CT head', val: 'No hemorrhage. Early loss of gray-white differentiation, left insula.', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'rad', pid: '22', text: `Prelim CT head on 22 Brooks: no bleed. CTA to follow.` }); } },
+    { id: 'ct-22', when: (s) => s.t >= 10, run(s, A) { const P = s.p['22']; P.ctRead = true; A.addLab('22', { name: 'CT head', val: 'No hemorrhage. Early loss of gray-white differentiation, left insula.', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'rad', pid: '22', text: `Prelim CT head on 22 Haskins: no bleed. CTA to follow.` }); } },
     { id: 'trop-21', when: (s) => s.t >= 18, run(s, A) { const P = s.p['21']; P.tropSeen = true; A.addLab('21', { name: 'hs-Troponin I (0 h)', val: 38, unit: 'ng/L', ref: 'under 16 (women)', flag: 'H' }); A.msg({ from: 'lab', pid: '21', text: `21 Hughes troponin resulted: 38.` }); } },
     { id: 'tpa-order', when: (s) => s.t >= 24 && !s.p['22'].tpaClarified && !s.p['22'].gone, run(s, A) { const P = s.p['22']; P.tpaOrder = true; A.addOrder('22', `Tenecteplase 0.25 mg/kg IV bolus (82 kg: 20.5 mg). BP under 185/110 before, under 180/105 after. Onset 14:30 per EMS.`); A.msg({ from: 'osei', pid: '22', urgent: true, text: `CT's clean on 22. Onset 14:30 per EMS, so he's in the window. Get his pressure under 185/110 and give the tenecteplase. Order's in.`, replies: [{ label: 'Go to 22', act: 'goto', pid: '22' }] }); } },
     { id: 'ros-worse', when: (s) => { const P = s.p['21']; return !P.gone && P.isch >= .32 && P.stemiSeen === null; }, run(s, A) { const P = s.p['21']; P.sympAt = s.t; A.msg({ from: 'rico', pid: '21', urgent: true, text: `21 says the pressure's worse and it's in her jaw now. She's sweaty. Want me to grab a repeat ECG?`, replies: [{ label: 'Yes, now, and bring it straight to me', act: 'ros-ecg' }, { label: 'I\'m coming', act: 'goto', pid: '21' }] }); } },
-    { id: 'cta-22', when: (s) => s.t >= 40 && !s.p['22'].gone, run(s, A) { const P = s.p['22']; P.cta = true; A.addLab('22', { name: 'CTA head and neck', val: 'Occlusion of the proximal left M1 segment.', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'rad', pid: '22', text: `CTA on 22 Brooks: left M1 occlusion.` }); } },
+    { id: 'cta-22', when: (s) => s.t >= 40 && !s.p['22'].gone, run(s, A) { const P = s.p['22']; P.cta = true; A.addLab('22', { name: 'CTA head and neck', val: 'Occlusion of the proximal left M1 segment.', unit: '', ref: '', flag: 'A' }); A.msg({ from: 'rad', pid: '22', text: `CTA on 22 Haskins: left M1 occlusion.` }); } },
     { id: 'ali-shoulder', when: (s) => { const P = s.p['23']; return !P.gone && P.hemo >= .42; }, run(s, A) { A.msg({ from: 'rico', pid: '23', text: `23 says her shoulder hurts and she's dizzy when she sits up. Her HR's ${aHR(s.p['23'])}.`, replies: [{ label: 'I\'m coming', act: 'goto', pid: '23' }, { label: 'Check her orthostatics for me', act: 'ali-ortho' }] }); } },
     { id: 'ken-arrive', when: (s) => s.t >= 70, run(s, A) { const P = s.p['24']; P.arrived = true; P.vit.push({ t: s.t, by: 'EMS', T: 36.9, HR: 128, SBP: 84, DBP: 50, RR: 28, SpO2: 92, O2: 'Room air', pain: 0 }); A.msg({ from: 'nova', pid: '24', urgent: true, text: `EMS in 24: anaphylaxis, peanut. BP 84/50, lips swelling, wheezing. They gave Benadryl, no epi. He's yours.`, replies: [{ label: 'Go to 24', act: 'goto', pid: '24' }] }); } },
     { id: 'ken-airway', when: (s) => { const P = s.p['24']; return P.arrived && !P.gone && P.sev >= 1.35; }, run(s, A) { const P = s.p['24']; P.icu = true; P.gone = true; P.goneAt = s.t; P.goneText = 'Intubated, to the ICU'; A.judge('24-airway', 'safety', -3, `Mr. Watanabe's airway closed.`, `Anaphylaxis with lip swelling and hypotension, and no epinephrine. Antihistamines don't stop airway edema; epinephrine does.`, '24'); A.msg({ from: 'nova', pid: '24', urgent: true, text: `24 has stridor and is desatting. Anesthesia's intubating. Why hasn't he had epi?` }); } },
@@ -623,7 +623,7 @@
     { id: 'ros-arrest', when: (s) => { const P = s.p['21']; return !P.gone && P.called === null && P.isch >= 1; }, run(s, A) { const P = s.p['21']; P.arrest = true; P.gone = true; P.arrestAt = s.t; P.goneAt = s.t; P.goneText = 'To the cath lab after a cardiac arrest'; A.judge('21-arrest', 'safety', -3, `Ms. Hughes went into ventricular fibrillation.`, `An inferior STEMI evolving all afternoon. The repeat ECG and a STEMI call were the intervention.`, '21'); A.msg({ from: 'nova', pid: '21', urgent: true, text: `Code blue 21: VF. Shocked three times, ROSC. Cath lab's taking her now.` }); } },
     { id: 'ros-cath', when: (s) => { const P = s.p['21']; return !P.gone && P.cath !== null && s.t >= P.cath; }, run(s, A) { const P = s.p['21']; P.gone = true; P.goneAt = s.t; P.goneText = 'To the cath lab'; A.msg({ from: 'osei', pid: '21', text: `Cath team's here for 21. Call report to the cath lab.` }); } },
     { id: 'walt-ir', when: (s) => { const P = s.p['22']; return !P.gone && P.ir !== null && s.t >= P.ir; }, run(s, A) { const P = s.p['22']; P.gone = true; P.goneAt = s.t; P.goneText = 'To neurointerventional radiology'; A.msg({ from: 'osei', pid: '22', text: `IR's ready for 22. Thanks for asking his wife.` }); } },
-    { id: 'walt-ich', when: (s) => { const P = s.p['22']; return !P.gone && P.tpaGiven !== null && s.t >= P.ichAt; }, run(s, A) { const P = s.p['22']; P.ich = true; P.icu = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the neuro ICU after a brain hemorrhage'; A.judge('22-ich', 'safety', -3, `Mr. Brooks bled into his brain after thrombolysis.`, `Given outside the window from his true last known well, thrombolysis turns a clot into a hemorrhage.`, '22'); A.msg({ from: 'nova', pid: '22', urgent: true, text: `22 is vomiting and unresponsive. Repeat CT: big left-sided hemorrhage. Heparin and antiplatelets held. Neuro ICU's taking him.` }); } },
+    { id: 'walt-ich', when: (s) => { const P = s.p['22']; return !P.gone && P.tpaGiven !== null && s.t >= P.ichAt; }, run(s, A) { const P = s.p['22']; P.ich = true; P.icu = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the neuro ICU after a brain hemorrhage'; A.judge('22-ich', 'safety', -3, `Mr. Haskins bled into his brain after thrombolysis.`, `Given outside the window from his true last known well, thrombolysis turns a clot into a hemorrhage.`, '22'); A.msg({ from: 'nova', pid: '22', urgent: true, text: `22 is vomiting and unresponsive. Repeat CT: big left-sided hemorrhage. Heparin and antiplatelets held. Neuro ICU's taking him.` }); } },
     { id: 'ali-or', when: (s) => { const P = s.p['23']; return !P.gone && P.or !== null && s.t >= P.or; }, run(s, A) { const P = s.p['23']; P.gone = true; P.goneAt = s.t; P.goneText = 'To the OR with GYN'; A.msg({ from: 'osei', pid: '23', text: `Free fluid on ultrasound. GYN's taking 23 to the OR.` }); } },
     { id: 'ali-rupture', when: (s) => { const P = s.p['23']; return !P.gone && P.hemo >= 1.1; }, run(s, A) { const P = s.p['23']; P.rupture = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the OR in hemorrhagic shock'; A.judge('23-shock', 'safety', -3, `Ms. Moreno went into hemorrhagic shock from a ruptured ectopic.`, `Positive hCG, shoulder pain, dizziness and a heart rate climbing for hours. Young patients hold their pressure until they collapse.`, '23'); A.msg({ from: 'nova', pid: '23', urgent: true, text: `23 passed out. BP 70s. Massive transfusion's started; GYN is taking her straight to the OR.` }); } },
     { id: 'har-herniate', when: (s) => { const P = s.p['25']; return P.arrived && !P.gone && P.bleed >= 1; }, run(s, A) { const P = s.p['25']; P.herniate = true; P.icu = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the OR for emergency craniotomy'; A.judge('25-herniate', 'safety', -3, `Mr. Jensen's subdural expanded until he herniated.`, `A slow bleed on warfarin: the neuro checks show it, and reversal stops it.`, '25'); A.msg({ from: 'nova', pid: '25', urgent: true, text: `25 is GCS 7 with a blown left pupil. Intubating; neurosurgery's taking him to the OR.` }); } },
@@ -690,8 +690,8 @@
     });
     const R = s.p['21'], W = s.p['22'], L = s.p['23'], K = s.p['24'], H = s.p['25'];
     if (R.asa === null && !R.arrest) A.judge('21-noasa', 'meds', -2, `Ms. Hughes never got aspirin.`, `Possible ACS: aspirin, chewed, early.`, '21');
-    if (!W.lkw) A.judge('22-nolkw', 'assess', -2, `Nobody asked when Mr. Brooks was last known well.`, `"When was he last normal?" is the most important question in a stroke alert.`, '22');
-    if (!W.gone && W.lkw && W.called === null) A.judge('22-norep', 'comm', -3, `Mr. Brooks's true last known well never reached the team.`, `It decides the treatment.`, '22');
+    if (!W.lkw) A.judge('22-nolkw', 'assess', -2, `Nobody asked when Mr. Haskins was last known well.`, `"When was he last normal?" is the most important question in a stroke alert.`, '22');
+    if (!W.gone && W.lkw && W.called === null) A.judge('22-norep', 'comm', -3, `Mr. Haskins's true last known well never reached the team.`, `It decides the treatment.`, '22');
     if (!L.private) A.judge('23-noprivate', 'assess', -1, `Ms. Moreno was never asked about her safety alone.`, `Every patient is screened for partner violence in private; a controlling partner is the reason to make sure it happens.`, '23');
     if (K.arrived && K.sev <= .3 && !K.teach && !K.gone) A.judge('24-noteach', 'comm', -1, `Mr. Watanabe was never taught about the autoinjector or biphasic reactions.`, `He came in with an expired EpiPen.`, '24');
     if (H.arrived && !H.gone && H.warf !== 'held' && H.warf !== 'given' && s.t >= 190) A.judge('25-warf-missed', 'meds', -1, `Nobody decided about Mr. Jensen's 18:00 warfarin.`, `Hold it after a head injury, and say so.`, '25');
@@ -742,7 +742,7 @@
     replies,
     priority: {
       judge(r, A) {
-        if (r[0] === '22') A.judge('rank-first', 'priority', 2, `You chose to see Mr. Brooks first.`, `A stroke alert has the shortest clock on the board: every minute, about two million neurons. And his onset time hasn't been checked.`, '22');
+        if (r[0] === '22') A.judge('rank-first', 'priority', 2, `You chose to see Mr. Haskins first.`, `A stroke alert has the shortest clock on the board: every minute, about two million neurons. And his onset time hasn't been checked.`, '22');
         else if (r[0] === '21') A.judge('rank-first', 'priority', 1, `You chose to see Ms. Hughes first.`, `Possible ACS with an ECG due is a strong second. But the stroke alert's window is measured in minutes.`, '22');
         else A.judge('rank-first', 'priority', -1, `You put Ms. Moreno first.`, `She needs watching closely, and she's still compensating. The stroke alert and the possible MI come first.`, '22');
       },

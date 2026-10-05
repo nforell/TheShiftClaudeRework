@@ -48,11 +48,11 @@
       guarded: [`"Busy. Seven letters." He doesn't look up from the crossword.`, `"Fine, thank you." He's polite and closed.`],
       presence: `You sit. He hands you the puzzle and a pencil, not the pen. "You can do the easy ones. In pencil." You get two. He corrects one of them.`,
       beats: [
-        { need: 0, learn: `Taught high school chemistry for thirty-four years.`,
-          text: `"Four letters. 'Noble gas that glows red in signs.'" He doesn't wait. "Neon. The constructor's being lazy tonight." He sets the pen down. "Thirty-four years teaching chemistry. I'm constitutionally unable to leave a wrong answer alone."`,
+        { need: 0, learn: `Surveyed county land for thirty-four years.`,
+          text: `"Four letters. '43,560 square feet.'" He doesn't wait. "Acre. The constructor's being lazy tonight." He sets the pen down. "Thirty-four years surveying for the county. I'm constitutionally unable to leave a wrong measurement alone."`,
           choices: [
-            { label: `What was your favorite demonstration?`, rap: 1, reply: `"A gummy bear dropped in molten potassium chlorate. Shrieks like a banshee. Purple flame." He grins. "The principal made me stop in 1998. Best day of every sophomore's life."` },
-            { label: `I was terrible at chemistry.`, rap: 0, reply: `"Nobody's terrible at chemistry. Plenty of people had a terrible chemistry teacher." He points the pen at you. "Different thing."` },
+            { label: `What was the strangest job you surveyed?`, rap: 1, reply: `"A farmhouse where the property line ran straight through the kitchen. Two brothers, one stove, forty years of not speaking." He grins. "I gave them each half the oven."` },
+            { label: `I can't read a map to save my life.`, rap: 0, reply: `"Nobody's bad at maps. Plenty of people had bad maps." He points the pen at you. "Different thing."` },
             { label: `That's a long career.`, rap: 0, reply: `"Long enough." He picks the pen back up.` },
           ] },
         { need: 1, learn: `His wife Helen died four years ago. He still leaves her half of the crossword blank.`,
@@ -63,7 +63,7 @@
             { label: `Want some help with the downs?`, rap: 0, reply: `"No." Too fast. Then, softer: "No, thank you. Those are hers."` },
           ] },
         { need: 2, learn: `Wants to make it to Friday, when his son flies in from Singapore.`,
-          text: `"My son Daniel flies in Friday. From Singapore. We haven't talked properly in, oh, six years. Politics, then pride, then habit." He's looking at the ceiling. "The oncologist says months, maybe. I just need Friday. I have things to say that I've been rehearsing."`,
+          text: `"My son Peter flies in Friday. From Singapore. We haven't talked properly in, oh, six years. Politics, then pride, then habit." He's looking at the ceiling. "The oncologist says months, maybe. I just need Friday. I have things to say that I've been rehearsing."`,
           choices: [
             { label: `Then Friday is the goal. Can I tell you how the clot shots and the leg squeezers help get you there?`, rap: 1, set: { walterGoal: true },
               judge: [`comm`, 1, `You asked Mr. Brandt what matters most to him.`, `His goal, being well enough on Friday, is also the best argument for clot prevention, and it came from him. Goals-of-care conversations turn a refusal into a shared plan.`],
@@ -72,7 +72,7 @@
             { label: `That's a lot to hope for.`, rap: 0, reply: `"It's one day. I've had twenty-three thousand of them." He shrugs. "I can hope for one more."` },
           ] },
         { need: 3, learn: `Rehearsed what he'll say to his son, and practiced it on you.`,
-          text: `"Can I practice on you? What I'm going to say?" He doesn't wait for an answer. "Daniel. I was wrong about more than I was right about. I was proud of you the whole time. I should have said it at your wedding, and at the airport, and every Sunday since." He stops. "Too much?"`,
+          text: `"Can I practice on you? What I'm going to say?" He doesn't wait for an answer. "Peter. I was wrong about more than I was right about. I was proud of you the whole time. I should have said it at your wedding, and at the airport, and every Sunday since." He stops. "Too much?"`,
           choices: [
             { label: `Not too much. Just that. Exactly that.`, rap: 1, reply: `He nods slowly, lips pressed together. "Exactly that." He writes it in the margin of the crossword, in pen, in capitals.` },
             { label: `He's going to be so glad you said it.`, rap: 1, reply: `"I hope so." His eyes are wet. "Helen always said I rehearsed too much and said too little. Let's see."` },
@@ -80,10 +80,10 @@
           ] },
       ],
       epi: {
-        close: `Walter was sitting up in a chair on Friday when Daniel walked in off a nineteen-hour flight. The day nurse said they talked for three hours with the door closed. Walter died at home six weeks later with Daniel beside him. His son mailed 4 West a crossword, finished, the downs filled in by a second, careful hand.`,
-        warm: `Walter made it to Friday. He and Daniel watched a ballgame together and argued about the umpire. His son says it was the best day they'd had in years.`,
-        distant: `Walter made it to Friday. They talked about the flight and the weather. Daniel flew home on Sunday. The margin of the crossword stayed blank.`,
-        hard: `Walter didn't reach Friday the way he'd hoped. The clot changed everything. Daniel arrived to an ICU room and a father who couldn't say what he'd rehearsed.`,
+        close: `Walter was sitting up in a chair on Friday when Peter walked in off a nineteen-hour flight. The day nurse said they talked for three hours with the door closed. Walter died at home six weeks later with Peter beside him. His son mailed 4 West a crossword, finished, the downs filled in by a second, careful hand.`,
+        warm: `Walter made it to Friday. He and Peter watched a ballgame together and argued about the umpire. His son says it was the best day they'd had in years.`,
+        distant: `Walter made it to Friday. They talked about the flight and the weather. Peter flew home on Sunday. The margin of the crossword stayed blank.`,
+        hard: `Walter didn't reach Friday the way he'd hoped. The clot changed everything. Peter arrived to an ICU room and a father who couldn't say what he'd rehearsed.`,
       },
     },
 

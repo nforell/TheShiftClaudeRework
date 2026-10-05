@@ -15,7 +15,10 @@ with sync_playwright() as p:
         cdp.send('HeapProfiler.collectGarbage'); pg.wait_for_timeout(300); cdp.send('HeapProfiler.collectGarbage')
         d={x['name']:x['value'] for x in cdp.send('Performance.getMetrics')['metrics']}
         return f"heap {d['JSHeapUsedSize']/1e6:.1f}MB nodes {int(d['Nodes'])} listeners {int(d['JSEventListeners'])}"
-    pg.goto(GAME); pg.wait_for_timeout(400)
+    pg.goto(GAME)
+    # A first-time profile opens orientation, which blocks 'new'. Mark it seen; everything else stays first-run.
+    pg.evaluate("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{sound:'off',music:'off'},seen:{orient:1}}))")
+    pg.reload(); pg.wait_for_timeout(400)
     H=lambda a,**kw: pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})",[a,kw])
     st=lambda e: pg.evaluate('(()=>{const s=Shift.ui._state();return '+e+'})()')
     print('start', m())
@@ -38,3 +41,5 @@ with sync_playwright() as p:
     print("slowest", sorted(pg.evaluate("Shift.ui._perf.slowLog") or [], key=lambda x: -x["ms"])[:5])
     print("save KB", pg.evaluate("Math.round(((localStorage.getItem('theshift.save.v1')||'').length+(localStorage.getItem('theshift.profile.v1')||'').length)/1024)"), 'errs', errs)
     b.close()
+print('SOAK FAILED' if errs else 'SOAK CLEAN', len(errs))
+sys.exit(1 if errs else 0)

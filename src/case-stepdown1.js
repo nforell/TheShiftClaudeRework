@@ -22,7 +22,7 @@
     look: { skin: '#C99872', shade: '#A97A55', lip: '#9A5A4E', blush: '#D08A72', iris: '#3A2A1C', head: { w: 56, h: 60, jaw: .3 }, eye: 9.4,
       hair: { style: 'bob', color: '#6B6460' }, brow: { w: 3.2, color: '#4A423E' }, body: { w: 80, cloth: 'gown' }, extras: ['gold', 'thinGlasses'], glasses: '#7A5A3A', smile: .25,
       lines: { calm: `Is my heart still racing? I can feel it in my throat.`, dys: `I can't get a breath. Can you sit me up more?`, anxious: `It's going so fast. Is it going to stop?`, drowsy: `I'm so tired.`, none: `She doesn't answer.` } },
-    bio: `Retired middle-school librarian. Runs the Thursday book club at her church. Her son Luis lives in Sacramento and calls every night at nine.`,
+    bio: `Retired court stenographer. Runs the Thursday book club at her church. Her son Rafael lives in Sacramento and calls every night at nine.`,
     dx: `Atrial fibrillation with RVR, new heart failure`, reason: `New atrial fibrillation with a fast ventricular rate, three days of palpitations and swelling. Admitted from the ED overnight on a diltiazem infusion.`,
     hx: [`Hypertension`, `No known heart disease before this week`, `Ankles swelling for a month; slept in her recliner the last two nights`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `72 kg`,
@@ -94,7 +94,7 @@
       {
         id: '601-amio', name: 'Amiodarone', dose: '150 mg over 10 min, then 1 mg/min', route: 'IV', freq: 'Once, now (new order)', prn: true, available: (s, P) => P.stopOrder,
         block: (s, P) => (P.amioAt !== null ? 'Started at ' + clock(P.amioAt) + '.' : null),
-        checks: (s, P) => [{ label: 'Diltiazem', value: P.diltOn ? 'Still running' : 'Stopped', ok: !P.diltOn }, { label: 'QTc', value: '448 ms', ok: true }, { label: 'Line', value: 'Dedicated IV, in-line filter', ok: true }],
+        checks: (s, P) => [{ label: 'Diltiazem', value: P.diltOn ? 'Still running' : 'Stopped', ok: !P.diltOn }, { label: 'QTc', value: '448 ms', ok: true }, { label: 'Anticoagulation', value: 'Apixaban since last night. AF over 48 h: amiodarone can convert her; cardiology aware, TEE if she does', ok: null }, { label: 'Line', value: 'Dedicated IV, in-line filter', ok: true }],
         give(s, P, A) { P.amioAt = s.t; if (P.diltOn) A.judge('601-amio-dilt', 'meds', -1, `You started amiodarone with the diltiazem still running.`, `The order was to switch, not to add. Two rate-control drugs together can drop her pressure and her rate too far.`, '601'); else A.judge('601-amio', 'meds', 1, `You started amiodarone after stopping the diltiazem.`, `Amiodarone controls the rate without weakening the heart. Bolus over 10 minutes, then the infusion, on its own line.`, '601'); return `Amiodarone 150 mg over 10 minutes on the pump, then 1 mg/min. In-line filter. Monitor on.`; },
       },
       {
@@ -186,7 +186,7 @@
     ],
     vitals(s, P) { return { T: 36.9, HR: rayHR(P) + jit(s, 3), SBP: raySBP(P) + jit(s, 4) * 2, DBP: Math.round(80 - P.bleed * 22), RR: 16 + (P.bleed > .8 ? 4 : 0), SpO2: 97, O2: 'Room air', pain: rayPain(P) }; },
     assess: {
-      general: (s, P) => (P.bleed > .9 ? `Pale and sweaty, restless, keeps shifting his hips. "I feel washed out."` : P.bleed > .3 ? `Lying flat, rubbing at the right side of his lower back, wincing.` : P.upright ? `Sitting on the edge of the bed, which he isn't supposed to be.` : `Flat, bored, telling Luis about the 51 bus.`),
+      general: (s, P) => (P.bleed > .9 ? `Pale and sweaty, restless, keeps shifting his hips. "I feel washed out."` : P.bleed > .3 ? `Lying flat, rubbing at the right side of his lower back, wincing.` : P.upright ? `Sitting on the edge of the bed, which he isn't supposed to be.` : `Flat, bored, telling Benny about the 51 bus.`),
       resp: () => `Unlabored. Clear.`,
       cardiac: (s, P, A) => { P.k.card = s.t; const v = A.vitals('603'); return `HR ${v.HR}, regular${v.HR > 100 ? ', sinus tachycardia on the monitor' : ''}. BP ${v.SBP}/${v.DBP}. ${P.bleed > .6 ? 'Cool, clammy hands. Capillary refill 3 seconds.' : 'Warm, cap refill under 2 seconds.'}`; },
       neuro: (s, P) => (P.bleed > 1 ? `Oriented but slow to answer. Anxious.` : `Alert, oriented, chatty.`),
@@ -273,8 +273,8 @@
     id: '605', room: '605', name: 'Dolores Price', short: 'Mrs. Price', age: 74, sex: 'F', mrn: '00288140',
     look: { skin: '#EFD3BE', shade: '#D2AE96', lip: '#B0675F', blush: '#E79B8C', iris: '#5C7A6A', head: { w: 55, h: 60, jaw: .15 }, eye: 9.2,
       hair: { style: 'curls', color: '#D9D4CF' }, brow: { w: 2.8, color: '#B8AFA8' }, body: { w: 78, cloth: 'gown', cardigan: '#7A93B0' }, extras: ['pearls', 'wrinkles'], smile: .45,
-      lines: { calm: `Is it time for my crossword? Do you know a seven-letter word for "steadfast"?`, pain: `My left foot. It's gone cold and it hurts.`, anxious: `Something's wrong with my foot.`, drowsy: `I'm a bit sleepy, dear.`, none: `She doesn't answer.` } },
-    bio: `Retired high-school chemistry teacher. Does the crossword in pen. Widowed; her neighbor Pat feeds her cat, Mendeleev.`,
+      lines: { calm: `Is it time for my crossword? Do you know an eight-letter word for "steadfast"?`, pain: `My left foot. It's gone cold and it hurts.`, anxious: `Something's wrong with my foot.`, drowsy: `I'm a bit sleepy, dear.`, none: `She doesn't answer.` } },
+    bio: `Retired high-school chemistry teacher. Keeps a crossword going at all times. Her neighbor Bernadette feeds her cat, Mendeleev.`,
     dx: `Pulmonary embolism, heparin day 5`, reason: `Bilateral pulmonary emboli after a long car trip to her sister's. On a heparin infusion since admission; transition to apixaban planned.`,
     hx: [`Hypertension`, `Osteoarthritis`, `Never had heparin before this admission`],
     allergies: `Sulfa (rash)`, code: `Full code`, weight: `70 kg`,
@@ -337,7 +337,7 @@
         },
       },
       {
-        id: '605-arga', name: 'Argatroban infusion', dose: '1 mcg/kg/min (start)', route: 'IV', freq: 'Continuous, titrate to aPTT 1.5–3 × baseline (new order)', prn: true, infusion: true, available: (s, P) => P.called,
+        id: '605-arga', name: 'Argatroban infusion', dose: '2 mcg/kg/min (start)', route: 'IV', freq: 'Continuous, titrate to aPTT 1.5–3 × baseline (new order)', prn: true, infusion: true, available: (s, P) => P.called,
         block: (s, P) => (P.argaAt !== null ? 'Started at ' + clock(P.argaAt) + '.' : null),
         checks: (s, P) => [{ label: 'Heparin', value: P.stopped !== null ? `Stopped at ${clock(P.stopped)}` : 'Still running', ok: P.stopped !== null }, { label: 'Liver function', value: 'Normal', ok: true }, { label: 'Heparin flushes', value: P.flushFixed ? 'Changed to saline' : 'Still ordered', ok: !!P.flushFixed }],
         give(s, P, A) { P.argaAt = s.t; if (P.stopped === null) { A.judge('605-arga-hep', 'meds', -2, `You started argatroban with heparin still running.`, `Two anticoagulants at once is a bleeding risk, and the heparin is the cause of her clotting. Stop the heparin first.`, '605'); } else A.judge('605-arga', 'meds', 1, `You started argatroban after stopping the heparin.`, `She still has a PE and now a clotting disorder; she needs anticoagulation that isn't heparin.`, '605'); return `Argatroban started at 1 mcg/kg/min. aPTT in 2 hours.`; },
@@ -367,7 +367,7 @@
       respond(s, P, A, picked, req) {
         if (!picked.includes('plt')) { if (req === 'hit') return `What makes you think HIT? What are her platelets doing?`; A.judge('605-sbar-nomo', 'comm', 0, `You called about Mrs. Price's aPTT.`, `Fine, but the nomogram covers the aPTT. The thing worth a call is in the CBC.`, '605'); return `Follow the nomogram. What did her CBC show?`; }
         P.called = true; P.flushFixed = P.flushFixed || false;
-        A.addOrder('605', `Discontinue all heparin, including flushes: flush with normal saline. Add heparin to the allergy list (suspected HIT). PF4/heparin antibody. Argatroban 1 mcg/kg/min, aPTT in 2 hours. No platelet transfusion. Bilateral lower extremity duplex.`);
+        A.addOrder('605', `Discontinue all heparin, including flushes: flush with normal saline. Add heparin to the allergy list (suspected HIT). PF4/heparin antibody. Argatroban 2 mcg/kg/min, aPTT in 2 hours. No platelet transfusion. Bilateral lower extremity duplex.`);
         A.judge('605-sbar', 'comm', req === 'hit' ? 2 : 1, `You called about suspected HIT in Mrs. Price.`, `Timing, a platelet drop of more than half, no other cause: a high-probability 4T score. HIT clots more than it bleeds, so she needs a different anticoagulant, not none.`, '605');
         return `Good catch. That's HIT until proven otherwise. ${P.stopped === null ? 'Stop the heparin now, flushes too. ' : ''}Argatroban, antibody, duplex. No platelets.${P.footSeen ? ' And I\'m calling vascular about that foot.' : ''}`;
       },
@@ -391,7 +391,7 @@
     id: '607', room: '607', name: 'Theodore Lindqvist', short: 'Mr. Lindqvist', age: 81, sex: 'M', mrn: '00193357',
     look: { skin: '#EBC9AE', shade: '#CFA88C', lip: '#A9655B', blush: '#E2958A', iris: '#4E6E8E', head: { w: 56, h: 63, jaw: .5 }, eye: 9, hair: { style: 'balding', color: '#E1DDD8' }, brow: { w: 4, color: '#CFC9C2' }, body: { w: 78, cloth: 'flannel' }, extras: ['glasses', 'wrinkles'], glasses: '#2E2A28', smile: .35,
       lines: { calm: `I fainted in church. In front of the whole choir. Very dramatic of me.`, nausea: `My stomach's turning. Could I have something?`, dizzy: `The room just went sideways.`, anxious: `My heart did a funny flip.`, none: `He doesn't answer.` } },
-    bio: `Retired piano tuner. Sings bass in the Lutheran church choir. Married to Ingrid for 55 years. Grows tomatoes he names after composers.`,
+    bio: `Retired clock repairman. Sings bass in the Lutheran church choir. Married to Ingrid for 55 years. Grows roses he names after composers.`,
     dx: `Syncope, prolonged QT`, reason: `Passed out in church yesterday. No injury. Admitted for telemetry; QTc 516 on this morning's ECG, potassium and magnesium low.`,
     hx: [`Depression, on citalopram`, `Mild heart failure, on furosemide`, `Chronic kidney disease stage 2`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `68 kg`,
@@ -400,7 +400,7 @@
     nightVitals: { T: 36.6, HR: 64, SBP: 128, DBP: 70, RR: 16, SpO2: 96, O2: 'Room air', pain: 0 },
     labs: [
       { name: 'Potassium', val: 3.2, unit: 'mmol/L', ref: '3.5–5.0', flag: 'L', t: -60 },
-      { name: 'Magnesium', val: 1.4, unit: 'mg/dL', ref: '1.7–2.4', flag: 'L', t: -60 },
+      { name: 'Magnesium', val: 1.4, unit: 'mg/dL', ref: '1.7–2.2', flag: 'L', t: -60 },
       { name: 'Creatinine', val: 1.2, unit: 'mg/dL', ref: '0.7–1.3', flag: '', t: -60 },
       { name: 'ECG 06:30', val: 'Sinus rhythm 64, QTc 516 ms', unit: '', ref: 'QTc under 450', flag: 'H', t: -30 },
     ],
@@ -485,7 +485,7 @@
       },
     },
     scene: (s, P) => ({ tele: true, teleWave: P.run && s.t - P.runAt < 30 ? 'tors' : 'normal', iv: P.mgGiven !== null && s.t - P.mgGiven < 60 ? 'running' : 'lock', tray: s.t >= 100 ? 'full' : 'eaten', fallPrec: true, flowers: true, empty: P.icu, emptyText: 'Bed stripped. Transferred to the CCU after torsades.' }),
-    clues: () => ({ flowers: `A paper cup with a tomato seedling labeled "Brahms." A card in careful handwriting: "Come home, Theo. The choir is lost without its bass. — Ingrid"`, alarm: `Bed alarm on. Call light clipped to his shirt.`, tray: `Rye toast and coffee, barely touched.` }),
+    clues: () => ({ flowers: `A rose cutting in a paper cup, labeled "Brahms." A card in careful handwriting: "Come home, Theo. The choir is lost without its bass. — Ingrid"`, alarm: `Bed alarm on. Call light clipped to his shirt.`, tray: `Rye toast and coffee, barely touched.` }),
     rig: (s, P) => ({ nausea: s.t >= 100 && !P.ond, dizzy: P.run && s.t - P.runAt < 20, anxious: P.run ? .4 : 0 }),
     status: (s, P) => (P.icu ? 'gone' : P.run || qtc(P) >= 540 ? 'urgent' : qtc(P) >= 500 ? 'watch' : 'stable'),
     outcome(s, P) {
@@ -530,7 +530,7 @@
     ] },
     dol_a: { who: '605', text: `"Thank you." She clicks her pen. "Mendeleev would be proud. My cat, not the chemist. Well. Both."` },
     dol_b: { who: '605', text: `"Mm." She writes something in the crossword margin and doesn't look up.` },
-    dol_after: { who: '605', text: `"Seven letters, 'watchful.' Vigilant." She fills it in. "That's you today."` },
+    dol_after: { who: '605', text: `"Eight letters, 'watchful.' Vigilant." She fills it in. "That's you today."` },
     dol_foot: { who: '605', text: `"My left foot's gone cold. Pins and needles, and it hurts." She pulls back the blanket. The foot is paler than the other one.` },
 
     theo_talk: { who: '607', text: `"I fainted in church. Fell off the choir riser in the middle of the Kyrie." He chuckles. "Ingrid says I'm grumpy lately, so I've been taking two of my happy pills. Is that why?"`, choices: [

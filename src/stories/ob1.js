@@ -10,7 +10,7 @@
         { need: 0, learn: `With her first birth, she told staff something felt wrong and was told she was being dramatic.`,
           text: `"Can I tell you something? With Nia, I kept saying something was wrong after she came out. They said I was being dramatic. Turned out I'd torn and nobody had checked." She looks at you. "So when you came in and actually looked, I almost cried."`,
           choices: [
-            { label: `I'm sorry that happened. You know your body. If something feels wrong today, tell me, and I'll check, every time.`, rap: 1, reply: `"Every time. I'm holding you to that." She settles back. "Andre's going to like you."` },
+            { label: `I'm sorry that happened. You know your body. If something feels wrong today, tell me, and I'll check, every time.`, rap: 1, reply: `"Every time. I'm holding you to that." She settles back. "Desmond's going to like you."` },
             { label: `That sounds frustrating. Things are different here.`, rap: 0, reply: `"Hope so." She nods, unconvinced, but not unfriendly.` },
             { label: `I'm sure they had their reasons.`, rap: -1, reply: `"Sure." She turns to the baby.` },
           ] },
@@ -31,7 +31,7 @@
         close: `Keisha went home on day two with Jalen. She told her seventh graders about weighing pads, and at the end of the year a student did a science fair project on why measuring beats guessing. She sent the unit a photo of the poster.`,
         warm: `Keisha went home on day two. Her hemoglobin was 10.1; she took the iron, mostly. Nia still calls the baby Pickle.`,
         distant: `Keisha Brown was discharged on postpartum day two. Her chart says "uterus firm, lochia moderate." It doesn't say she'd been dismissed before, or that this time she wasn't.`,
-        hard: (s, P) => (P.gone ? `Keisha spent the night in L&D with a balloon and two units of blood. When Andre got back, she said, "I told them it felt wrong." He said, "I know you did."` : `Keisha's asthma attack after the carboprost frightened her more than the bleeding. She asked for "no more surprises" to be written in her chart.`),
+        hard: (s, P) => (P.gone ? `Keisha spent the night in L&D with a balloon and two units of blood. When Desmond got back, she said, "I told them it felt wrong." He said, "I know you did."` : `Keisha's asthma attack after the carboprost frightened her more than the bleeding. She asked for "no more surprises" to be written in her chart.`),
       },
     },
     '214': {
@@ -113,21 +113,21 @@
         { need: 0, learn: `She stopped sertraline the day her pregnancy test was positive, without asking anyone.`,
           text: `"I stopped my sertraline the day I saw the two lines. Didn't ask anyone. I read something online." She shakes her head. "Three years trying, and I wasn't going to risk anything."`,
           choices: [
-            { label: `That came from wanting to protect him. For a lot of people, the risk of untreated depression is bigger than the risk of the medicine, in pregnancy and with breastfeeding. Psychiatry can go through it with you today.`, rap: 1, reply: `"Nobody told me that." She looks at Leo. "I wish someone had told me that."` },
+            { label: `That came from wanting to protect him. For a lot of people, the risk of untreated depression is bigger than the risk of the medicine, in pregnancy and with breastfeeding. Psychiatry can go through it with you today.`, rap: 1, reply: `"Nobody told me that." She looks at Miles. "I wish someone had told me that."` },
             { label: `You should have talked to your doctor first.`, rap: -1, reply: `"I know." She closes her eyes.` },
             { label: `A lot of people do that.`, rap: 0, reply: `"Do they?" She seems a little relieved.` },
           ] },
         { need: 1, learn: `She drew the plans for the nursery and hasn't been able to imagine herself in it.`,
           text: `"I drew the nursery. Every inch. The light comes in from the east in the morning." She almost smiles. "I could never picture myself in it. Just him."`,
           choices: [
-            { label: `That's the depression talking, not the truth about you. When it lifts, a lot of people find the picture comes back.`, rap: 1, reply: `"I hope so." She holds Leo up to the window light for a second. "East light. He's going to like it."` },
+            { label: `That's the depression talking, not the truth about you. When it lifts, a lot of people find the picture comes back.`, rap: 1, reply: `"I hope so." She holds Miles up to the window light for a second. "East light. He's going to like it."` },
             { label: `It sounds beautiful.`, rap: 0, reply: `"It is." Then, quietly, "It is."` },
           ] },
       ],
       epi: {
-        close: `Sarah stayed one more night. Psychiatry restarted her sertraline, and she joined a postpartum support group Tom found. At her six-week visit her EPDS was 8. She brought Leo back to the unit at four months, asleep in a carrier, and left a drawing of the east window for the nurses.`,
+        close: `Sarah stayed one more night. Psychiatry restarted her sertraline, and she joined a postpartum support group Tom found. At her six-week visit her EPDS was 8. She brought Miles back to the unit at four months, asleep in a carrier, and left a drawing of the east window for the nurses.`,
         warm: `Sarah went home a day later than planned, with a psychiatry follow-up and her sertraline restarted. Tom took two weeks off. At six weeks she said she was "getting there."`,
-        distant: `Sarah Whitfield was discharged on postpartum day two with outpatient psychiatry follow-up.`,
+        distant: `Sarah Mercer was discharged on postpartum day two with outpatient psychiatry follow-up.`,
         hard: `Sarah went home at 14:00, as planned. The discharge checklist had every box ticked.`,
       },
     },

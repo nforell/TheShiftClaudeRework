@@ -14,15 +14,15 @@
             { label: `That's a lovely thing to have saved.`, rap: 0, reply: `"Yeah." He nods. You can tell he hasn't opened it in a while.` },
             { label: `Think about Mia. She needs her dad.`, rap: -1, reply: `His face closes. "I know what she needs. That's the whole problem." He turns toward the wall.` },
           ] },
-        { need: 1, learn: `His sister Grace found him on Tuesday. She broke the back window to get in.`,
-          text: `"Grace found me Tuesday. She had a feeling, drove over, broke the back window with a flowerpot." He looks at his knuckles. "She cut her arm on the glass. Eleven stitches. I keep thinking about her sitting in the ED with a towel around her arm while they worked on me."`,
+        { need: 1, learn: `His sister Renata found him on Tuesday. She broke the back window to get in.`,
+          text: `"Renata found me Tuesday. She had a feeling, drove over, broke the back window with a flowerpot." He looks at his knuckles. "She cut her arm on the glass. Eleven stitches. I keep thinking about her sitting in the ED with a towel around her arm while they worked on me."`,
           choices: [
             { label: `That sounds like a lot to carry, knowing she was hurt too. What is it like to think about?`, rap: 1, reply: `"Like I owe her something I can't pay back." A long breath. "She texted me this morning. Just a heart. She never sends emojis. She thinks they're stupid."` },
             { label: `She must love you a lot.`, rap: 0, reply: `"Yeah." He says it like it hurts. Maybe it does.` },
             { label: `You're lucky she got there in time.`, rap: -1, reply: `"People keep saying 'lucky.'" His voice is flat. "Tuesday I didn't feel lucky."` },
           ] },
-        { need: 2, learn: `His reasons to live: Mia, Grace, and the bees. He wants to finish a film about a beekeeper.`,
-          text: `He's holding a pencil and a piece of paper from the group room. At the top, in block letters: REASONS. "Andre said to write some down for the safety plan. I've got two. Mia. Grace." He taps the empty third line. "It feels stupid to write a third one."`,
+        { need: 2, learn: `His reasons to live: Mia, Renata, and the bees. He wants to finish a film about a beekeeper.`,
+          text: `He's holding a pencil and a piece of paper from the group room. At the top, in block letters: REASONS. "Andre said to write some down for the safety plan. I've got two. Mia. Renata." He taps the empty third line. "It feels stupid to write a third one."`,
           choices: [
             { label: `It isn't stupid. Is there something you'd want to be here for, even a small thing?`, rap: 1, set: { reasons: true },
               judge: [`comm`, 1, `You helped Daniel name his reasons for living.`, `Reasons for living are part of a safety plan, in his words and his handwriting. You didn't argue him out of the pain. You helped him find what's already holding him.`],
@@ -30,8 +30,8 @@
             { label: `Two is a good start. You can add more later.`, rap: 0, reply: `"Okay." He sets the paper down. The third line stays empty.` },
             { label: `You have so much to live for. Your whole life's ahead of you.`, rap: -1, reply: `"Sure." He folds the paper in half. You've told him how he should feel, and he's heard that one a lot.` },
           ] },
-        { need: 3, learn: `Called Grace. Asked her to bring the nine-legged bee Mia drew for him.`,
-          text: `He's off the phone. His eyes are red, but his shoulders are down. "I called Grace. I told her the truth, what I had planned for tonight. She didn't yell. She just cried and said 'okay, okay.'" He almost smiles. "I asked her to bring the drawing on my fridge. Mia drew me a bee. It has nine legs. She says the extra one is for holding hands."`,
+        { need: 3, learn: `Called Renata. Asked her to bring the nine-legged bee Mia drew for him.`,
+          text: `He's off the phone. His eyes are red, but his shoulders are down. "I called Renata. I told her the truth, what I had planned for tonight. She didn't yell. She just cried and said 'okay, okay.'" He almost smiles. "I asked her to bring the drawing on my fridge. Mia drew me a bee. It has nine legs. She says the extra one is for holding hands."`,
           choices: [
             { label: `That took courage. How do you feel now?`, rap: 1, reply: `"Tired. Like after a long session." He rubs his eyes. "But it's a different tired. The other kind felt like the end of something. This feels like the middle."` },
             { label: `A bee holding hands. I love that.`, rap: 1, reply: `"Right? Biologically inaccurate. Emotionally correct." He laughs, a real one, and then looks surprised at himself.` },
@@ -40,17 +40,17 @@
       ],
       epi: {
         close: (s, P) => (P.reported
-          ? `Daniel stayed three weeks. Grace came every day and brought the nine-legged bee, which lived taped above his bed. Eleven months later a documentary about an 81-year-old beekeeper played at a small festival. The last line of the credits read: "Thank you to the day staff of 3 East, who asked me the real question."`
-          : `Daniel's hold ended at 14:00. The psychiatrist never heard the whole story, so he went home with Grace. ${P.reasons ? 'He took the paper that said REASONS. Grace taped it to the fridge, next to the nine-legged bee.' : 'He took the nine-legged bee with him.'} He called the crisis line twice that month. Both times, he says, someone picked up. He's still here.`),
+          ? `Daniel stayed three weeks. Renata came every day and brought the nine-legged bee, which lived taped above his bed. Eleven months later a documentary about an 81-year-old beekeeper played at a small festival. The last line of the credits read: "Thank you to the day staff of 3 East, who asked me the real question."`
+          : `Daniel's hold ended at 14:00. The psychiatrist never heard the whole story, so he went home with Renata. ${P.reasons ? 'He took the paper that said REASONS. Renata taped it to the fridge, next to the nine-legged bee.' : 'He took the nine-legged bee with him.'} He called the crisis line twice that month. Both times, he says, someone picked up. He's still here.`),
         warm: (s, P) => (P.reported
-          ? `Daniel stayed on the unit for two more weeks and started a new medication. Grace drove him home. He goes to therapy on Thursdays. He's still editing the bee film, a little at a time.`
-          : `Daniel went home at 14:00 when his hold ended. Grace drove him and stayed the week. He's on a waitlist for a therapist. The team never learned how close tonight had been.`),
+          ? `Daniel stayed on the unit for two more weeks and started a new medication. Renata drove him home. He goes to therapy on Thursdays. He's still editing the bee film, a little at a time.`
+          : `Daniel went home at 14:00 when his hold ended. Renata drove him and stayed the week. He's on a waitlist for a therapist. The team never learned how close tonight had been.`),
         distant: (s, P) => (P.reported
           ? `Daniel was certified and stayed on. He didn't talk much to the day staff. His chart says he's "participating in groups," which is true, and not the whole story.`
           : `Daniel's hold ended at 14:00 and he walked out calm, his bag already packed. The team didn't know what he'd planned for tonight.`),
         hard: (s, P) => (P.attempt
-          ? `Daniel survived. He went to the ED, then back to 3 East on a longer hold. Grace was there when he woke up. She asked the nurses one thing: "Is anybody talking to him?"`
-          : `Daniel walked out at 14:00, calm and smiling, and a plan still in place. Grace was waiting in the parking lot. What happens next isn't in any chart. The warning signs were there by 08:00.`),
+          ? `Daniel survived. He went to the ED, then back to 3 East on a longer hold. Renata was there when he woke up. She asked the nurses one thing: "Is anybody talking to him?"`
+          : `Daniel walked out at 14:00, calm and smiling, and a plan still in place. Renata was waiting in the parking lot. What happens next isn't in any chart. The warning signs were there by 08:00.`),
       },
     },
 
@@ -95,7 +95,7 @@
       watch: true,
       idle: ['bob_after'],
       guarded: [`"Just gonna rest my eyes, kid."`, `He's holding the emesis basin in his lap. "Maybe later."`],
-      presence: `You sit with him. He shakes less when he isn't trying so hard to hold still. "Ruth always sits on the left," he says. "You're on the right. It's weird." You move. He laughs.`,
+      presence: `You sit with him. He shakes less when he isn't trying so hard to hold still. "Carol always sits on the left," he says. "You're on the right. It's weird." You move. He laughs.`,
       beats: [
         { need: 0, learn: `Carried mail for 26 years. His favorite thing was delivering a thick envelope: good news.`,
           text: `"Twenty-six years carrying mail. Same route, Elm to Birch." He holds up a shaky hand and smiles at it. "Best thing was a thick envelope in May. College acceptance. Thin ones are rejections. I'd see a kid waiting on the porch and I'd know before they did."`,
@@ -105,7 +105,7 @@
             { label: `Let's focus on getting your levels down.`, rap: -1, reply: `"Right. Sure." He goes quiet. Most people probably do only ask about his levels.` },
           ] },
         { need: 1, learn: `Before lithium, he lost most of a year. He calls that man "not me."`,
-          text: `"People think I'm a nuisance about the lithium. Twenty years." He's looking at the ceiling. "Before it, I lost a year. 2005. I don't remember most of it. Ruth does. She says I painted the whole house at three in the morning and then couldn't get out of bed until Easter." He swallows. "That wasn't me. The lithium gave me back."`,
+          text: `"People think I'm a nuisance about the lithium. Twenty years." He's looking at the ceiling. "Before it, I lost a year. 2005. I don't remember most of it. Carol does. She says I painted the whole house at three in the morning and then couldn't get out of bed until Easter." He swallows. "That wasn't me. The lithium gave me back."`,
           choices: [
             { label: `So the lithium feels like part of what keeps you yourself. That's why this has been so scary.`, rap: 1, reply: `"Yeah." It comes out rough. "Today I thought, what if they take it away? What if I lose another year?" He looks at you. "They're not going to take it away, right? Just fix it?"` },
             { label: `We'll get the dose right, and you'll be back on track.`, rap: 0, reply: `"Hope so." He grips the basin a little tighter.` },
@@ -121,9 +121,9 @@
       ],
       epi: {
         close: `Bob's lithium level came down over two days, and his cardiologist switched the water pill. He went home steady. In March, 3 East got a photo: a yellow birdhouse with blue shutters, and a baby in a car seat underneath it. On the back: "Straight lines. Thanks, kid. — Bob."`,
-        warm: `Bob's level came down and he went home with a new blood pressure pill. Ruth made him put a list on the fridge: no Motrin, call first.`,
+        warm: `Bob's level came down and he went home with a new blood pressure pill. Carol made him put a list on the fridge: no Motrin, call first.`,
         distant: `Bob went home after his level normalized. He still isn't sure which of his pills caused all this.`,
-        hard: `Bob went to medicine for a monitored correction. He was very sick for several days. When he got back to baseline, the first thing he asked Ruth was whether it was still possible to finish the birdhouse by March.`,
+        hard: `Bob went to medicine for a monitored correction. He was very sick for several days. When he got back to baseline, the first thing he asked Carol was whether it was still possible to finish the birdhouse by March.`,
       },
     },
 

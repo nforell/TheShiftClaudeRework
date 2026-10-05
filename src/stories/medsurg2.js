@@ -6,8 +6,8 @@
       guarded: [`"I'm fine, hon. Just let me breathe." She keeps her eyes shut.`, `"Can't really talk right now." She's concentrating on every breath.`],
       presence: `You sit and breathe with her: in through the nose, out through pursed lips. After a minute she's matching you. Neither of you says a word. It's enough.`,
       beats: [
-        { need: 0, learn: `Dispatched school buses for thirty-one years.`,
-          text: `"Thirty-one years I dispatched school buses. Snow days, flat tires, a kindergartner who got on the wrong bus and ended up at the high school." She grins. "You learn to keep your voice calm while everything's on fire. Funny. I can't do it for myself."`,
+        { need: 0, learn: `Dispatched tow trucks for thirty-one years.`,
+          text: `"Thirty-one years I dispatched tow trucks. Snow days, jackknifed semis, a man who called for a tow because his car was parked on his own lawn." She grins. "You learn to keep your voice calm while everything's on fire. Funny. I can't do it for myself."`,
           choices: [
             { label: `What did you say to a driver who was panicking?`, rap: 1, reply: `"Slow down. Tell me what you see. We'll handle it one thing at a time." She hears herself. "Huh. That's the breathing thing, isn't it? The lips thing." She tries it without being asked.` },
             { label: `You're doing fine.`, rap: 0, reply: `"Am I?" She eyes the oxygen monitor like it might argue.` },
@@ -94,15 +94,15 @@
       guarded: [`"Hm? Oh. I'm fine, dear." You were standing on her left.`, `"Just resting my eyes." She doesn't open them.`],
       presence: `You stand on her right side and wait. She hums something under her breath, slow and sad. "Chopin," she says, eyes closed. "You can stay."`,
       beats: [
-        { need: 0, learn: `Taught piano for fifty years. Her late husband Kenji turned the pages, always late.`,
-          text: `She pats the right side of the bed. "This side, dear. My left ear retired in 1987: a very enthusiastic student and a very loud Rachmaninoff." She laughs. "Fifty years of lessons. My husband Kenji turned the pages at every recital. Never once on time."`,
+        { need: 0, learn: `Taught piano for fifty years. Her late husband Hiro turned the pages, always late.`,
+          text: `She pats the right side of the bed. "This side, dear. My left ear retired in 1987: a very enthusiastic student and a very loud Rachmaninoff." She laughs. "Fifty years of lessons. My husband Hiro turned the pages at every recital. Never once on time."`,
           choices: [
             { label: `What did he do when he missed the turn?`, rap: 1, reply: `"He'd hum the next bar, loudly and wrong, so I'd laugh instead of panic." She's smiling at something far away. "Forty-six years. I still hear him humming."` },
             { label: `I'll stand on your right from now on.`, rap: 1, reply: `"Thank you. Most people just shout into the wrong ear." She pats your hand.` },
             { label: `Fifty years is amazing.`, rap: 0, reply: `"It went by in a minute." She smooths the blanket.` },
           ] },
         { need: 1, learn: `Chose DNR after watching CPR on her husband. She still wants blood and every other treatment.`,
-          text: `"You've seen the letters on my chart. D-N-R. People see them and stop looking at me." She holds your gaze. "Kenji's heart stopped in our kitchen. I watched them break his ribs for twenty minutes. I won't have that. But I'd like the blood, please. I'd like to see my granddaughter's recital."`,
+          text: `"You've seen the letters on my chart. D-N-R. People see them and stop looking at me." She holds your gaze. "Hiro's heart stopped in our kitchen. I watched them break his ribs for twenty minutes. I won't have that. But I'd like the blood, please. I'd like to see my granddaughter's recital."`,
           choices: [
             { label: `DNR only means no CPR. Everything else, the blood, the fluids, watching you closely: you get all of it. You'll get to that recital.`, rap: 1,
               judge: [`comm`, 1, `You made sure Mrs. Nakamura knew what her DNR does and doesn't mean.`, `DNR means no CPR. It doesn't mean do not treat. She wants blood, fluids and every other treatment, and hearing that from the nurse hanging the blood matters.`],
@@ -111,7 +111,7 @@
             { label: `Are you sure you want blood if you're DNR?`, rap: -1, reply: `She stiffens. "Quite sure." The warmth goes out of the room.` },
           ] },
         { need: 2, learn: `Her granddaughter Emi plays a Chopin nocturne at her recital, and asked Bea to turn the pages.`,
-          text: `"Emi is eleven. She plays Chopin like she's angry at him." Bea laughs. "Her recital is on the twenty-first. The Nocturne in E-flat. She asked me to turn her pages." A pause. "Kenji would find that very funny."`,
+          text: `"Emi is eleven. She plays Chopin like she's angry at him." Bea laughs. "Her recital is on the twenty-first. The Nocturne in E-flat. She asked me to turn her pages." A pause. "Hiro would find that very funny."`,
           choices: [
             { label: `Then we have a deadline. Let's get your blood count up so you're turning pages on the twenty-first.`, rap: 1, reply: `"On time," she says firmly. "Unlike some people." She taps the IV pole like a metronome.` },
             { label: `That sounds wonderful.`, rap: 0, reply: `"It will be." She says it like a promise to herself.` },
@@ -201,13 +201,13 @@
         { need: 2, learn: `Wants to be the first CPA in her family; her mother cleaned offices at night so she could study.`,
           text: `"Second year, accounting. I want to be a CPA. First one in my family who does the taxes instead of getting done by them." She grins. "My mom cleaned offices at night for eleven years so I could do this. My midterm was supposed to be Friday. If I lose this semester..."`,
           choices: [
-            { label: `Schools have ways to handle medical absences. I'll ask the team for a letter so you can email your professor tonight.`, rap: 1, reply: `"A letter. Okay." She's already typing with one thumb. "Professor Adeyemi is nice. She'll let me make it up." She looks at her mother. "Hooyo. It's okay."` },
+            { label: `Schools have ways to handle medical absences. I'll ask the team for a letter so you can email your professor tonight.`, rap: 1, reply: `"A letter. Okay." She's already typing with one thumb. "Professor Delacroix is nice. She'll let me make it up." She looks at her mother. "Hooyo. It's okay."` },
             { label: `Your health comes first.`, rap: 0, reply: `"I know." She says it the way people do when they don't feel it.` },
             { label: `One semester isn't the end of the world.`, rap: 0, reply: `"It kind of is, for us." She puts the phone down.` },
           ] },
       ],
       epi: {
-        close: `Amina's appendix came out that night, with a Somali interpreter at her mother's side for every question. She emailed Professor Adeyemi from recovery. In June her brother Abdi left a card at the 4 West desk: a drawing of a calculator in a graduation cap. "She passed. She says thanks for letting her just be the patient."`,
+        close: `Amina's appendix came out that night, with a Somali interpreter at her mother's side for every question. She emailed Professor Delacroix from recovery. In June her brother Abdi left a card at the 4 West desk: a drawing of a calculator in a graduation cap. "She passed. She says thanks for letting her just be the patient."`,
         warm: `Amina's surgery went well. She went home the next day and took her midterm two weeks late. She got a B-plus and is still annoyed about the minus.`,
         distant: `Amina's surgery went well. Tired and in pain, she translated her own discharge instructions for her mother. No interpreter was offered.`,
         hard: `Amina's surgery was harder than it should have been, and her recovery longer. Her mother didn't leave her side. Abdi did his homework in the waiting room every night.`,

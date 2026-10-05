@@ -20,7 +20,11 @@ with cf.ThreadPoolExecutor(3) as ex:
         if probs:
             bad += 1
             for pr in probs[:4]: print(f"::error title={j[0]} {j[1]}px {j[2]}::{pr[:300]}")   # shows on the GitHub check
-print(subprocess.run([sys.executable, str(ROOT / 'tests' / 'soak.py')], capture_output=True, text=True).stdout.strip().splitlines()[-1])
+r = subprocess.run([sys.executable, str(ROOT / 'tests' / 'soak.py')], capture_output=True, text=True)
+print((r.stdout.strip().splitlines() or ['soak: no output'])[-1])
+if r.returncode:
+    bad += 1
+    print('::error title=soak.py::' + (r.stderr.strip().splitlines() or r.stdout.strip().splitlines() or ['failed'])[-1][:300])
 # Analytics, feedback and signup end to end; then the installable app and offline play.
 for extra in ('telemetry.py', 'pwa.py', 'cloud.py', 'review.py', 'guide.py', 'law.py', 'teen.py', 'stepdown.py', 'ob.py', 'ed.py', 'ngn.py', 'teach.py', 'pack.py', 'clarity.py', 'restraint.py', 'pacing.py', 'terms.py', 'orient.py'):
     r = subprocess.run([sys.executable, str(ROOT / 'tests' / extra)], capture_output=True, text=True)
