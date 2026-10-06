@@ -705,6 +705,82 @@ window.Shift = window.Shift || {};
     });
     return rows;
   }
+  /* ---------- owning an error ----------
+     A medication or treatment the game scores as unsafe is logged as an error. The nurse can tell the provider
+     (an item in the SBAR) and the charge nurse (Talk & call). Telling fast is scored; never telling is scored too. */
+  const FIX = {
+    '21-ntg-rv': 'Lay her flat with her legs up and open the saline: 500 mL now. No more nitro. Call me if her systolic stays under 90.',
+    '24-epi-iv': 'That was ten times the IV dose. Twelve-lead and a troponin, keep him on the monitor, and tell me about any chest pain. I\'m coming.',
+    '22-tpa': 'It\'s in, so we manage it. Neuro checks and BP every 15 minutes, pressure under 180/105. Any headache, vomiting or neuro change, stat CT and call me.',
+    '22-tpa-bp': 'Get his pressure under 180/105 now with labetalol, and recheck it every 15 minutes. Any neuro change, stat CT.',
+    '22-tpa-dose': 'I\'ll talk to pharmacy and neurology about the dose. Neuro checks every 15 minutes and watch for bleeding.',
+    '22-asa': 'Nothing else by mouth. Head up, suction at the bedside, and watch for coughing or a wet voice. Swallow screen before anything more.',
+    '25-warf': 'That works against everything we\'re doing. Recheck his INR, and he gets the PCC and vitamin K now. Neuro checks every 15 minutes.',
+    '412-oxy-blind': 'Check his sedation and breathing now and again in 30 minutes. Naloxone is on his orders if he\'s hard to wake.',
+    '414-corr-blind': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '414-prand-blind': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '414-prand-bad': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '416-lis': 'Hold the next dose. Keep her in bed, recheck her pressure in 30 minutes, and call me if her systolic is under 90.',
+    '418-meto-blind': 'Hold any more beta-blocker. Vitals every 15 minutes and atropine to the bedside. Call me if his rate is under 40 or his systolic under 85.',
+    '418-meto-low': 'Hold any more beta-blocker. Vitals every 15 minutes and atropine to the bedside. Call me if his rate is under 40 or his systolic under 85.',
+    '418-los': 'Hold the next dose, keep him in bed, and recheck his pressure in 30 minutes.',
+    '421-loraz': 'No more sedatives. Keep her sat 88 to 92, watch how awake she is, and get a gas if she\'s drowsier.',
+    '425-ibu': 'No NSAIDs at all now. Watch for melena or a falling pressure, and repeat her hemoglobin in four hours.',
+    '425-start-known': 'Stop the blood now if it\'s running. Saline through new tubing, vitals now and every 15 minutes, and send the bag back to blood bank.',
+    '425-nocheck': 'Stop and do the two-person check now. If anything doesn\'t match, clamp it and call blood bank. Vitals every 15 minutes.',
+    '427-spiro': 'Off his list for good. Repeat potassium now, keep him on the monitor, and call me with any ECG change.',
+    '429-pcn': 'Stop anything still running and watch her airway. Epinephrine at the bedside. I\'m coming now.',
+    '431-diph': 'That can deepen her delirium. No more anticholinergics. Fall precautions, someone close by, and call me if she\'s more confused.',
+    '433-loraz': 'His oxygen is the problem, not his nerves. Oxygen up, sit him up, and watch his breathing closely after that dose.',
+    '433-massage': 'No more massage. Watch for chest pain or shortness of breath. We need that duplex now.',
+    '437-po': 'Nothing more by mouth. Head up, suction at the bedside, and a swallow screen before anything else. Call me if he coughs or desats.',
+    '212-carbo': 'Watch her breathing: albuterol now, oxygen, and call me if she wheezes. No more carboprost.',
+    '212-oxy-off': 'Restart the oxytocin now and check her fundus.',
+    '214-continue': 'Stop the magnesium now. Calcium gluconate if her breathing is down, stat level, reflexes every 15 minutes.',
+    '505-morph-od': 'Stay with him. Naloxone 0.02 mg at the bedside, continuous sats and respiratory rate. No opioids until I re-order by weight.',
+    '505-apap-od': 'That one dose is under the toxic range for him, but no more acetaminophen today. I\'ll re-order everything for his real weight.',
+    '501-feed': 'Stop the bottle, suction him and keep him NPO. Feeds by NG from here.',
+    '303-im': 'She needs a post-IM check now: vitals, sedation, breathing, stiffness. Chart exactly what happened, and I\'ll see her.',
+    '305-li': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '305-hctz': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '305-ibu': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '603-meto': 'Hold the rest of his beta-blocker. Keep him flat, vitals every 15 minutes, and call me if his pressure falls further.',
+    '605-nomo': 'Stop the infusion for now and recheck the aPTT in an hour. Watch her for bleeding.',
+    '605-arga-hep': 'Stop the heparin now; argatroban alone. Watch her for bleeding.',
+    '605-flush': 'No more heparin in any form, flushes included. Saline only.',
+    '607-cital': 'No more QT drugs. Keep him on the monitor, finish his potassium and magnesium, and call me with any run.',
+    '607-ond': 'No more QT drugs. Keep him on the monitor, finish his potassium and magnesium, and call me with any run.',
+    '607-lasix': 'Replace his potassium now per protocol and recheck it. Keep him on the monitor.',
+    '405-halo': 'Diphenhydramine now, watch his airway, and haloperidol goes on his allergy list.',
+    '409-apap': 'No more acetaminophen. That changes his level, so I need the stat level and liver tests now.',
+  };
+  const ERR_RX = (j) => (j.domain === 'meds' && j.delta <= -1) || ((j.domain === 'safety' || j.domain === 'judgment') && j.delta <= -2);
+  // Called right after a medication or treatment runs: anything it was scored as unsafe becomes an error the nurse can own.
+  function recordErrors(s, A, d, what, j0, isMed, known, medId) {
+    s.errors = s.errors || [];
+    // One error per action, however many ways it was wrong; the worst one leads.
+    const js = s.judg.slice(j0).filter((j) => j.pid === d.id && ERR_RX(j) && (isMed || j.domain !== 'judgment') && !/-sbar|-missed$|-hold/.test(j.key || '')).sort((x, y) => x.delta - y.delta);
+    const bases = [...new Set(js.map((j) => (j.key || '').replace(/-\d+$/, '')))].filter((b) => !s.errors.some((e) => e.pid === d.id && e.bases.includes(b)));
+    if (!bases.length) return;
+    const lead = js.find((j) => (j.key || '').replace(/-\d+$/, '') === bases[0]);
+    s.errors.push({ id: ++s.seq, pid: d.id, t: s.t, what, medId: medId || null, known: !!known, base: bases[0], bases, key: lead.key, text: lead.text, md: null, charge: null });
+  }
+  const errsFor = (s, pid, who) => (s.errors || []).filter((e) => e.pid === pid && e.known && e[who] === null);
+  const firstPerson = (t) => t.replace(/^You /, 'I ').replace(/\byou\b/g, 'I').replace(/\bYou\b/g, 'I').replace(/\byour\b/g, 'my');
+  function errLabel(e) { return firstPerson(e.text); }
+  function tellMD(s, A, d, e, provName) {
+    e.md = s.t; e.known = true; const fast = s.t - e.t <= 30;
+    A.judge(`${d.id}-err-md-${e.base}`, 'comm', fast ? 2 : 1, fast ? `You told ${provName} about your error right away.` : `You told ${provName} about your error, after a delay.`, `Owning an error fast lets the team treat what it caused: an antidote, closer monitoring, a changed plan. Hiding it is what hurts people. ${fast ? '' : 'Every minute before the call is a minute nobody is watching for the harm.'}`.trim(), d.id);
+    const fx = [...new Set(e.bases.map((b) => FIX[b]).filter(Boolean))];
+    return fx.length ? fx.join(' ') : 'Watch closely for any change: vitals now and in 30 minutes, and call me with anything. We\'ll file a safety report.';
+  }
+  function tellCharge(s, A, d, e) {
+    e.charge = s.t;
+    A.judge(`${d.id}-err-charge-${e.base}`, 'comm', 1, `You told the charge nurse about your error.`, 'The charge nurse can cover your other patients while you deal with it and helps with the safety report. Errors handled in the open are how units get safer.', d.id);
+  }
+  function errRows(s, A, d, P, provName) {
+    return errsFor(s, d.id, 'md').map((e) => ({ key: 'err:' + e.id, t: e.t, late: s.t > e.t + 15, text: `Tell ${provName} about the error: ${e.what}`, sub: 'Use the SBAR. Say what was given, when, and how the patient is now.', go: { act: 'dock', id: 'talk' }, hl: 'Call ' + provName }));
+  }
   // Ordered checks (A.watch): each one stays on the list until it's done the ordered number of times.
   function watchHits(s, d, P, w) {
     if (w.vitals) return P.vit.filter((v) => v.t > w.from).map((v) => v.t);
@@ -764,6 +840,8 @@ window.Shift = window.Shift || {};
     const c = A.c;
     c.patients.forEach((d) => {
       const P = s.p[d.id]; if (!P || (d.arrives && !P.arrived)) return;
+      // Errors the provider never heard about.
+      errsFor(s, d.id, 'md').slice(0, 1).forEach((e) => A.judge(`${d.id}-err-hidden-${e.base}`, 'comm', -2, `You never told the provider about your error with ${d.short}: ${e.what}.`, 'A medication error nobody reports goes untreated. Tell the provider right away, then the charge nurse, then file a safety report.', d.id));
       if (P.out) {
         const o = P.out, sp = o.spec, left = s.t - o.at;
         if (sp.handoff && o.handoff === null && left >= 30) A.judge(`${d.id}-xfer-report`, 'comm', -1, `You never called report to ${where(sp.unit)} on ${d.short}.`, 'The patient left; your responsibility for what the next team knows didn\'t. Call report as soon as they\'re gone.', d.id);
@@ -791,5 +869,5 @@ window.Shift = window.Shift || {};
     return { unit: sp.unit, at: o.at, entries: sp.course.map((e) => ({ t: o.at + e.at, st: e.st, text: e.text, after: o.at + e.at > end })), later: sp.later };
   }
 
-  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, reportItems, giveReport, nextFor, entryAt, STAFF };
+  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, recordErrors, errsFor, errLabel, tellMD, tellCharge, errRows, reportItems, giveReport, nextFor, entryAt, STAFF };
 })(window.Shift);

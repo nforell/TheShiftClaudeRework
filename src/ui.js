@@ -740,6 +740,7 @@
     if (P.bell) rows.push({ key: 'bell:' + P.bell.at, t: P.bell.at, late: s.t > P.bell.at + 10, text: `Call light: ${P.bell.who} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${P.bell.text}`, sub: P.bell.cnaAt ? `${cna().name} is on it` : P.bell.cna ? `${cna().name} could take this` : 'Needs a nurse', go: { act: 'bell', id: d.id }, prog: !!P.bell.cnaAt });
     F.prnRows(s, Ax, d, P).forEach((r) => rows.push(r));
     F.watchRows(s, Ax, d, P).forEach((r) => rows.push(r));
+    F.errRows(s, Ax, d, P, prov(d.id).name).forEach((r) => rows.push(r));
     const rd = F.roundRow(s, Ax, d, P); if (rd && !P.bell) rows.push(rd);
     if (s.t >= C().length - 45) { const rp = s.report && s.report[d.id]; rows.push({ key: 'rp', t: C().length - 30, late: s.t > C().length - 10 && !rp, done: !!rp, text: `Give report to ${oncoming().name}`, sub: rp ? `Given ${E.clock(rp.t)}` : 'At the station', go: { act: 'report', id: d.id } }); }
     return rows;
@@ -796,7 +797,7 @@
     h += `</ul></div><div class="b-grp"><h4>Call and escalate</h4><ul class="fs">${item('sbar', `Call ${esc(prov(d.id).name)} with an SBAR`, '6 min', `data-pid="${d.id}"`)}`;
     (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { h += item('comm', esc(x.label), x.cost + ' min', `data-id="${x.id}"`, x.id === 'rrt' ? 'urgent' : ''); });
     if (!(d.comms || []).some((x) => x.id === 'rrt')) h += item('rrt-generic', 'Call a rapid response', '3 min');
-    h += `</ul></div><div class="b-grp"><h4>Get help</h4><ul class="fs">${item('delegate', `Ask ${esc(cna().name)} (${esc(cna().role)})`, '1 min')}</ul></div>`;
+    h += `</ul></div><div class="b-grp"><h4>Get help</h4><ul class="fs">${F.errsFor(s, d.id, 'charge').length ? item('err-charge', `Tell ${esc(staff('nova').name.split(' ')[0])} (charge nurse) about your error`, '2 min', '', 'urgent') : ''}${item('delegate', `Ask ${esc(cna().name)} (${esc(cna().role)})`, '1 min')}</ul></div>`;
     return h;
   }
   const PANES = [
@@ -1413,6 +1414,12 @@
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
   }
 
+  // Medications given to this patient this shift, newest first: what the nurse could report as a possible error.
+  function givenList(d) {
+    const out = [];
+    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; (m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []).forEach((t) => out.push({ mid: m.id, t, name: m.name.charAt(0).toLowerCase() + m.name.slice(1) })); });
+    return out.sort((a, b) => b.t - a.t).slice(0, 8);
+  }
   function ovSbar() {
     const pid = ui.sbar.pid;
     if (!pid) {
@@ -1425,11 +1432,15 @@
     const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(s, s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
+      ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)); if (!es.length && !gv.length) return '';
+        const box = (id, label) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="${id}" ${ui.sbar.picked.includes(id) ? 'checked' : ''}><span>${esc(label)}</span></label>`;
+        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}</details>`; })()}
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
         ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
-    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
+    const errOnly = ui.sbar.picked.length && ui.sbar.picked.every((x) => /^(err|rx):/.test(x));
+    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${(ui.sbar.req || errOnly) && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
   }
 
   function ovDeleg() {
@@ -1919,7 +1930,7 @@
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
-    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${x.label.charAt(0).toLowerCase() + x.label.slice(1)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
     poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
@@ -1957,7 +1968,7 @@
       const dose = ui.med.dose; ui.ov = null; ui.med = null;
       // A med pass: once you're at the bedside with the cart, each further dose for the same patient takes less time.
       const pass = P.medPassAt !== undefined && s.t - P.medPassAt <= 6 && s.loc === d.id; P.medPassAt = s.t;
-      doAct(`${m.name} given`, pass ? 2 : 5, (Ax) => { P.medPassAt = s.t + (pass ? 2 : 5); const t = m.give(s, P, Ax, dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
+      doAct(`${m.name} given`, pass ? 2 : 5, (Ax) => { P.medPassAt = s.t + (pass ? 2 : 5); const k0 = s.judg.length; const t = m.give(s, P, Ax, dose); const dl = (m.doses || []).find((x) => x.id === dose); F.recordErrors(s, Ax, d, `${m.name} ${dl ? dl.label.split(' (')[0] : m.dose} at ${E.clock(s.t)}`, k0, true, fbNow(), m.id); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
     },
     'med-declined'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id);
@@ -1991,6 +2002,12 @@
       save(); render();
     },
     comm(el) { const d = def(s.loc), x = d.comms.find((c) => c.id === el.dataset.id); doAct(x.label, x.cost, (Ax) => { const t = x.run(s, s.p[d.id], Ax); logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    'err-charge'() {
+      const d = def(s.loc), es = F.errsFor(s, d.id, 'charge'); if (!es.length) return;
+      const toldMD = es.every((e) => e.md !== null), nm = staff('nova').name.split(' ')[0];
+      doAct(`Told ${nm} about the error`, 2, (Ax) => { es.forEach((e) => F.tellCharge(s, Ax, d, e)); return `${nm}: "Thank you for telling me. ${toldMD ? 'Good that the doctor already knows.' : `Check on ${d.short}, then call ${prov(d.id).name} with an SBAR right now.`} I'll watch your other rooms for ten minutes, and we'll write the safety report together before you leave. Everyone makes one of these eventually. Telling fast is what keeps patients safe."`; });
+      if (!s.ended) render();
+    },
     'rrt-generic'() { const d = def(s.loc); doAct('Rapid response called', 3, (Ax) => { Ax.judge(d.id + '-rrt', 'judgment', 0, `You called a rapid response for ${d.short}.`, 'Calling for help when worried is always allowed. The team found a patient who didn\'t yet meet criteria. Next time, pair the call with an SBAR to the provider.', d.id); const t = `The rapid response nurse checks in, reviews vitals, and suggests calling ${prov().name} with an update. "Always call if you're worried."`; logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = 'Rapid response'; return t; }); if (!s.ended) render(); },
     sbar(el) { ui.sbar = { pid: el.dataset.pid || null, picked: [], req: null, reply: null }; ui.ov = 'sbar'; render(); },
     callpick() { ui.sbar = { pid: null, picked: [], req: null, reply: null }; ui.ov = 'sbar'; render(); },
@@ -1999,10 +2016,15 @@
     'sbar-send'() {
       const pid = ui.sbar.pid, d = def(pid), P = s.p[pid]; let reply = ''; const j0 = s.judg.length;
       spend(6, (Ax) => {
-        const items = d.sbar.items(s, P, Ax); const keys = ui.sbar.picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
-        const noise = ui.sbar.picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
-        reply = d.sbar.respond.call(d.sbar, s, P, Ax, ui.sbar.picked, ui.sbar.req);
-        if (!keys.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
+        const rx = ui.sbar.picked.filter((id) => id.startsWith('rx:')).map((id) => { const [, mid, t] = id.split(':'); return { mid, t: +t, e: (s.errors || []).find((e) => e.pid === pid && e.medId === mid && e.t === +t) }; });
+        const errs = ui.sbar.picked.filter((id) => id.startsWith('err:')).map((id) => (s.errors || []).find((e) => 'err:' + e.id === id)).concat(rx.map((r) => r.e)).filter(Boolean);
+        const fine = rx.filter((r) => !r.e).map((r) => `The ${d.meds.find((m) => m.id === r.mid).name.toLowerCase()} at ${E.clock(r.t)} was ordered and appropriate. Thanks for double-checking.`);
+        const picked = ui.sbar.picked.filter((id) => !/^(err|rx):/.test(id));
+        const items = d.sbar.items(s, P, Ax); const keys = picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
+        const noise = picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
+        const fix = errs.map((e) => F.tellMD(s, Ax, d, e, prov(pid).name));
+        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : ''].filter(Boolean).join(' ');
+        if (!keys.length && !errs.length && !fine.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov(pid).name}. "${reply}"`, 'info');
       });
