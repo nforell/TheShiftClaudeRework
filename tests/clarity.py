@@ -22,7 +22,7 @@ with sync_playwright() as p:
             if pg.evaluate("Shift.ui._ui.ov") == 'confirm': H('new-yes')
             if pg.evaluate("Shift.ui._ui.intro!=null"): H('intro-go')
             H('h-done'); H('rank-submit'); H('rank-go'); pg.wait_for_timeout(150)
-            check(pg.locator('.st-intro h1').inner_text() == "Nurses' station" and 'Nurses\' station' in pg.inner_text('.ps-st'), f'{t} the station names itself')
+            check(pg.locator('.st-intro h1').inner_text() == "Nurses' station" and 'station' in pg.inner_text('.ps-st').lower(), f'{t} the station names itself')
             check(pg.locator('.helpers [data-act=nova]').count() == 1 and pg.locator('.helpers [data-act=delegate]').count() == 1 and pg.locator('.helpers svg').count() == 2, f'{t} Nova and the aide are in the header, with faces')
             H('delegate'); pg.wait_for_timeout(100)
             n = pg.locator('.dl-s').count(); folded = pg.locator('details.dl-all').count() == 1
