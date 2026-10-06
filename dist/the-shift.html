@@ -269,6 +269,13 @@ td.wrap{white-space:normal;min-width:220px}
 .sbar-sec{margin:0 0 1rem}
 .sbar-sec h3{display:flex;gap:.5rem;align-items:baseline}
 .sbar-sec h3 i{font-style:normal;display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--ink);color:var(--bg);font-size:.8rem}
+.sbar-err{border:1px solid var(--line);border-radius:var(--r);padding:.5rem .7rem;background:var(--surface)}
+.sbar-err summary{cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center}
+.sbar-err summary::-webkit-details-marker{display:none}
+.sbar-err summary h3{margin:0;flex:1}
+.sbar-err summary::after{content:'Show';font-size:.8rem;font-weight:700;color:var(--teal)}
+.sbar-err[open] summary::after{content:'Hide'}
+.sbar-err h3 i{background:var(--amber);color:var(--ink)}
 .reply{display:grid;grid-template-columns:46px minmax(0,1fr);gap:.8rem;align-items:start;background:var(--surface-2);border-radius:var(--rc);padding:.8rem}
 .reply .portrait{width:46px;height:46px;border-radius:50%;background:var(--scene-wall)}
 .dlg-text{font-family:var(--serif);font-size:1.12rem;line-height:1.6;margin:.2rem 0 1rem}
@@ -3561,6 +3568,82 @@ window.Shift = window.Shift || {};
     });
     return rows;
   }
+  /* ---------- owning an error ----------
+     A medication or treatment the game scores as unsafe is logged as an error. The nurse can tell the provider
+     (an item in the SBAR) and the charge nurse (Talk & call). Telling fast is scored; never telling is scored too. */
+  const FIX = {
+    '21-ntg-rv': 'Lay her flat with her legs up and open the saline: 500 mL now. No more nitro. Call me if her systolic stays under 90.',
+    '24-epi-iv': 'That was ten times the IV dose. Twelve-lead and a troponin, keep him on the monitor, and tell me about any chest pain. I\'m coming.',
+    '22-tpa': 'It\'s in, so we manage it. Neuro checks and BP every 15 minutes, pressure under 180/105. Any headache, vomiting or neuro change, stat CT and call me.',
+    '22-tpa-bp': 'Get his pressure under 180/105 now with labetalol, and recheck it every 15 minutes. Any neuro change, stat CT.',
+    '22-tpa-dose': 'I\'ll talk to pharmacy and neurology about the dose. Neuro checks every 15 minutes and watch for bleeding.',
+    '22-asa': 'Nothing else by mouth. Head up, suction at the bedside, and watch for coughing or a wet voice. Swallow screen before anything more.',
+    '25-warf': 'That works against everything we\'re doing. Recheck his INR, and he gets the PCC and vitamin K now. Neuro checks every 15 minutes.',
+    '412-oxy-blind': 'Check his sedation and breathing now and again in 30 minutes. Naloxone is on his orders if he\'s hard to wake.',
+    '414-corr-blind': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '414-prand-blind': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '414-prand-bad': 'Check her glucose now and every 30 minutes for two hours. Get carbs into her, and treat anything under 70 per protocol.',
+    '416-lis': 'Hold the next dose. Keep her in bed, recheck her pressure in 30 minutes, and call me if her systolic is under 90.',
+    '418-meto-blind': 'Hold any more beta-blocker. Vitals every 15 minutes and atropine to the bedside. Call me if his rate is under 40 or his systolic under 85.',
+    '418-meto-low': 'Hold any more beta-blocker. Vitals every 15 minutes and atropine to the bedside. Call me if his rate is under 40 or his systolic under 85.',
+    '418-los': 'Hold the next dose, keep him in bed, and recheck his pressure in 30 minutes.',
+    '421-loraz': 'No more sedatives. Keep her sat 88 to 92, watch how awake she is, and get a gas if she\'s drowsier.',
+    '425-ibu': 'No NSAIDs at all now. Watch for melena or a falling pressure, and repeat her hemoglobin in four hours.',
+    '425-start-known': 'Stop the blood now if it\'s running. Saline through new tubing, vitals now and every 15 minutes, and send the bag back to blood bank.',
+    '425-nocheck': 'Stop and do the two-person check now. If anything doesn\'t match, clamp it and call blood bank. Vitals every 15 minutes.',
+    '427-spiro': 'Off his list for good. Repeat potassium now, keep him on the monitor, and call me with any ECG change.',
+    '429-pcn': 'Stop anything still running and watch her airway. Epinephrine at the bedside. I\'m coming now.',
+    '431-diph': 'That can deepen her delirium. No more anticholinergics. Fall precautions, someone close by, and call me if she\'s more confused.',
+    '433-loraz': 'His oxygen is the problem, not his nerves. Oxygen up, sit him up, and watch his breathing closely after that dose.',
+    '433-massage': 'No more massage. Watch for chest pain or shortness of breath. We need that duplex now.',
+    '437-po': 'Nothing more by mouth. Head up, suction at the bedside, and a swallow screen before anything else. Call me if he coughs or desats.',
+    '212-carbo': 'Watch her breathing: albuterol now, oxygen, and call me if she wheezes. No more carboprost.',
+    '212-oxy-off': 'Restart the oxytocin now and check her fundus.',
+    '214-continue': 'Stop the magnesium now. Calcium gluconate if her breathing is down, stat level, reflexes every 15 minutes.',
+    '505-morph-od': 'Stay with him. Naloxone 0.02 mg at the bedside, continuous sats and respiratory rate. No opioids until I re-order by weight.',
+    '505-apap-od': 'That one dose is under the toxic range for him, but no more acetaminophen today. I\'ll re-order everything for his real weight.',
+    '501-feed': 'Stop the bottle, suction him and keep him NPO. Feeds by NG from here.',
+    '303-im': 'She needs a post-IM check now: vitals, sedation, breathing, stiffness. Chart exactly what happened, and I\'ll see her.',
+    '305-li': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '305-hctz': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '305-ibu': 'Hold the lithium, the HCTZ and the NSAIDs. He needs fluids, a repeat level and the medicine team now.',
+    '603-meto': 'Hold the rest of his beta-blocker. Keep him flat, vitals every 15 minutes, and call me if his pressure falls further.',
+    '605-nomo': 'Stop the infusion for now and recheck the aPTT in an hour. Watch her for bleeding.',
+    '605-arga-hep': 'Stop the heparin now; argatroban alone. Watch her for bleeding.',
+    '605-flush': 'No more heparin in any form, flushes included. Saline only.',
+    '607-cital': 'No more QT drugs. Keep him on the monitor, finish his potassium and magnesium, and call me with any run.',
+    '607-ond': 'No more QT drugs. Keep him on the monitor, finish his potassium and magnesium, and call me with any run.',
+    '607-lasix': 'Replace his potassium now per protocol and recheck it. Keep him on the monitor.',
+    '405-halo': 'Diphenhydramine now, watch his airway, and haloperidol goes on his allergy list.',
+    '409-apap': 'No more acetaminophen. That changes his level, so I need the stat level and liver tests now.',
+  };
+  const ERR_RX = (j) => (j.domain === 'meds' && j.delta <= -1) || ((j.domain === 'safety' || j.domain === 'judgment') && j.delta <= -2);
+  // Called right after a medication or treatment runs: anything it was scored as unsafe becomes an error the nurse can own.
+  function recordErrors(s, A, d, what, j0, isMed, known, medId) {
+    s.errors = s.errors || [];
+    // One error per action, however many ways it was wrong; the worst one leads.
+    const js = s.judg.slice(j0).filter((j) => j.pid === d.id && ERR_RX(j) && (isMed || j.domain !== 'judgment') && !/-sbar|-missed$|-hold/.test(j.key || '')).sort((x, y) => x.delta - y.delta);
+    const bases = [...new Set(js.map((j) => (j.key || '').replace(/-\d+$/, '')))].filter((b) => !s.errors.some((e) => e.pid === d.id && e.bases.includes(b)));
+    if (!bases.length) return;
+    const lead = js.find((j) => (j.key || '').replace(/-\d+$/, '') === bases[0]);
+    s.errors.push({ id: ++s.seq, pid: d.id, t: s.t, what, medId: medId || null, known: !!known, base: bases[0], bases, key: lead.key, text: lead.text, md: null, charge: null });
+  }
+  const errsFor = (s, pid, who) => (s.errors || []).filter((e) => e.pid === pid && e.known && e[who] === null);
+  const firstPerson = (t) => t.replace(/^You /, 'I ').replace(/\byou\b/g, 'I').replace(/\bYou\b/g, 'I').replace(/\byour\b/g, 'my');
+  function errLabel(e) { return firstPerson(e.text); }
+  function tellMD(s, A, d, e, provName) {
+    e.md = s.t; e.known = true; const fast = s.t - e.t <= 30;
+    A.judge(`${d.id}-err-md-${e.base}`, 'comm', fast ? 2 : 1, fast ? `You told ${provName} about your error right away.` : `You told ${provName} about your error, after a delay.`, `Owning an error fast lets the team treat what it caused: an antidote, closer monitoring, a changed plan. Hiding it is what hurts people. ${fast ? '' : 'Every minute before the call is a minute nobody is watching for the harm.'}`.trim(), d.id);
+    const fx = [...new Set(e.bases.map((b) => FIX[b]).filter(Boolean))];
+    return fx.length ? fx.join(' ') : 'Watch closely for any change: vitals now and in 30 minutes, and call me with anything. We\'ll file a safety report.';
+  }
+  function tellCharge(s, A, d, e) {
+    e.charge = s.t;
+    A.judge(`${d.id}-err-charge-${e.base}`, 'comm', 1, `You told the charge nurse about your error.`, 'The charge nurse can cover your other patients while you deal with it and helps with the safety report. Errors handled in the open are how units get safer.', d.id);
+  }
+  function errRows(s, A, d, P, provName) {
+    return errsFor(s, d.id, 'md').map((e) => ({ key: 'err:' + e.id, t: e.t, late: s.t > e.t + 15, text: `Tell ${provName} about the error: ${e.what}`, sub: 'Use the SBAR. Say what was given, when, and how the patient is now.', go: { act: 'dock', id: 'talk' }, hl: 'Call ' + provName }));
+  }
   // Ordered checks (A.watch): each one stays on the list until it's done the ordered number of times.
   function watchHits(s, d, P, w) {
     if (w.vitals) return P.vit.filter((v) => v.t > w.from).map((v) => v.t);
@@ -3620,6 +3703,8 @@ window.Shift = window.Shift || {};
     const c = A.c;
     c.patients.forEach((d) => {
       const P = s.p[d.id]; if (!P || (d.arrives && !P.arrived)) return;
+      // Errors the provider never heard about.
+      errsFor(s, d.id, 'md').slice(0, 1).forEach((e) => A.judge(`${d.id}-err-hidden-${e.base}`, 'comm', -2, `You never told the provider about your error with ${d.short}: ${e.what}.`, 'A medication error nobody reports goes untreated. Tell the provider right away, then the charge nurse, then file a safety report.', d.id));
       if (P.out) {
         const o = P.out, sp = o.spec, left = s.t - o.at;
         if (sp.handoff && o.handoff === null && left >= 30) A.judge(`${d.id}-xfer-report`, 'comm', -1, `You never called report to ${where(sp.unit)} on ${d.short}.`, 'The patient left; your responsibility for what the next team knows didn\'t. Call report as soon as they\'re gone.', d.id);
@@ -3647,7 +3732,7 @@ window.Shift = window.Shift || {};
     return { unit: sp.unit, at: o.at, entries: sp.course.map((e) => ({ t: o.at + e.at, st: e.st, text: e.text, after: o.at + e.at > end })), later: sp.later };
   }
 
-  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, reportItems, giveReport, nextFor, entryAt, STAFF };
+  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, recordErrors, errsFor, errLabel, tellMD, tellCharge, errRows, reportItems, giveReport, nextFor, entryAt, STAFF };
 })(window.Shift);
 
 /* The Shift — floor calls. The unit doesn't stop for your four patients: a colleague needs a hand, the lab has a
@@ -15790,6 +15875,7 @@ window.Shift = window.Shift || {};
     if (P.bell) rows.push({ key: 'bell:' + P.bell.at, t: P.bell.at, late: s.t > P.bell.at + 10, text: `Call light: ${P.bell.who} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${P.bell.text}`, sub: P.bell.cnaAt ? `${cna().name} is on it` : P.bell.cna ? `${cna().name} could take this` : 'Needs a nurse', go: { act: 'bell', id: d.id }, prog: !!P.bell.cnaAt });
     F.prnRows(s, Ax, d, P).forEach((r) => rows.push(r));
     F.watchRows(s, Ax, d, P).forEach((r) => rows.push(r));
+    F.errRows(s, Ax, d, P, prov(d.id).name).forEach((r) => rows.push(r));
     const rd = F.roundRow(s, Ax, d, P); if (rd && !P.bell) rows.push(rd);
     if (s.t >= C().length - 45) { const rp = s.report && s.report[d.id]; rows.push({ key: 'rp', t: C().length - 30, late: s.t > C().length - 10 && !rp, done: !!rp, text: `Give report to ${oncoming().name}`, sub: rp ? `Given ${E.clock(rp.t)}` : 'At the station', go: { act: 'report', id: d.id } }); }
     return rows;
@@ -15846,7 +15932,7 @@ window.Shift = window.Shift || {};
     h += `</ul></div><div class="b-grp"><h4>Call and escalate</h4><ul class="fs">${item('sbar', `Call ${esc(prov(d.id).name)} with an SBAR`, '6 min', `data-pid="${d.id}"`)}`;
     (d.comms || []).filter((x) => !x.avail || x.avail(s, P, Ax)).forEach((x) => { h += item('comm', esc(x.label), x.cost + ' min', `data-id="${x.id}"`, x.id === 'rrt' ? 'urgent' : ''); });
     if (!(d.comms || []).some((x) => x.id === 'rrt')) h += item('rrt-generic', 'Call a rapid response', '3 min');
-    h += `</ul></div><div class="b-grp"><h4>Get help</h4><ul class="fs">${item('delegate', `Ask ${esc(cna().name)} (${esc(cna().role)})`, '1 min')}</ul></div>`;
+    h += `</ul></div><div class="b-grp"><h4>Get help</h4><ul class="fs">${F.errsFor(s, d.id, 'charge').length ? item('err-charge', `Tell ${esc(staff('nova').name.split(' ')[0])} (charge nurse) about your error`, '2 min', '', 'urgent') : ''}${item('delegate', `Ask ${esc(cna().name)} (${esc(cna().role)})`, '1 min')}</ul></div>`;
     return h;
   }
   const PANES = [
@@ -16463,6 +16549,12 @@ window.Shift = window.Shift || {};
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
   }
 
+  // Medications given to this patient this shift, newest first: what the nurse could report as a possible error.
+  function givenList(d) {
+    const out = [];
+    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; (m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []).forEach((t) => out.push({ mid: m.id, t, name: m.name.charAt(0).toLowerCase() + m.name.slice(1) })); });
+    return out.sort((a, b) => b.t - a.t).slice(0, 8);
+  }
   function ovSbar() {
     const pid = ui.sbar.pid;
     if (!pid) {
@@ -16475,11 +16567,15 @@ window.Shift = window.Shift || {};
     const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(s, s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
+      ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)); if (!es.length && !gv.length) return '';
+        const box = (id, label) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="${id}" ${ui.sbar.picked.includes(id) ? 'checked' : ''}><span>${esc(label)}</span></label>`;
+        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}</details>`; })()}
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
         ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
-    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${ui.sbar.req && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
+    const errOnly = ui.sbar.picked.length && ui.sbar.picked.every((x) => /^(err|rx):/.test(x));
+    return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${(ui.sbar.req || errOnly) && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
   }
 
   function ovDeleg() {
@@ -16969,7 +17065,7 @@ window.Shift = window.Shift || {};
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
-    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const t = x.run(s, P, Ax); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${x.label.charAt(0).toLowerCase() + x.label.slice(1)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
     poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
@@ -17007,7 +17103,7 @@ window.Shift = window.Shift || {};
       const dose = ui.med.dose; ui.ov = null; ui.med = null;
       // A med pass: once you're at the bedside with the cart, each further dose for the same patient takes less time.
       const pass = P.medPassAt !== undefined && s.t - P.medPassAt <= 6 && s.loc === d.id; P.medPassAt = s.t;
-      doAct(`${m.name} given`, pass ? 2 : 5, (Ax) => { P.medPassAt = s.t + (pass ? 2 : 5); const t = m.give(s, P, Ax, dose); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
+      doAct(`${m.name} given`, pass ? 2 : 5, (Ax) => { P.medPassAt = s.t + (pass ? 2 : 5); const k0 = s.judg.length; const t = m.give(s, P, Ax, dose); const dl = (m.doses || []).find((x) => x.id === dose); F.recordErrors(s, Ax, d, `${m.name} ${dl ? dl.label.split(' (')[0] : m.dose} at ${E.clock(s.t)}`, k0, true, fbNow(), m.id); if (m.prn) st.given.push(s.t); else { st.status = 'given'; st.at = s.t; } logHere(d.id, `${m.name}: ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} given`; return t; }); if (!s.ended) render();
     },
     'med-declined'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id);
@@ -17041,6 +17137,12 @@ window.Shift = window.Shift || {};
       save(); render();
     },
     comm(el) { const d = def(s.loc), x = d.comms.find((c) => c.id === el.dataset.id); doAct(x.label, x.cost, (Ax) => { const t = x.run(s, s.p[d.id], Ax); logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    'err-charge'() {
+      const d = def(s.loc), es = F.errsFor(s, d.id, 'charge'); if (!es.length) return;
+      const toldMD = es.every((e) => e.md !== null), nm = staff('nova').name.split(' ')[0];
+      doAct(`Told ${nm} about the error`, 2, (Ax) => { es.forEach((e) => F.tellCharge(s, Ax, d, e)); return `${nm}: "Thank you for telling me. ${toldMD ? 'Good that the doctor already knows.' : `Check on ${d.short}, then call ${prov(d.id).name} with an SBAR right now.`} I'll watch your other rooms for ten minutes, and we'll write the safety report together before you leave. Everyone makes one of these eventually. Telling fast is what keeps patients safe."`; });
+      if (!s.ended) render();
+    },
     'rrt-generic'() { const d = def(s.loc); doAct('Rapid response called', 3, (Ax) => { Ax.judge(d.id + '-rrt', 'judgment', 0, `You called a rapid response for ${d.short}.`, 'Calling for help when worried is always allowed. The team found a patient who didn\'t yet meet criteria. Next time, pair the call with an SBAR to the provider.', d.id); const t = `The rapid response nurse checks in, reviews vitals, and suggests calling ${prov().name} with an update. "Always call if you're worried."`; logHere(d.id, t, 'act'); s.log[s.log.length - 1].label = 'Rapid response'; return t; }); if (!s.ended) render(); },
     sbar(el) { ui.sbar = { pid: el.dataset.pid || null, picked: [], req: null, reply: null }; ui.ov = 'sbar'; render(); },
     callpick() { ui.sbar = { pid: null, picked: [], req: null, reply: null }; ui.ov = 'sbar'; render(); },
@@ -17049,10 +17151,15 @@ window.Shift = window.Shift || {};
     'sbar-send'() {
       const pid = ui.sbar.pid, d = def(pid), P = s.p[pid]; let reply = ''; const j0 = s.judg.length;
       spend(6, (Ax) => {
-        const items = d.sbar.items(s, P, Ax); const keys = ui.sbar.picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
-        const noise = ui.sbar.picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
-        reply = d.sbar.respond.call(d.sbar, s, P, Ax, ui.sbar.picked, ui.sbar.req);
-        if (!keys.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
+        const rx = ui.sbar.picked.filter((id) => id.startsWith('rx:')).map((id) => { const [, mid, t] = id.split(':'); return { mid, t: +t, e: (s.errors || []).find((e) => e.pid === pid && e.medId === mid && e.t === +t) }; });
+        const errs = ui.sbar.picked.filter((id) => id.startsWith('err:')).map((id) => (s.errors || []).find((e) => 'err:' + e.id === id)).concat(rx.map((r) => r.e)).filter(Boolean);
+        const fine = rx.filter((r) => !r.e).map((r) => `The ${d.meds.find((m) => m.id === r.mid).name.toLowerCase()} at ${E.clock(r.t)} was ordered and appropriate. Thanks for double-checking.`);
+        const picked = ui.sbar.picked.filter((id) => !/^(err|rx):/.test(id));
+        const items = d.sbar.items(s, P, Ax); const keys = picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
+        const noise = picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
+        const fix = errs.map((e) => F.tellMD(s, Ax, d, e, prov(pid).name));
+        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : ''].filter(Boolean).join(' ');
+        if (!keys.length && !errs.length && !fine.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov(pid).name}. "${reply}"`, 'info');
       });
