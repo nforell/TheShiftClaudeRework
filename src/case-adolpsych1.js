@@ -776,16 +776,16 @@
     dueExtras(s) {
       const out = [], E1 = s.p['401'], Jo = s.p['403'], M = s.p['405'], K = s.p['407'], El = s.p['409'];
       if (!Jo.skinChecked && !Jo.gone) out.push({ t: 0, late: s.t > 30, text: '403 Skin check (missed on days)' });
-      if (!M.postIM && !M.icu) out.push({ t: 30, late: s.t > 45, text: '405 Post-IM check: vitals, sedation, airway' });
-      if (M.docRev !== null && M.f2fAt === null && !M.icu) out.push({ t: 30, late: s.t > 30, text: M.f2fCalled === null ? '405 Face-to-face for the 14:30 hold: call Dr. Adeyemi (due 15:30)' : '405 Dr. Adeyemi coming for the face-to-face' });
+      if (!M.postIM && !M.icu) out.push({ t: 30, late: s.t > 45, tab: 'care', text: '405 Post-IM check: vitals, sedation, airway' });
+      if (M.docRev !== null && M.f2fAt === null && !M.icu) out.push(M.f2fCalled === null ? { t: 30, late: s.t > 30, tab: 'talk', hl: 'Call Dr. Adeyemi', text: '405 Face-to-face for the 14:30 hold: call Dr. Adeyemi (due 15:30)' } : { t: 30, late: false, info: true, text: '405 Dr. Adeyemi coming for the face-to-face' });
       if (M.docRev !== null && M.momCalled === null && !M.icu) out.push({ t: M.docRev, late: false, text: '405 Tell his mom about the hold and the IM' });
-      if (s.t < 45) out.push({ t: 45, late: false, text: '409 Admission arriving from the ED' });
-      if (El.arrived && El.admitted === null && !El.gone) out.push({ t: 45, late: s.t > 90, text: '409 Admission assessment, skin check, belongings search' });
-      if (s.t < 60) out.push({ t: 60, late: false, text: '401 Afternoon refeeding labs resulting' });
-      if (E1.mealAt === null && !E1.gone && s.t < 150) out.push({ t: 120, late: false, text: '401 Dinner: supervised meal, then an hour of observation' });
-      if (K.visit === null) out.push({ t: 210, late: false, text: '407 Visiting hours: Diane Ruiz, Rick Dawson' });
-      if (E1.recheckAt !== null && !E1.recheckDone) out.push({ t: E1.recheckAt, late: false, text: '401 Repeat electrolytes resulting' });
-      if (El.labsAt !== null && !El.labsDone) out.push({ t: El.labsAt + 35, late: false, text: '409 STAT acetaminophen level and liver tests resulting' });
+      if (s.t < 45) out.push({ t: 45, late: false, info: true, text: '409 Admission arriving from the ED' });
+      if (El.arrived && El.admitted === null && !El.gone) out.push({ t: 45, late: s.t > 90, tab: 'care', text: '409 Admission assessment, skin check, belongings search' });
+      if (s.t < 60) out.push({ t: 60, late: false, info: true, text: '401 Afternoon refeeding labs resulting' });
+      if (E1.mealAt === null && !E1.gone && s.t < 150) out.push({ t: 120, late: false, info: true, text: '401 Dinner: supervised meal, then an hour of observation' });
+      if (K.visit === null) out.push({ t: 210, late: false, info: true, text: '407 Visiting hours: Diane Ruiz, Rick Dawson' });
+      if (E1.recheckAt !== null && !E1.recheckDone) out.push({ t: E1.recheckAt, late: false, info: true, text: '401 Repeat electrolytes resulting' });
+      if (El.labsAt !== null && !El.labsDone) out.push({ t: El.labsAt + 35, late: false, info: true, text: '409 STAT acetaminophen level and liver tests resulting' });
       return out;
     },
     replies,
@@ -805,6 +805,7 @@
     },
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
+      if (s.p['401'].replOrder && !s.p['401'].gone && !s.p['401'].icu) A.watch('401', { id: '401-vitals', text: 'Vitals with orthostatics every 2 hours', every: 120, times: 1, vitals: true });
       const E1 = s.p['401'];
       if (!E1.gone) {
         let d = -.0032;

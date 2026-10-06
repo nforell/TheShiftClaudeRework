@@ -63,6 +63,9 @@ window.Shift = window.Shift || {};
       lastVitals(pid) { const v = s.p[pid].vit; return v[v.length - 1]; },
       addLab(pid, lab) { s.p[pid].labs.push(Object.assign({ t: s.t }, lab)); },
       addOrder(pid, text) { s.p[pid].orders.push({ t: s.t, text, isNew: true }); },
+      /* An order that needs repeated nursing checks ("vitals every 15 min × 4"): puts each check on the task list until done.
+         o: { id, text, every (min), times, vitals: true | rx: 'regex on the action label', tab, sys, first (min to first check) } */
+      watch(pid, o) { s.watch = s.watch || []; if (s.watch.some((w) => w.id === o.id)) return; s.watch.push(Object.assign({ from: s.t, every: 15, times: 1 }, o, { pid })); },
       note(pid, author, text) { s.p[pid].notes.push({ t: s.t, author, text }); },
       recent: (t0, mins) => t0 !== null && t0 !== undefined && s.t - t0 <= mins,
     };

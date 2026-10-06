@@ -261,6 +261,7 @@
     interventions: [
       { id: 'weigh', label: 'Weigh him on the unit scale', cost: 3, run(s, P, A) { P.weighed = true; A.judge('505-weigh', 'assess', 2, 'You weighed Leo before giving weight-based medications.', 'His ED weight was 31: pounds, entered as kilograms. 31 lb is 14.1 kg. Every weight-based order was 2.2 times too high. Weighing on admission to the unit is how this gets caught.', '505'); return 'Leo weighs 14.1 kg on the unit scale. The chart says 31 kg. 31 pounds is 14.1 kilograms.'; } },
       { id: 'flacc', label: 'FLACC pain score', cost: 2, run(s, P, A) { P.k.painAt = s.t; P.flacc = leoPain(s, P); return `FLACC ${P.flacc} of 10 (face, legs, activity, cry, consolability).`; } },
+      { id: 'ivrate', label: 'Turn the D5NS down to 48 mL/h (corrected order)', cost: 1, avail: (s, P) => P.fixed && !P.ivFixed && !P.icu, run(s, P, A) { P.ivFixed = true; A.judge('505-ivrate', 'meds', 1, `You corrected Leo's IV rate for his real weight.`, `Fluids were ordered for 31 kg too. At 14.1 kg, the old rate was more than twice his maintenance.`, '505'); return `Pump reprogrammed: D5NS 48 mL/h. You check the line back to the bag and initial the new label.`; } },
       { id: 'cl', label: 'Call child life: distraction with bubbles and a tablet', cost: 1, avail: (s, P) => !P.cl, run(s, P, A) { P.cl = true; P.relief.push({ t: s.t, amt: 1.2 }); A.judge('505-cl', 'judgment', 1, 'You brought in child life for Leo.', 'For a three-year-old, distraction and a familiar person reduce pain and fear as much as a dose of medicine, and make the medicine work better.', '505'); return 'Bree from child life arrives with bubbles. Leo stops crying to pop them.'; } },
     ],
     comms: [],
@@ -307,7 +308,7 @@
         }
         if (req === 'pain' && !P.weighed) { A.judge('505-sbar-pain', 'meds', -1, 'You asked to give Leo morphine without checking his weight.', 'In pediatrics every dose rides on the weight. A 3-year-old listed at 31 kg deserves a second look before a narcotic.', '505'); return 'Go ahead, it\'s ordered. What does he weigh, by the way?'; }
         if (picked.includes('od')) { P.reported = true; return 'Naloxone now, stay with him, and I\'m coming. What does he actually weigh?'; }
-        return 'Okay. FLACC him again in an hour.';
+        P.flaccAgain = s.t; return 'Okay. FLACC him again in an hour.';
       },
     },
     scene: (s, P) => ({ crib: false, iv: 'running', family: P.icu ? null : 'minji', familyLabel: 'Min-ji, his mother', tablet: P.cl, tray: 'none', dino: true, empty: P.icu, emptyText: 'Bed empty. Moved to the PICU after respiratory depression.' }),
@@ -684,7 +685,7 @@
     dueExtras(s) {
       const out = [], M = s.p['501'], Z = s.p['509'], L = s.p['505'];
       if (!M.icu && !M.gone && M.fedAt === null) out.push({ t: 30, late: s.t > 60, text: '501 Feed due: suction first; hold PO if RR > 60' });
-      if (!Z.icu && !Z.cont) out.push({ t: Math.max(0, Z.albAt + 120), late: s.t > Z.albAt + 150, text: '509 Albuterol neb (every 2 h) with asthma score' });
+      if (!Z.icu && !Z.cont) out.push({ t: Math.max(0, Z.albAt + 120), late: s.t > Z.albAt + 150, tab: 'meds', hl: 'Albuterol', text: '509 Albuterol neb (every 2 h) with asthma score' });
       if (!L.weighed && !L.fixed && !L.icu) out.push({ t: 0, late: s.t > 45, text: '505 Unit admission weight (not done)' });
       return out;
     },
@@ -706,6 +707,8 @@
     },
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
+      if (s.p['505'].flaccAgain != null && !s.p['505'].icu) A.watch('505', { id: '505-flacc', text: 'FLACC pain score again', every: 60, times: 1, rx: 'FLACC', tab: 'care', from: s.p['505'].flaccAgain });
+      if (s.p['507'].reported && !s.p['507'].icu && !s.p['507'].gone) A.watch('507', { id: '507-neuro', text: 'Neuro check every hour', every: 60, times: 2, rx: 'neuro', sys: 'neuro' });
       const M = s.p['501'];
       if (!M.icu && !M.gone) M.work = clamp(M.work + (M.rrt ? -.004 : .0068), 1, 3.2);
       const Z = s.p['509'];

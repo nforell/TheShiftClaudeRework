@@ -70,6 +70,7 @@
           return `Sinus 96. Subtle straightening of the ST segment in III. No ST elevation yet. Repeat in 15 to 30 minutes, or sooner if her symptoms change.`;
         },
       },
+      { id: 'pads', label: 'Place defibrillator pads; crash cart to the bedside', cost: 2, avail: (s, P) => P.called !== null && !P.pads && !P.gone, run(s, P, A) { P.pads = true; A.judge('21-pads', 'safety', 1, `You put pads on Ms. Hughes before the cath lab came.`, `An acute STEMI can go into VF without warning. Pads on means a shock in seconds, not minutes.`, '21'); return `Pads on, front and back. Crash cart parked at the curtain. She asks if that's for her. "Just in case," you say.`; } },
       { id: 'v4r', label: 'Right-sided ECG (V4R)', cost: 3, avail: (s, P) => P.stemiSeen !== null && P.v4r === null, run(s, P, A) { P.v4r = s.t; A.judge('21-v4r', 'assess', 2, `You got a right-sided ECG for Ms. Hughes's inferior STEMI.`, `About a third of inferior MIs involve the right ventricle. A right ventricle that's infarcted depends on preload: nitroglycerin and morphine can crash the pressure.`, '21'); return `V4R: 1.5 mm ST elevation. Right ventricular involvement. Preload-dependent: no nitrates; fluids if her pressure falls.`; } },
     ],
     meds: [
@@ -233,7 +234,7 @@
           P.tpaClarified = true;
           if (P.ir === null && P.tpaGiven === null) { P.ir = s.t + 25; A.addOrder('22', `Cancel thrombolysis: last known well 10:00, outside the 4.5-hour window. CTA ${P.cta ? 'shows' : 'pending, likely'} left M1 occlusion: neurointerventional radiology activated for thrombectomy. BP at or under 185/110 for the procedure. Keep NPO.`); }
           A.judge('22-sbar', 'comm', req === 'tx' ? 2 : 1, `You told the team Mr. Haskins's true last known well.`, `The EMS time was when he was found. One question to his wife changed the treatment from thrombolysis, outside its window, to a thrombectomy, which works up to 24 hours out for a large clot.`, '22');
-          return P.tpaGiven !== null ? `10:00? It's already running. Stop it now. I'm calling neurosurgery and getting a CT.` : `Ten? Then no thrombolysis, thank you. Good thing you asked. He's got an M1 clot: I'm activating IR for thrombectomy. Keep his pressure under 185.`;
+          return P.tpaGiven !== null ? `10:00? It's already in. I'm getting a stat CT and calling neurosurgery. Neuro checks every 15 minutes, and keep his pressure under 180/105.` : `Ten? Then no thrombolysis, thank you. Good thing you asked. He's got an M1 clot: I'm activating IR for thrombectomy. Keep his pressure under 185.`;
         }
         if (req === 'tpa') { if (P.tpaOrder) return `Yes, start it. Onset 14:30, we're well inside the window.`; return `CT's not read yet. Get me his NIHSS and pressure.`; }
         return `Okay. What's his last known well, exactly? EMS said 14:30.`;
@@ -377,6 +378,7 @@
     interventions: [
       { id: 'flat', label: 'Lay him flat, legs raised; oxygen by non-rebreather', cost: 1, avail: (s, P) => !P.flat, run(s, P, A) { P.flat = true; A.judge('24-flat', 'safety', 1, `You positioned Mr. Watanabe for shock and gave oxygen.`, `In anaphylaxis with low pressure, sitting up suddenly can empty the heart. Flat with legs up, unless he can't breathe that way.`, '24'); return `Flat, legs raised on two pillows, 15 L non-rebreather.`; } },
       { id: 'reassess', label: 'Reassess airway, breathing and BP after epinephrine', cost: 2, avail: (s, P) => P.epi.length > 0 && s.t - P.epi[P.epi.length - 1] >= 5 && P.reassessedFor !== P.epi.length, run(s, P, A) { P.reassessedFor = P.epi.length; const v = A.recordVitals('24', 'You'); A.judge('24-reassess', 'judgment', 2, `You reassessed Mr. Watanabe after epinephrine.`, `Five to fifteen minutes after a dose: still swollen, wheezy or hypotensive means the next dose, now.`, '24'); return `BP ${v.SBP}/${v.DBP}, HR ${v.HR}, SpO₂ ${v.SpO2}%. ${P.sev > .3 ? 'Still wheezy, lips still swollen: needs another dose.' : 'Voice clear, hives fading.'}`; } },
+      { id: 'ecg', label: '12-lead ECG after the IV epinephrine', cost: 3, avail: (s, P) => P.ivEpi && !P.ecg && !P.gone, run(s, P, A) { P.ecg = true; A.judge('24-ecg', 'assess', 1, `You got an ECG after Mr. Watanabe's IV epinephrine.`, `IV epinephrine given at the IM dose can cause ischemia and arrhythmias. The ECG and troponin show whether his heart took a hit.`, '24'); return `Sinus tachycardia 148 with frequent PVCs. 1 mm ST depression in V4 to V6. Troponin sent.`; } },
       { id: 'airway', label: 'Assess his airway: voice, stridor, swallowing', cost: 1, run(s, P) { P.k.resp = s.t; return P.sev > 1.1 ? `Stridor, drooling, can't swallow. Airway closing.` : P.sev > .6 ? `Hoarse, swallowing with effort. No stridor yet.` : `Normal voice, swallowing fine.`; } },
     ],
     meds: [
@@ -465,6 +467,7 @@
       gi: (s, P) => (P.bleed >= .55 ? `Vomited once, no warning.` : `Soft. No nausea.`),
     },
     interventions: [
+      { id: 'hob', label: 'Head of bed to 30 degrees, head midline', cost: 1, avail: (s, P) => P.called !== null && !P.hob && !P.gone, run(s, P, A) { P.hob = true; A.judge('25-hob', 'judgment', 1, `You raised Mr. Jensen's head of bed to 30 degrees.`, `Head up and midline helps venous drainage from the brain and lowers intracranial pressure while the bleed is reversed.`, '25'); return `Head of bed up to 30, pillow out from behind his neck so his head stays midline. Karen tucks the blanket back around him.`; } },
       { id: 'gcs', label: 'Neuro check: GCS, pupils, strength', cost: 2, run(s, P, A) { if (P.pcc !== null && s.t - P.pcc >= 15) A.judge('25-recheck', 'judgment', 2, `You rechecked Mr. Jensen's neuro status after reversal.`, `After reversal, the checks go to every 15 minutes: a stable GCS means the bleed has stopped growing.`, '25'); return harold.assess.neuro(s, P, A); } },
     ],
     meds: [
@@ -731,10 +734,10 @@
     patients: [ros, walter, alicia, kenji, harold],
     dueExtras(s) {
       const out = [], R = s.p['21'], W = s.p['22'], L = s.p['23'], K = s.p['24'], H = s.p['25'];
-      if (!R.gone && R.stemiSeen === null && R.ecgs.length === 0) out.push({ t: 15, late: s.t > 25, text: '21 Repeat 12-lead ECG' });
+      if (!R.gone && R.stemiSeen === null) { const le = R.ecgs.length ? R.ecgs[R.ecgs.length - 1] : -5; out.push({ t: le + 20, late: s.t > le + 30, text: '21 Repeat 12-lead ECG' }); }
       if (!R.gone && R.asa === null) out.push({ t: 0, late: s.t > 15, text: '21 Aspirin 324 mg chewed (not given at triage)' });
       if (!W.gone) { const nx = (W.checks.length ? W.checks[W.checks.length - 1] : -15) + 15; out.push({ t: Math.max(0, nx), late: s.t > nx + 10, text: '22 NIHSS and neuro check' }); if (!W.lkw) out.push({ t: 0, late: s.t > 15, text: '22 Confirm last known well' }); }
-      if (!L.gone && L.called === null) out.push({ t: 120, late: false, text: '23 Pelvic ultrasound (radiology backed up)' });
+      if (!L.gone && L.called === null) out.push({ t: 120, late: false, info: true, text: '23 Ultrasound pending: radiology is backed up' });
       if (K.arrived && !K.gone && !K.epi.length) out.push({ t: 70, late: s.t > 75, text: '24 Anaphylaxis: epinephrine now' });
       if (H.arrived && !H.gone) { const nx = (H.checks.length ? H.checks[H.checks.length - 1] : 150) + (H.called !== null ? 15 : 30); out.push({ t: nx, late: s.t > nx + 10, text: `25 Neuro check every ${H.called !== null ? 15 : 30} minutes` }); }
       return out;
