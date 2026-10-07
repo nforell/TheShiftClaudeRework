@@ -46,7 +46,9 @@ What changed in content, and why, is logged in [docs/CLINICAL-UPDATES.md](docs/C
 Analytics, in-game feedback, the landing-page signup and the installable app are set up in `src/config.js` and `src/telemetry.js`. Paste a PostHog project key into `src/config.js` to start receiving data; until then nothing is sent. The debrief can score by skill or by the six NCSBN clinical judgment steps (`src/cjmm.js`, review map in `docs/cjmm-map.csv`). Progress and what's next: [docs/ROADMAP-PROGRESS.md](docs/ROADMAP-PROGRESS.md).
 
 ## Classes, practice questions and the shift pack
-- **Practice questions** (`src/ngn.js`): three NCLEX-style items after every debrief (bowtie, matrix, select-all, highlight, drop-down), scored the NCSBN way.
+- **Practice questions** (`src/ngn.js`): three NCLEX-style items after every debrief (bowtie, matrix, select-all, highlight, drop-down), scored the NCSBN way. After checking, every option shows why it is or isn't correct (`src/ngn-why.js`), with the points worked out part by part and a test-taking tip.
+- **Focus practice** (`src/ngn-focus.js`): two questions each for the player's two lowest NCLEX steps that shift, drawn from 20 step-targeted items plus other shifts' items.
+- **Showing the working**: the debrief explains how the score was averaged and where the star lines sit, and every skill and NCLEX step opens to show each decision's points (start at 60, +6 per point, −9 per point for the first three points of misses, −4.5 after), plus how the exam tests that step and how to reason through it (`CJ.GUIDE` in `src/cjmm.js`).
 - **Instructor dashboard** at `/teach/` (`site/teach.html`): make a class, share the code, see results by NCLEX step and skill, the most-missed decisions, practice-question results, and a CSV. Students join from **Menu → Your class**. Needs `supabase/classes-and-pack.sql`.
 - **Shift pack** (`config.pack` in `src/config.js`, off by default): a few shifts free, the rest for one payment through a Stripe Payment Link, recorded by `supabase/functions/stripe-webhook`. A class can carry a school license. Setup steps are in the progress log, Session 9.
 

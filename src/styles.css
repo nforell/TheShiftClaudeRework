@@ -2092,3 +2092,84 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .sc-sel{z-index:3}
 @media (max-width:420px){.sc-bust{width:70px;height:76px;margin-left:-22px}}
 img.sc-bust{object-fit:contain;object-position:bottom}
+
+/* ===== Debrief: showing the working ===== */
+/* "How your score was worked out" under the big number */
+.sc-why{margin:-.4rem 0 1.4rem}
+.sw-btn{display:inline-flex;align-items:center;gap:.4rem;min-height:40px;padding:.35rem .8rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
+.sw-btn:hover{border-color:var(--teal)}
+.sw-b{margin-top:.8rem;padding:1rem 1.2rem;border:1px solid var(--line);border-radius:var(--rc);background:var(--surface);max-width:760px;font-size:.92rem;line-height:1.55}
+.sw-b p{margin:.5rem 0}
+.sw-sk{list-style:none;margin:.6rem 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.3rem .8rem}
+.sw-sk li{display:flex;justify-content:space-between;gap:.5rem;padding:.3rem .5rem;border-bottom:1px dashed var(--line)}
+.sw-eq{font-family:var(--mono,monospace);font-size:.9rem}
+.sw-bands{position:relative;height:12px;margin:1.6rem 0 .3rem;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 30%,var(--surface-2)) 0 58%,color-mix(in srgb,var(--amber) 35%,var(--surface-2)) 58% 72%,color-mix(in srgb,var(--good) 30%,var(--surface-2)) 72% 85%,color-mix(in srgb,var(--good) 60%,var(--surface-2)) 85% 100%)}
+.sw-t{position:absolute;top:-1.35rem;transform:translateX(-50%);font-size:.72rem;color:var(--ink-2)}
+.sw-t::after{content:"";position:absolute;left:50%;top:1.2rem;width:1px;height:12px;background:var(--ink-2);opacity:.6}
+.sw-m{position:absolute;top:-4px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px var(--surface)}
+.sw-key{list-style:none;margin:.6rem 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.3rem}
+.sw-key li{display:flex;flex-direction:column;padding:.35rem .55rem;border-radius:var(--r);border:1px solid transparent;font-size:.82rem;color:var(--ink-2)}
+.sw-key li span{font-variant-numeric:tabular-nums;color:var(--amber)}
+.sw-key li.on{border-color:var(--ink);background:var(--paper);color:var(--ink)}
+
+/* Skill / NCLEX-step meters open to show every decision behind the number */
+.meter-b{display:block;width:100%;padding:.45rem .5rem;margin:0 -.5rem;width:calc(100% + 1rem);border:0;border-radius:var(--r);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.meter-b:hover{background:var(--surface)}
+.meter small{display:flex;justify-content:space-between;gap:.5rem;margin-top:.15rem}
+.mt-how{color:var(--teal);font-weight:600;white-space:nowrap}
+.meter.open{padding-bottom:.4rem;border-bottom:1px solid var(--line)}
+.meter-w{margin:.4rem 0 .6rem;font-size:.86rem}
+.mw-what{margin:.2rem 0 .6rem;color:var(--ink-2)}
+.wk-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);overflow:hidden}
+.wk{display:grid;grid-template-columns:3.6rem minmax(0,1fr) auto;gap:.5rem;align-items:start;padding:.45rem .6rem;border-top:1px solid var(--line);line-height:1.35}
+.wk:first-child{border-top:0}
+.wk-t{font-size:.74rem;color:var(--ink-2);font-variant-numeric:tabular-nums;padding-top:.1rem}
+.wk-x{font-size:.84rem}
+.wk-p{display:flex;flex-direction:column;align-items:flex-end;text-align:right;white-space:nowrap}
+.wk-p b{font-variant-numeric:tabular-nums}
+.wk-p small{display:block;font-size:.68rem;color:var(--ink-2);margin:0}
+.wk.good .wk-p b{color:var(--good)}.wk.bad .wk-p b{color:var(--red)}.wk.note .wk-p b{color:var(--ink-2)}
+.wk.base{background:var(--surface-2)}.wk.base .wk-x{font-weight:600}
+.wk-eq{margin:.5rem 0 .2rem;font-family:var(--mono,monospace);font-size:.86rem}
+.wk-n{margin:.2rem 0;font-size:.8rem}
+.gd{margin-top:.8rem;padding:.8rem .9rem;border-left:4px solid var(--teal);background:var(--surface);border-radius:0 var(--r) var(--r) 0}
+.gd h4{margin:.6rem 0 .2rem;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.gd h4:first-child{margin-top:0}
+.gd p{margin:0}.gd ul{margin:.1rem 0 0;padding-left:1.1rem}.gd li{margin:.15rem 0}
+.gd-go{margin-top:.7rem;min-height:38px;font-size:.86rem}
+
+/* Practice: sections, step tag, per-option reasons, scoring as working */
+.ngn-sub{margin:1.2rem 0 .3rem;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ngn-fx{margin:0 0 .5rem;font-size:.9rem;max-width:70ch}
+.ngn-tag{margin:0 0 .5rem;font-size:.78rem;color:var(--ink-2);letter-spacing:.02em}
+.nb-w{display:flex;flex-direction:column;gap:.2rem}
+.bt-col .nb-w + .nb-w{margin-top:.35rem}
+.nb-why{display:block;padding:.35rem .55rem;border-radius:var(--r);font-size:.8rem;line-height:1.4;color:var(--ink-2);background:var(--surface-2)}
+.nb-why i{display:block;font-style:normal;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.1rem}
+.nb-why.y i{color:var(--good)}.nb-why.n.you i{color:var(--red)}
+.nb-why.y.you,.nb-why.y:not(.you){border-left:3px solid var(--good)}
+.nb-why.n.you{border-left:3px solid var(--red)}
+.nb-why.n:not(.you){opacity:.8}
+.nb-whys{margin:.8rem 0 0;padding-left:1.2rem;display:grid;gap:.5rem;font-size:.88rem}
+.nb-whys li > b{display:block;margin-bottom:.15rem;font-weight:600}
+.nb-bl{display:block;margin-top:.25rem}.nb-bl em{display:block;font-style:normal;font-weight:600;font-size:.84rem}
+.ngn-res{line-height:1.5}
+.nr-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem .8rem}
+.nr-h b{font-size:1.15rem}.nr-h span{font-size:.86rem;color:var(--ink-2)}
+.nr-t{width:100%;margin:.6rem 0;border-collapse:collapse;font-size:.84rem}
+.nr-t th,.nr-t td{padding:.35rem .5rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.nr-t th{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.nr-t td small{display:block;color:var(--good);font-size:.78rem}
+.nr-t .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+.nr-t tr.y .n{color:var(--good)}.nr-t tr.n .n{color:var(--red)}.nr-t tr.m td{color:var(--ink-2)}
+.nr-rule{margin:.4rem 0;font-size:.84rem;color:var(--ink-2)}
+.ngn-res h4{margin:.9rem 0 .2rem;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ngn-res > p{margin:.2rem 0}
+.nr-tip{margin-top:.7rem!important;padding:.55rem .7rem;border-radius:var(--r);background:color-mix(in srgb,var(--amber-bg) 60%,var(--surface))}
+.nr-step{margin-top:.6rem!important;font-size:.84rem}
+/* The points table always wraps, so long answers never hide behind a sideways scroll on phones. */
+.nr-t{table-layout:fixed}
+.nr-t th:first-child{width:34%}.nr-t th.n{width:4rem}
+.nr-t td,.nr-t th{white-space:normal!important;overflow-wrap:anywhere}
+.nr-t .n{white-space:nowrap!important}
+@media (max-width:520px){.nr-t th:first-child{width:27%}.nr-t th.n{width:4.4rem}}

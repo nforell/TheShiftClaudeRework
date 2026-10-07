@@ -196,7 +196,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
       ${ng.length ? `<h2>Practice questions</h2><div class="scroll"><table><thead><tr><th>Question</th><th>Type</th><th class="n">Score</th><th>When</th></tr></thead><tbody>${ng.map((r) => `<tr><td>${esc(itemLabel(r))}</td><td>${esc(NG.TYPE[r.item_type] || r.item_type)}</td><td class="n">${r.score} / ${r.max}</td><td>${when(r.at)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
   }
 
-  function itemLabel(r) { const it = NG.items(r.case_id).find((x) => x.id === r.item_id); return it ? (it.q || it.stem || r.item_id).slice(0, 110) : r.item_id; }
+  function itemLabel(r) { const it = NG.items(r.case_id).find((x) => x.id === r.item_id) || (NG.byId && NG.byId(r.item_id)); return it ? (it.q || it.stem || r.item_id).slice(0, 110) : r.item_id; }
 
   function missedHTML() {
     const L = latest(), by = {};

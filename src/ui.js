@@ -1134,22 +1134,81 @@
     const more = e.total - e.heard;
     return `<div class="st-epi"><div class="st-eh"><span class="st-k">Their story</span>${trustDots(e.trust)}</div><p>${esc(e.text)}</p>${e.learned.length ? `<details><summary>What you learned about them <span class="muted">${e.heard} of ${e.total}</span></summary><ul>${e.learned.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}${more && e.heard ? `<small class="muted">${more} more thing${more === 1 ? '' : 's'} to learn about them on another shift.</small>` : ''}</div>`;
   }
+  /* ------------ debrief: showing the working ------------ */
+  const STARS_AT = () => (RW && RW.STARS) || [58, 72, 85];
+  // Focus practice: the two lowest NCLEX steps under 72 (or the lowest, as a stretch, when none is), two items each.
+  function focusPlan(cj) {
+    if (!NG || !NG.focus || !cj) return null;
+    const key = s.caseId + ':' + s.t + ':' + s.judg.length; if (ui.fx && ui.fx.key === key) return ui.fx;
+    const tested = cj.filter((x) => x.score !== null).sort((a, b) => a.score - b.score);
+    let weak = tested.filter((x) => x.score < STARS_AT()[1]).slice(0, 2), stretch = false;
+    if (!weak.length && tested.length) { weak = tested.slice(0, 1); stretch = true; }
+    const its = NG.focus(weak.map((x) => x.id), s.caseId, prof.ngn, 2, meta(s.caseId).sp);
+    return (ui.fx = { key, weak: weak.map((x) => ({ id: x.id, label: x.label, score: x.score })), stretch, ids: its.map((x) => x.id) });
+  }
+  const ngnList = () => (ui.ngn && ui.ngn.list === 'focus' && ui.fx ? ui.fx.ids.map((id) => NG.byId(id)).filter(Boolean) : NG.items(s.caseId));
+  const fmt1 = (n) => (Math.round(n * 10) / 10).toString();
+  // Under the big number: which skills were averaged, and where the star lines sit.
+  function scoreWhyHTML(d) {
+    const open = !!ui.scWhy, sc = d.dom.filter((x) => x.score !== null), ST = STARS_AT(), nst = ST.filter((x) => d.overall >= x).length;
+    const names = ['Rough shift', 'Getting there', 'Safe, solid shift', 'Charge-nurse material'], harmed = d.outcomes.some((o) => o.tone === 'bad');
+    const body = !open ? '' : `<div class="sw-b">
+      <p>Your score is the average of the <b>${sc.length} skill area${sc.length === 1 ? '' : 's'}</b> this shift tested. An area is tested when at least one of your decisions falls in it; areas with none are left out so they can't drag you up or down.</p>
+      <ul class="sw-sk">${sc.map((x) => `<li><span>${esc(x.label)}</span><b>${x.score}</b></li>`).join('')}</ul>
+      <p class="sw-eq">(${sc.map((x) => x.score).join(' + ')}) ÷ ${sc.length} = <b>${d.overall}</b></p>
+      <div class="sw-bands" aria-hidden="true"><i class="sw-m" style="left:${Math.max(0, Math.min(100, d.overall))}%"></i>${ST.map((x) => `<span class="sw-t" style="left:${x}%"><b>${x}</b></span>`).join('')}</div>
+      <ul class="sw-key">${[0, 1, 2, 3].map((n) => `<li class="${n === nst ? 'on' : ''}"><span>${n ? `${'★'.repeat(n)} ${ST[n - 1]}+` : `Under ${ST[0]}`}</span><b>${names[n]}</b></li>`).join('')}</ul>
+      <p>${nst < 3 ? `<b>${ST[nst] - d.overall} more point${ST[nst] - d.overall === 1 ? '' : 's'}</b> would have earned ${nst ? 'the next star' : 'a star'}.` : 'Three stars: the top band.'}${harmed && d.overall >= ST[1] ? ' A patient had a poor outcome, so the title is "Solid, with a miss that mattered" instead.' : !harmed && nst === 0 && d.overall >= 45 ? ' With no patient harmed, a score from 45 is still called "Getting there".' : ''}</p>
+      <p>Each skill starts at 60. Strong calls add 6 per point and misses take off 9 per point, then 4.5 per point after the first three. Open any skill or NCLEX step below to see every decision behind its number.</p>
+      <p class="muted">The NCLEX steps re-sort the same decisions by clinical judgment step; they don't change this score. The real NCLEX is pass or fail and doesn't report step scores, so treat these as a map of what to study.</p></div>`;
+    return `<div class="sc-why"><button class="sw-btn" data-act="sc-why" aria-expanded="${open}">How your ${d.overall} was worked out <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>${body}</div>`;
+  }
+  // One skill or step, opened: start at 60, every decision that moved it, and the sum.
+  function workHTML(T) {
+    const K = E.SCORE, row = (j, cls, val, how) => `<li class="wk ${cls}"><span class="wk-t">${E.clock(j.t)}${j.pid ? ' · ' + esc(j.pid) : ''}</span><span class="wk-x">${esc(j.text)}</span><span class="wk-p"><b>${val}</b><small>${how}</small></span></li>`;
+    const pt = (n) => `${fmt1(n)} pt${n === 1 ? '' : 's'}`;
+    const minusHow = (m) => m.half && m.full ? `${pt(m.full)} × ${K.BAD} + ${pt(m.half)} × ${K.BAD_AFTER}` : m.full ? `${pt(m.full)} × ${K.BAD}` : `${pt(m.half)} × ${K.BAD_AFTER}, past the first ${K.BAD_FULL}`;
+    const rounded = Math.round(T.raw), adj = T.score !== rounded ? (T.score === 100 ? 'capped at 100' : 'raised to the minimum of 5') : T.raw !== rounded ? 'rounded' : '';
+    return `<ol class="wk-list"><li class="wk base"><span class="wk-t"></span><span class="wk-x">Everyone starts here</span><span class="wk-p"><b>${K.BASE}</b></span></li>
+      ${T.plus.map((x) => row(x.j, 'good', '+' + fmt1(x.add), `${pt(x.pts)} × ${K.GOOD}`)).join('')}
+      ${T.minus.map((x) => row(x.j, 'bad', '−' + fmt1(x.sub), minusHow(x))).join('')}
+      ${T.notes.map((j) => row(j, 'note', '0', 'noted, not scored')).join('')}</ol>
+      <p class="wk-eq">${K.BASE}${T.gain ? ` + ${fmt1(T.gain)}` : ''}${T.pen ? ` − ${fmt1(T.pen)}` : ''} = ${fmt1(T.raw)}${T.raw !== T.score ? ` → <b>${T.score}</b> (${adj})` : ''}</p>
+      ${T.badPts > K.BAD_FULL ? `<p class="wk-n muted">Misses past the first ${K.BAD_FULL} points count half, so one bad stretch can't zero a whole area.</p>` : ''}`;
+  }
+  function guideHTML(id) {
+    const g = CJ && CJ.GUIDE && CJ.GUIDE[id]; if (!g) return '';
+    const fxi = ui.fx ? ui.fx.ids.findIndex((x) => { const it = NG.byId(x); return it && it.step === id; }) : -1;
+    return `<div class="gd"><h4>On the NCLEX</h4><p>${esc(g.exam)}</p><h4>Ask yourself</h4><ul>${g.ask.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><h4>Common traps</h4><ul>${g.traps.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${fxi >= 0 ? `<button class="btn gd-go" data-act="ngn-open" data-list="focus" data-i="${fxi}">Practice this step <span aria-hidden="true">›</span></button>` : ''}</div>`;
+  }
+  function meterHTML(x, T, step, d) {
+    ui.mOpen = ui.mOpen || {}; const k = (step ? 'c:' : 'k:') + x.id, open = !!ui.mOpen[k];
+    const head = `<div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.score === null ? 'No decisions fell here this shift' : `${x.good} strong, ${x.bad} missed`}<span class="mt-how">${open ? 'Hide' : x.score === null ? (step ? 'What it means' : '') : 'How it was scored'}</span></small>`;
+    if (x.score === null && !step) return `<div class="meter">${head}</div>`;
+    return `<div class="meter ${open ? 'open' : ''}"><button class="meter-b" data-act="meter" data-k="${k}" aria-expanded="${open}"${x.what ? ` title="${esc(x.what)}"` : ''}>${head}</button>${open ? `<div class="meter-w">${step && x.what ? `<p class="mw-what">${esc(x.what)}</p>` : ''}${x.score !== null ? workHTML(T) : ''}${step ? guideHTML(x.id) : ''}</div>` : ''}</div>`;
+  }
   function vDebrief() {
-    const d = E.debrief(s);
+    const d = E.debrief(s), cj = CJ ? CJ.score(d.judg) : null; focusPlan(cj);
+    if (!ui.mOpen || ui.mOpenFor !== (ui.fx && ui.fx.key)) {   // first look: open the weakest area in each view
+      ui.mOpen = {}; ui.mOpenFor = ui.fx && ui.fx.key;
+      const low = (L) => L.filter((x) => x.score !== null).sort((a, b) => a.score - b.score)[0];
+      const a = low(d.dom), b = cj && low(cj); if (a) ui.mOpen['k:' + a.id] = 1; if (b) ui.mOpen['c:' + b.id] = 1;
+    }
     const prior = prof.runs.filter((r) => r.caseId === s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
     const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
       <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 30 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>
+      ${scoreWhyHTML(d)}
       ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); return e && !e.heard && e.total; }).length; return n ? `<p class="muted st-note">You didn't get to know ${n === d.outcomes.length ? 'any of your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. Talking with patients once they're stable fills them in.</p>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><div class="by-h"><h2 id="dh">${ui.byCj ? 'By NCLEX step' : 'By skill'}</h2>${CJ ? `<div class="seg" role="group" aria-label="Score by"><button data-act="by" data-v="skill" aria-pressed="${!ui.byCj}">Skills</button><button data-act="by" data-v="cj" aria-pressed="${!!ui.byCj}">NCLEX steps</button></div>` : ''}</div>
-          ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one.</p>' : ''}
-          ${(ui.byCj && CJ ? CJ.score(d.judg) : d.dom).map((x) => `<div class="meter"${x.what ? ` title="${esc(x.what)}"` : ''}><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
+          ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one. Tap a step to see the decisions behind its number, how the exam tests it, and how to think it through.</p>' : '<p class="muted by-n">Tap a skill to see every decision behind its number.</p>'}
+          ${ui.byCj && cj ? cj.map((x) => meterHTML(x, E.tally(x.js), true, d)).join('') : d.dom.map((x) => meterHTML(x, E.tally(d.judg.filter((j) => j.domain === x.id)), false, d)).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
@@ -1162,31 +1221,55 @@
 
   /* ------------ NCLEX-style practice items ------------ */
   const STEPNAME = (id) => (CJ ? (CJ.STEPS.find((x) => x[0] === id) || [])[1] : '') || '';
+  function ngnRow(it, i, list) {
+    const dn = (prof.ngn || {})[it.id];
+    return `<li><button class="ngn-row" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${dn ? '' : 'ngn-go'}">${dn ? `${dn.score} of ${dn.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`;
+  }
   function ngnHTML() {
     if (!NG || !s) return ''; const its = NG.items(s.caseId); if (!its.length) return '';
-    const done = prof.ngn || {};
-    return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">Three questions in the formats the Next Generation NCLEX uses, built from this shift's patients.</p></div>
-      <ol class="ngn-list">${its.map((it, i) => { const d = done[it.id]; return `<li><button class="ngn-row" data-act="ngn-open" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${d ? '' : 'ngn-go'}">${d ? `${d.score} of ${d.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`; }).join('')}</ol></section>`;
+    const fx = ui.fx, fits = fx ? fx.ids.map((id) => NG.byId(id)).filter(Boolean) : [];
+    const why = fx && fx.weak.length ? (fx.stretch ? `None of your NCLEX steps fell below ${STARS_AT()[1]} this shift. These stretch questions aim at your lowest, <b>${esc(fx.weak[0].label)}</b> (${fx.weak[0].score}).` : `Your lowest NCLEX step${fx.weak.length > 1 ? 's' : ''} this shift: ${fx.weak.map((w) => `<b>${esc(w.label)}</b> (${w.score})`).join(' and ')}. These questions, from other units, practice the same thinking.`) : '';
+    return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">In the formats the Next Generation NCLEX uses, scored the way NCSBN scores them. Every answer comes with the reasoning behind each option.</p></div>
+      <h3 class="ngn-sub">From this shift</h3><ol class="ngn-list">${its.map((it, i) => ngnRow(it, i, 'shift')).join('')}</ol>
+      ${fits.length ? `<h3 class="ngn-sub">Focus practice</h3><p class="ngn-fx">${why}</p><ol class="ngn-list">${fits.map((it, i) => ngnRow(it, i, 'focus')).join('')}</ol>` : ''}</section>`;
   }
   function ovNgn() {
-    const its = NG.items(s.caseId), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked;
+    const its = ngnList(), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked, W = NG.whys(it);
+    if (!it) { ui.ov = null; return ''; }
     const mark = (ok, on) => (!ck ? '' : ok ? ' right' : on ? ' wrong' : '');
-    let body = `<p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
+    // After checking: the reason for an option, styled by whether you chose it and whether it was right.
+    const rw = (txt, ok, on) => (!ck || !txt ? '' : `<small class="nb-why ${ok ? 'y' : 'n'}${on ? ' you' : ''}">${on ? '<i>Your choice</i>' : ok ? '<i>You missed this</i>' : ''}${esc(txt.replace(/^(Yes|No):\s*/, '').replace(/^[a-z]/, (c) => c.toUpperCase()))}</small>`);
+    const stp = CJ ? CJ.STEPS.find((x) => x[0] === it.step) : null;
+    let body = `<p class="ngn-tag">${esc(NG.TYPE[it.type])}${stp ? ` · Tests <b>${esc(stp[1])}</b>` : ''}${q.list === 'focus' ? ' · Focus practice' : ''}</p><p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
     if (it.type === 'bowtie') {
-      const col = (k, lab, g, multi) => `<div class="bt-col bt-${k}"><h4>${lab}</h4>${g.opts.map((o, i) => { const on = multi ? (a[k] || []).includes(i) : a[k] === i, ok = multi ? g.ans.includes(i) : g.ans === i; return `<button class="nb-opt${on ? ' on' : ''}${mark(ok, on)}" data-act="ngn-pick" data-k="${k}" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</div>`;
+      const wk = { a: 'actions', c: 'cond', p: 'params' };
+      const col = (k, lab, g, multi) => `<div class="bt-col bt-${k}"><h4>${lab}</h4>${g.opts.map((o, i) => { const on = multi ? (a[k] || []).includes(i) : a[k] === i, ok = multi ? g.ans.includes(i) : g.ans === i; return `<div class="nb-w"><button class="nb-opt${on ? ' on' : ''}${mark(ok, on)}" data-act="ngn-pick" data-k="${k}" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>${rw((W[wk[k]] || [])[i], ok, on)}</div>`; }).join('')}</div>`;
       body += `<div class="bowtie">${col('a', 'Actions to take (choose 2)', it.actions, true)}${col('c', 'Most likely condition (choose 1)', it.cond, false)}${col('p', 'Parameters to monitor (choose 2)', it.params, true)}</div>`;
     } else if (it.type === 'matrix') {
       body += `<div class="tbl-wrap"><table class="ngn-mx"><thead><tr><th></th>${it.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((r, ri) => `<tr><td class="wrap">${esc(r.t)}${ck ? `<small class="muted ngn-why">${esc(r.why)}</small>` : ''}</td>${it.cols.map((c, ci) => { const on = (a.r || [])[ri] === ci; return `<td><button class="nb-cell${on ? ' on' : ''}${mark(r.ans === ci, on)}" data-act="ngn-pick" data-k="r" data-row="${ri}" data-v="${ci}" aria-pressed="${on}" aria-label="${esc(c)}" ${ck ? 'disabled' : ''}>${on ? '●' : ''}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
     } else if (it.type === 'sata') {
-      body += `<div class="ngn-opts">${it.opts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-opt sq${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join('')}</div>`;
+      body += `<div class="ngn-opts">${it.opts.map((o, i) => { const on = (a.s || []).includes(i); return `<div class="nb-w"><button class="nb-opt sq${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>${rw(W.opts[i], o.ok, on)}</div>`; }).join('')}</div>`;
     } else if (it.type === 'highlight') {
       body += `<p class="ngn-note">${it.parts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-hl${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join(' ')}</p>`;
+      if (ck) body += `<ol class="nb-whys">${it.parts.map((o, i) => { const on = (a.s || []).includes(i); return `<li><b>${esc(o.t)}</b>${rw(W.parts[i], o.ok, on)}</li>`; }).join('')}</ol>`;
     } else if (it.type === 'cloze') {
       let k = 0; body += `<p class="ngn-cloze">${it.parts.map((p) => { if (typeof p === 'string') return esc(p); const bi = k++; return `<span class="ngn-blank">${p.opts.map((o, oi) => { const on = (a.d || [])[bi] === oi; return `<button class="nb-chip${on ? ' on' : ''}${mark(p.ans === oi, on)}" data-act="ngn-pick" data-k="d" data-row="${bi}" data-v="${oi}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</span>`; }).join('')}</p>`;
+      if (ck) { let bi = 0; body += `<ol class="nb-whys">${it.parts.filter((p) => typeof p !== 'string').map((p) => { const k2 = bi++, v = (a.d || [])[k2]; return `<li><b>Blank ${k2 + 1}</b>${p.opts.map((o, oi) => (oi === p.ans || oi === v) ? `<span class="nb-bl"><em>${esc(o)}</em>${rw((W.blanks[k2] || [])[oi], oi === p.ans, oi === v)}</span>` : '').join('')}</li>`; }).join('')}</ol>`; }
     }
-    if (ck) { const sc = NG.score(it, a), mx = NG.max(it); body += `<div class="ngn-res ${sc === mx ? 'full' : sc ? 'part' : 'none'}"><b>${sc} of ${mx} points</b><p>${esc(it.why)}</p><small class="muted">${it.type === 'sata' || it.type === 'highlight' ? 'Scored plus or minus: each wrong choice cancels a right one.' : 'Scored zero or one for each part.'}</small></div>`; }
+    if (ck) {
+      const B = NG.breakdown(it, a), sc = B.score, mx = B.max;
+      const pts = (n) => (n > 0 ? '+' + n : n < 0 ? '−' + -n : '0');
+      const brows = B.rows.map((r) => `<tr class="${r.pts > 0 ? 'y' : r.pts < 0 ? 'n' : r.missed ? 'm' : 'z'}"><td>${esc(r.part)}</td><td>${B.pm ? (r.missed ? 'Not chosen (correct)' : r.ok ? 'Chosen, correct' : 'Chosen, incorrect') : `${esc(r.pick || '—')}${!r.ok && r.want ? `<small>Correct: ${esc(r.want)}</small>` : ''}`}</td><td class="n">${pts(r.pts)}</td></tr>`).join('');
+      body += `<div class="ngn-res ${sc === mx ? 'full' : sc ? 'part' : 'none'}">
+        <div class="nr-h"><b>${sc} of ${mx} points</b><span>${esc(B.math)}${B.pm && B.rows.some((r) => r.missed) ? `; ${B.rows.filter((r) => r.missed).length} correct option${B.rows.filter((r) => r.missed).length === 1 ? '' : 's'} not chosen` : ''}</span></div>
+        <div class="tbl-wrap"><table class="nr-t"><thead><tr><th>${it.type === 'matrix' ? 'Row' : B.pm ? 'Option' : 'Part'}</th><th>${B.pm ? 'Your answer' : 'You chose'}</th><th class="n">Points</th></tr></thead><tbody>${brows || `<tr><td colspan="3" class="muted">Nothing chosen.</td></tr>`}</tbody></table></div>
+        <p class="nr-rule">${esc(B.rule)}</p>
+        <h4>The reasoning</h4><p>${esc(it.why)}</p>
+        ${W.tip ? `<p class="nr-tip"><b>Test-taking tip.</b> ${esc(W.tip)}</p>` : ''}
+        ${stp ? `<p class="nr-step muted">This question tests <b>${esc(stp[1])}</b>: ${esc(stp[2])}</p>` : ''}</div>`;
+    }
     const last = q.i === its.length - 1;
-    const foot = !ck ? `<button class="btn btn-primary" data-act="ngn-check" ${NG.complete(it, a) ? '' : 'disabled data-why="Answer every part first."'}>Check answer</button>` : last ? `<button class="btn btn-primary" data-act="close">Done</button>` : `<button class="btn btn-primary" data-act="ngn-go" data-i="${q.i + 1}">Next question</button>`;
+    const foot = !ck ? `<button class="btn btn-primary" data-act="ngn-check" ${NG.complete(it, a) ? '' : 'disabled data-why="Answer every part first."'}>Check answer</button>` : last ? `<button class="btn btn-primary" data-act="close">Done</button>` : `<button class="btn btn-primary" data-act="ngn-go" data-list="${q.list || 'shift'}" data-i="${q.i + 1}">Next question</button>`;
     return sheet(`Question ${q.i + 1} of ${its.length}: ${esc(NG.TYPE[it.type])}`, body, foot, { wide: true, label: 'Practice question' });
   }
 
@@ -1983,10 +2066,12 @@
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
     'med-holdask'() { ui.med.holding = true; render(); },
-    'ngn-open'(el) { ui.ngn = { i: +el.dataset.i || 0, a: {}, checked: false }; ui.ov = 'ngn'; render(); },
-    'ngn-go'(el) { ui.ngn = { i: +el.dataset.i, a: {}, checked: false }; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    'ngn-open'(el) { ui.ngn = { list: el.dataset.list || 'shift', i: +el.dataset.i || 0, a: {}, checked: false }; ui.ov = 'ngn'; render(); },
+    'ngn-go'(el) { ui.ngn = { list: el.dataset.list || 'shift', i: +el.dataset.i, a: {}, checked: false }; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    meter(el) { ui.mOpen = ui.mOpen || {}; const k = el.dataset.k; if (ui.mOpen[k]) delete ui.mOpen[k]; else ui.mOpen[k] = 1; render(); },
+    'sc-why'() { ui.scWhy = !ui.scWhy; if (ui.scWhy) TEL.track('debrief_score_why', { case: s ? s.caseId : caseId }); render(); },
     'ngn-pick'(el) {
-      const q = ui.ngn, it = NG.items(s.caseId)[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
+      const q = ui.ngn, it = ngnList()[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
       if (k === 'c') q.a.c = v;
       else if (k === 'a' || k === 'p') { const L = q.a[k] = q.a[k] || []; const at = L.indexOf(v); if (at >= 0) L.splice(at, 1); else { L.push(v); if (L.length > 2) L.shift(); } }
       else if (k === 'r' || k === 'd') { const L = q.a[k] = q.a[k] || []; L[+el.dataset.row] = v; }
@@ -1994,10 +2079,10 @@
       render();
     },
     'ngn-check'() {
-      const q = ui.ngn, it = NG.items(s.caseId)[q.i]; if (!NG.complete(it, q.a)) return; q.checked = true;
+      const q = ui.ngn, it = ngnList()[q.i]; if (!NG.complete(it, q.a)) return; q.checked = true;
       const sc = NG.score(it, q.a), mx = NG.max(it); prof.ngn = prof.ngn || {}; const prev = prof.ngn[it.id];
       prof.ngn[it.id] = { score: Math.max(sc, prev ? prev.score : 0), max: mx, last: sc, at: Date.now() }; E.store.saveProfile(prof);
-      TEL.track('ngn_item', { case: s.caseId, item: it.id, type: it.type, step: it.step, score: sc, max: mx });
+      TEL.track('ngn_item', { case: s.caseId, item: it.id, type: it.type, step: it.step, score: sc, max: mx, focus: q.list === 'focus' });
       if (CL) CL.recordNgn(s.caseId, it, sc, mx);
       render();
     },
@@ -2212,7 +2297,7 @@
 
   /* Feedback. Answers get a pop and a moment to register; commitments get a chime and a stamp.
      None of it says whether the choice was right: that stays in the debrief. */
-  const SELECT = new Set(['aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
+  const SELECT = new Set(['meter', 'sc-why', 'aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
   const COMMIT = new Set(['doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
