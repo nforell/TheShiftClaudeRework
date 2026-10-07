@@ -16,16 +16,16 @@ BUY = 'https://buy.stripe.test/test_abc'
 PACK = {'pack': {'on': True, 'free': ['medsurg-4w-1', 'medsurg-4w-2', 'psych-3e-1'], 'price': '$12', 'checkoutUrl': BUY}}
 db = Supa(); db.user('p1', 'u-pat', 'pat@example.com'); db.user('s1', 'u-sam', 'sam@school.edu'); db.user('tt', 'u-teach', 'prof@school.edu')
 def H(pg, a, **kw): return pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})", [a, kw])
-lockedN = lambda pg: pg.locator('.rung.in-pack').count()
+lockedN = lambda pg: pg.locator('.sc-pick.in-pack').count()
 
 with sync_playwright() as p:
     b = p.chromium.launch(); errs = []
     went = []
     A = device(b, db, '/play/', 'pat', errs, extra=PACK)
     A.context.route('https://buy.stripe.test/**', lambda r: (went.append(r.request.url), r.fulfill(status=200, body='<h1>Stripe stand-in</h1>', content_type='text/html')))
-    NPACK = A.locator('.rung[data-id]').count() - 3
+    NPACK = A.locator('.sc-pick[data-id]').count() - 3
     check(NPACK >= 4 and lockedN(A) == NPACK, f'every shift but the free three is in the pack ({lockedN(A)} of {NPACK})')
-    check(A.locator('.rung[data-id]:not(.in-pack)').count() == 3, 'three shifts are free')
+    check(A.locator('.sc-pick[data-id]:not(.in-pack)').count() == 3, 'three shifts are free')
     H(A, 'pick-case', id='medsurg-4w-1'); H(A, 'new')
     check(A.evaluate("Shift.ui._ui.view") == 'handoff', 'a free shift starts')
     H(A, 'home'); H(A, 'pick-case', id='stepdown-6e-1')

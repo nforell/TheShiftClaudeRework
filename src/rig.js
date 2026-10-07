@@ -308,6 +308,13 @@
     if (!CH[key]) return `<svg class="${cls || 'portrait'}" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="30" fill="var(--line)"/><path d="M42 34h16M44 34v14l-9 16h30l-9-16V34" stroke="var(--ink-2)" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>`;
     return `<svg class="${cls || 'portrait'}" viewBox="${VB.icon}" aria-hidden="true" data-rig="${key}" data-mode="icon" data-v="${enc(v)}"></svg>`;
   }
+  /* A portrait that never moves (shift-picker cards): drawn once, then reused as plain markup, so a screen full of
+     faces costs nothing per frame and almost nothing per redraw. */
+  const stills = {};
+  function still(key, cls, vb) {
+    const k = key + '|' + (vb || VB.bust), head = `<svg class="${cls || 'portrait'}" viewBox="${vb || VB.bust}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"`;
+    return stills[k] ? `<img class="${cls || 'portrait'}" src="${stills[k]}" alt="" aria-hidden="true" decoding="async">` : `${head} data-rig="${key}" data-mode="bust" data-still="${k}"></svg>`;
+  }
   function bust(key, v, cls, vb) { return `<svg class="${cls || 'portrait'}" viewBox="${vb || VB.bust}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" data-rig="${key}" data-mode="bust" data-v="${enc(v)}"></svg>`; }
   function place(key, mode, v, transform, ck) { return `<g data-rig="${key}" data-mode="${mode}" data-v="${enc(v)}" transform="${transform}"${ck ? ` data-ck="${ck}"` : ''}></g>`; }
   function hydrate(root) {
@@ -318,8 +325,10 @@
       let ck = el.dataset.ck || key + ':' + mode; seen[ck] = (seen[ck] || 0) + 1; if (seen[ck] > 1) ck += ':' + seen[ck];
       let target = el; if (el.tagName.toLowerCase() === 'svg') { target = document.createElementNS('http://www.w3.org/2000/svg', 'g'); el.appendChild(target); }
       let v = {}; try { v = el.dataset.v ? JSON.parse(decodeURIComponent(el.dataset.v)) : {}; } catch (e) {}
-      const I = build(target, c, mode, ck, v); live.push(I);
+      const I = build(target, c, mode, ck, v);
       step(I, now(), 1 / 60, 0);
+      if (el.dataset.still) { const x = el.cloneNode(true); x.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); x.removeAttribute('class'); x.removeAttribute('data-rig'); x.removeAttribute('data-still'); stills[el.dataset.still] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(x)); el.removeAttribute('data-rig'); return; }
+      live.push(I);
     });
     if (!running && live.length) { running = true; last = now(); requestAnimationFrame(loop); }
   }
@@ -351,5 +360,5 @@
   }
   function setReduced(on) { reduced = !!on || osReduced; }
   setReduced(false);
-  S.rig = { define, has, icon, bust, place, hydrate, poke, hover, say, setReduced, setPower, stats, derive, BASE };
+  S.rig = { define, has, icon, bust, still, place, hydrate, poke, hover, say, setReduced, setPower, stats, derive, BASE };
 })(window.Shift);
