@@ -1869,7 +1869,7 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
   .or-hall{overflow-x:auto}.or-hall svg{min-width:620px}
   .or-nav .btn-quiet{padding:.4em .5em;font-size:.88rem}
   .or-nav .btn-primary{min-width:0}
-  .or-bed{background:linear-gradient(90deg,var(--scene-wall) 60%,var(--scene-blanket) 60%)}
+  .or-bed{background:linear-gradient(var(--scene-wall) 74%,var(--scene-blanket) 74%)}
 }
 
 .orient{--pen:#2B4C8C}
@@ -1982,3 +1982,31 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .cv-away{float:none}
 @media (max-width:640px){.ps:not(.ps-st) .ps-n{display:none}.ps-st b{font-size:.9rem}}
 .msg-go{display:inline-block;margin-top:.35rem;font-size:.8rem;font-weight:700;color:var(--teal)}
+
+/* Final polish: in-shift header on small phones. The clock never wraps, and the row always fits (menu button never clipped). */
+.top .clock{flex:none;white-space:nowrap}
+.top .clock small{white-space:nowrap}
+@media (max-width:400px){
+  .top{gap:.25rem;padding-left:.5rem;padding-right:.35rem}
+  .top .mark{font-size:.92rem;padding:.3em .45em .26em}
+  .top .icon-btn{min-width:38px;padding:0 .25em}
+  .top .clock{font-size:1.2rem}
+  .top .clock small{font-size:.58rem}
+}
+@media (max-width:365px){.top .hb-f{transform:scale(.88);margin:-2px}.top .helpers{gap:.1rem}}
+/* With the location label hidden, keep the team, clock and menu pinned right rather than bunched after the wordmark. */
+.top > .mark + .where:empty ~ .helpers, .top .roster-btn + .helpers{margin-left:auto}
+/* Debrief: the empty lesson-log note is one tidy row, not a tall card with a stray line. */
+.learn.learn-empty{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;padding:.6rem 1.2rem}
+.learn.learn-empty p{margin:0}
+/* Debrief: next-shift buttons read as a title and a quiet detail line, never a wrapped parenthetical. */
+.btn-next{text-align:left;justify-content:space-between}
+.btn-next > span:first-child{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.btn-next small{font-size:.78rem;font-weight:500;opacity:.8}
+.ngn-sc.ngn-go{color:var(--teal);font-weight:700}
+.ngn-row:hover .ngn-sc{color:var(--ink)}
+.btn-go.btn-next:hover > span:first-child{transform:none}
+/* Home cast on phones: Nova stands tall beside a 2×2 of patients (matches desktop), no orphan card. */
+@media (max-width:640px){.home-cast figure.lead{grid-row:span 2}}
+/* Orientation step 1 on phones: the bed reads as a wall with a blanket along the bottom, not a half-blue block behind the caption. */
+@media (max-width:820px){.or-bed .or-cap{font-weight:600;color:var(--ink)}}

@@ -158,14 +158,14 @@
     }).join('');
     const warm = sky(s.t)[0], kc = S.engine.getCase(s.caseId), unit = (kc && kc.unitShort) || '4 West', rn = doors.map((o) => o.room);
     return `<svg class="hall" viewBox="0 0 1060 300" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Hallway. Rooms ${rn[0]} to ${rn[rn.length - 1]}.">
-      <defs><linearGradient id="${gid}" x1="0" x2="1"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset=".5" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
-      <rect width="1060" height="300" fill="var(--scene-wall)"/><rect y="290" width="1060" height="10" fill="var(--scene-floor)"/>
-      <rect y="206" width="1060" height="6" fill="var(--scene-trim)"/>
+      <defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="-400" x2="530" y1="0" y2="0"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset="1" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
+      <rect x="-2000" width="5060" height="300" fill="var(--scene-wall)"/><rect x="-2000" y="290" width="5060" height="10" fill="var(--scene-floor)"/>
+      <rect x="-2000" y="206" width="5060" height="6" fill="var(--scene-trim)"/>
       <rect x="18" y="80" width="112" height="200" rx="4" fill="var(--scene-panel)"/><rect x="30" y="92" width="88" height="54" rx="3" fill="#0f1b1f"/>
       <text x="74" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#9fe0b8" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.clock(s.t)}</text>
       <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Atkinson Hyperlegible Mono, monospace">${unit}</text>
       ${d}
-      <rect width="1060" height="300" fill="url(#${gid})" pointer-events="none"/>
+      <rect x="-2000" width="5060" height="300" fill="url(#${gid})" pointer-events="none"/>
     </svg>`;
   }
 

@@ -9934,7 +9934,8 @@ window.Shift = window.Shift || {};
   const S = window.Shift, E = S.engine, CJ = S.cjmm, RV = S.review, TEL = S.tel, ALL = window.REVIEW_DECISIONS || {};
   const app = document.getElementById('app');
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const IDS = Object.keys(ALL);
+  const ORDER = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'ed-podb-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
+  const IDS = Object.keys(ALL).sort((a, b) => ((ORDER.indexOf(a) + 1) || 99) - ((ORDER.indexOf(b) + 1) || 99));   // same order as the game's shift list
   const id = window.REVIEW_CASE || null;
   const step = (d) => { const k = CJ.step({ key: d.key, domain: d.domain, text: d.text }); return (CJ.STEPS.find((x) => x[0] === k) || [])[1] || ''; };
   const AREA = Object.fromEntries(E.DOMAINS);

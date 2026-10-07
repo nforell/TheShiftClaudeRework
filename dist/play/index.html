@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Shift — a nursing shift simulator</title>
-<meta name="description" content="Work a real med-surg shift. Take report, walk the hall, and decide who needs you first. Your patients get better or worse based on what you notice.">
+<meta name="description" content="Work a real nursing shift: med-surg, step-down, ED, mother-baby, psych and peds. Take report, walk the hall, and decide who needs you first. Your patients get better or worse based on what you notice.">
 <meta name="theme-color" content="#22406A">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Shift"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1882,7 +1882,7 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
   .or-hall{overflow-x:auto}.or-hall svg{min-width:620px}
   .or-nav .btn-quiet{padding:.4em .5em;font-size:.88rem}
   .or-nav .btn-primary{min-width:0}
-  .or-bed{background:linear-gradient(90deg,var(--scene-wall) 60%,var(--scene-blanket) 60%)}
+  .or-bed{background:linear-gradient(var(--scene-wall) 74%,var(--scene-blanket) 74%)}
 }
 
 .orient{--pen:#2B4C8C}
@@ -1995,6 +1995,34 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .cv-away{float:none}
 @media (max-width:640px){.ps:not(.ps-st) .ps-n{display:none}.ps-st b{font-size:.9rem}}
 .msg-go{display:inline-block;margin-top:.35rem;font-size:.8rem;font-weight:700;color:var(--teal)}
+
+/* Final polish: in-shift header on small phones. The clock never wraps, and the row always fits (menu button never clipped). */
+.top .clock{flex:none;white-space:nowrap}
+.top .clock small{white-space:nowrap}
+@media (max-width:400px){
+  .top{gap:.25rem;padding-left:.5rem;padding-right:.35rem}
+  .top .mark{font-size:.92rem;padding:.3em .45em .26em}
+  .top .icon-btn{min-width:38px;padding:0 .25em}
+  .top .clock{font-size:1.2rem}
+  .top .clock small{font-size:.58rem}
+}
+@media (max-width:365px){.top .hb-f{transform:scale(.88);margin:-2px}.top .helpers{gap:.1rem}}
+/* With the location label hidden, keep the team, clock and menu pinned right rather than bunched after the wordmark. */
+.top > .mark + .where:empty ~ .helpers, .top .roster-btn + .helpers{margin-left:auto}
+/* Debrief: the empty lesson-log note is one tidy row, not a tall card with a stray line. */
+.learn.learn-empty{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;padding:.6rem 1.2rem}
+.learn.learn-empty p{margin:0}
+/* Debrief: next-shift buttons read as a title and a quiet detail line, never a wrapped parenthetical. */
+.btn-next{text-align:left;justify-content:space-between}
+.btn-next > span:first-child{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.btn-next small{font-size:.78rem;font-weight:500;opacity:.8}
+.ngn-sc.ngn-go{color:var(--teal);font-weight:700}
+.ngn-row:hover .ngn-sc{color:var(--ink)}
+.btn-go.btn-next:hover > span:first-child{transform:none}
+/* Home cast on phones: Nova stands tall beside a 2×2 of patients (matches desktop), no orphan card. */
+@media (max-width:640px){.home-cast figure.lead{grid-row:span 2}}
+/* Orientation step 1 on phones: the bed reads as a wall with a blanket along the bottom, not a half-blue block behind the caption. */
+@media (max-width:820px){.or-bed .or-cap{font-weight:600;color:var(--ink)}}
 </style></head>
 <body><div id="app"></div>
 <script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "d41be0d8f3", "ed-podb-1": "feef63dbed", "medsurg-4w-1": "7baaa7d83c", "medsurg-4w-2": "d238106e89", "medsurg-4w-3": "f3e271bdc6", "ob-2n-1": "3e20f62c9d", "peds-5s-1": "074678aa45", "psych-3e-1": "5e587c7e38", "stepdown-6e-1": "dfec68f537"};
@@ -14904,14 +14932,14 @@ window.Shift = window.Shift || {};
     }).join('');
     const warm = sky(s.t)[0], kc = S.engine.getCase(s.caseId), unit = (kc && kc.unitShort) || '4 West', rn = doors.map((o) => o.room);
     return `<svg class="hall" viewBox="0 0 1060 300" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Hallway. Rooms ${rn[0]} to ${rn[rn.length - 1]}.">
-      <defs><linearGradient id="${gid}" x1="0" x2="1"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset=".5" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
-      <rect width="1060" height="300" fill="var(--scene-wall)"/><rect y="290" width="1060" height="10" fill="var(--scene-floor)"/>
-      <rect y="206" width="1060" height="6" fill="var(--scene-trim)"/>
+      <defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="-400" x2="530" y1="0" y2="0"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset="1" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
+      <rect x="-2000" width="5060" height="300" fill="var(--scene-wall)"/><rect x="-2000" y="290" width="5060" height="10" fill="var(--scene-floor)"/>
+      <rect x="-2000" y="206" width="5060" height="6" fill="var(--scene-trim)"/>
       <rect x="18" y="80" width="112" height="200" rx="4" fill="var(--scene-panel)"/><rect x="30" y="92" width="88" height="54" rx="3" fill="#0f1b1f"/>
       <text x="74" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#9fe0b8" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.clock(s.t)}</text>
       <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Atkinson Hyperlegible Mono, monospace">${unit}</text>
       ${d}
-      <rect width="1060" height="300" fill="url(#${gid})" pointer-events="none"/>
+      <rect x="-2000" width="5060" height="300" fill="url(#${gid})" pointer-events="none"/>
     </svg>`;
   }
 
@@ -15545,7 +15573,7 @@ window.Shift = window.Shift || {};
         <div class="ladder" role="group" aria-label="Choose a shift">
           ${CASES.map((id, i) => (i === 0 || meta(CASES[i - 1]).sp !== meta(id).sp ? specHead(meta(id).sp) : '') + rung(id, i)).join('')}
           <div class="spec-h sp-soon"><b>Coming later</b></div>
-          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>Not built yet</b><span>ED, ICU, labor and delivery.</span></span></div>
+          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>In the works</b><span>ICU, labor and delivery, and more shifts on every unit.</span></span></div>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
@@ -16265,7 +16293,7 @@ window.Shift = window.Shift || {};
     const r = s.reward, L = r && r.learn; if (!L) return '';
     const fx = L.fixed.map((k) => prof.lessons[k]).filter(Boolean), ag = L.again.map((k) => prof.lessons[k]).filter(Boolean);
     const ups = L.ups.map((u) => { const tr = RW.TRACKS.find((x) => x.id === u.id); return `<span class="up">${medalHTML(u.tier, TRACKG[tr.dom || tr.id])}<span><b>${esc(tr.label)}</b><small>${RW.TIER[u.tier]}</small></span></span>`; }).join('');
-    if (!fx.length && !L.added.length && !ups && !ag.length) return `<section class="learn"><p class="muted">Every call to rethink from a finished shift goes into your lesson log. <button class="btn btn-quiet" data-act="awards">Achievements ›</button></p></section>`;
+    if (!fx.length && !L.added.length && !ups && !ag.length) return `<section class="learn learn-empty"><p class="muted">Every call to rethink from a finished shift goes into your lesson log.</p><button class="btn btn-quiet" data-act="awards">Achievements ›</button></section>`;
     return `<section class="learn" aria-label="What you learned">
       ${fx.length ? `<div class="ln-fix"><h3>Lessons you fixed <span>${fx.length}</span></h3><ul>${fx.slice(0, 6).map((l) => `<li><span class="les-ic" aria-hidden="true">✓</span><span>${esc(l.text)}</span></li>`).join('')}${fx.length > 6 ? `<li class="muted">and ${fx.length - 6} more</li>` : ''}</ul><p class="muted">Mistakes from last time that you didn't repeat.</p></div>` : ''}
       ${ag.length ? `<div class="ln-ag"><h3>Came back <span>${ag.length}</span></h3><ul>${ag.slice(0, 4).map((l) => `<li><span class="les-ic" aria-hidden="true">!</span><span>${esc(l.text)}</span></li>`).join('')}</ul></div>` : ''}
@@ -16297,7 +16325,7 @@ window.Shift = window.Shift || {};
           ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one.</p>' : ''}
           ${(ui.byCj && CJ ? CJ.score(d.judg) : d.dom).map((x) => `<div class="meter"${x.what ? ` title="${esc(x.what)}"` : ''}><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)} (${esc(specOf(nextId).name)}, ${esc(diffLabel(nextId).toLowerCase())}) <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Try ${esc(next.title)} (${esc(specOf(nextId).name)}, ${esc(diffLabel(nextId).toLowerCase())})</button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
         <section aria-labelledby="mh"><h2 id="mh">Moments that mattered</h2>
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
@@ -16312,7 +16340,7 @@ window.Shift = window.Shift || {};
     if (!NG || !s) return ''; const its = NG.items(s.caseId); if (!its.length) return '';
     const done = prof.ngn || {};
     return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">Three questions in the formats the Next Generation NCLEX uses, built from this shift's patients.</p></div>
-      <ol class="ngn-list">${its.map((it, i) => { const d = done[it.id]; return `<li><button class="ngn-row" data-act="ngn-open" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc">${d ? `${d.score} of ${d.max}` : 'Not tried'}</span></button></li>`; }).join('')}</ol></section>`;
+      <ol class="ngn-list">${its.map((it, i) => { const d = done[it.id]; return `<li><button class="ngn-row" data-act="ngn-open" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${d ? '' : 'ngn-go'}">${d ? `${d.score} of ${d.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`; }).join('')}</ol></section>`;
   }
   function ovNgn() {
     const its = NG.items(s.caseId), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked;
@@ -16539,7 +16567,7 @@ window.Shift = window.Shift || {};
     const pid = ui.chart.pid, tab = ui.chart.tab, d = def(pid), P = s.p[pid];
     const tabs = [['overview', 'Overview'], ['vitals', 'Vitals'], ['labs', 'Labs'], ['orders', 'Orders'], ['mar', 'MAR'], ['notes', 'Notes'], ['io', 'Intake/output']];
     let b = '';
-    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(d.dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd><b style="color:var(--red)">${esc(d.allergies)}</b></dd><dt>Code status</dt><dd>${esc(d.code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${d.lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
+    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(d.dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd>${/^(no known|nkda|none)/i.test(d.allergies || "") ? esc(d.allergies) : `<b style="color:var(--red)">${esc(d.allergies)}</b>`}</dd><dt>Code status</dt><dd>${esc(d.code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${d.lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
     if (tab === 'vitals') {
       const ab = (k, v) => abn(d, k, v);
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
