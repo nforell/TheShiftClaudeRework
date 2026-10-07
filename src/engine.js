@@ -132,17 +132,27 @@ window.Shift = window.Shift || {};
     ['judgment', 'Clinical judgment'], ['time', 'Time management'],
   ];
 
+  /* How one skill (or one NCLEX step) is scored from its decisions, kept step by step so the debrief can show the
+     working. Every area starts at 60 (a shift with nothing notable). Each point from a strong call adds 6. The first
+     3 points of misses cost 9 each; misses past that cost 4.5 each, so one bad stretch can't zero a whole skill.
+     The result is rounded and kept between 5 and 100. No decisions at all means the area wasn't tested (null). */
+  const BASE = 60, GOOD = 6, BAD = 9, BAD_AFTER = 4.5, BAD_FULL = 3;
+  function tally(js) {
+    const good = js.filter((j) => j.delta > 0).sort((a, b) => a.t - b.t), bad = js.filter((j) => j.delta < 0).sort((a, b) => a.t - b.t);
+    let used = 0;
+    const plus = good.map((j) => ({ j, pts: j.delta, add: j.delta * GOOD }));
+    const minus = bad.map((j) => { const pts = -j.delta, full = Math.max(0, Math.min(pts, BAD_FULL - used)), half = pts - full; used += pts; return { j, pts, full, half, sub: full * BAD + half * BAD_AFTER }; });
+    const goodPts = good.reduce((n, j) => n + j.delta, 0), badPts = bad.reduce((n, j) => n - j.delta, 0);
+    const pen = Math.min(badPts, BAD_FULL) * BAD + Math.max(0, badPts - BAD_FULL) * BAD_AFTER;
+    const raw = BASE + goodPts * GOOD - pen, score = js.length ? clamp(Math.round(raw), 5, 100) : null;
+    return { base: BASE, plus, minus, notes: js.filter((j) => !j.delta), goodPts, badPts, gain: goodPts * GOOD, pen, raw, score, good: good.length, bad: bad.length };
+  }
   function debrief(s) {
     const c = cases[s.caseId];
     const A = api(s);
     const dom = DOMAINS.map(([id, label]) => {
-      const js = s.judg.filter((j) => j.domain === id);
-      const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0);
-      const bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      // Misses past the first few points in one domain count half: one bad stretch shouldn't zero a whole skill.
-      const pen = Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5;
-      const score = js.length ? clamp(Math.round(60 + good * 6 - pen), 5, 100) : null;
-      return { id, label, score, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      const T = tally(s.judg.filter((j) => j.domain === id));
+      return { id, label, score: T.score, good: T.good, bad: T.bad };
     });
     const scored = dom.filter((d) => d.score !== null);
     const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
@@ -174,5 +184,5 @@ window.Shift = window.Shift || {};
     saveProfile(p) { try { localStorage.setItem(PROF, JSON.stringify(p)); } catch (e) {} },
   };
 
-  S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, clock, clamp, store, DOMAINS, cases };
+  S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, tally, SCORE: { BASE, GOOD, BAD, BAD_AFTER, BAD_FULL }, clock, clamp, store, DOMAINS, cases };
 })(window.Shift);

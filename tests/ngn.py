@@ -46,6 +46,31 @@ with sync_playwright() as p:
     H('ngn-check'); txt = pg.inner_text('.ngn-res'); check('0 of 3' in txt, f'selecting everything scores zero under +/- ({txt.splitlines()[0]})')
     saved = pg.evaluate("Object.keys(JSON.parse(localStorage.getItem('theshift.profile.v1')).ngn||{}).length")
     check(saved == 3, 'results are saved to the profile')
+    # Robust rationale: every option of every item (shift and focus) has a reason that agrees with the key, plus a tip.
+    bad = pg.evaluate("""()=>{const N=Shift.ngn,bad=[];const yes=(t)=>/^Yes:/.test(t||''),no=(t)=>/^No:/.test(t||'');
+      for(const it of N.all()){const w=N.whys(it);if(!w.tip)bad.push(it.id+' tip');
+        const chk=(txt,ok,lab)=>{if(!(ok?yes(txt):no(txt)))bad.push(it.id+' '+lab)};
+        if(it.type==='bowtie')['cond','actions','params'].forEach(k=>it[k].opts.forEach((o,i)=>chk(w[k][i],Array.isArray(it[k].ans)?it[k].ans.includes(i):it[k].ans===i,k+i)));
+        if(it.type==='sata')it.opts.forEach((o,i)=>chk(w.opts[i],o.ok,'opt'+i));
+        if(it.type==='highlight')it.parts.forEach((o,i)=>chk(w.parts[i],o.ok,'part'+i));
+        if(it.type==='cloze')it.parts.filter(x=>typeof x!=='string').forEach((x,b)=>x.opts.forEach((o,i)=>chk((w.blanks[b]||[])[i],i===x.ans,'blank'+b+'.'+i)));
+        if(it.type==='matrix')it.rows.forEach((r,i)=>{if(!r.why)bad.push(it.id+' row'+i)});}
+      return bad}""")
+    check(not bad, 'every option of every practice item has a rationale that agrees with the key' + (': ' + ', '.join(bad[:5]) if bad else ''))
+    nfx = pg.evaluate("Shift.ngn.all().filter(x=>/^fx-/.test(x.id)).length"); steps = pg.evaluate("[...new Set(Shift.ngn.all().map(x=>x.step))].sort().join(',')")
+    check(nfx >= 18 and steps == 'act,analyze,cues,eval,hypo,solve', f'focus items cover all six steps ({nfx} items; steps {steps})')
+    check(pg.locator('.nr-t tbody tr').count() >= 1 and pg.locator('.nb-why').count() >= 6, 'a checked answer shows the points table and a reason for each option')
+    check('minus' in pg.inner_text('.nr-h') and '= 0' in pg.inner_text('.nr-h'), 'select-all working shows the plus-minus arithmetic')
+    H('close')
+    # The debrief shows its working: the score explainer, an opened meter with every decision, and focus practice.
+    H('sc-why'); txt = pg.inner_text('.sc-why'); check('average of the' in txt and '÷' in txt and '58' in txt, 'the score explainer shows the average and the star lines')
+    H('by', v='cj'); check(pg.locator('.meter.open .wk-list').count() >= 1 and pg.locator('.meter.open .gd').count() >= 1, 'the weakest NCLEX step opens with its decisions and how to think it through')
+    eq = pg.inner_text('.meter.open .wk-eq'); sc = pg.inner_text('.meter.open .l b')
+    check(eq.strip().split(' ')[-1].strip('()') == sc.strip() or ('→ ' + sc.strip()) in eq, f'the shown working lands on the shown score ({eq} vs {sc})')
+    fx = pg.evaluate("Shift.ui._ui.fx")
+    check(fx and len(fx['ids']) >= 2 and pg.locator('.ngn-fx').count() == 1, 'focus practice targets the weakest steps')
+    H('ngn-open', list='focus', i='0'); check('Focus practice' in pg.inner_text('.ngn-tag'), 'a focus question opens, labeled with its step')
+    H('close')
     pg.screenshot(path=str(ROOT / 'tests' / 'out' / 'ngn.png'))
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
     b.close()

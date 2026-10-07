@@ -12,7 +12,7 @@ pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.d
 # Terms of use and disclaimer: one source (src/terms.json) for the in-game sheet and the /terms/ page.
 TERMS = json.loads((src/'terms.json').read_text())
 pre += 'window.Shift.terms = ' + json.dumps(TERMS).replace('</', '<\\/') + ';\n'
-js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-ob1.js','case-ed1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/ob1.js','stories/ed1.js','rig.js','art.js','orient.js','ui.js'])
+js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-why.js','ngn-focus.js','review.js','flow.js','floor.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-ob1.js','case-ed1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/ob1.js','stories/ed1.js','rig.js','art.js','orient.js','ui.js'])
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -56,7 +56,7 @@ for cid in CF:
     (dist/'review'/cid).mkdir(exist_ok=True)
     (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
 # Instructor dashboard: the shifts' logic (titles, skills, NCLEX steps), accounts, and the practice questions.
-TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js']+[f for f in LOGIC if f.startswith('case-')]
+TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js']+[f for f in LOGIC if f.startswith('case-')]
 (dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+''.join((src/f).read_text()+'\n' for f in TEACH)+'</script>'))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 import html as _h

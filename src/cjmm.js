@@ -37,13 +37,34 @@
     if (j.domain === 'judgment') return /^You (gave|started|treated|stopped|let|kept|sat|put|moved|called|asked)/.test(t) ? 'act' : 'analyze';
     return 'act';
   }
-  /* Scored like the skill domains in the engine, so the two views agree. */
+  /* Scored with the engine's tally, the same rule as the skill domains, so the two views always agree. */
   function score(judg) {
     return STEPS.map(([id, label, what]) => {
-      const js = judg.filter((j) => step(j) === id);
-      const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0), bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - (Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5)))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      const js = judg.filter((j) => step(j) === id), T = S.engine.tally(js);
+      return { id, label, what, score: T.score, good: T.good, bad: T.bad, js };
     });
   }
-  S.cjmm = { STEPS, OVERRIDE, step, score };
+  /* What each step looks like on the exam, how to reason through it, and the traps, for the debrief and the
+     focus-practice section. Kept short enough to read on a phone. */
+  const GUIDE = {
+    cues: { exam: 'Items hand you a chart, a note or a set of findings and ask which ones matter: highlight, select-all and matrix items. The skill is separating relevant from irrelevant, and abnormal or changed from expected.',
+      ask: ['What is abnormal for this client, not just for the textbook?', 'What has changed since the last assessment, or since their baseline?', 'What is missing that I would expect to see: a vital sign, a lab, an assessment nobody did?', 'What did the client or family say that does not fit?'],
+      traps: ['Treating a chronic baseline finding as new, like a barrel chest in COPD.', 'A normal-looking number that hides a trend, like a blood pressure that fell 30 points.', 'Not looking: skipping the assessment the situation calls for.'] },
+    analyze: { exam: 'Items ask what the findings are consistent with: matrix items sort findings by condition, and drop-downs link a cue to its cause.',
+      ask: ['Which findings cluster together?', 'What pathophysiology explains them?', 'What else could explain this, and which explanation fits all of the cues?', 'Is this expected for the condition and its treatment, or a complication?'],
+      traps: ['Blaming a psych diagnosis, dementia or anxiety for a physical change.', 'Anchoring on the first explanation, like report\'s "stomach bug".', 'Treating a symptom without asking what is causing it.'] },
+    hypo: { exam: 'Bowtie and drop-down items ask for the most likely and most urgent condition; other items ask which client to see first. Rank by threat to life, then by likelihood.',
+      ask: ['Which problem hurts the client fastest if I am wrong? Airway, breathing, circulation, then neuro.', 'Is this client unstable, or at risk of becoming unstable, or stable and predictable?', 'Acute and new before chronic and known; actual before potential.', 'What is time-critical: a treatment window, a dose, a drip?'],
+      traps: ['The loudest or most demanding client is not always the sickest.', 'Quiet deterioration: the confused, sleepy or "fine" client ranked last.', 'A scheduled task put ahead of an unstable client.'] },
+    solve: { exam: 'Matrix items ask what to give or hold, what is indicated or contraindicated, and who should do it. Select-all items ask what belongs in the plan.',
+      ask: ['What outcome am I aiming for, and what gets there?', 'Does every order still fit this client right now: hold parameters, allergies, new labs?', 'What should not be done, and why?', 'Who is the right person? Assessment, teaching, evaluation and unstable clients stay with the RN.'],
+      traps: ['Giving a medication because it is due, without checking its hold parameter.', 'Delegating an assessment or an unstable client.', 'Choosing a more restrictive option when a less restrictive one is safe.'] },
+    act: { exam: 'Select-all and matrix items ask which actions to take now and how: the right drug, dose and route, the right escalation, the right words.',
+      ask: ['What is the first thing that makes the client safer?', 'Is it within my scope, or does it need an order or a provider at the bedside?', 'Am I doing it correctly: dose, route, timing, technique?', 'Who needs to know, and am I giving it to them in SBAR?'],
+      traps: ['The right drug by the wrong route or at the wrong dose.', 'Reassessing again when the situation calls for acting.', 'Acting alone where the provider must decide, or waiting for an order when a protocol lets you act.'] },
+    eval: { exam: 'Matrix and highlight items show findings after an intervention and ask whether they mean improved, no change or declined, or which ones show it worked.',
+      ask: ['What did I expect this intervention to change, and by when?', 'Compared with the client\'s own baseline, not only with normal ranges, where are they now?', 'Did anything get worse while other things improved?', 'If it did not work, what next: repeat, escalate, or rethink the problem?'],
+      traps: ['Calling it a success because one number improved.', 'Forgetting the recheck: the PRN effect, post-transfusion vitals, the repeat lab.', 'Mistaking an adverse effect for the intended effect.'] },
+  };
+  S.cjmm = { STEPS, OVERRIDE, GUIDE, step, score };
 })(window.Shift = window.Shift || {});

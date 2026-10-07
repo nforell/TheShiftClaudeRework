@@ -14,7 +14,7 @@
         params: { opts: [`Serum lactate`, `Blood pressure and mean arterial pressure`, `Hemoglobin A1c`, `Serum albumin`, `TSH`], ans: [0, 1] },
         why: `New confusion, fever, tachycardia, soft pressure and low urine output with a known infection is sepsis until proven otherwise. Cultures, then antibiotics and fluids, fast; then watch whether the lactate clears and the pressure holds. Sedating or restraining treats the symptom and hides the cause.` },
       { id: 'ms1-mat', type: 'matrix', step: 'solve',
-        stem: `A 71-year-old with heart failure (EF 30%) and atrial fibrillation has 09:00 medications due. Apical pulse 52, irregular, counted for a full minute. BP 112/70. Potassium 3.3. Hemoglobin stable, no bleeding.`,
+        stem: `A 71-year-old with heart failure (EF 30%) and atrial fibrillation, on daily furosemide, has 09:00 medications due. Apical pulse 52, irregular, counted for a full minute. BP 112/70. Potassium 3.3. Hemoglobin stable, no bleeding.`,
         q: `For each medication, indicate whether the nurse should give it or hold it and notify the provider.`,
         cols: [`Give`, `Hold and notify`],
         rows: [
@@ -93,8 +93,8 @@
       { id: 'ms3-cloze', type: 'cloze', step: 'eval',
         stem: `A 26-year-old with diabetic ketoacidosis is on an insulin infusion.`,
         q: `Complete the sentences.`,
-        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
-        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
+        parts: [`Keep the insulin infusion running until the `, { opts: [`ketoacidosis has resolved (gap closed, ketones down)`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
+        why: `The acidosis (anion gap and ketones), not the glucose, tells you DKA has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
     ],
     'stepdown-6e-1': [
       { id: 'sd-bow', type: 'bowtie', step: 'hypo',
@@ -299,5 +299,60 @@
     return Math.max(0, s.filter((i) => list[i].ok).length - s.filter((i) => !list[i].ok).length);
   }
   const complete = (it, a) => { a = a || {}; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
-  S.ngn = { ITEMS, TYPE, items: (id) => ITEMS[id] || [], score, max, complete };
+  /* Per-option rationale for any item, in one shape: { cond, actions, params } for bowtie, opts for select-all,
+     parts for highlight, blanks (one list per blank) for drop-down, and a tip. Shift items take theirs from
+     ngn-why.js; focus items carry theirs inline. Missing pieces come back as empty lists. */
+  function whys(it) {
+    const w = (S.ngnWhy || {})[it.id] || {}, o = { tip: it.tip || w.tip || '' };
+    if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => { o[k] = (it.whys && it.whys[k]) || w[k] || []; });
+    else if (it.type === 'sata') o.opts = it.opts.map((x, i) => x.why || (w.opts || [])[i] || '');
+    else if (it.type === 'highlight') o.parts = it.parts.map((x, i) => x.why || (w.parts || [])[i] || '');
+    else if (it.type === 'cloze') { let b = 0; o.blanks = it.parts.filter((x) => typeof x !== 'string').map((x) => x.whys || (w.blanks || [])[b++] || []); }
+    return o;
+  }
+  /* Scoring, shown as working: every part that earns or loses a point, and the rule the exam uses for this format. */
+  const RULE = {
+    bowtie: 'Bowtie items are scored 0 or 1 per part: 1 point for the condition, 1 for each correct action you chose and 1 for each correct parameter, 5 in all. A wrong choice earns 0 but takes nothing away.',
+    matrix: 'Matrix items are scored 0 or 1 per row: each row you mark correctly earns 1 point. A wrong row earns 0 but takes nothing away.',
+    cloze: 'Drop-down items are scored 0 or 1 per blank: each correct choice earns 1 point.',
+    sata: 'Select-all items are scored plus or minus: +1 for each correct option you choose, -1 for each incorrect one, never below 0. Options you leave unchosen cost nothing, but a correct option you miss is a point you did not earn.',
+    highlight: 'Highlight items are scored plus or minus: +1 for each finding you correctly highlight, -1 for each one you highlight that did not need follow-up, never below 0.',
+  };
+  function breakdown(it, a) {
+    a = a || {}; const rows = [];
+    if (it.type === 'bowtie') {
+      rows.push({ part: 'Condition', pick: it.cond.opts[a.c], ok: a.c === it.cond.ans, pts: a.c === it.cond.ans ? 1 : 0, want: it.cond.opts[it.cond.ans] });
+      [['a', 'actions', 'Action'], ['p', 'params', 'Parameter']].forEach(([k, g, lab]) => (a[k] || []).forEach((i, n) => { const ok = it[g].ans.includes(i); rows.push({ part: `${lab} ${n + 1}`, pick: it[g].opts[i], ok, pts: ok ? 1 : 0 }); }));
+    } else if (it.type === 'matrix') {
+      it.rows.forEach((r, i) => { const v = (a.r || [])[i], ok = v === r.ans; rows.push({ part: r.t, pick: it.cols[v], ok, pts: ok ? 1 : 0, want: it.cols[r.ans] }); });
+    } else if (it.type === 'cloze') {
+      let k = 0; it.parts.forEach((x) => { if (typeof x === 'string') return; const v = (a.d || [])[k], ok = v === x.ans; rows.push({ part: `Blank ${k + 1}`, pick: x.opts[v], ok, pts: ok ? 1 : 0, want: x.opts[x.ans] }); k++; });
+    } else {
+      const list = it.type === 'sata' ? it.opts : it.parts, s = a.s || [];
+      list.forEach((o, i) => { const on = s.includes(i); if (on) rows.push({ part: o.t, pick: true, ok: !!o.ok, pts: o.ok ? 1 : -1 }); else if (o.ok) rows.push({ part: o.t, pick: false, ok: false, pts: 0, missed: true }); });
+    }
+    const sum = rows.reduce((n, r) => n + r.pts, 0), sc = score(it, a);
+    const pm = it.type === 'sata' || it.type === 'highlight';
+    const right = rows.filter((r) => r.pts > 0).length, wrong = rows.filter((r) => r.pts < 0).length;
+    const math = pm ? `${right} correct ${right === 1 ? 'choice' : 'choices'} (+${right})${wrong ? ` minus ${wrong} incorrect (-${wrong})` : ''} = ${sum}${sum < 0 ? ', raised to the floor of 0' : ''}` : `${right} of ${rows.length} ${it.type === 'matrix' ? 'rows' : it.type === 'cloze' ? 'blanks' : 'parts'} correct`;
+    return { rows, rule: RULE[it.type], math, score: sc, max: max(it), pm };
+  }
+  /* Every item, and lookup by id (focus items included), for the debrief and the instructor dashboard. */
+  const focusItems = () => S.ngnFocus || [];
+  const all = () => Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems());
+  const byId = (id) => all().find((x) => x.id === id) || null;
+  /* Focus practice: for each weak step (lowest first), up to `per` items that test it. Prefers items written for
+     focus practice, then other shifts' items; skips this shift's own three and anything already answered, unless
+     that leaves nothing to offer. */
+  function focus(steps, caseId, done, per, sp) {
+    done = done || {}; per = per || 2; const own = new Set((ITEMS[caseId] || []).map((x) => x.id)), out = [], used = new Set();
+    steps.forEach((st) => {
+      const pool = focusItems().filter((x) => x.step === st).concat(Object.entries(ITEMS).filter(([cid]) => cid !== caseId).reduce((n, [, L]) => n.concat(L.filter((x) => x.step === st)), []))
+        .filter((x) => !own.has(x.id) && !used.has(x.id)).sort((x, y) => (y.sp === sp) - (x.sp === sp));   // same unit first, then the order above
+      const fresh = pool.filter((x) => !done[x.id]), pick = (fresh.length ? fresh : pool).slice(0, per);
+      pick.forEach((x) => { used.add(x.id); out.push(x); });
+    });
+    return out;
+  }
+  S.ngn = { ITEMS, TYPE, RULE, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, byId, focus };
 })(window.Shift = window.Shift || {});

@@ -2,6 +2,15 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 7, 2026: practice question rationales and focus practice
+
+| Where | What's new or changed | Basis |
+|---|---|---|
+| All 27 shift practice items | A rationale for every answer option (why it is or isn't correct, and the trap), plus a test-taking tip, in `src/ngn-why.js`. | Standard NCLEX review practice; written to agree with each item's key and existing rationale. |
+| 20 new focus items (`src/ngn-focus.js`) | Offered after the debrief for the player's two weakest clinical judgment steps; weighted to Analyze cues and Evaluate outcomes, which had 0 and 1 items before. Topics: HF left vs right, purging vs starvation, ABO jaundice, PE, pneumonia response, naloxone, CIWA, pediatric fluid bolus, adolescent suicide cues, newborn findings, opioid overdose, prolapsed cord, SBAR for unstable AF, de-escalation, delegation, pediatric give/hold, adolescent safety plan, intussusception, ED triage (atypical ACS), adolescent anorexia instability. | AHA/ACC, ADA, AAP, ACOG, NCSBN delegation guidelines, SAMHSA. **Needs clinical review.** |
+| Nights on 4 West, DKA drop-down | The infusion runs until "ketoacidosis has resolved (gap closed, ketones down)" instead of "anion gap has closed". | 2024 ADA/EASD DKA consensus defines resolution by ketones and pH or bicarbonate. |
+| Days on 4 West, give/hold matrix | Stem now says the client takes daily furosemide, which the potassium rationale relied on. | Internal consistency. |
+
 ## October 3, 2026: two new shifts
 
 | Shift | What's new | Basis |

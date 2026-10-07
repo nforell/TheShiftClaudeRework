@@ -2105,6 +2105,87 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 .sc-sel{z-index:3}
 @media (max-width:420px){.sc-bust{width:70px;height:76px;margin-left:-22px}}
 img.sc-bust{object-fit:contain;object-position:bottom}
+
+/* ===== Debrief: showing the working ===== */
+/* "How your score was worked out" under the big number */
+.sc-why{margin:-.4rem 0 1.4rem}
+.sw-btn{display:inline-flex;align-items:center;gap:.4rem;min-height:40px;padding:.35rem .8rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
+.sw-btn:hover{border-color:var(--teal)}
+.sw-b{margin-top:.8rem;padding:1rem 1.2rem;border:1px solid var(--line);border-radius:var(--rc);background:var(--surface);max-width:760px;font-size:.92rem;line-height:1.55}
+.sw-b p{margin:.5rem 0}
+.sw-sk{list-style:none;margin:.6rem 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.3rem .8rem}
+.sw-sk li{display:flex;justify-content:space-between;gap:.5rem;padding:.3rem .5rem;border-bottom:1px dashed var(--line)}
+.sw-eq{font-family:var(--mono,monospace);font-size:.9rem}
+.sw-bands{position:relative;height:12px;margin:1.6rem 0 .3rem;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 30%,var(--surface-2)) 0 58%,color-mix(in srgb,var(--amber) 35%,var(--surface-2)) 58% 72%,color-mix(in srgb,var(--good) 30%,var(--surface-2)) 72% 85%,color-mix(in srgb,var(--good) 60%,var(--surface-2)) 85% 100%)}
+.sw-t{position:absolute;top:-1.35rem;transform:translateX(-50%);font-size:.72rem;color:var(--ink-2)}
+.sw-t::after{content:"";position:absolute;left:50%;top:1.2rem;width:1px;height:12px;background:var(--ink-2);opacity:.6}
+.sw-m{position:absolute;top:-4px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px var(--surface)}
+.sw-key{list-style:none;margin:.6rem 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.3rem}
+.sw-key li{display:flex;flex-direction:column;padding:.35rem .55rem;border-radius:var(--r);border:1px solid transparent;font-size:.82rem;color:var(--ink-2)}
+.sw-key li span{font-variant-numeric:tabular-nums;color:var(--amber)}
+.sw-key li.on{border-color:var(--ink);background:var(--paper);color:var(--ink)}
+
+/* Skill / NCLEX-step meters open to show every decision behind the number */
+.meter-b{display:block;width:100%;padding:.45rem .5rem;margin:0 -.5rem;width:calc(100% + 1rem);border:0;border-radius:var(--r);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.meter-b:hover{background:var(--surface)}
+.meter small{display:flex;justify-content:space-between;gap:.5rem;margin-top:.15rem}
+.mt-how{color:var(--teal);font-weight:600;white-space:nowrap}
+.meter.open{padding-bottom:.4rem;border-bottom:1px solid var(--line)}
+.meter-w{margin:.4rem 0 .6rem;font-size:.86rem}
+.mw-what{margin:.2rem 0 .6rem;color:var(--ink-2)}
+.wk-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);overflow:hidden}
+.wk{display:grid;grid-template-columns:3.6rem minmax(0,1fr) auto;gap:.5rem;align-items:start;padding:.45rem .6rem;border-top:1px solid var(--line);line-height:1.35}
+.wk:first-child{border-top:0}
+.wk-t{font-size:.74rem;color:var(--ink-2);font-variant-numeric:tabular-nums;padding-top:.1rem}
+.wk-x{font-size:.84rem}
+.wk-p{display:flex;flex-direction:column;align-items:flex-end;text-align:right;white-space:nowrap}
+.wk-p b{font-variant-numeric:tabular-nums}
+.wk-p small{display:block;font-size:.68rem;color:var(--ink-2);margin:0}
+.wk.good .wk-p b{color:var(--good)}.wk.bad .wk-p b{color:var(--red)}.wk.note .wk-p b{color:var(--ink-2)}
+.wk.base{background:var(--surface-2)}.wk.base .wk-x{font-weight:600}
+.wk-eq{margin:.5rem 0 .2rem;font-family:var(--mono,monospace);font-size:.86rem}
+.wk-n{margin:.2rem 0;font-size:.8rem}
+.gd{margin-top:.8rem;padding:.8rem .9rem;border-left:4px solid var(--teal);background:var(--surface);border-radius:0 var(--r) var(--r) 0}
+.gd h4{margin:.6rem 0 .2rem;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.gd h4:first-child{margin-top:0}
+.gd p{margin:0}.gd ul{margin:.1rem 0 0;padding-left:1.1rem}.gd li{margin:.15rem 0}
+.gd-go{margin-top:.7rem;min-height:38px;font-size:.86rem}
+
+/* Practice: sections, step tag, per-option reasons, scoring as working */
+.ngn-sub{margin:1.2rem 0 .3rem;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ngn-fx{margin:0 0 .5rem;font-size:.9rem;max-width:70ch}
+.ngn-tag{margin:0 0 .5rem;font-size:.78rem;color:var(--ink-2);letter-spacing:.02em}
+.nb-w{display:flex;flex-direction:column;gap:.2rem}
+.bt-col .nb-w + .nb-w{margin-top:.35rem}
+.nb-why{display:block;padding:.35rem .55rem;border-radius:var(--r);font-size:.8rem;line-height:1.4;color:var(--ink-2);background:var(--surface-2)}
+.nb-why i{display:block;font-style:normal;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.1rem}
+.nb-why.y i{color:var(--good)}.nb-why.n.you i{color:var(--red)}
+.nb-why.y.you,.nb-why.y:not(.you){border-left:3px solid var(--good)}
+.nb-why.n.you{border-left:3px solid var(--red)}
+.nb-why.n:not(.you){opacity:.8}
+.nb-whys{margin:.8rem 0 0;padding-left:1.2rem;display:grid;gap:.5rem;font-size:.88rem}
+.nb-whys li > b{display:block;margin-bottom:.15rem;font-weight:600}
+.nb-bl{display:block;margin-top:.25rem}.nb-bl em{display:block;font-style:normal;font-weight:600;font-size:.84rem}
+.ngn-res{line-height:1.5}
+.nr-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem .8rem}
+.nr-h b{font-size:1.15rem}.nr-h span{font-size:.86rem;color:var(--ink-2)}
+.nr-t{width:100%;margin:.6rem 0;border-collapse:collapse;font-size:.84rem}
+.nr-t th,.nr-t td{padding:.35rem .5rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.nr-t th{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.nr-t td small{display:block;color:var(--good);font-size:.78rem}
+.nr-t .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+.nr-t tr.y .n{color:var(--good)}.nr-t tr.n .n{color:var(--red)}.nr-t tr.m td{color:var(--ink-2)}
+.nr-rule{margin:.4rem 0;font-size:.84rem;color:var(--ink-2)}
+.ngn-res h4{margin:.9rem 0 .2rem;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ngn-res > p{margin:.2rem 0}
+.nr-tip{margin-top:.7rem!important;padding:.55rem .7rem;border-radius:var(--r);background:color-mix(in srgb,var(--amber-bg) 60%,var(--surface))}
+.nr-step{margin-top:.6rem!important;font-size:.84rem}
+/* The points table always wraps, so long answers never hide behind a sideways scroll on phones. */
+.nr-t{table-layout:fixed}
+.nr-t th:first-child{width:34%}.nr-t th.n{width:4rem}
+.nr-t td,.nr-t th{white-space:normal!important;overflow-wrap:anywhere}
+.nr-t .n{white-space:nowrap!important}
+@media (max-width:520px){.nr-t th:first-child{width:27%}.nr-t th.n{width:4.4rem}}
 </style></head>
 <body><div id="app"></div>
 <script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "d41be0d8f3", "ed-podb-1": "feef63dbed", "medsurg-4w-1": "7baaa7d83c", "medsurg-4w-2": "d238106e89", "medsurg-4w-3": "f3e271bdc6", "ob-2n-1": "3e20f62c9d", "peds-5s-1": "074678aa45", "psych-3e-1": "5e587c7e38", "stepdown-6e-1": "dfec68f537"};
@@ -2356,17 +2437,27 @@ window.Shift = window.Shift || {};
     ['judgment', 'Clinical judgment'], ['time', 'Time management'],
   ];
 
+  /* How one skill (or one NCLEX step) is scored from its decisions, kept step by step so the debrief can show the
+     working. Every area starts at 60 (a shift with nothing notable). Each point from a strong call adds 6. The first
+     3 points of misses cost 9 each; misses past that cost 4.5 each, so one bad stretch can't zero a whole skill.
+     The result is rounded and kept between 5 and 100. No decisions at all means the area wasn't tested (null). */
+  const BASE = 60, GOOD = 6, BAD = 9, BAD_AFTER = 4.5, BAD_FULL = 3;
+  function tally(js) {
+    const good = js.filter((j) => j.delta > 0).sort((a, b) => a.t - b.t), bad = js.filter((j) => j.delta < 0).sort((a, b) => a.t - b.t);
+    let used = 0;
+    const plus = good.map((j) => ({ j, pts: j.delta, add: j.delta * GOOD }));
+    const minus = bad.map((j) => { const pts = -j.delta, full = Math.max(0, Math.min(pts, BAD_FULL - used)), half = pts - full; used += pts; return { j, pts, full, half, sub: full * BAD + half * BAD_AFTER }; });
+    const goodPts = good.reduce((n, j) => n + j.delta, 0), badPts = bad.reduce((n, j) => n - j.delta, 0);
+    const pen = Math.min(badPts, BAD_FULL) * BAD + Math.max(0, badPts - BAD_FULL) * BAD_AFTER;
+    const raw = BASE + goodPts * GOOD - pen, score = js.length ? clamp(Math.round(raw), 5, 100) : null;
+    return { base: BASE, plus, minus, notes: js.filter((j) => !j.delta), goodPts, badPts, gain: goodPts * GOOD, pen, raw, score, good: good.length, bad: bad.length };
+  }
   function debrief(s) {
     const c = cases[s.caseId];
     const A = api(s);
     const dom = DOMAINS.map(([id, label]) => {
-      const js = s.judg.filter((j) => j.domain === id);
-      const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0);
-      const bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      // Misses past the first few points in one domain count half: one bad stretch shouldn't zero a whole skill.
-      const pen = Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5;
-      const score = js.length ? clamp(Math.round(60 + good * 6 - pen), 5, 100) : null;
-      return { id, label, score, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      const T = tally(s.judg.filter((j) => j.domain === id));
+      return { id, label, score: T.score, good: T.good, bad: T.bad };
     });
     const scored = dom.filter((d) => d.score !== null);
     const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
@@ -2398,7 +2489,7 @@ window.Shift = window.Shift || {};
     saveProfile(p) { try { localStorage.setItem(PROF, JSON.stringify(p)); } catch (e) {} },
   };
 
-  S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, clock, clamp, store, DOMAINS, cases };
+  S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, tally, SCORE: { BASE, GOOD, BAD, BAD_AFTER, BAD_FULL }, clock, clamp, store, DOMAINS, cases };
 })(window.Shift);
 
 /* The Shift — accounts and cloud saves (Supabase).
@@ -2661,15 +2752,36 @@ window.Shift = window.Shift || {};
     if (j.domain === 'judgment') return /^You (gave|started|treated|stopped|let|kept|sat|put|moved|called|asked)/.test(t) ? 'act' : 'analyze';
     return 'act';
   }
-  /* Scored like the skill domains in the engine, so the two views agree. */
+  /* Scored with the engine's tally, the same rule as the skill domains, so the two views always agree. */
   function score(judg) {
     return STEPS.map(([id, label, what]) => {
-      const js = judg.filter((j) => step(j) === id);
-      const good = js.filter((j) => j.delta > 0).reduce((n, j) => n + j.delta, 0), bad = js.filter((j) => j.delta < 0).reduce((n, j) => n - j.delta, 0);
-      return { id, label, what, score: js.length ? Math.max(5, Math.min(100, Math.round(60 + good * 6 - (Math.min(bad, 3) * 9 + Math.max(0, bad - 3) * 4.5)))) : null, good: js.filter((j) => j.delta > 0).length, bad: js.filter((j) => j.delta < 0).length };
+      const js = judg.filter((j) => step(j) === id), T = S.engine.tally(js);
+      return { id, label, what, score: T.score, good: T.good, bad: T.bad, js };
     });
   }
-  S.cjmm = { STEPS, OVERRIDE, step, score };
+  /* What each step looks like on the exam, how to reason through it, and the traps, for the debrief and the
+     focus-practice section. Kept short enough to read on a phone. */
+  const GUIDE = {
+    cues: { exam: 'Items hand you a chart, a note or a set of findings and ask which ones matter: highlight, select-all and matrix items. The skill is separating relevant from irrelevant, and abnormal or changed from expected.',
+      ask: ['What is abnormal for this client, not just for the textbook?', 'What has changed since the last assessment, or since their baseline?', 'What is missing that I would expect to see: a vital sign, a lab, an assessment nobody did?', 'What did the client or family say that does not fit?'],
+      traps: ['Treating a chronic baseline finding as new, like a barrel chest in COPD.', 'A normal-looking number that hides a trend, like a blood pressure that fell 30 points.', 'Not looking: skipping the assessment the situation calls for.'] },
+    analyze: { exam: 'Items ask what the findings are consistent with: matrix items sort findings by condition, and drop-downs link a cue to its cause.',
+      ask: ['Which findings cluster together?', 'What pathophysiology explains them?', 'What else could explain this, and which explanation fits all of the cues?', 'Is this expected for the condition and its treatment, or a complication?'],
+      traps: ['Blaming a psych diagnosis, dementia or anxiety for a physical change.', 'Anchoring on the first explanation, like report\'s "stomach bug".', 'Treating a symptom without asking what is causing it.'] },
+    hypo: { exam: 'Bowtie and drop-down items ask for the most likely and most urgent condition; other items ask which client to see first. Rank by threat to life, then by likelihood.',
+      ask: ['Which problem hurts the client fastest if I am wrong? Airway, breathing, circulation, then neuro.', 'Is this client unstable, or at risk of becoming unstable, or stable and predictable?', 'Acute and new before chronic and known; actual before potential.', 'What is time-critical: a treatment window, a dose, a drip?'],
+      traps: ['The loudest or most demanding client is not always the sickest.', 'Quiet deterioration: the confused, sleepy or "fine" client ranked last.', 'A scheduled task put ahead of an unstable client.'] },
+    solve: { exam: 'Matrix items ask what to give or hold, what is indicated or contraindicated, and who should do it. Select-all items ask what belongs in the plan.',
+      ask: ['What outcome am I aiming for, and what gets there?', 'Does every order still fit this client right now: hold parameters, allergies, new labs?', 'What should not be done, and why?', 'Who is the right person? Assessment, teaching, evaluation and unstable clients stay with the RN.'],
+      traps: ['Giving a medication because it is due, without checking its hold parameter.', 'Delegating an assessment or an unstable client.', 'Choosing a more restrictive option when a less restrictive one is safe.'] },
+    act: { exam: 'Select-all and matrix items ask which actions to take now and how: the right drug, dose and route, the right escalation, the right words.',
+      ask: ['What is the first thing that makes the client safer?', 'Is it within my scope, or does it need an order or a provider at the bedside?', 'Am I doing it correctly: dose, route, timing, technique?', 'Who needs to know, and am I giving it to them in SBAR?'],
+      traps: ['The right drug by the wrong route or at the wrong dose.', 'Reassessing again when the situation calls for acting.', 'Acting alone where the provider must decide, or waiting for an order when a protocol lets you act.'] },
+    eval: { exam: 'Matrix and highlight items show findings after an intervention and ask whether they mean improved, no change or declined, or which ones show it worked.',
+      ask: ['What did I expect this intervention to change, and by when?', 'Compared with the client\'s own baseline, not only with normal ranges, where are they now?', 'Did anything get worse while other things improved?', 'If it did not work, what next: repeat, escalate, or rethink the problem?'],
+      traps: ['Calling it a success because one number improved.', 'Forgetting the recheck: the PRN effect, post-transfusion vitals, the repeat lab.', 'Mistaking an adverse effect for the intended effect.'] },
+  };
+  S.cjmm = { STEPS, OVERRIDE, GUIDE, step, score };
 })(window.Shift = window.Shift || {});
 
 /* The Shift — NCLEX-style practice items after the debrief.
@@ -2688,7 +2800,7 @@ window.Shift = window.Shift || {};
         params: { opts: [`Serum lactate`, `Blood pressure and mean arterial pressure`, `Hemoglobin A1c`, `Serum albumin`, `TSH`], ans: [0, 1] },
         why: `New confusion, fever, tachycardia, soft pressure and low urine output with a known infection is sepsis until proven otherwise. Cultures, then antibiotics and fluids, fast; then watch whether the lactate clears and the pressure holds. Sedating or restraining treats the symptom and hides the cause.` },
       { id: 'ms1-mat', type: 'matrix', step: 'solve',
-        stem: `A 71-year-old with heart failure (EF 30%) and atrial fibrillation has 09:00 medications due. Apical pulse 52, irregular, counted for a full minute. BP 112/70. Potassium 3.3. Hemoglobin stable, no bleeding.`,
+        stem: `A 71-year-old with heart failure (EF 30%) and atrial fibrillation, on daily furosemide, has 09:00 medications due. Apical pulse 52, irregular, counted for a full minute. BP 112/70. Potassium 3.3. Hemoglobin stable, no bleeding.`,
         q: `For each medication, indicate whether the nurse should give it or hold it and notify the provider.`,
         cols: [`Give`, `Hold and notify`],
         rows: [
@@ -2767,8 +2879,8 @@ window.Shift = window.Shift || {};
       { id: 'ms3-cloze', type: 'cloze', step: 'eval',
         stem: `A 26-year-old with diabetic ketoacidosis is on an insulin infusion.`,
         q: `Complete the sentences.`,
-        parts: [`Keep the insulin infusion running until the `, { opts: [`anion gap has closed`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
-        why: `The gap, not the glucose, tells you the ketoacidosis has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
+        parts: [`Keep the insulin infusion running until the `, { opts: [`ketoacidosis has resolved (gap closed, ketones down)`, `glucose is under 200`, `potassium is over 5`], ans: 0 }, `. Give subcutaneous basal insulin about `, { opts: [`2 hours`, `10 minutes`, `24 hours`], ans: 0 }, ` before stopping the infusion. If the potassium is `, { opts: [`under 3.5`, `over 5.0`, `between 4 and 5`], ans: 0 }, `, hold the insulin and replace potassium first.`],
+        why: `The acidosis (anion gap and ketones), not the glucose, tells you DKA has resolved. Without overlap, ketones come back within hours. Insulin drives potassium into cells, so a low potassium has to be fixed first (the 2024 ADA consensus holds insulin for K under 3.5).` },
     ],
     'stepdown-6e-1': [
       { id: 'sd-bow', type: 'bowtie', step: 'hypo',
@@ -2973,8 +3085,1417 @@ window.Shift = window.Shift || {};
     return Math.max(0, s.filter((i) => list[i].ok).length - s.filter((i) => !list[i].ok).length);
   }
   const complete = (it, a) => { a = a || {}; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
-  S.ngn = { ITEMS, TYPE, items: (id) => ITEMS[id] || [], score, max, complete };
+  /* Per-option rationale for any item, in one shape: { cond, actions, params } for bowtie, opts for select-all,
+     parts for highlight, blanks (one list per blank) for drop-down, and a tip. Shift items take theirs from
+     ngn-why.js; focus items carry theirs inline. Missing pieces come back as empty lists. */
+  function whys(it) {
+    const w = (S.ngnWhy || {})[it.id] || {}, o = { tip: it.tip || w.tip || '' };
+    if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => { o[k] = (it.whys && it.whys[k]) || w[k] || []; });
+    else if (it.type === 'sata') o.opts = it.opts.map((x, i) => x.why || (w.opts || [])[i] || '');
+    else if (it.type === 'highlight') o.parts = it.parts.map((x, i) => x.why || (w.parts || [])[i] || '');
+    else if (it.type === 'cloze') { let b = 0; o.blanks = it.parts.filter((x) => typeof x !== 'string').map((x) => x.whys || (w.blanks || [])[b++] || []); }
+    return o;
+  }
+  /* Scoring, shown as working: every part that earns or loses a point, and the rule the exam uses for this format. */
+  const RULE = {
+    bowtie: 'Bowtie items are scored 0 or 1 per part: 1 point for the condition, 1 for each correct action you chose and 1 for each correct parameter, 5 in all. A wrong choice earns 0 but takes nothing away.',
+    matrix: 'Matrix items are scored 0 or 1 per row: each row you mark correctly earns 1 point. A wrong row earns 0 but takes nothing away.',
+    cloze: 'Drop-down items are scored 0 or 1 per blank: each correct choice earns 1 point.',
+    sata: 'Select-all items are scored plus or minus: +1 for each correct option you choose, -1 for each incorrect one, never below 0. Options you leave unchosen cost nothing, but a correct option you miss is a point you did not earn.',
+    highlight: 'Highlight items are scored plus or minus: +1 for each finding you correctly highlight, -1 for each one you highlight that did not need follow-up, never below 0.',
+  };
+  function breakdown(it, a) {
+    a = a || {}; const rows = [];
+    if (it.type === 'bowtie') {
+      rows.push({ part: 'Condition', pick: it.cond.opts[a.c], ok: a.c === it.cond.ans, pts: a.c === it.cond.ans ? 1 : 0, want: it.cond.opts[it.cond.ans] });
+      [['a', 'actions', 'Action'], ['p', 'params', 'Parameter']].forEach(([k, g, lab]) => (a[k] || []).forEach((i, n) => { const ok = it[g].ans.includes(i); rows.push({ part: `${lab} ${n + 1}`, pick: it[g].opts[i], ok, pts: ok ? 1 : 0 }); }));
+    } else if (it.type === 'matrix') {
+      it.rows.forEach((r, i) => { const v = (a.r || [])[i], ok = v === r.ans; rows.push({ part: r.t, pick: it.cols[v], ok, pts: ok ? 1 : 0, want: it.cols[r.ans] }); });
+    } else if (it.type === 'cloze') {
+      let k = 0; it.parts.forEach((x) => { if (typeof x === 'string') return; const v = (a.d || [])[k], ok = v === x.ans; rows.push({ part: `Blank ${k + 1}`, pick: x.opts[v], ok, pts: ok ? 1 : 0, want: x.opts[x.ans] }); k++; });
+    } else {
+      const list = it.type === 'sata' ? it.opts : it.parts, s = a.s || [];
+      list.forEach((o, i) => { const on = s.includes(i); if (on) rows.push({ part: o.t, pick: true, ok: !!o.ok, pts: o.ok ? 1 : -1 }); else if (o.ok) rows.push({ part: o.t, pick: false, ok: false, pts: 0, missed: true }); });
+    }
+    const sum = rows.reduce((n, r) => n + r.pts, 0), sc = score(it, a);
+    const pm = it.type === 'sata' || it.type === 'highlight';
+    const right = rows.filter((r) => r.pts > 0).length, wrong = rows.filter((r) => r.pts < 0).length;
+    const math = pm ? `${right} correct ${right === 1 ? 'choice' : 'choices'} (+${right})${wrong ? ` minus ${wrong} incorrect (-${wrong})` : ''} = ${sum}${sum < 0 ? ', raised to the floor of 0' : ''}` : `${right} of ${rows.length} ${it.type === 'matrix' ? 'rows' : it.type === 'cloze' ? 'blanks' : 'parts'} correct`;
+    return { rows, rule: RULE[it.type], math, score: sc, max: max(it), pm };
+  }
+  /* Every item, and lookup by id (focus items included), for the debrief and the instructor dashboard. */
+  const focusItems = () => S.ngnFocus || [];
+  const all = () => Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems());
+  const byId = (id) => all().find((x) => x.id === id) || null;
+  /* Focus practice: for each weak step (lowest first), up to `per` items that test it. Prefers items written for
+     focus practice, then other shifts' items; skips this shift's own three and anything already answered, unless
+     that leaves nothing to offer. */
+  function focus(steps, caseId, done, per, sp) {
+    done = done || {}; per = per || 2; const own = new Set((ITEMS[caseId] || []).map((x) => x.id)), out = [], used = new Set();
+    steps.forEach((st) => {
+      const pool = focusItems().filter((x) => x.step === st).concat(Object.entries(ITEMS).filter(([cid]) => cid !== caseId).reduce((n, [, L]) => n.concat(L.filter((x) => x.step === st)), []))
+        .filter((x) => !own.has(x.id) && !used.has(x.id)).sort((x, y) => (y.sp === sp) - (x.sp === sp));   // same unit first, then the order above
+      const fresh = pool.filter((x) => !done[x.id]), pick = (fresh.length ? fresh : pool).slice(0, per);
+      pick.forEach((x) => { used.add(x.id); out.push(x); });
+    });
+    return out;
+  }
+  S.ngn = { ITEMS, TYPE, RULE, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, byId, focus };
 })(window.Shift = window.Shift || {});
+
+/* The Shift — per-option rationales for the practice items in ngn.js, keyed by item id.
+   bowtie: cond/actions/params; sata: opts; highlight: parts; cloze: blanks (one list per blank); every item: tip.
+   Each line starts "Yes:" (keyed correct) or "No:". Written for clinical review alongside the items. */
+window.Shift = window.Shift || {};
+window.Shift.ngnWhy = {
+ "ms1-bow": {
+  "cond": [
+   "Yes: A known infection plus new confusion, fever, tachycardia, tachypnea, soft BP and low urine output shows infection driving organ hypoperfusion; that is sepsis until proven otherwise.",
+   "No: Confusion in an older adult tempts you to blame dementia, but dementia is chronic and gradual; acute confusion with abnormal vital signs is delirium from an acute cause.",
+   "No: Dehydration can explain low urine output and a fast heart rate, but not the fever with a known infection; calling it dehydration alone delays cultures and antibiotics.",
+   "No: Stroke causes sudden neuro changes, but global confusion with fever and no focal deficits points to a systemic infection, not a focal brain lesion."
+  ],
+  "actions": [
+   "Yes: Cultures drawn before the first dose identify the organism without antibiotic interference, and every hour of antibiotic delay raises sepsis mortality, so draw and then give promptly.",
+   "Yes: Soft BP and low urine output mean poor perfusion; IV crystalloid restores circulating volume and organ perfusion while the antibiotic takes effect.",
+   "No: Haloperidol sedates confusion that is actually a perfusion warning sign; it masks the cause and can worsen hypotension and fall risk in an older adult.",
+   "No: Restraints treat the behavior, not the sepsis, and raise the risk of injury and worsening delirium; they are a last resort, never a first response to new confusion.",
+   "No: Oral fluids sound safe, but a confused, hypotensive client cannot drink enough fast enough, and waiting 4 hours lets sepsis progress toward septic shock."
+  ],
+  "params": [
+   "Yes: Lactate reflects tissue hypoperfusion; a level that falls on repeat shows resuscitation is working, and one that stays high signals worsening shock.",
+   "Yes: MAP shows whether organs are being perfused; the usual sepsis target is 65 mm Hg or higher, and a falling MAP despite fluids means vasopressors may be needed.",
+   "No: A1c reflects average glucose over about 3 months; it is useful for diabetes care but tells you nothing about sepsis or the response to treatment today.",
+   "No: Albumin changes slowly and reflects nutrition and chronic illness; it does not guide acute sepsis resuscitation.",
+   "No: Thyroid disease can cause confusion, which makes this tempting, but TSH does not track sepsis or the response to fluids and antibiotics."
+  ],
+  "tip": "When an older adult with a known infection has new confusion plus abnormal vital signs, think sepsis first; options that sedate, restrain or wait treat the symptom and are the traps."
+ },
+ "ms1-mat": {
+  "tip": "For give-or-hold matrices, compare each vital sign or lab against the exact hold parameter written in the order; replacing a low electrolyte or continuing an anticoagulant without bleeding is usually the safe choice."
+ },
+ "ms1-sata": {
+  "opts": [
+   "Yes: Incentive spirometry promotes sustained deep breaths that re-expand collapsed alveoli; 10 times an hour while awake is the standard post-op teaching.",
+   "Yes: Splinting the incision with a pillow reduces pain during coughing, so he can cough effectively and clear secretions that would otherwise plug small airways.",
+   "Yes: Early ambulation increases tidal volume and mobilizes secretions; it also lowers the risk of VTE and ileus after abdominal surgery.",
+   "Yes: Pain of 7/10 and splinting mean he is breathing shallowly to avoid pain; premedicating makes deep breathing, coughing and walking possible.",
+   "No: Early post-op fever is often linked to atelectasis, so bed rest worsens the very problem causing concern; immobility promotes shallow breathing and pooled secretions.",
+   "No: Withholding opioids may seem to protect breathing, but uncontrolled incisional pain causes splinting and shallow breaths; the goal is safe pain control with sedation monitoring."
+  ],
+  "tip": "For prevention questions, pick actions that directly expand the lungs or make expansion possible; distractors usually restrict activity or undertreat pain, and both cause shallow breathing."
+ },
+ "ms2-bow": {
+  "cond": [
+   "Yes: Potassium of 6.6 with peaked T waves and a slowing heart rate in advanced CKD means potassium is now affecting cardiac conduction, which can progress to fatal arrhythmias.",
+   "No: CKD does cause hypocalcemia, a tempting link, but low calcium shows a prolonged QT interval and signs of tetany, not peaked T waves.",
+   "No: Digoxin toxicity can cause bradycardia and arrhythmias, but nothing suggests she takes it, and the measured potassium of 6.6 explains the ECG.",
+   "No: Dehydration can concentrate potassium, but it is not the condition endangering her; the priority problem is the potassium's effect on the heart."
+  ],
+  "actions": [
+   "Yes: IV calcium stabilizes the cardiac cell membrane within minutes and protects against arrhythmias; it does not lower potassium, so other therapy is given alongside it.",
+   "Yes: Insulin shifts potassium into cells quickly; dextrose is given with it to prevent hypoglycemia, which is more likely in CKD because insulin clears slowly.",
+   "No: Spironolactone is a potassium-sparing diuretic that raises potassium; a student may pick it because diuretics can remove potassium, but this one would worsen the problem.",
+   "No: Orange juice and bananas are high in potassium; they are taught for hypokalemia and would add to an already dangerous level.",
+   "No: Telemetry is exactly what catches the arrhythmias hyperkalemia causes; pausing it removes the key safety monitor during the highest-risk period."
+  ],
+  "params": [
+   "Yes: Continuous rhythm monitoring shows whether the peaked T waves resolve and catches a widening QRS, worsening bradycardia or ventricular arrhythmias early.",
+   "Yes: Insulin can cause hypoglycemia for hours after the dose, and reduced kidney clearance in CKD prolongs that risk, so recheck glucose on schedule.",
+   "No: Sodium matters in kidney disease, but it is not the problem being treated and does not show whether the potassium emergency is resolving.",
+   "No: Platelets are unrelated to hyperkalemia or its treatment; nothing in the scenario points to bleeding or clotting risk.",
+   "No: Specific gravity reflects urine concentration and hydration; in stage 4 CKD it is unreliable and does not track potassium or cardiac risk."
+  ],
+  "tip": "In electrolyte emergencies, rank actions as protect the heart first, then shift or remove the electrolyte; distractors often include foods or drugs that worsen the imbalance."
+ },
+ "ms2-hl": {
+  "parts": [
+   "Yes: Tripling the oxygen in a known CO2 retainer is a red flag; high oxygen can raise CO2 by blunting respiratory drive and worsening ventilation-perfusion mismatch.",
+   "Yes: 97% is above her target of 88 to 92%; in COPD a high saturation can mean too much oxygen, so titrate down and assess her CO2.",
+   "Yes: New difficulty rousing is a change in level of consciousness consistent with rising CO2; it needs immediate assessment and likely a blood gas.",
+   "No: Pursed-lip breathing is a compensatory technique COPD clients use to keep airways open longer; it is expected baseline behavior.",
+   "No: A barrel chest reflects chronic air trapping and hyperinflation; it is a long-standing finding, not an acute change.",
+   "No: Eating half a meal is common during an exacerbation because of dyspnea and fatigue; it is worth noting but not urgent."
+  ],
+  "tip": "Separate chronic baseline findings from new changes; in COPD, a saturation above target paired with new sleepiness is a warning, not reassurance."
+ },
+ "ms2-mat": {
+  "tip": "Before any on-call-to-the-OR order, check every drug against the allergy band, including drugs whose names hide their class, and confirm pre-op requirements such as pregnancy status."
+ },
+ "ms3-bow": {
+  "cond": [
+   "Yes: Sudden one-sided facial droop, arm drift and slurred speech are focal deficits; with a normal glucose, ischemic stroke is the working diagnosis until imaging rules out bleeding.",
+   "No: Hypoglycemia can mimic stroke, which is why glucose is checked first, but a glucose of 142 rules it out here.",
+   "No: Bell's palsy affects only the face, including the forehead; it does not cause arm drift or slurred speech.",
+   "No: Delirium from infection causes global, fluctuating confusion, not new one-sided weakness; blaming the pneumonia would waste the treatment window."
+  ],
+  "actions": [
+   "Yes: Last known well was 21:00, so he may still be within the thrombolytic window; a stroke alert brings rapid imaging and the stroke team now.",
+   "Yes: Dysphagia is common after stroke and raises aspiration risk, already a concern with pneumonia; nothing by mouth, including medicines, until he passes a swallow screen.",
+   "No: Aspirin is tempting because it treats clots, but it cannot be given before imaging rules out hemorrhage, and nothing goes by mouth before a swallow screen.",
+   "No: Rapid BP lowering reduces blood flow to at-risk brain tissue; BP is lowered only to under 185/110 if a thrombolytic is planned, not to normal.",
+   "No: Waiting to see if symptoms resolve uses up the treatment window; even symptoms that improve need emergency evaluation."
+  ],
+  "params": [
+   "Yes: Serial NIH Stroke Scale scores detect worsening or improvement objectively and are required before and after any thrombolytic.",
+   "Yes: BP must stay under 185/110 before a thrombolytic and under 180/105 afterward to limit bleeding risk, while too low a pressure worsens ischemia.",
+   "No: Daily weight tracks fluid balance in heart failure or kidney disease; it does not reflect acute stroke changes.",
+   "No: Lipase is a marker for pancreatitis and has no role in stroke monitoring.",
+   "No: A1c is a long-term diabetes marker; it may matter for secondary prevention later but does not guide acute stroke care."
+  ],
+  "tip": "With sudden focal deficits, time is the priority cue: find the last known well time, and reject any option that waits, gives oral medication first, or drops the BP to normal."
+ },
+ "ms3-sata": {
+  "opts": [
+   "Yes: POSS 3 means frequently drowsy and drifting off mid-conversation; sedation comes before respiratory depression, so this is the early warning to stop the opioid and monitor closely.",
+   "Yes: A respiratory rate under 10 is a classic sign of opioid-induced respiratory depression; stimulate her, stop the PCA and anticipate naloxone.",
+   "Yes: Snoring with pauses signals airway obstruction and apnea during opioid-induced sleep, a dangerous sign even when pulse oximetry still looks acceptable.",
+   "No: Moderate pain when awake shows the opioid is not over-treating her; it is not a sign of respiratory depression.",
+   "No: Nausea is a common opioid side effect, so students link it to overdose, but it does not indicate depressed breathing.",
+   "Yes: Pinpoint pupils show strong opioid effect on the brainstem; together with sedation and slow breathing, they point to opioid excess rather than another cause."
+  ],
+  "tip": "Remember the sequence: sedation comes before respiratory depression; choose findings that reflect central nervous system and breathing changes, and skip common side effects like nausea."
+ },
+ "ms3-cloze": {
+  "blanks": [
+   [
+    "Yes: DKA is resolved when the ketoacidosis clears (anion gap closed, ketones down), not when the glucose normalizes, so the drip continues until then.",
+    "No: Glucose usually falls well before the acidosis resolves; stopping insulin at a glucose target leaves ketoacidosis untreated, so dextrose is added instead of stopping insulin.",
+    "No: Potassium guides replacement and the safety of starting insulin, but a potassium over 5 is not the endpoint of DKA treatment."
+   ],
+   [
+    "Yes: Subcutaneous basal insulin needs time to absorb; overlapping it about 2 hours with the drip prevents a gap in insulin that lets ketoacidosis return.",
+    "No: Ten minutes is too little time for subcutaneous insulin to be absorbed, so the client would be left briefly with no effective insulin.",
+    "No: A full day of both insulins is unnecessary and raises hypoglycemia risk; the standard overlap is a couple of hours, not 24."
+   ],
+   [
+    "Yes: Insulin drives potassium into cells; starting or continuing it with potassium under 3.5 can drop the level enough to cause dangerous arrhythmias, so replace potassium first.",
+    "No: Over 5.0 is when potassium replacement is held, not insulin; insulin is still needed and will lower the potassium.",
+    "No: Between 4 and 5 is a safe range to continue insulin with potassium added to the fluids; nothing needs to be held."
+   ]
+  ],
+  "tip": "In DKA, follow the acidosis rather than the glucose, and remember insulin drives potassium into cells; any question about holding insulin is really about a low potassium."
+ },
+ "sd-bow": {
+  "cond": [
+   "Yes: New back pain with a rising heart rate and falling BP hours after femoral access is the classic picture of a retroperitoneal bleed, which can occur with a clean groin site.",
+   "No: Back discomfort from lying flat is common after a cath, which makes this tempting, but it does not cause tachycardia and a falling BP.",
+   "No: Stent thrombosis causes chest pain and ST changes from coronary occlusion, not back pain with signs of blood loss.",
+   "No: PE causes sudden dyspnea, pleuritic chest pain and hypoxia; this client has back pain and hemodynamic changes that point to bleeding."
+  ],
+  "actions": [
+   "Yes: A suspected retroperitoneal bleed needs prompt provider evaluation; CT of the abdomen and pelvis confirms the bleed and its size.",
+   "Yes: Lying flat limits stress on the arterial puncture, and a second large-bore IV prepares for rapid fluids or blood if he becomes unstable.",
+   "No: Morphine treats the pain but can lower the BP further and mask worsening; waiting 2 hours delays treatment of a possible hemorrhage.",
+   "No: Sitting up flexes the hip and stresses the femoral puncture, which can worsen bleeding; it treats the symptom, not the cause.",
+   "No: Stopping antiplatelets after a fresh stent risks stent thrombosis, so that decision belongs to the cardiologist; the nurse reports and advocates rather than acting alone."
+  ],
+  "params": [
+   "Yes: Trending HR and BP shows whether bleeding continues; a rising heart rate with a falling pressure signals worsening hypovolemia and possible shock.",
+   "Yes: Serial hemoglobin shows ongoing blood loss and guides transfusion, though the drop can lag behind acute bleeding.",
+   "No: The groin is tempting to watch, but a retroperitoneal bleed tracks into the back of the abdomen without a visible hematoma, so a clean site is falsely reassuring.",
+   "No: Glucose is not affected by bleeding and does not reflect this complication.",
+   "No: Troponin tracks myocardial injury; nothing suggests a new coronary event, and it would not show the course of a bleed."
+  ],
+  "tip": "After femoral access, back or flank pain plus a rising heart rate is a bleed until proven otherwise; options that watch only the visible site or treat only the pain are the traps."
+ },
+ "sd-mat": {
+  "tip": "In HIT, think clotting, not bleeding: stop every source of heparin, start a non-heparin anticoagulant, and avoid anything that adds clot risk, such as platelets or early warfarin."
+ },
+ "sd-sata": {
+  "opts": [
+   "Yes: Low potassium prolongs ventricular repolarization and the QT; replacing it per the protocol directly lowers torsades risk and is within the nurse's scope here.",
+   "Yes: Low magnesium prolongs the QT and makes potassium hard to correct; magnesium also stabilizes the myocardium and is first-line treatment for torsades itself.",
+   "Yes: Citalopram prolongs the QT in a dose-dependent way, and the FDA advises no more than 20 mg daily over age 60; changing therapy needs the provider, so notify.",
+   "No: Treating nausea seems kind, but ondansetron also prolongs the QT; adding another QT-prolonging drug raises torsades risk, so ask for an alternative.",
+   "No: Furosemide wastes potassium and magnesium, lowering already low levels; giving it as scheduled without discussing it with the provider increases the risk.",
+   "No: Frequent alarms in a client with a long QT may be ectopy or runs of torsades; calling them artifact without assessing the client is a classic alarm-fatigue error."
+  ],
+  "tip": "For QT prolongation, sort each option into lengthens the QT or corrects it: replace electrolytes, remove offending drugs, and never dismiss alarms without assessing the client."
+ },
+ "ed-bow": {
+  "cond": [
+   "Yes: ST elevation in II, III and aVF localizes an inferior STEMI, and ST elevation in V4R confirms right ventricular involvement, which fits the soft BP and slow rate.",
+   "No: The early complaint of indigestion is the trap; women and people with diabetes often have atypical MI symptoms, and the ECG now shows a STEMI.",
+   "No: Anterior STEMI shows elevation in the precordial leads such as V1 to V4, not II, III and aVF, and nothing here suggests heart failure.",
+   "No: PE can cause tachycardia, hypoxia and right heart strain, but not localized ST elevation in the inferior leads with V4R elevation."
+  ],
+  "actions": [
+   "Yes: Time to reperfusion drives outcome in STEMI; the ECG alone is enough to activate the cath lab without waiting for labs.",
+   "Yes: Chewed aspirin is absorbed quickly and inhibits platelet aggregation, limiting clot growth; it is given early in suspected acute coronary syndrome unless contraindicated.",
+   "No: Nitroglycerin is routine chest pain care, which makes it tempting, but in RV infarction it reduces preload and can cause severe hypotension.",
+   "No: Furosemide treats fluid overload; the preload-dependent right ventricle needs volume, and diuresis could crash the BP.",
+   "No: Troponin rises hours after injury; ST elevation already makes the diagnosis, and waiting delays reperfusion while heart muscle dies."
+  ],
+  "params": [
+   "Yes: RV infarction makes the BP preload dependent and fragile; trending it guides fluid therapy and warns of cardiogenic shock.",
+   "Yes: The right coronary artery often supplies the SA and AV nodes, so inferior MIs commonly cause bradycardia and heart block, already hinted at by HR 58.",
+   "No: She has diabetes, so glucose matters, but hourly checks are not a priority parameter for an inferior STEMI with RV involvement.",
+   "No: Specific gravity reflects urine concentration and does not track cardiac perfusion or rhythm in an acute MI.",
+   "No: Peak flow measures airway obstruction in asthma and has no role in monitoring an MI."
+  ],
+  "tip": "Let the ECG leads drive the answer: inferior leads plus V4R mean right ventricular involvement, so eliminate any option that lowers preload, such as nitrates or diuretics."
+ },
+ "ed-hl": {
+  "parts": [
+   "No: The time he was found is tempting, but the thrombolytic window is measured from last known well, not from discovery, so 14:30 does not set the clock.",
+   "Yes: Last known well at 10:00 starts the clock; the standard 4.5-hour IV thrombolytic window closed at 14:30, before he arrived.",
+   "Yes: BP above 185/110 must be lowered and kept below that level before a thrombolytic can be given, because higher pressure raises the risk of intracranial hemorrhage.",
+   "No: Glucose is checked to rule out a stroke mimic and extreme values; 142 is acceptable and does not change eligibility.",
+   "No: A CT without hemorrhage is a required finding before a thrombolytic; it permits treatment rather than excluding it.",
+   "No: Lisinopril and atorvastatin do not raise bleeding risk; anticoagulants would matter, but these routine medicines do not change eligibility.",
+   "No: Arrival time matters for door-to-needle goals, but the window had already closed at 14:30, so arriving at 14:52 is not what excludes him."
+  ],
+  "tip": "For thrombolytic eligibility, anchor on last known well rather than time found or time of arrival, and check BP against 185/110; normal findings like a clean CT support treatment."
+ },
+ "ed-sata": {
+  "opts": [
+   "Yes: IM epinephrine in the anterolateral thigh is first-line for anaphylaxis; it reverses airway swelling, bronchospasm and vasodilation, and 0.5 mg is the adult single dose.",
+   "Yes: Supine with legs elevated improves venous return in shock, and high-flow oxygen supports oxygenation; a client in severe respiratory distress may sit up, but must not stand.",
+   "Yes: Anaphylaxis causes widespread vasodilation and capillary leak; a crystalloid bolus restores circulating volume for a BP of 84/50.",
+   "No: The dose looks right but the route and concentration are dangerous; undiluted 1 mg/mL epinephrine by IV push can cause arrhythmias, severe hypertension and MI.",
+   "No: Antihistamines relieve itching and hives but do not reverse airway swelling or shock; waiting delays epinephrine, the only drug that treats the emergency.",
+   "Yes: Symptoms can persist or recur, so IM epinephrine is repeated every 5 to 15 minutes as needed while monitoring for a biphasic reaction."
+  ],
+  "tip": "In anaphylaxis, IM epinephrine comes first; watch for distractors that use the right drug by the wrong route or concentration, or that rely on antihistamines."
+ },
+ "p3-bow": {
+  "cond": [
+   "Yes: A level of 2.1 with coarse tremor, GI losses and new confusion is moderate lithium toxicity, and a thiazide plus an NSAID both reduce renal lithium clearance.",
+   "No: Serotonin syndrome also causes tremor and diarrhea, which is the trap, but it follows serotonergic drugs and brings clonus, hyperthermia and agitation; nothing here is serotonergic and the lithium level explains everything.",
+   "No: NMS follows antipsychotics and presents with lead-pipe rigidity, high fever and autonomic instability. A coarse tremor with a high lithium level and recent interacting drugs points elsewhere.",
+   "No: Diarrhea alone could suggest a stomach bug, but gastroenteritis does not explain the confusion or a level of 2.1. Diarrhea is a symptom of toxicity and also worsens it through dehydration."
+  ],
+  "actions": [
+   "Yes: Every further dose raises a level that is already toxic. Holding is within nursing judgment, and the provider must know now to address the thiazide, the NSAID and the level.",
+   "Yes: Moderate toxicity with confusion needs medical care for IV isotonic fluids, labs and possible dialysis; a psych unit cannot safely manage it alone.",
+   "No: Giving the scheduled dose with food treats lithium as routine, which is the trap. Food reduces GI upset but does nothing about a toxic level and adds more drug.",
+   "No: Restricting salt sounds heart-healthy, but low sodium makes the kidneys retain lithium and drives the level higher. Patients on lithium need steady sodium and fluid intake.",
+   "No: Treating the diarrhea symptomatically misses that it is a sign of toxicity, and waiting until tomorrow lets neurologic damage progress."
+  ],
+  "params": [
+   "Yes: Serial levels show whether fluids, held doses and stopping the interacting drugs are bringing lithium back toward the therapeutic range.",
+   "Yes: Confusion is the sign of neurotoxicity; worsening mental status, ataxia or seizures would signal severe toxicity needing escalation such as dialysis.",
+   "No: Weight gain matters for long-term lithium therapy, so it is a familiar choice, but it does not track an acute toxic episode.",
+   "No: Lipids are monitored for second-generation antipsychotics, not lithium, and they say nothing about acute toxicity.",
+   "No: The AIMS screens for tardive dyskinesia from antipsychotics; it is a long-term movement screen, not a measure of lithium toxicity."
+  ],
+  "tip": "When a stem lists new medications next to a narrow-therapeutic-index drug, look for the interaction; here thiazides and NSAIDs raise lithium, and the distractors are syndromes that share one or two symptoms."
+ },
+ "p3-hl": {
+  "parts": [
+   "Yes: A sudden brightening after a severe depression can mean the patient has made a decision to die and now has the energy to act on it.",
+   "Yes: Giving away possessions is a classic behavioral warning sign of suicide planning and warrants a direct suicide assessment.",
+   "Yes: A statement of sudden resolve can signal a settled plan. Ask directly whether he is thinking of killing himself rather than assuming it means recovery.",
+   "No: Eating well is a reassuring sign of improving self-care and does not by itself suggest increased risk.",
+   "Yes: Pushing for discharge right after a sudden mood lift may reflect a wish to leave supervision to carry out a plan; the team needs a full risk reassessment first.",
+   "No: Attending group shows engagement in treatment and is an expected, positive behavior on day 4."
+  ],
+  "tip": "In suicide-risk items, ask which findings are sudden changes from the patient's pattern; healthy routine behaviors are the distractors, and a rapid improvement is a cue, not a relief."
+ },
+ "p3-mat": {
+  "tip": "For agitation items, rank each intervention from least to most restrictive and check whether there is imminent danger; without a threat or harm, only the least restrictive options are appropriate."
+ },
+ "p4-bow": {
+  "cond": [
+   "Yes: Torticollis, oculogyric crisis and trismus within hours of a first dose of a high-potency antipsychotic in a young male is the textbook acute dystonic reaction.",
+   "No: Staff framing it as attention-seeking is the trap. Sustained involuntary muscle spasms after haloperidol are a medication emergency, and labeling them behavioral delays treatment.",
+   "No: NMS involves generalized rigidity, high fever, altered consciousness and unstable vitals, and usually develops over days, not focal spasms an hour after a dose.",
+   "No: Tardive dyskinesia is also a movement disorder, but it develops after months to years of exposure and causes repetitive movements, not acute sustained spasms."
+  ],
+  "actions": [
+   "Yes: An anticholinergic such as diphenhydramine or benztropine restores the dopamine and acetylcholine balance and usually relieves the spasm within minutes.",
+   "Yes: Laryngeal dystonia can close the airway, so stridor, drooling or trouble swallowing take priority under the ABCs.",
+   "No: More haloperidol is the cause of the reaction, so another dose would worsen it; this is the trap if the movements are misread as agitation.",
+   "No: Seclusion treats an involuntary drug reaction as dangerous behavior, violates the least restrictive principle, and removes him from observation while his airway is at risk.",
+   "No: He cannot voluntarily relax a dystonic muscle; the instruction blames him and delays the medication that actually works."
+  ],
+  "params": [
+   "Yes: Throat and tongue involvement can compromise breathing and swallowing, so airway status is the priority assessment until the spasm resolves.",
+   "Yes: The anticholinergic can wear off before the haloperidol does, so spasms may return and a scheduled dose may be needed.",
+   "No: Lithium levels matter for patients on lithium; he received haloperidol, so this is an unrelated lab.",
+   "No: Blood glucose is monitored with second-generation antipsychotics over time and is not relevant to an acute dystonic reaction.",
+   "No: Weight gain is a long-term antipsychotic concern, not a parameter for an acute movement reaction."
+  ],
+  "tip": "Match the timing to the syndrome: hours after a first dose is acute dystonia, days to weeks is akathisia or parkinsonism, months to years is tardive dyskinesia; and an airway option is almost always one of the actions."
+ },
+ "p4-cloze": {
+  "blanks": [
+   [
+    "Yes: Hypophosphatemia below the ordered threshold needs prompt replacement because low phosphorus can cause cardiac arrhythmias, heart failure, respiratory muscle weakness and seizures.",
+    "No: Holding meals seems logical because feeding drives phosphorus into cells, but stopping nutrition reinforces the eating disorder. The standard is to replace electrolytes and keep feeding.",
+    "No: A laxative does nothing for phosphorus and is a common misuse behavior in anorexia; it could also worsen electrolyte losses."
+   ],
+   [
+    "Yes: Electrolyte shifts are greatest in roughly the first week as insulin rises and phosphorus, potassium and magnesium move into cells, so labs are checked frequently then.",
+    "No: Risk does not end after the first day; shifts continue over the first several days, so monitoring only on day one would miss most cases.",
+    "No: By a month the acute shift risk has largely passed; waiting that long describes neither the peak nor the monitoring period."
+   ],
+   [
+    "Yes: The hour after meals is when purging, hidden exercise or other compensatory behaviors are most likely, so supervision continues through it.",
+    "No: Daily weights are part of care, but they do not prevent purging or exercise right after a meal, which is what supervision targets.",
+    "No: Compensatory behaviors can follow any meal or snack, so supervising only dinner leaves most meals unprotected."
+   ]
+  ],
+  "tip": "In refeeding items, any option that stops or delays nutrition is a distractor; the safe answer corrects the lab and continues feeding."
+ },
+ "p4-sata": {
+  "opts": [
+   "Yes: Believing her and affirming it is not her fault is therapeutic, reduces shame and makes further disclosure and safety planning possible.",
+   "Yes: In California each mandated reporter has a personal duty to report suspected child abuse; telling a supervisor or relying on someone else does not satisfy it.",
+   "Yes: The person she named is on tonight's list, so protecting her from contact before visiting hours is an immediate safety need.",
+   "No: Promising secrecy may seem to build trust, but the nurse must report, so the promise would be broken and damage trust later.",
+   "No: Thorough questions seem helpful, but detailed or leading questioning can contaminate a forensic interview; the nurse gathers only enough to report.",
+   "No: Confronting family may seem like clarifying, but it can alert the abuser, pressure the teen to recant and put her at risk; investigation belongs to child protective services and police.",
+   "Yes: Quoting her exact words, without interpretation, creates an accurate record for the report and any investigation and avoids putting words in her mouth."
+  ],
+  "tip": "For abuse disclosures, follow believe, report, protect, document; options that promise confidentiality, investigate or confront family are the usual distractors."
+ },
+ "ob-bow": {
+  "cond": [
+   "Yes: A boggy, high fundus with heavy bleeding and rising heart rate after a long oxytocin induction and a macrosomic baby points to atony, worsened by a full bladder.",
+   "No: Retained fragments can cause hemorrhage, but a boggy uterus displaced by an unemptied bladder after classic atony risk factors fits atony; the word only makes it too narrow.",
+   "No: Rubra lochia is expected, which is the trap, but saturating a pad in 30 minutes with a boggy fundus and tachycardia is excessive bleeding, not normal flow.",
+   "No: Amniotic fluid embolism presents with sudden respiratory distress, hypotension, hypoxia and coagulopathy, usually during or right after birth, not a boggy fundus with steady bleeding."
+  ],
+  "actions": [
+   "Yes: Fundal massage stimulates the myometrium to contract and compress bleeding vessels; supporting the lower segment prevents uterine inversion.",
+   "Yes: A distended bladder pushes the uterus up and to the side and prevents contraction; emptying it often firms the fundus quickly.",
+   "No: Carboprost is a second-line uterotonic, so it can look correct, but it causes bronchospasm and is contraindicated in asthma; also massage and bladder emptying come first.",
+   "No: Rest and recheck delays care during active hemorrhage; her heart rate is already rising, a sign of compensation before blood pressure falls.",
+   "No: Perineal ice treats swelling and pain from perineal trauma; it does nothing for uterine bleeding."
+  ],
+  "params": [
+   "Yes: Weighing pads and linens gives quantitative blood loss, which is more accurate than visual estimates and guides escalation.",
+   "Yes: Trending firmness, height and midline position shows whether massage and bladder emptying are working or atony is recurring.",
+   "No: Blood glucose matters for the macrosomic newborn and diabetic mothers, but it does not track her hemorrhage.",
+   "No: Deep tendon reflexes are monitored for magnesium therapy, not postpartum hemorrhage.",
+   "No: Specific gravity reflects hydration and is not a meaningful real-time measure of bleeding or uterine tone."
+  ],
+  "tip": "With a boggy, displaced fundus, the first actions are hands-on nursing measures (massage, empty the bladder) before medications, and always check a uterotonic against the client's history."
+ },
+ "ob-mat": {
+  "tip": "Sort magnesium findings into expected side effects (flushing, warmth, mild drowsiness) versus toxicity in order (lost reflexes, slowed breathing, then cardiac effects), and treat low urine output as a warning that the level will rise."
+ },
+ "ob-cloze": {
+  "blanks": [
+   [
+    "Yes: The gel dose is 0.5 mL/kg, and 0.5 mL times 4.45 kg is about 2.2 mL.",
+    "No: 0.5 mL is the per-kilogram dose, a trap for anyone who forgets to multiply by the weight; it would underdose this baby.",
+    "No: 4.5 mL comes from using the weight itself as the volume, giving about double the correct 0.5 mL/kg dose."
+   ],
+   [
+    "Yes: Gel raises glucose only briefly; feeding supplies sustained carbohydrate and is part of standard management for asymptomatic hypoglycemia.",
+    "No: Keeping him NPO removes the main source of glucose and would let the level fall again once the gel wears off.",
+    "No: IV dextrose is for symptomatic newborns or those who do not respond to gel and feeding; an asymptomatic baby starts with gel and a feed."
+   ],
+   [
+    "Yes: Rechecking within about an hour of the gel and feed shows whether the intervention worked and decides whether to repeat it or escalate.",
+    "No: Four hours is too long to wait after treating a low glucose; a persistent low could cause neurologic injury in that time.",
+    "No: Ten minutes is too soon for the gel and feeding to take full effect, so the result would not reflect the response."
+   ],
+   [
+    "Yes: Jitteriness, lethargy, poor feeding, apnea or seizures signal symptomatic hypoglycemia, which needs IV dextrose and immediate provider notification.",
+    "No: Pink and alert describes a well newborn, a reassuring finding, not a reason to call.",
+    "No: Hunger is a normal newborn cue to feed, not a sign of worsening hypoglycemia."
+   ]
+  ],
+  "tip": "For weight-based newborn doses, multiply the per-kg dose by the weight in kg and watch for distractors that use the per-kg number or the weight itself as the answer."
+ },
+ "pd-bow": {
+  "cond": [
+   "Yes: A silent chest with high respiratory rate, deep retractions, falling saturation and speaking only two words means air movement is failing, signaling impending respiratory failure.",
+   "No: Loss of wheezing looks like improvement, which is the trap, but with worsening work of breathing and saturation it means too little air is moving to make sound.",
+   "No: Anxiety can raise respiratory rate, but it does not cause retractions, hypoxemia or a silent chest in a child with known asthma.",
+   "No: A foreign body can cause sudden distress, but this child has a known exacerbation that progressed from wheezing to a silent chest, which fits worsening asthma."
+  ],
+  "actions": [
+   "Yes: Continuous bronchodilator and oxygen treat bronchospasm and hypoxemia directly while help arrives.",
+   "Yes: She is unstable and may need escalation such as magnesium, ventilatory support or ICU care, so a rapid response brings that team now.",
+   "No: Sleep may seem like relief, but drowsiness here can signal fatigue and CO2 retention; the silent chest is a warning, not recovery.",
+   "No: Drinking risks aspiration in a child who can barely speak and does nothing for bronchospasm or hypoxemia.",
+   "No: Rechecking in an hour delays care in a deteriorating child; respiratory failure can progress to arrest in minutes."
+  ],
+  "params": [
+   "Yes: Retractions, accessory muscle use, ability to speak and respiratory rate show whether she is responding or tiring.",
+   "Yes: Saturation trends show oxygenation; a continued fall despite oxygen means she needs higher-level support.",
+   "No: Peak flow is part of routine asthma care, but a child who can say only two words cannot perform it reliably, and every 4 hours is far too infrequent.",
+   "No: Blood glucose may rise with steroids or albuterol but is not a priority parameter for respiratory failure.",
+   "No: Daily weight has no role in tracking an acute respiratory emergency."
+  ],
+  "tip": "A change that looks like improvement (wheezing stops, child gets quiet or sleepy) is a red flag when work of breathing and saturation are worsening; trust the trend in the vital signs over the sound."
+ },
+ "pd-mat": {
+  "tip": "Compare each number to the normal range for that age, then ask whether the context explains it (sleep, albuterol) or adds danger (retractions, new chest pain, low saturation)."
+ },
+ "pd-sata": {
+  "opts": [
+   "Yes: The weight is implausible for a 3-year-old, so the dose is likely about double the safe amount; any doubt about a dose means holding it until it is verified.",
+   "Yes: An actual measured weight in kilograms is the only safe basis for a pediatric dose and resolves whether 31 was really pounds.",
+   "Yes: The order is based on a wrong weight, so the prescriber and pharmacy must correct it rather than the nurse adjusting it independently.",
+   "No: Halving the dose may feel cautious, but it is still an unverified guess; changing a dose without an order is outside nursing scope.",
+   "No: Pharmacy verification is a safety check, not a guarantee; pharmacists rely on the charted weight too, and the nurse is the last check before the patient.",
+   "Yes: A pound-for-kilogram weight error is a system problem, and reporting it, even as a near miss, helps prevent the same error for other children."
+  ],
+  "tip": "When a weight looks wrong for the age, suspect a pounds-for-kilograms mix-up; the answers that hold, verify and report are correct, and any option that gives some form of the dose is a distractor."
+ }
+};
+
+/* The Shift — focus practice: NCLEX-style items aimed at one clinical judgment step each, offered after the
+   debrief for the player's weakest steps. Same formats and scoring as ngn.js, with the per-option rationale
+   inline (why on sata opts / highlight parts / matrix rows; whys on cloze blanks; whys{} on bowtie) and a tip.
+   sp is the unit the stem is set on. Needs clinical review like every other item. */
+window.Shift = window.Shift || {};
+window.Shift.ngnFocus = [
+ {
+  "id": "fx-analyze-1",
+  "type": "matrix",
+  "step": "analyze",
+  "sp": "sd",
+  "stem": "A 68-year-old with heart failure, EF 25%, is admitted to the step-down unit after gaining 6 lb in 4 days. BP 148/88, HR 104, RR 26, SpO₂ 90% on 2 L. He says he has slept sitting in his recliner for three nights.",
+  "q": "For each finding, indicate whether it is more consistent with left-sided or right-sided heart failure.",
+  "cols": [
+   "Left-sided heart failure",
+   "Right-sided heart failure"
+  ],
+  "rows": [
+   {
+    "t": "Crackles in both lung bases",
+    "ans": 0,
+    "why": "the left ventricle cannot empty, so pressure backs up into the pulmonary veins and fluid leaks into the alveoli."
+   },
+   {
+    "t": "Needs three pillows or a recliner to breathe at night",
+    "ans": 0,
+    "why": "orthopnea comes from pulmonary congestion; lying flat returns more blood to a left ventricle that cannot handle it."
+   },
+   {
+    "t": "Pink, frothy sputum",
+    "ans": 0,
+    "why": "this is pulmonary edema, the most severe form of left-sided backup into the lungs."
+   },
+   {
+    "t": "Jugular veins distended at 45 degrees",
+    "ans": 1,
+    "why": "the right ventricle cannot empty, so blood backs up into the systemic veins, visible first in the neck."
+   },
+   {
+    "t": "3+ pitting edema of both lower legs",
+    "ans": 1,
+    "why": "systemic venous congestion pushes fluid into dependent tissues. The trap is linking edema to the lungs; leg edema is a right-sided sign."
+   },
+   {
+    "t": "Enlarged, tender liver and poor appetite",
+    "ans": 1,
+    "why": "venous backup congests the liver and gut, causing right upper quadrant tenderness, early fullness and nausea."
+   }
+  ],
+  "why": "Sort heart failure findings by where the blood backs up. Left-sided failure backs up into the lungs, causing crackles, orthopnea and frothy sputum. Right-sided failure backs up into the body, causing neck vein distention, leg edema and liver congestion. Most clients with long-standing failure have both.",
+  "tip": "Remember left means lungs and right means rest of the body, then trace each finding back to the organ where fluid is collecting."
+ },
+ {
+  "id": "fx-analyze-2",
+  "type": "matrix",
+  "step": "analyze",
+  "sp": "teen",
+  "stem": "A 16-year-old is admitted to the adolescent unit for an eating disorder. She is 5 ft 4 in and 98 lb. HR 44, BP 88/54, temperature 35.9 °C (96.6 °F). Labs: potassium 3.0 mEq/L, bicarbonate 32 mEq/L. She says she is always cold.",
+  "q": "For each finding, indicate whether it is consistent with self-induced vomiting, consistent with starvation, or not related to the eating disorder.",
+  "cols": [
+   "Consistent with self-induced vomiting",
+   "Consistent with starvation",
+   "Not related"
+  ],
+  "rows": [
+   {
+    "t": "Calluses and small scars on the backs of her knuckles",
+    "ans": 0,
+    "why": "these form when the teeth rub the hand during repeated self-induced vomiting (Russell sign)."
+   },
+   {
+    "t": "Swollen glands in front of both ears",
+    "ans": 0,
+    "why": "repeated vomiting enlarges the parotid glands, giving the cheeks a puffy look that is easy to mistake for weight gain."
+   },
+   {
+    "t": "Potassium 3.0 mEq/L with bicarbonate 32 mEq/L",
+    "ans": 0,
+    "why": "vomiting loses stomach acid and potassium, producing hypokalemia with metabolic alkalosis, which raises the risk of dysrhythmias."
+   },
+   {
+    "t": "Fine, downy hair on her back and arms",
+    "ans": 1,
+    "why": "lanugo grows when body fat is too low to hold heat; it reflects starvation, not purging."
+   },
+   {
+    "t": "HR 44 and cold intolerance",
+    "ans": 1,
+    "why": "the body slows its metabolism to save energy in starvation. The trap is calling a resting rate of 44 athletic in a malnourished teen."
+   },
+   {
+    "t": "Has worn glasses for nearsightedness since age 10",
+    "ans": 2,
+    "why": "nearsightedness that started years before the illness has no link to vomiting or starvation."
+   }
+  ],
+  "why": "Purging and restriction leave different footprints. Vomiting shows up on the hands, the parotid glands and the electrolytes as low potassium with alkalosis. Starvation shows up as the body conserving energy and heat: bradycardia, hypothermia and lanugo. A client can have both patterns at once.",
+  "tip": "For each finding, ask what physical process would cause it, then match that process to the behavior."
+ },
+ {
+  "id": "fx-analyze-3",
+  "type": "cloze",
+  "step": "analyze",
+  "sp": "ob",
+  "stem": "An 18-hour-old breastfed newborn has yellow skin on the face and chest. The birthing parent's blood type is O positive; the newborn's is A positive. The newborn's direct Coombs test is positive, and the transcutaneous bilirubin is above the 95th percentile for age.",
+  "q": "Complete the sentences.",
+  "parts": [
+   "Jaundice that appears at 18 hours of age is ",
+   {
+    "opts": [
+     "pathologic",
+     "physiologic",
+     "expected with breastfeeding"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: normal red cell breakdown takes more than 24 hours to show, so earlier jaundice signals a disease process such as hemolysis.",
+     "No: physiologic jaundice appears after 24 hours, peaks around day 3 to 5, and does not come with a positive Coombs test.",
+     "No: breastfeeding-related jaundice develops after the first days of life; it does not explain jaundice at 18 hours."
+    ]
+   },
+   ". The blood types point to ",
+   {
+    "opts": [
+     "ABO incompatibility",
+     "Rh incompatibility",
+     "breast milk jaundice"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: a type O parent carries anti-A antibodies that can cross the placenta and attack a type A newborn's red cells.",
+     "No: both parent and newborn are Rh positive, so there is no Rh antigen mismatch to cause antibody formation.",
+     "No: breast milk jaundice appears after the first week and would not produce a positive Coombs test."
+    ]
+   },
+   " as the cause. The positive direct Coombs test shows that ",
+   {
+    "opts": [
+     "maternal antibodies are coating and breaking down the newborn's red blood cells",
+     "the newborn's liver is too immature to process bilirubin",
+     "the newborn is dehydrated from poor feeding"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: the direct Coombs test detects antibodies attached to the newborn's red cells, confirming immune-mediated hemolysis.",
+     "No: liver immaturity explains physiologic jaundice, but the Coombs test does not measure liver function.",
+     "No: dehydration can worsen jaundice, but it does not cause a positive Coombs test."
+    ]
+   },
+   "."
+  ],
+  "why": "Any visible jaundice in the first 24 hours is pathologic until proven otherwise, because normal red cell breakdown takes longer to show. A type O parent can carry anti-A antibodies that cross the placenta and destroy the type A newborn's cells. The positive Coombs test confirms that antibodies are attached to the newborn's red cells.",
+  "tip": "Anchor on timing first: jaundice under 24 hours points to hemolysis, and then look for the lab or blood type that explains it."
+ },
+ {
+  "id": "fx-analyze-4",
+  "type": "sata",
+  "step": "analyze",
+  "sp": "ms",
+  "stem": "A 67-year-old is on post-op day 2 after a left total hip replacement. At 14:00 she suddenly says she can't catch her breath and that something is wrong. HR 118 (was 82), RR 30, BP 126/78, SpO₂ 89% on room air (was 97%).",
+  "q": "Which findings are consistent with a pulmonary embolism? Select all that apply.",
+  "opts": [
+   {
+    "t": "Sudden shortness of breath at rest",
+    "ok": true,
+    "why": "Yes: a clot blocking pulmonary blood flow causes abrupt dyspnea, the most common presenting sign of pulmonary embolism."
+   },
+   {
+    "t": "Sharp chest pain that worsens when she breathes in",
+    "ok": true,
+    "why": "Yes: pleuritic pain occurs when the blocked area of lung irritates the pleura; it fits embolism, not a cardiac cause."
+   },
+   {
+    "t": "Heart rate rising from 82 to 118",
+    "ok": true,
+    "why": "Yes: tachycardia is the heart compensating for poor oxygenation and increased strain on the right ventricle."
+   },
+   {
+    "t": "SpO₂ falling from 97% to 89% on room air",
+    "ok": true,
+    "why": "Yes: blood flows past lung tissue that is ventilated but not perfused, so oxygen levels drop suddenly."
+   },
+   {
+    "t": "Productive cough with thick green sputum",
+    "ok": false,
+    "why": "No: purulent sputum points to pneumonia, which develops gradually with fever, not as a sudden change at rest."
+   },
+   {
+    "t": "Bowel sounds present in all four quadrants",
+    "ok": false,
+    "why": "No: Active bowel sounds are an expected post-op finding; they say nothing about the lungs or circulation and do not explain a sudden change in breathing."
+   },
+   {
+    "t": "Incision edges together with scant serous drainage",
+    "ok": false,
+    "why": "No: this is normal healing on day 2 and has no link to her breathing. The trap is selecting a finding just because it is post-op."
+   }
+  ],
+  "why": "Recent hip surgery and immobility place her at high risk for venous thromboembolism. A sudden cluster of dyspnea, pleuritic pain, tachycardia and falling oxygen saturation fits a clot in the pulmonary arteries. Baseline findings and normal wound healing do not explain an abrupt change.",
+  "tip": "When a client changes suddenly, pick the findings that are new and fit one mechanism, and leave out baseline or expected findings."
+ },
+ {
+  "id": "fx-eval-1",
+  "type": "matrix",
+  "step": "eval",
+  "sp": "ms",
+  "stem": "A 72-year-old was admitted 3 days ago with right lower lobe pneumonia and started on IV ceftriaxone and azithromycin. On admission: temperature 39.2 °C (102.6 °F), WBC 18,500/mm3, RR 28, SpO₂ 91% on 2 L, alert and oriented to person, place, time and situation.",
+  "q": "Today's findings are listed below. For each, indicate whether it shows the client has improved, has not changed, or has declined.",
+  "cols": [
+   "Improved",
+   "No change",
+   "Declined"
+  ],
+  "rows": [
+   {
+    "t": "Temperature 37.3 °C (99.1 °F)",
+    "ans": 0,
+    "why": "the fever is resolving, which shows the infection is responding to the antibiotics."
+   },
+   {
+    "t": "WBC 10,200/mm3",
+    "ans": 0,
+    "why": "a falling white count toward normal means the immune response to infection is settling."
+   },
+   {
+    "t": "RR 20, speaking in full sentences",
+    "ans": 0,
+    "why": "work of breathing has eased, a key sign that the lung is clearing."
+   },
+   {
+    "t": "SpO₂ 91% on 2 L",
+    "ans": 1,
+    "why": "oxygenation is the same as admission. The trap is calling a stable number improved; it has not moved after 3 days."
+   },
+   {
+    "t": "Oriented to person only",
+    "ans": 2,
+    "why": "new confusion in an older adult is a decline that can signal hypoxia, sepsis or delirium and must be reported."
+   }
+  ],
+  "why": "Evaluate each finding against the client's own baseline, not against normal ranges alone. Fever, white count and breathing rate show the antibiotics are working, but oxygenation has stalled and mental status has declined. One worsening finding means the plan needs review even when most numbers improve.",
+  "tip": "Compare every finding to the admission value before deciding, and treat any new change in mental status as a decline."
+ },
+ {
+  "id": "fx-eval-2",
+  "type": "highlight",
+  "step": "eval",
+  "sp": "ed",
+  "stem": "A 28-year-old was brought to the emergency department after being found unresponsive with RR 6 and SpO₂ 78%. The nurse gave naloxone 0.4 mg IV as ordered. Nurse's note, 5 minutes later.",
+  "q": "Highlight the findings that show the naloxone was effective.",
+  "parts": [
+   {
+    "t": "Respirations 16 and regular, up from 6.",
+    "ok": true,
+    "why": "Yes: restoring adequate breathing is the purpose of naloxone, so a normal rate shows the opioid effect was reversed."
+   },
+   {
+    "t": "SpO₂ 96% on room air.",
+    "ok": true,
+    "why": "Yes: oxygen saturation recovered once ventilation returned, confirming effective reversal."
+   },
+   {
+    "t": "Opens eyes to voice and states his name and where he is.",
+    "ok": true,
+    "why": "Yes: a return of consciousness and orientation shows the central nervous system depression has reversed."
+   },
+   {
+    "t": "Vomited once; airway clear.",
+    "ok": false,
+    "why": "No: vomiting is an adverse effect of rapid reversal, not a sign of benefit. It is a reason to protect the airway."
+   },
+   {
+    "t": "Restless, sweating and asking to leave.",
+    "ok": false,
+    "why": "No: these are opioid withdrawal symptoms caused by reversal. The trap is reading them as success; they are side effects to manage."
+   },
+   {
+    "t": "Needle marks on both forearms.",
+    "ok": false,
+    "why": "No: this is history that explains the overdose, not an outcome of the treatment."
+   }
+  ],
+  "why": "Naloxone is given to restore breathing and level of consciousness, so those are the findings that show it worked. Vomiting and withdrawal symptoms are adverse effects. Naloxone can wear off before the opioid does, so he still needs close monitoring for repeat respiratory depression.",
+  "tip": "Name the goal of the drug first, then highlight only the findings that show that goal was met."
+ },
+ {
+  "id": "fx-eval-3",
+  "type": "cloze",
+  "step": "eval",
+  "sp": "psy",
+  "stem": "A 52-year-old admitted to the adult psych unit is in alcohol withdrawal. At 10:00 his CIWA-Ar score was 18, with HR 112, a coarse tremor, sweating and anxiety, and he received lorazepam 2 mg PO. The protocol says give lorazepam for a CIWA-Ar score of 10 or higher and reassess 1 hour after each dose. At 11:00 his score is 7, HR 88, with a fine tremor.",
+  "q": "Complete the sentences.",
+  "parts": [
+   "The 11:00 findings show that his withdrawal symptoms have ",
+   {
+    "opts": [
+     "improved",
+     "not changed",
+     "worsened"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: the score fell from 18 to 7 and his heart rate and tremor improved, showing the lorazepam controlled the symptoms.",
+     "No: an 11-point drop with a slower heart rate is a clear change, not a stable picture.",
+     "No: every measure moved toward normal; worsening would show a rising score or new symptoms."
+    ]
+   },
+   ". The nurse should ",
+   {
+    "opts": [
+     "withhold lorazepam for now and continue CIWA-Ar assessments per protocol",
+     "give another 2 mg now to prevent seizures",
+     "stop the CIWA-Ar assessments because withdrawal has resolved"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: a score of 7 is below the dosing threshold of 10, and withdrawal can return, so scheduled reassessment continues.",
+     "No: extra doses beyond the protocol risk oversedation and respiratory depression; the score does not call for medication.",
+     "No: withdrawal can escalate for 2 to 3 days after the last drink, so stopping assessments would miss a return of symptoms."
+    ]
+   },
+   ". A later finding that would mean the treatment is no longer controlling his withdrawal is ",
+   {
+    "opts": [
+     "new tactile hallucinations and disorientation",
+     "sleeping but easy to wake",
+     "HR 82 with no tremor"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: new hallucinations with disorientation signal severe withdrawal or developing delirium tremens and need prompt provider notification.",
+     "No: sleeping but easy to wake is an expected, safe effect of benzodiazepine treatment.",
+     "No: a normal heart rate without tremor shows withdrawal is still controlled."
+    ]
+   },
+   "."
+  ],
+  "why": "The score dropped from 18 to 7 and his heart rate and tremor improved, so the dose worked. A score under 10 does not meet the protocol threshold, but withdrawal can escalate over the next 2 to 3 days, so monitoring continues. New hallucinations and disorientation point toward severe withdrawal or delirium tremens.",
+  "tip": "Compare the reassessment to both the earlier score and the protocol threshold before choosing the next action."
+ },
+ {
+  "id": "fx-eval-4",
+  "type": "matrix",
+  "step": "eval",
+  "sp": "peds",
+  "stem": "A 2-year-old weighing 12 kg (26.4 lb) has gastroenteritis with moderate dehydration: HR 162, capillary refill 4 seconds, no wet diaper in 8 hours, and lethargic. She received a 20 mL/kg normal saline bolus. The nurse reassesses 1 hour later.",
+  "q": "For each finding, indicate whether it shows the fluid bolus was effective or ineffective.",
+  "cols": [
+   "Effective",
+   "Ineffective"
+  ],
+  "rows": [
+   {
+    "t": "HR 124 while awake",
+    "ans": 0,
+    "why": "the heart rate fell into the normal range for a toddler as circulating volume was restored."
+   },
+   {
+    "t": "Capillary refill under 2 seconds",
+    "ans": 0,
+    "why": "brisk refill shows improved perfusion to the skin and extremities."
+   },
+   {
+    "t": "Wet diaper weighing 30 g",
+    "ans": 0,
+    "why": "about 30 mL in an hour is 2.5 mL/kg/h, above the 1 mL/kg/h goal, so the kidneys are perfused again."
+   },
+   {
+    "t": "Cries with tears",
+    "ans": 0,
+    "why": "tears return when hydration improves, a simple bedside sign of restored fluid volume."
+   },
+   {
+    "t": "Responds only when her heel is rubbed",
+    "ans": 1,
+    "why": "she is still responding only to pain, so brain perfusion or another cause such as low glucose needs urgent follow-up."
+   }
+  ],
+  "why": "A fluid bolus is effective when heart rate, perfusion, urine output and mental status move back toward normal. Four findings improved, but a toddler who responds only to pain has not recovered and needs prompt reassessment and provider notification. Weighing diapers (1 g = 1 mL) gives an accurate output.",
+  "tip": "Check each finding against the original abnormal value, and remember that mental status is one of the most important outcomes in a child."
+ },
+ {
+  "id": "fx-cues-1",
+  "type": "highlight",
+  "step": "cues",
+  "sp": "teen",
+  "stem": "Nurse's note for a 15-year-old admitted to the adolescent unit for depression after telling a school counselor she wanted to die. Day 3.",
+  "q": "Highlight the findings that require follow-up.",
+  "parts": [
+   {
+    "t": "Attended morning school group and completed her worksheet.",
+    "ok": false,
+    "why": "No: participating in programming is expected and does not signal new risk."
+   },
+   {
+    "t": "Ate 75% of lunch.",
+    "ok": false,
+    "why": "No: adequate intake for a hospitalized teen with depression is not a concern today."
+   },
+   {
+    "t": "During vital signs, three fresh linear scratches noted on her left forearm.",
+    "ok": true,
+    "why": "Yes: new self-injury on the unit means she has found something sharp and her risk has changed."
+   },
+   {
+    "t": "Gave her journal to her roommate, saying she won't need it anymore.",
+    "ok": true,
+    "why": "Yes: giving away meaningful belongings with a final-sounding statement is a classic warning sign of suicidal planning."
+   },
+   {
+    "t": "Rates her mood 4/10, unchanged from yesterday.",
+    "ok": false,
+    "why": "No: a stable low mood is her current baseline; the trap is flagging it over the new behaviors."
+   },
+   {
+    "t": "Slept 7 hours overnight.",
+    "ok": false,
+    "why": "No: sleep is adequate and unchanged, so it does not need follow-up."
+   },
+   {
+    "t": "Asked staff how many of her pills are kept at the nursing station.",
+    "ok": true,
+    "why": "Yes: asking about medication supply may signal a plan for overdose and needs direct questions about suicidal intent."
+   }
+  ],
+  "why": "Recognizing cues means separating new or changed findings from the client's baseline. Fresh self-injury, giving away belongings and asking about pill supply are each warning signs, and together they suggest rising suicide risk. Routine participation, intake, sleep and a stable mood rating do not need follow-up.",
+  "tip": "Look for what is new or different from baseline, and give extra weight to any behavior that could signal a plan or means for self-harm."
+ },
+ {
+  "id": "fx-cues-2",
+  "type": "sata",
+  "step": "cues",
+  "sp": "ob",
+  "stem": "A 12-hour-old term newborn is rooming in with the birthing parent. The nurse completes a routine assessment. The newborn is breastfeeding every 2 to 3 hours.",
+  "q": "Which findings require follow-up? Select all that apply.",
+  "opts": [
+   {
+    "t": "Bluish hands and feet with a pink trunk",
+    "ok": false,
+    "why": "No: acrocyanosis is expected in the first 24 to 48 hours because of immature peripheral circulation."
+   },
+   {
+    "t": "RR 72 with grunting on exhalation",
+    "ok": true,
+    "why": "Yes: a rate above 60 with grunting signals respiratory distress and needs prompt evaluation."
+   },
+   {
+    "t": "Axillary temperature 36.1 °C (97.0 °F)",
+    "ok": true,
+    "why": "Yes: A newborn axillary temperature should be about 36.5 to 37.5 °C (97.7 to 99.5 °F); cold stress raises oxygen and glucose use."
+   },
+   {
+    "t": "Tiny white bumps across the nose and chin",
+    "ok": false,
+    "why": "No: milia are blocked oil glands that are harmless and clear on their own."
+   },
+   {
+    "t": "Yellow skin on the face and chest",
+    "ok": true,
+    "why": "Yes: visible jaundice before 24 hours of age is pathologic until proven otherwise and needs a bilirubin level."
+   },
+   {
+    "t": "Has not yet passed meconium",
+    "ok": false,
+    "why": "No: meconium is expected within 24 to 48 hours, so none at 12 hours is still normal."
+   },
+   {
+    "t": "HR 140 while quiet and alert",
+    "ok": false,
+    "why": "No: 110 to 160 is normal for a newborn, so this rate needs no follow-up."
+   }
+  ],
+  "why": "Many newborn findings that look alarming are normal, so the skill is knowing the expected ranges and timing. Respiratory distress, a low temperature and jaundice in the first 24 hours fall outside normal and need follow-up. Acrocyanosis, milia, a normal heart rate and no meconium yet at 12 hours are expected.",
+  "tip": "For each finding, ask whether it is normal for this age in hours, since timing often decides whether a newborn finding is expected."
+ },
+ {
+  "id": "fx-act-1",
+  "type": "sata",
+  "step": "act",
+  "sp": "ed",
+  "stem": "A 27-year-old is brought in after friends found him unresponsive in a bathroom with a syringe nearby. RR 6 and shallow, SpO₂ 82% on room air, pupils pinpoint, HR 58, BP 100/62. He has a carotid pulse. Naloxone is ordered.",
+  "q": "Which actions should the nurse take now? Select all that apply.",
+  "opts": [
+   {
+    "t": "Open the airway and ventilate with a bag-valve mask and oxygen",
+    "ok": true,
+    "why": "Yes: He is barely breathing, and hypoxia is what kills in an overdose. Rescue breaths restore oxygen while the naloxone takes effect."
+   },
+   {
+    "t": "Give naloxone IV or intranasal as ordered",
+    "ok": true,
+    "why": "Yes: Pinpoint pupils, a slow respiratory rate and a syringe point to opioids; naloxone reverses the respiratory depression."
+   },
+   {
+    "t": "Place him on continuous pulse oximetry and cardiac monitoring",
+    "ok": true,
+    "why": "Yes: Continuous monitoring shows right away whether oxygenation improves and catches arrhythmias from hypoxia."
+   },
+   {
+    "t": "Repeat naloxone every 2 to 3 minutes if his breathing does not improve",
+    "ok": true,
+    "why": "Yes: One dose may not be enough for potent opioids such as fentanyl, so repeat doses are standard until he breathes adequately."
+   },
+   {
+    "t": "Start chest compressions",
+    "ok": false,
+    "why": "No: He has a pulse. Compressions are for cardiac arrest; with a pulse, the priority is ventilation and naloxone."
+   },
+   {
+    "t": "Give flumazenil to reverse the sedation",
+    "ok": false,
+    "why": "No: Flumazenil reverses benzodiazepines, not opioids, and can trigger seizures in people who use sedatives regularly. The trap is treating sedation in general."
+   },
+   {
+    "t": "Turn him on his side and let him sleep it off",
+    "ok": false,
+    "why": "No: Positioning protects against aspiration but does nothing for an RR of 6. Waiting lets the hypoxia worsen toward arrest."
+   }
+  ],
+  "why": "An unresponsive client with pinpoint pupils and an RR of 6 needs breathing support and naloxone at the same time. Ventilate first if needed, give naloxone, monitor, and repeat the dose if breathing stays inadequate. Compressions are only for a client without a pulse.",
+  "tip": "When a stem gives you a pulse, rule out CPR options and look for the actions that fix the airway and breathing."
+ },
+ {
+  "id": "fx-act-2",
+  "type": "matrix",
+  "step": "act",
+  "sp": "ob",
+  "stem": "A client at 38 weeks in active labor has spontaneous rupture of membranes. The nurse sees a loop of umbilical cord at the vaginal opening, and the fetal heart rate falls from 140 to 70 bpm. Oxytocin is infusing at 6 milliunits/min.",
+  "q": "For each action, indicate whether it is indicated, contraindicated, or non-essential right now.",
+  "cols": [
+   "Indicated",
+   "Contraindicated",
+   "Non-essential"
+  ],
+  "rows": [
+   {
+    "t": "Insert a gloved hand and lift the presenting part off the cord",
+    "ans": 0,
+    "why": "Relieving pressure on the cord restores blood flow to the fetus; the hand stays in place until the cesarean birth."
+   },
+   {
+    "t": "Place the client in knee-chest or steep Trendelenburg position",
+    "ans": 0,
+    "why": "Gravity moves the presenting part away from the cord and reduces compression."
+   },
+   {
+    "t": "Push the cord back into the vagina",
+    "ans": 1,
+    "why": "Handling the cord causes vasospasm and more compression. Leave it and cover any exposed cord with sterile saline-moistened gauze."
+   },
+   {
+    "t": "Increase the oxytocin to speed the delivery",
+    "ans": 1,
+    "why": "Contractions compress the cord further. The oxytocin should be stopped, not increased."
+   },
+   {
+    "t": "Call for help and prepare for an emergency cesarean birth",
+    "ans": 0,
+    "why": "Prolapsed cord with fetal bradycardia needs the fastest possible delivery, usually by cesarean."
+   },
+   {
+    "t": "Review her prenatal record for rubella immunity",
+    "ans": 2,
+    "why": "Rubella status matters for postpartum vaccination, not for the next few minutes of this emergency."
+   }
+  ],
+  "why": "A prolapsed cord is compressed between the presenting part and the pelvis, cutting off fetal oxygen. Lift the presenting part, reposition the client, stop the oxytocin and get help for an immediate birth. Anything that does not relieve cord pressure waits.",
+  "tip": "In an emergency matrix, ask of each row: does this change the outcome in the next few minutes? If not, it is non-essential."
+ },
+ {
+  "id": "fx-act-3",
+  "type": "cloze",
+  "step": "act",
+  "sp": "sd",
+  "stem": "A 68-year-old on post-op day 3 after coronary artery bypass grafting is suddenly in atrial fibrillation with a rate of 148. BP 86/50 (124/72 an hour ago); he is dizzy and pale. The nurse calls the provider using SBAR.",
+  "q": "Complete the sentences.",
+  "parts": [
+   "The nurse opens with the Situation: ",
+   {
+    "opts": [
+     "this is the step-down nurse calling about the client in room 12, who is in new atrial fibrillation at 148 with a BP of 86/50 and is dizzy",
+     "he had bypass surgery 3 days ago and has a history of hypertension and diabetes",
+     "I think he might need something for his heart rate when you have a chance"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: The Situation states who is calling, which client, and the current problem with the key numbers, so the provider grasps urgency in one sentence.",
+     "No: Surgical history is Background. Opening with it buries the new rhythm and low blood pressure the provider needs to hear first.",
+     "No: A vague, low-urgency request hides an unstable client and invites a delayed response."
+    ]
+   },
+   ". For the Assessment, the nurse says: ",
+   {
+    "opts": [
+     "I think he is becoming unstable from the rapid rate",
+     "his pain is controlled and he ate most of his breakfast",
+     "he is probably anxious about going home"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: The Assessment is the nurse's interpretation: a rapid rate with hypotension and dizziness means he is becoming unstable.",
+     "No: True but irrelevant to the problem; it distracts from the hemodynamic change.",
+     "No: Attributing new hypotension and dizziness to anxiety is premature closure and misses an unstable rhythm."
+    ]
+   },
+   ". The nurse ends with the Recommendation: ",
+   {
+    "opts": [
+     "please come see him now; should I bring the defibrillator for synchronized cardioversion?",
+     "could you order something to help him sleep tonight?",
+     "I will recheck his vital signs in 4 hours and call if anything changes"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: The Recommendation is a specific request: bedside evaluation now, and readiness for synchronized cardioversion, the ACLS treatment for unstable tachycardia.",
+     "No: A sleep aid could lower his blood pressure further and does not address the rhythm.",
+     "No: A 4-hour recheck is far too long for a hypotensive client in rapid atrial fibrillation; this is a plan to wait, not a recommendation."
+    ]
+   }
+  ],
+  "why": "SBAR puts the most important information first: who is calling, about whom, and what is wrong now. New rapid atrial fibrillation with low blood pressure and dizziness is unstable, so the assessment names that and the recommendation asks for bedside evaluation and prepares for cardioversion.",
+  "tip": "In SBAR items, the Situation is the current problem in one sentence; history belongs in Background, and the Recommendation must be a specific request."
+ },
+ {
+  "id": "fx-act-4",
+  "type": "sata",
+  "step": "act",
+  "sp": "psy",
+  "stem": "A 35-year-old with schizophrenia is pacing the dayroom with clenched fists, shouting that staff are poisoning his food. He has not hit anyone. Two other clients are watching nearby. He has an order for PRN oral olanzapine for agitation.",
+  "q": "Which actions should the nurse take? Select all that apply.",
+  "opts": [
+   {
+    "t": "Speak in a calm, low voice using short, simple sentences",
+    "ok": true,
+    "why": "Yes: A calm tone and simple words are easier to process when someone is agitated and paranoid, and they model the control you want."
+   },
+   {
+    "t": "Stand at an angle, more than an arm's length away, with a clear path to the exit",
+    "ok": true,
+    "why": "Yes: Space feels less threatening to him and keeps the nurse safe; never let the client block your way out."
+   },
+   {
+    "t": "Ask the other clients to move to another area",
+    "ok": true,
+    "why": "Yes: Fewer onlookers lowers stimulation for him and protects the peers if he escalates."
+   },
+   {
+    "t": "Offer the PRN oral medication as a choice",
+    "ok": true,
+    "why": "Yes: Offering oral medication voluntarily is a less restrictive step that respects his autonomy and often works."
+   },
+   {
+    "t": "Touch his shoulder to reassure him",
+    "ok": false,
+    "why": "No: Touch can feel like an attack to a paranoid, agitated client and may provoke the assault you are trying to prevent."
+   },
+   {
+    "t": "Explain why his belief about the food is false",
+    "ok": false,
+    "why": "No: Arguing with a delusion increases defensiveness. Acknowledge his fear without agreeing or debating the content."
+   },
+   {
+    "t": "Place him in seclusion now to prevent an assault",
+    "ok": false,
+    "why": "No: Seclusion is for imminent danger after less restrictive measures fail. He has not hurt anyone, so de-escalation comes first."
+   }
+  ],
+  "why": "Escalating agitation without violence calls for verbal de-escalation and the least restrictive option. Keep a safe distance, lower the stimulation, use simple calm statements and offer medication as a choice. Touch, argument and premature seclusion all escalate.",
+  "tip": "For psych safety items, choose the least restrictive action that still keeps everyone safe."
+ },
+ {
+  "id": "fx-solve-1",
+  "type": "matrix",
+  "step": "solve",
+  "sp": "ms",
+  "stem": "On a busy med-surg day shift, an RN is working with an LPN and an unlicensed assistive personnel (UAP). All clients on the list except the new admission have been stable for at least 24 hours.",
+  "q": "For each task, indicate the most appropriate team member to perform it.",
+  "cols": [
+   "RN",
+   "LPN",
+   "UAP"
+  ],
+  "rows": [
+   {
+    "t": "Admission assessment of a client just arrived from the ED with pneumonia",
+    "ans": 0,
+    "why": "Initial assessment of a new, not-yet-stable client is an RN responsibility that cannot be delegated."
+   },
+   {
+    "t": "Discharge teaching for a client going home on a new insulin regimen",
+    "ans": 0,
+    "why": "Initial teaching requires assessing learning needs and evaluating understanding, which belong to the RN. LPNs reinforce teaching."
+   },
+   {
+    "t": "Give scheduled oral medications to a stable client with chronic heart failure",
+    "ans": 1,
+    "why": "Giving routine medications to a stable client with predictable outcomes is within LPN scope."
+   },
+   {
+    "t": "Change the dressing on a stable client's healing surgical incision",
+    "ans": 1,
+    "why": "A routine dressing change on a stable wound is an LPN skill; it is a sterile procedure, so it is beyond UAP scope."
+   },
+   {
+    "t": "Measure and record intake and output for a stable client",
+    "ans": 2,
+    "why": "Measuring and recording is a routine task the UAP can do; the RN interprets the numbers."
+   },
+   {
+    "t": "Help a stable post-op day 3 client walk in the hall",
+    "ans": 2,
+    "why": "Ambulating a stable client who has already walked safely is a standard UAP task."
+   }
+  ],
+  "why": "Under NCSBN delegation guidelines, the RN keeps assessment, initial teaching, evaluation and any unstable client. LPNs care for stable clients with predictable outcomes, including medications and routine procedures. UAPs perform routine care such as vital signs on stable clients, intake and output, hygiene and ambulation.",
+  "tip": "Remember that the RN cannot delegate the parts of the nursing process that require judgment: assess, teach, evaluate, and anything unstable."
+ },
+ {
+  "id": "fx-solve-2",
+  "type": "matrix",
+  "step": "solve",
+  "sp": "peds",
+  "stem": "A 9-year-old (30 kg) is on post-op day 1 after a laparoscopic appendectomy for a ruptured appendix. At 10:00 he falls asleep mid-sentence (POSS 3), RR 12 and shallow, SpO₂ 95% on room air. Urine output is 0.4 mL/kg/h over the last 4 hours. He rates his pain 4/10 when roused, denies nausea and has no allergies.",
+  "q": "For each medication due or available at 10:00, indicate whether the nurse should give it or hold it.",
+  "cols": [
+   "Give",
+   "Hold"
+  ],
+  "rows": [
+   {
+    "t": "Morphine 1.5 mg IV every 3 hours PRN pain",
+    "ans": 1,
+    "why": "A POSS of 3 with a slow, shallow RR means too much opioid already. Hold it, stay with him, and notify the provider."
+   },
+   {
+    "t": "Acetaminophen 450 mg IV every 6 hours, scheduled; last dose at 04:00",
+    "ans": 0,
+    "why": "It is due, the dose is 15 mg/kg, and it treats pain without depressing breathing."
+   },
+   {
+    "t": "Ibuprofen 300 mg PO every 6 hours PRN pain (hold for urine output under 1 mL/kg/h)",
+    "ans": 1,
+    "why": "His urine output of 0.4 mL/kg/h is below the hold parameter, and NSAIDs can worsen kidney injury when perfusion is low."
+   },
+   {
+    "t": "Piperacillin-tazobactam IV every 8 hours, due at 10:00",
+    "ans": 0,
+    "why": "A ruptured appendix needs on-time antibiotics, and he has no allergies. Report the low urine output since dosing may need review."
+   },
+   {
+    "t": "Ondansetron 3 mg IV every 8 hours PRN nausea",
+    "ans": 1,
+    "why": "He denies nausea, so the PRN is not indicated right now; giving it would add a drug without a reason."
+   }
+  ],
+  "why": "Check every medication against the client's current condition and the exact hold parameter. Sedation comes before respiratory depression, so a POSS of 3 means no more opioid. Low urine output rules out the NSAID, while scheduled non-sedating analgesia and antibiotics continue.",
+  "tip": "Compare each order's parameter to the stem's numbers before deciding; PRN medications are given only when their indication is present."
+ },
+ {
+  "id": "fx-solve-3",
+  "type": "sata",
+  "step": "solve",
+  "sp": "teen",
+  "stem": "A 15-year-old is admitted to the adolescent unit after an intentional acetaminophen overdose and is now medically cleared. She says she does not care either way about being alive, and asks the nurse not to tell her parents anything she shares. Orders include safety checks every 15 minutes.",
+  "q": "Which interventions belong in her plan of care? Select all that apply.",
+  "opts": [
+   {
+    "t": "Search her room and belongings and remove ligature risks and sharps",
+    "ok": true,
+    "why": "Yes: Removing the means is one of the most effective ways to prevent suicide on a unit. Her ambivalence about living means risk is ongoing."
+   },
+   {
+    "t": "Ask her directly about suicidal thoughts, plan and intent every shift",
+    "ok": true,
+    "why": "Yes: Asking directly does not plant the idea; it is how risk is tracked and how changes are caught early."
+   },
+   {
+    "t": "Explain that her privacy is respected but safety concerns will be shared with the team and her parents",
+    "ok": true,
+    "why": "Yes: Honest limits of confidentiality build trust. A minor's safety information has to be shared with the team and guardians."
+   },
+   {
+    "t": "Before discharge, teach her parents to lock up medications and remove firearms at home",
+    "ok": true,
+    "why": "Yes: Means restriction at home is a core part of discharge safety planning, especially after an overdose."
+   },
+   {
+    "t": "Have her sign a no-suicide contract as the main safety measure",
+    "ok": false,
+    "why": "No: No-suicide contracts have no proven protective value and can give staff false reassurance. Assessment and a safety plan replace them."
+   },
+   {
+    "t": "Let her keep her belt and phone charger because she seems calm",
+    "ok": false,
+    "why": "No: Calm behavior does not lower risk after an attempt; these are ligature risks. Appearing calm can even mean a decision has been made."
+   },
+   {
+    "t": "Promise to keep what she says secret so she keeps talking",
+    "ok": false,
+    "why": "No: A promise you cannot keep breaks trust later and may delay sharing a safety concern that protects her life."
+   }
+  ],
+  "why": "The plan for an adolescent after a suicide attempt centers on environmental safety, frequent direct assessment, honest limits of confidentiality and means restriction at home. No-suicide contracts and secrecy are common traps because they feel supportive but do not protect the client.",
+  "tip": "For suicide-risk plans, favor options that remove means and keep the team informed over options that rely on the client's promise."
+ },
+ {
+  "id": "fx-hypo-1",
+  "type": "bowtie",
+  "step": "hypo",
+  "sp": "peds",
+  "stem": "A 10-month-old has had episodes of sudden, inconsolable crying with his knees drawn to his chest every 15 to 20 minutes, and is calm between episodes. He has vomited three times today and just passed a stool that looks like red currant jelly. A sausage-shaped mass is felt in the right upper abdomen. T 37.5 °C (99.5 °F).",
+  "q": "Complete the diagram: the condition the client is most likely experiencing, two actions the nurse should take, and two parameters to monitor.",
+  "cond": {
+   "opts": [
+    "Intussusception",
+    "Acute gastroenteritis",
+    "Infant colic",
+    "Pyloric stenosis"
+   ],
+   "ans": 0
+  },
+  "actions": {
+   "opts": [
+    "Notify the provider and prepare for an image-guided air or contrast enema",
+    "Keep him NPO and start IV fluids as ordered",
+    "Give oral rehydration solution in small, frequent sips",
+    "Give a glycerin suppository to clear the stool",
+    "Teach the parents soothing techniques for colic"
+   ],
+   "ans": [
+    0,
+    1
+   ]
+  },
+  "params": {
+   "opts": [
+    "Passage of a normal brown stool",
+    "Signs of peritonitis such as a rigid abdomen, fever or lethargy",
+    "Head circumference",
+    "Serum lipase",
+    "Developmental milestones"
+   ],
+   "ans": [
+    0,
+    1
+   ]
+  },
+  "whys": {
+   "cond": [
+    "Yes: Colicky pain with knees drawn up, vomiting, currant jelly stool and a sausage-shaped mass is the classic triad and picture of intussusception.",
+    "No: Gastroenteritis causes watery diarrhea, not a palpable mass and currant jelly stool. Calling it a stomach bug is the trap that delays reduction.",
+    "No: Colic does not cause bloody mucus stools, vomiting or an abdominal mass, and it usually ends by 3 to 4 months of age.",
+    "No: Pyloric stenosis presents at 2 to 8 weeks with projectile nonbilious vomiting and an olive-shaped mass, not bloody stools."
+   ],
+   "actions": [
+    "Yes: An air or contrast enema both confirms and often reduces the intussusception, so the provider needs to know now.",
+    "Yes: Vomiting and possible bowel obstruction mean nothing by mouth; IV fluids correct losses and prepare him for the procedure or surgery.",
+    "No: Oral fluids are contraindicated with a suspected obstruction and vomiting. The trap is treating this like routine dehydration.",
+    "No: Laxatives and suppositories are not given for a suspected obstruction and can raise the risk of perforation.",
+    "No: Labeling this colic misses a surgical emergency in which the bowel can lose its blood supply."
+   ],
+   "params": [
+    "Yes: A normal brown stool before the procedure can mean the bowel reduced on its own, so report it right away.",
+    "Yes: Perforation and bowel necrosis are the dangerous complications; fever, a rigid abdomen or worsening lethargy need immediate escalation.",
+    "No: Head circumference tracks brain growth and hydrocephalus, which are unrelated to this problem.",
+    "No: Lipase is a pancreatitis marker and does not help track an intussusception.",
+    "No: Milestones are a routine well-child measure, not a parameter that shows whether this emergency is improving."
+   ]
+  },
+  "why": "Intermittent severe pain, vomiting, currant jelly stool and a sausage-shaped mass make intussusception the most likely and most urgent problem. The bowel can become ischemic, so the child is kept NPO with IV fluids while the team prepares for reduction. Watch for spontaneous reduction and for signs of perforation.",
+  "tip": "When a stem lists a classic cluster of findings, pick the condition that explains all of them, not just the most common one."
+ },
+ {
+  "id": "fx-hypo-2",
+  "type": "cloze",
+  "step": "hypo",
+  "sp": "ed",
+  "stem": "Four clients check in at the ED triage desk within 5 minutes: a 45-year-old with an oozing forearm laceration, BP 132/80; a 30-year-old with ankle swelling after a fall who can bear weight; a 58-year-old with diabetes who has had epigastric discomfort and nausea for 40 minutes, is diaphoretic, HR 108; and a 22-year-old with a sore throat, T 38.4 °C (101.2 °F), swallowing normally.",
+  "q": "Complete the sentence.",
+  "parts": [
+   "The client the nurse should see first is the ",
+   {
+    "opts": [
+     "58-year-old with epigastric discomfort",
+     "45-year-old with the forearm laceration",
+     "22-year-old with a fever and sore throat"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: Epigastric discomfort, nausea, sweating and tachycardia in a 58-year-old with diabetes may be a myocardial infarction, the most time-critical problem here.",
+     "No: An oozing laceration with a normal BP is controlled bleeding; direct pressure can be applied while the nurse sees the cardiac client.",
+     "No: A fever with normal swallowing and no airway signs is uncomfortable but stable, so it can wait for routine triage."
+    ]
+   },
+   " because ",
+   {
+    "opts": [
+     "the symptoms may be an atypical acute coronary syndrome, which needs an ECG within 10 minutes",
+     "any bleeding wound is the highest priority",
+     "a fever over 38.3 °C (101 °F) means the client is septic"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: Clients with diabetes often have atypical MI symptoms, and an ECG within 10 minutes of arrival is the standard for possible acute coronary syndrome.",
+     "No: Only uncontrolled or major bleeding is a top priority; oozing from a forearm wound with stable vitals is not.",
+     "No: Fever alone does not equal sepsis. The trap is reacting to the number instead of the overall picture."
+    ]
+   },
+   "."
+  ],
+  "why": "Clients with diabetes, especially women and older adults, often present with acute coronary syndrome as epigastric pain, nausea and sweating rather than chest pain. A possible MI is time-critical, so it outranks a controlled laceration, a stable ankle injury and a fever with a normal airway.",
+  "tip": "When ranking clients, look for the one whose problem could kill or cause permanent harm fastest, even if the complaint sounds minor."
+ },
+ {
+  "id": "fx-hypo-3",
+  "type": "cloze",
+  "step": "hypo",
+  "sp": "teen",
+  "stem": "At 07:00 on an adolescent psych unit, the nurse gets report on three clients: a 16-year-old with anorexia nervosa whose HR is 38 lying down and who nearly fainted standing up for her weigh-in; a 14-year-old who yelled at staff and threw a pillow after a phone call with her father and is now sitting in her room; and a 15-year-old with depression who rates her self-harm urges 5/10, down from 8/10 yesterday, with no new injuries.",
+  "q": "Complete the sentence.",
+  "parts": [
+   "The client most at risk right now is the ",
+   {
+    "opts": [
+     "16-year-old with anorexia nervosa",
+     "14-year-old who threw a pillow",
+     "15-year-old with self-harm urges"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: Her heart rate of 38 with near-fainting makes her medically unstable, the most immediate threat to life on this list.",
+     "No: She is now calm and in her room. The outburst needs follow-up, but it is not an active danger.",
+     "No: Her urges are decreasing and there are no new injuries; she needs reassessment but is improving."
+    ]
+   },
+   " because ",
+   {
+    "opts": [
+     "a heart rate under 40 with near-fainting signals medical instability that can progress to a fatal arrhythmia",
+     "a slow heart rate is expected in clients who restrict food and exercise",
+     "throwing an object predicts an imminent assault on staff"
+    ],
+    "ans": 0,
+    "whys": [
+     "Yes: Severe bradycardia and orthostatic symptoms in anorexia nervosa reflect cardiac compromise and can lead to arrhythmia and sudden death.",
+     "No: A low resting rate can be normal in trained athletes, but under 40 with near-syncope is never expected. This is the normalization trap.",
+     "No: One thrown pillow after a stressful call that has since settled does not predict imminent assault."
+    ]
+   },
+   "."
+  ],
+  "why": "Severe bradycardia with orthostatic near-syncope in anorexia nervosa is a sign of medical instability and a criterion for medical admission. The angry client has already calmed in her room, and the client with self-harm urges is improving with no new injuries, so both can be seen after the medically unstable client.",
+  "tip": "On psych units, a physiological threat usually outranks a behavioral one that has already settled."
+ }
+];
 
 /* The Shift — clinical review record.
    Who reviewed each shift, against which version of its content, and what they cited. This is what the game shows
@@ -16435,22 +17956,81 @@ window.Shift = window.Shift || {};
     const more = e.total - e.heard;
     return `<div class="st-epi"><div class="st-eh"><span class="st-k">Their story</span>${trustDots(e.trust)}</div><p>${esc(e.text)}</p>${e.learned.length ? `<details><summary>What you learned about them <span class="muted">${e.heard} of ${e.total}</span></summary><ul>${e.learned.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}${more && e.heard ? `<small class="muted">${more} more thing${more === 1 ? '' : 's'} to learn about them on another shift.</small>` : ''}</div>`;
   }
+  /* ------------ debrief: showing the working ------------ */
+  const STARS_AT = () => (RW && RW.STARS) || [58, 72, 85];
+  // Focus practice: the two lowest NCLEX steps under 72 (or the lowest, as a stretch, when none is), two items each.
+  function focusPlan(cj) {
+    if (!NG || !NG.focus || !cj) return null;
+    const key = s.caseId + ':' + s.t + ':' + s.judg.length; if (ui.fx && ui.fx.key === key) return ui.fx;
+    const tested = cj.filter((x) => x.score !== null).sort((a, b) => a.score - b.score);
+    let weak = tested.filter((x) => x.score < STARS_AT()[1]).slice(0, 2), stretch = false;
+    if (!weak.length && tested.length) { weak = tested.slice(0, 1); stretch = true; }
+    const its = NG.focus(weak.map((x) => x.id), s.caseId, prof.ngn, 2, meta(s.caseId).sp);
+    return (ui.fx = { key, weak: weak.map((x) => ({ id: x.id, label: x.label, score: x.score })), stretch, ids: its.map((x) => x.id) });
+  }
+  const ngnList = () => (ui.ngn && ui.ngn.list === 'focus' && ui.fx ? ui.fx.ids.map((id) => NG.byId(id)).filter(Boolean) : NG.items(s.caseId));
+  const fmt1 = (n) => (Math.round(n * 10) / 10).toString();
+  // Under the big number: which skills were averaged, and where the star lines sit.
+  function scoreWhyHTML(d) {
+    const open = !!ui.scWhy, sc = d.dom.filter((x) => x.score !== null), ST = STARS_AT(), nst = ST.filter((x) => d.overall >= x).length;
+    const names = ['Rough shift', 'Getting there', 'Safe, solid shift', 'Charge-nurse material'], harmed = d.outcomes.some((o) => o.tone === 'bad');
+    const body = !open ? '' : `<div class="sw-b">
+      <p>Your score is the average of the <b>${sc.length} skill area${sc.length === 1 ? '' : 's'}</b> this shift tested. An area is tested when at least one of your decisions falls in it; areas with none are left out so they can't drag you up or down.</p>
+      <ul class="sw-sk">${sc.map((x) => `<li><span>${esc(x.label)}</span><b>${x.score}</b></li>`).join('')}</ul>
+      <p class="sw-eq">(${sc.map((x) => x.score).join(' + ')}) ÷ ${sc.length} = <b>${d.overall}</b></p>
+      <div class="sw-bands" aria-hidden="true"><i class="sw-m" style="left:${Math.max(0, Math.min(100, d.overall))}%"></i>${ST.map((x) => `<span class="sw-t" style="left:${x}%"><b>${x}</b></span>`).join('')}</div>
+      <ul class="sw-key">${[0, 1, 2, 3].map((n) => `<li class="${n === nst ? 'on' : ''}"><span>${n ? `${'★'.repeat(n)} ${ST[n - 1]}+` : `Under ${ST[0]}`}</span><b>${names[n]}</b></li>`).join('')}</ul>
+      <p>${nst < 3 ? `<b>${ST[nst] - d.overall} more point${ST[nst] - d.overall === 1 ? '' : 's'}</b> would have earned ${nst ? 'the next star' : 'a star'}.` : 'Three stars: the top band.'}${harmed && d.overall >= ST[1] ? ' A patient had a poor outcome, so the title is "Solid, with a miss that mattered" instead.' : !harmed && nst === 0 && d.overall >= 45 ? ' With no patient harmed, a score from 45 is still called "Getting there".' : ''}</p>
+      <p>Each skill starts at 60. Strong calls add 6 per point and misses take off 9 per point, then 4.5 per point after the first three. Open any skill or NCLEX step below to see every decision behind its number.</p>
+      <p class="muted">The NCLEX steps re-sort the same decisions by clinical judgment step; they don't change this score. The real NCLEX is pass or fail and doesn't report step scores, so treat these as a map of what to study.</p></div>`;
+    return `<div class="sc-why"><button class="sw-btn" data-act="sc-why" aria-expanded="${open}">How your ${d.overall} was worked out <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>${body}</div>`;
+  }
+  // One skill or step, opened: start at 60, every decision that moved it, and the sum.
+  function workHTML(T) {
+    const K = E.SCORE, row = (j, cls, val, how) => `<li class="wk ${cls}"><span class="wk-t">${E.clock(j.t)}${j.pid ? ' · ' + esc(j.pid) : ''}</span><span class="wk-x">${esc(j.text)}</span><span class="wk-p"><b>${val}</b><small>${how}</small></span></li>`;
+    const pt = (n) => `${fmt1(n)} pt${n === 1 ? '' : 's'}`;
+    const minusHow = (m) => m.half && m.full ? `${pt(m.full)} × ${K.BAD} + ${pt(m.half)} × ${K.BAD_AFTER}` : m.full ? `${pt(m.full)} × ${K.BAD}` : `${pt(m.half)} × ${K.BAD_AFTER}, past the first ${K.BAD_FULL}`;
+    const rounded = Math.round(T.raw), adj = T.score !== rounded ? (T.score === 100 ? 'capped at 100' : 'raised to the minimum of 5') : T.raw !== rounded ? 'rounded' : '';
+    return `<ol class="wk-list"><li class="wk base"><span class="wk-t"></span><span class="wk-x">Everyone starts here</span><span class="wk-p"><b>${K.BASE}</b></span></li>
+      ${T.plus.map((x) => row(x.j, 'good', '+' + fmt1(x.add), `${pt(x.pts)} × ${K.GOOD}`)).join('')}
+      ${T.minus.map((x) => row(x.j, 'bad', '−' + fmt1(x.sub), minusHow(x))).join('')}
+      ${T.notes.map((j) => row(j, 'note', '0', 'noted, not scored')).join('')}</ol>
+      <p class="wk-eq">${K.BASE}${T.gain ? ` + ${fmt1(T.gain)}` : ''}${T.pen ? ` − ${fmt1(T.pen)}` : ''} = ${fmt1(T.raw)}${T.raw !== T.score ? ` → <b>${T.score}</b> (${adj})` : ''}</p>
+      ${T.badPts > K.BAD_FULL ? `<p class="wk-n muted">Misses past the first ${K.BAD_FULL} points count half, so one bad stretch can't zero a whole area.</p>` : ''}`;
+  }
+  function guideHTML(id) {
+    const g = CJ && CJ.GUIDE && CJ.GUIDE[id]; if (!g) return '';
+    const fxi = ui.fx ? ui.fx.ids.findIndex((x) => { const it = NG.byId(x); return it && it.step === id; }) : -1;
+    return `<div class="gd"><h4>On the NCLEX</h4><p>${esc(g.exam)}</p><h4>Ask yourself</h4><ul>${g.ask.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><h4>Common traps</h4><ul>${g.traps.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${fxi >= 0 ? `<button class="btn gd-go" data-act="ngn-open" data-list="focus" data-i="${fxi}">Practice this step <span aria-hidden="true">›</span></button>` : ''}</div>`;
+  }
+  function meterHTML(x, T, step, d) {
+    ui.mOpen = ui.mOpen || {}; const k = (step ? 'c:' : 'k:') + x.id, open = !!ui.mOpen[k];
+    const head = `<div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.score === null ? 'No decisions fell here this shift' : `${x.good} strong, ${x.bad} missed`}<span class="mt-how">${open ? 'Hide' : x.score === null ? (step ? 'What it means' : '') : 'How it was scored'}</span></small>`;
+    if (x.score === null && !step) return `<div class="meter">${head}</div>`;
+    return `<div class="meter ${open ? 'open' : ''}"><button class="meter-b" data-act="meter" data-k="${k}" aria-expanded="${open}"${x.what ? ` title="${esc(x.what)}"` : ''}>${head}</button>${open ? `<div class="meter-w">${step && x.what ? `<p class="mw-what">${esc(x.what)}</p>` : ''}${x.score !== null ? workHTML(T) : ''}${step ? guideHTML(x.id) : ''}</div>` : ''}</div>`;
+  }
   function vDebrief() {
-    const d = E.debrief(s);
+    const d = E.debrief(s), cj = CJ ? CJ.score(d.judg) : null; focusPlan(cj);
+    if (!ui.mOpen || ui.mOpenFor !== (ui.fx && ui.fx.key)) {   // first look: open the weakest area in each view
+      ui.mOpen = {}; ui.mOpenFor = ui.fx && ui.fx.key;
+      const low = (L) => L.filter((x) => x.score !== null).sort((a, b) => a.score - b.score)[0];
+      const a = low(d.dom), b = cj && low(cj); if (a) ui.mOpen['k:' + a.id] = 1; if (b) ui.mOpen['c:' + b.id] = 1;
+    }
     const prior = prof.runs.filter((r) => r.caseId === s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
     const nextId = CASES[CASES.indexOf(s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
     const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
     return `<main><div class="deb">
       <section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 30 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
       <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>
+      ${scoreWhyHTML(d)}
       ${rewardHTML()}${learnHTML()}
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
       ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); return e && !e.heard && e.total; }).length; return n ? `<p class="muted st-note">You didn't get to know ${n === d.outcomes.length ? 'any of your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. Talking with patients once they're stable fills them in.</p>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-grid">
         <section aria-labelledby="dh"><div class="by-h"><h2 id="dh">${ui.byCj ? 'By NCLEX step' : 'By skill'}</h2>${CJ ? `<div class="seg" role="group" aria-label="Score by"><button data-act="by" data-v="skill" aria-pressed="${!ui.byCj}">Skills</button><button data-act="by" data-v="cj" aria-pressed="${!!ui.byCj}">NCLEX steps</button></div>` : ''}</div>
-          ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one.</p>' : ''}
-          ${(ui.byCj && CJ ? CJ.score(d.judg) : d.dom).map((x) => `<div class="meter"${x.what ? ` title="${esc(x.what)}"` : ''}><div class="l"><span>${x.label}</span><b>${x.score === null ? 'Not tested' : x.score}</b></div><div class="bar" aria-hidden="true"><i style="width:${x.score || 0}%"></i></div><small class="muted">${x.good} strong, ${x.bad} missed</small></div>`).join('')}
+          ${ui.byCj && CJ ? '<p class="muted by-n">The six steps of the clinical judgment model the Next Generation NCLEX tests. Every decision you made is filed under one. Tap a step to see the decisions behind its number, how the exam tests it, and how to think it through.</p>' : '<p class="muted by-n">Tap a skill to see every decision behind its number.</p>'}
+          ${ui.byCj && cj ? cj.map((x) => meterHTML(x, E.tally(x.js), true, d)).join('') : d.dom.map((x) => meterHTML(x, E.tally(d.judg.filter((j) => j.domain === x.id)), false, d)).join('')}
           <p class="muted" style="font-size:.85rem">Nova hints used: ${(C().novaCredits || 3) - s.nova} of ${C().novaCredits || 3}.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
         </section>
@@ -16463,31 +18043,55 @@ window.Shift = window.Shift || {};
 
   /* ------------ NCLEX-style practice items ------------ */
   const STEPNAME = (id) => (CJ ? (CJ.STEPS.find((x) => x[0] === id) || [])[1] : '') || '';
+  function ngnRow(it, i, list) {
+    const dn = (prof.ngn || {})[it.id];
+    return `<li><button class="ngn-row" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${dn ? '' : 'ngn-go'}">${dn ? `${dn.score} of ${dn.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`;
+  }
   function ngnHTML() {
     if (!NG || !s) return ''; const its = NG.items(s.caseId); if (!its.length) return '';
-    const done = prof.ngn || {};
-    return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">Three questions in the formats the Next Generation NCLEX uses, built from this shift's patients.</p></div>
-      <ol class="ngn-list">${its.map((it, i) => { const d = done[it.id]; return `<li><button class="ngn-row" data-act="ngn-open" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${d ? '' : 'ngn-go'}">${d ? `${d.score} of ${d.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`; }).join('')}</ol></section>`;
+    const fx = ui.fx, fits = fx ? fx.ids.map((id) => NG.byId(id)).filter(Boolean) : [];
+    const why = fx && fx.weak.length ? (fx.stretch ? `None of your NCLEX steps fell below ${STARS_AT()[1]} this shift. These stretch questions aim at your lowest, <b>${esc(fx.weak[0].label)}</b> (${fx.weak[0].score}).` : `Your lowest NCLEX step${fx.weak.length > 1 ? 's' : ''} this shift: ${fx.weak.map((w) => `<b>${esc(w.label)}</b> (${w.score})`).join(' and ')}. These questions, from other units, practice the same thinking.`) : '';
+    return `<section class="ngn-sec" aria-labelledby="ngh"><div class="ngn-h"><h2 id="ngh">Practice questions</h2><p class="muted">In the formats the Next Generation NCLEX uses, scored the way NCSBN scores them. Every answer comes with the reasoning behind each option.</p></div>
+      <h3 class="ngn-sub">From this shift</h3><ol class="ngn-list">${its.map((it, i) => ngnRow(it, i, 'shift')).join('')}</ol>
+      ${fits.length ? `<h3 class="ngn-sub">Focus practice</h3><p class="ngn-fx">${why}</p><ol class="ngn-list">${fits.map((it, i) => ngnRow(it, i, 'focus')).join('')}</ol>` : ''}</section>`;
   }
   function ovNgn() {
-    const its = NG.items(s.caseId), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked;
+    const its = ngnList(), q = ui.ngn, it = its[q.i], a = q.a, ck = q.checked, W = NG.whys(it);
+    if (!it) { ui.ov = null; return ''; }
     const mark = (ok, on) => (!ck ? '' : ok ? ' right' : on ? ' wrong' : '');
-    let body = `<p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
+    // After checking: the reason for an option, styled by whether you chose it and whether it was right.
+    const rw = (txt, ok, on) => (!ck || !txt ? '' : `<small class="nb-why ${ok ? 'y' : 'n'}${on ? ' you' : ''}">${on ? '<i>Your choice</i>' : ok ? '<i>You missed this</i>' : ''}${esc(txt.replace(/^(Yes|No):\s*/, '').replace(/^[a-z]/, (c) => c.toUpperCase()))}</small>`);
+    const stp = CJ ? CJ.STEPS.find((x) => x[0] === it.step) : null;
+    let body = `<p class="ngn-tag">${esc(NG.TYPE[it.type])}${stp ? ` · Tests <b>${esc(stp[1])}</b>` : ''}${q.list === 'focus' ? ' · Focus practice' : ''}</p><p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
     if (it.type === 'bowtie') {
-      const col = (k, lab, g, multi) => `<div class="bt-col bt-${k}"><h4>${lab}</h4>${g.opts.map((o, i) => { const on = multi ? (a[k] || []).includes(i) : a[k] === i, ok = multi ? g.ans.includes(i) : g.ans === i; return `<button class="nb-opt${on ? ' on' : ''}${mark(ok, on)}" data-act="ngn-pick" data-k="${k}" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</div>`;
+      const wk = { a: 'actions', c: 'cond', p: 'params' };
+      const col = (k, lab, g, multi) => `<div class="bt-col bt-${k}"><h4>${lab}</h4>${g.opts.map((o, i) => { const on = multi ? (a[k] || []).includes(i) : a[k] === i, ok = multi ? g.ans.includes(i) : g.ans === i; return `<div class="nb-w"><button class="nb-opt${on ? ' on' : ''}${mark(ok, on)}" data-act="ngn-pick" data-k="${k}" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>${rw((W[wk[k]] || [])[i], ok, on)}</div>`; }).join('')}</div>`;
       body += `<div class="bowtie">${col('a', 'Actions to take (choose 2)', it.actions, true)}${col('c', 'Most likely condition (choose 1)', it.cond, false)}${col('p', 'Parameters to monitor (choose 2)', it.params, true)}</div>`;
     } else if (it.type === 'matrix') {
       body += `<div class="tbl-wrap"><table class="ngn-mx"><thead><tr><th></th>${it.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((r, ri) => `<tr><td class="wrap">${esc(r.t)}${ck ? `<small class="muted ngn-why">${esc(r.why)}</small>` : ''}</td>${it.cols.map((c, ci) => { const on = (a.r || [])[ri] === ci; return `<td><button class="nb-cell${on ? ' on' : ''}${mark(r.ans === ci, on)}" data-act="ngn-pick" data-k="r" data-row="${ri}" data-v="${ci}" aria-pressed="${on}" aria-label="${esc(c)}" ${ck ? 'disabled' : ''}>${on ? '●' : ''}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
     } else if (it.type === 'sata') {
-      body += `<div class="ngn-opts">${it.opts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-opt sq${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join('')}</div>`;
+      body += `<div class="ngn-opts">${it.opts.map((o, i) => { const on = (a.s || []).includes(i); return `<div class="nb-w"><button class="nb-opt sq${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>${rw(W.opts[i], o.ok, on)}</div>`; }).join('')}</div>`;
     } else if (it.type === 'highlight') {
       body += `<p class="ngn-note">${it.parts.map((o, i) => { const on = (a.s || []).includes(i); return `<button class="nb-hl${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="s" data-v="${i}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>`; }).join(' ')}</p>`;
+      if (ck) body += `<ol class="nb-whys">${it.parts.map((o, i) => { const on = (a.s || []).includes(i); return `<li><b>${esc(o.t)}</b>${rw(W.parts[i], o.ok, on)}</li>`; }).join('')}</ol>`;
     } else if (it.type === 'cloze') {
       let k = 0; body += `<p class="ngn-cloze">${it.parts.map((p) => { if (typeof p === 'string') return esc(p); const bi = k++; return `<span class="ngn-blank">${p.opts.map((o, oi) => { const on = (a.d || [])[bi] === oi; return `<button class="nb-chip${on ? ' on' : ''}${mark(p.ans === oi, on)}" data-act="ngn-pick" data-k="d" data-row="${bi}" data-v="${oi}" aria-pressed="${on}" ${ck ? 'disabled' : ''}>${esc(o)}</button>`; }).join('')}</span>`; }).join('')}</p>`;
+      if (ck) { let bi = 0; body += `<ol class="nb-whys">${it.parts.filter((p) => typeof p !== 'string').map((p) => { const k2 = bi++, v = (a.d || [])[k2]; return `<li><b>Blank ${k2 + 1}</b>${p.opts.map((o, oi) => (oi === p.ans || oi === v) ? `<span class="nb-bl"><em>${esc(o)}</em>${rw((W.blanks[k2] || [])[oi], oi === p.ans, oi === v)}</span>` : '').join('')}</li>`; }).join('')}</ol>`; }
     }
-    if (ck) { const sc = NG.score(it, a), mx = NG.max(it); body += `<div class="ngn-res ${sc === mx ? 'full' : sc ? 'part' : 'none'}"><b>${sc} of ${mx} points</b><p>${esc(it.why)}</p><small class="muted">${it.type === 'sata' || it.type === 'highlight' ? 'Scored plus or minus: each wrong choice cancels a right one.' : 'Scored zero or one for each part.'}</small></div>`; }
+    if (ck) {
+      const B = NG.breakdown(it, a), sc = B.score, mx = B.max;
+      const pts = (n) => (n > 0 ? '+' + n : n < 0 ? '−' + -n : '0');
+      const brows = B.rows.map((r) => `<tr class="${r.pts > 0 ? 'y' : r.pts < 0 ? 'n' : r.missed ? 'm' : 'z'}"><td>${esc(r.part)}</td><td>${B.pm ? (r.missed ? 'Not chosen (correct)' : r.ok ? 'Chosen, correct' : 'Chosen, incorrect') : `${esc(r.pick || '—')}${!r.ok && r.want ? `<small>Correct: ${esc(r.want)}</small>` : ''}`}</td><td class="n">${pts(r.pts)}</td></tr>`).join('');
+      body += `<div class="ngn-res ${sc === mx ? 'full' : sc ? 'part' : 'none'}">
+        <div class="nr-h"><b>${sc} of ${mx} points</b><span>${esc(B.math)}${B.pm && B.rows.some((r) => r.missed) ? `; ${B.rows.filter((r) => r.missed).length} correct option${B.rows.filter((r) => r.missed).length === 1 ? '' : 's'} not chosen` : ''}</span></div>
+        <div class="tbl-wrap"><table class="nr-t"><thead><tr><th>${it.type === 'matrix' ? 'Row' : B.pm ? 'Option' : 'Part'}</th><th>${B.pm ? 'Your answer' : 'You chose'}</th><th class="n">Points</th></tr></thead><tbody>${brows || `<tr><td colspan="3" class="muted">Nothing chosen.</td></tr>`}</tbody></table></div>
+        <p class="nr-rule">${esc(B.rule)}</p>
+        <h4>The reasoning</h4><p>${esc(it.why)}</p>
+        ${W.tip ? `<p class="nr-tip"><b>Test-taking tip.</b> ${esc(W.tip)}</p>` : ''}
+        ${stp ? `<p class="nr-step muted">This question tests <b>${esc(stp[1])}</b>: ${esc(stp[2])}</p>` : ''}</div>`;
+    }
     const last = q.i === its.length - 1;
-    const foot = !ck ? `<button class="btn btn-primary" data-act="ngn-check" ${NG.complete(it, a) ? '' : 'disabled data-why="Answer every part first."'}>Check answer</button>` : last ? `<button class="btn btn-primary" data-act="close">Done</button>` : `<button class="btn btn-primary" data-act="ngn-go" data-i="${q.i + 1}">Next question</button>`;
+    const foot = !ck ? `<button class="btn btn-primary" data-act="ngn-check" ${NG.complete(it, a) ? '' : 'disabled data-why="Answer every part first."'}>Check answer</button>` : last ? `<button class="btn btn-primary" data-act="close">Done</button>` : `<button class="btn btn-primary" data-act="ngn-go" data-list="${q.list || 'shift'}" data-i="${q.i + 1}">Next question</button>`;
     return sheet(`Question ${q.i + 1} of ${its.length}: ${esc(NG.TYPE[it.type])}`, body, foot, { wide: true, label: 'Practice question' });
   }
 
@@ -17284,10 +18888,12 @@ window.Shift = window.Shift || {};
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
     hreason(el) { ui.med.reason = +el.dataset.v; render(); },
     'med-holdask'() { ui.med.holding = true; render(); },
-    'ngn-open'(el) { ui.ngn = { i: +el.dataset.i || 0, a: {}, checked: false }; ui.ov = 'ngn'; render(); },
-    'ngn-go'(el) { ui.ngn = { i: +el.dataset.i, a: {}, checked: false }; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    'ngn-open'(el) { ui.ngn = { list: el.dataset.list || 'shift', i: +el.dataset.i || 0, a: {}, checked: false }; ui.ov = 'ngn'; render(); },
+    'ngn-go'(el) { ui.ngn = { list: el.dataset.list || 'shift', i: +el.dataset.i, a: {}, checked: false }; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    meter(el) { ui.mOpen = ui.mOpen || {}; const k = el.dataset.k; if (ui.mOpen[k]) delete ui.mOpen[k]; else ui.mOpen[k] = 1; render(); },
+    'sc-why'() { ui.scWhy = !ui.scWhy; if (ui.scWhy) TEL.track('debrief_score_why', { case: s ? s.caseId : caseId }); render(); },
     'ngn-pick'(el) {
-      const q = ui.ngn, it = NG.items(s.caseId)[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
+      const q = ui.ngn, it = ngnList()[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
       if (k === 'c') q.a.c = v;
       else if (k === 'a' || k === 'p') { const L = q.a[k] = q.a[k] || []; const at = L.indexOf(v); if (at >= 0) L.splice(at, 1); else { L.push(v); if (L.length > 2) L.shift(); } }
       else if (k === 'r' || k === 'd') { const L = q.a[k] = q.a[k] || []; L[+el.dataset.row] = v; }
@@ -17295,10 +18901,10 @@ window.Shift = window.Shift || {};
       render();
     },
     'ngn-check'() {
-      const q = ui.ngn, it = NG.items(s.caseId)[q.i]; if (!NG.complete(it, q.a)) return; q.checked = true;
+      const q = ui.ngn, it = ngnList()[q.i]; if (!NG.complete(it, q.a)) return; q.checked = true;
       const sc = NG.score(it, q.a), mx = NG.max(it); prof.ngn = prof.ngn || {}; const prev = prof.ngn[it.id];
       prof.ngn[it.id] = { score: Math.max(sc, prev ? prev.score : 0), max: mx, last: sc, at: Date.now() }; E.store.saveProfile(prof);
-      TEL.track('ngn_item', { case: s.caseId, item: it.id, type: it.type, step: it.step, score: sc, max: mx });
+      TEL.track('ngn_item', { case: s.caseId, item: it.id, type: it.type, step: it.step, score: sc, max: mx, focus: q.list === 'focus' });
       if (CL) CL.recordNgn(s.caseId, it, sc, mx);
       render();
     },
@@ -17513,7 +19119,7 @@ window.Shift = window.Shift || {};
 
   /* Feedback. Answers get a pop and a moment to register; commitments get a chime and a stamp.
      None of it says whether the choice was right: that stays in the debrief. */
-  const SELECT = new Set(['aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
+  const SELECT = new Set(['meter', 'sc-why', 'aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
   const COMMIT = new Set(['doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
