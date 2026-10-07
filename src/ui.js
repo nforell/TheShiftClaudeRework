@@ -339,13 +339,40 @@
     const g = E.store.load(), c = C(), done = (id) => prof.runs.filter((r) => r.caseId === id);
     const start = hhmm(c, 0), initial = c.patients.filter((d) => !d.arrives), adm = c.patients.filter((d) => d.arrives);
     const cols = Math.ceil(initial.length / 2) + (adm.length ? 1 : 0) - (initial.length % 2 && adm.length ? 1 : 0);
+    const saved = g && !g.ended ? E.getCase(g.caseId) : null;
+    // Shift picker card: an illustrated header (the shift's sky, its start time and its real patients), the facts, and,
+    // once picked, a bold ring and its own start button so choosing never depends on the hero scrolled out of view.
+    const tod = (k) => { const h = Math.floor(((k.start || 420) % 1440) / 60); return h >= 21 || h < 5 ? 'night' : h >= 13 ? 'eve' : 'day'; };
+    const TOD = { day: 'Day shift', eve: 'Evening shift', night: 'Night shift' };
     const rung = (id, i) => {
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
-      const prev = i ? done(CASES[i - 1]).length : 1;
-      const stn = (prof.stars || {})[id] || 0;
-      return `<button class="rung sp-${meta(id).sp} ${locked(id) ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b><span>${esc(k.card)}</span><small class="rg-facts">${esc(shiftFacts(k))}</small></span><span class="rg-l">${diffPips(id)}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${locked(id) ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
+      const prev = i ? done(CASES[i - 1]).length : 1, on = id === caseId, lk = locked(id);
+      const stn = (prof.stars || {})[id] || 0, tm = tod(k);
+      const pts = k.patients.filter((x) => !x.arrives), shown = pts.slice(0, 3), more = k.patients.length - shown.length;
+      const status = lk ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title);
+      const cta = saved && g.caseId === id ? `<button class="btn btn-primary btn-go sc-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button>`
+        : lk ? `<button class="btn btn-primary btn-go sc-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>`
+        : `<button class="btn btn-primary btn-go sc-go" data-act="new">Start this shift <span aria-hidden="true">→</span></button>`;
+      return `<article class="sc sp-${meta(id).sp} tod-${tm} ${on ? 'on' : ''} ${lk ? 'in-pack' : ''}">
+        <button class="sc-pick ${lk ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${on}">
+          <span class="sc-art" aria-hidden="true">
+            <span class="sc-sky"></span>
+            <span class="sc-time"><b>${hhmm(k, 0)}</b><small>${TOD[tm]}</small><small>to ${hhmm(k, k.length)}</small></span>
+            ${on ? `<span class="sc-sel">${ICON.tick}Selected</span>` : ''}
+            <span class="sc-cast">${shown.map((d) => R.still(d.id, 'sc-bust')).join('')}${more > 0 ? `<span class="sc-more">+${more}</span>` : ''}</span>
+            <span class="sc-floor"></span>
+          </span>
+          <span class="sc-body">
+            <span class="sc-unit"><span class="sc-dot"></span>${esc(specOf(id).name)} · ${esc(specOf(id).unit)}</span>
+            <b class="sc-title"><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b>
+            <span class="sc-card">${esc(k.card)}</span>
+            <small class="rg-facts">${esc(shiftFacts(k))}</small>
+            <span class="sc-foot">${diffPips(id)}<span class="sc-st"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((j) => starSvg(j < stn, j, 'rs')).join('')}</span><small>${status}</small></span></span>
+          </span>
+        </button>
+        ${on ? `<div class="sc-cta">${cta}</div>` : ''}
+      </article>`;
     };
-    const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
       <div style="display:flex;justify-content:space-between;align-items:center"><span class="mark" style="cursor:default">The Shift</span>
       <span style="display:flex;gap:.3rem"><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button></span></div>
@@ -369,10 +396,10 @@
       </section>
       <div>
         <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
-        <div class="ladder" role="group" aria-label="Choose a shift">
-          ${CASES.map((id, i) => (i === 0 || meta(CASES[i - 1]).sp !== meta(id).sp ? specHead(meta(id).sp) : '') + rung(id, i)).join('')}
-          <div class="spec-h sp-soon"><b>Coming later</b></div>
-          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>In the works</b><span>ICU, labor and delivery, and more shifts on every unit.</span></span></div>
+        <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
+        <div class="ladder sc-grid" role="group" aria-label="Choose a shift">
+          ${CASES.map((id, i) => rung(id, i)).join('')}
+          <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">ICU, labor and delivery, and more shifts on every unit.</span></span></div></article>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>

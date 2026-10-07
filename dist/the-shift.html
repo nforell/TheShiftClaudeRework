@@ -2023,6 +2023,88 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
 @media (max-width:640px){.home-cast figure.lead{grid-row:span 2}}
 /* Orientation step 1 on phones: the bed reads as a wall with a blanket along the bottom, not a half-blue block behind the caption. */
 @media (max-width:820px){.or-bed .or-cap{font-weight:600;color:var(--ink)}}
+
+/* ===== Shift picker: illustrated cards =====
+   Each shift is a card with its own scene (the sky at its start time, the start time, and its real patients).
+   Picking one rings it in its unit colour, tags it Selected and puts a Start button on the card itself. */
+.sp-ed{--sp:#B4531A;--sp-bg:#FBE3D2}
+.sp-ob{--sp:#A23B6E;--sp-bg:#F7DCE8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sp-ed{--sp:#F0A070;--sp-bg:#3A2418}:root:not([data-theme="light"]) .sp-ob{--sp:#E79BC0;--sp-bg:#3A1F2C}}
+:root[data-theme="dark"] .sp-ed{--sp:#F0A070;--sp-bg:#3A2418}
+:root[data-theme="dark"] .sp-ob{--sp:#E79BC0;--sp-bg:#3A1F2C}
+
+.sched-sub{margin:0 0 1rem;color:var(--ink-2);font-size:.92rem}
+.ladder.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:1.1rem;border-top:0;align-items:start}
+.sc{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 0 rgba(0,0,0,.03),0 6px 18px -14px rgba(20,30,50,.35);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.sc:not(.sc-soon):hover{transform:translateY(-3px);box-shadow:0 1px 0 rgba(0,0,0,.03),0 16px 30px -18px rgba(20,30,50,.45);border-color:color-mix(in srgb,var(--sp) 45%,var(--line))}
+.sc-pick{display:flex;flex-direction:column;width:100%;padding:0;margin:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:0}
+.sc-pick:focus-visible{outline:3px solid var(--sp,var(--teal));outline-offset:-3px}
+
+/* The scene */
+.sc-art{position:relative;display:block;height:132px;overflow:hidden;isolation:isolate}
+.sc-sky{position:absolute;inset:0;z-index:-1}
+.tod-day .sc-sky{background:radial-gradient(circle at 84% 26%,#FFF4C9 0 13px,rgba(255,236,170,.55) 14px,transparent 34px),linear-gradient(180deg,#DDEBF4,#F3EEE2 78%)}
+.tod-eve .sc-sky{background:radial-gradient(circle at 80% 70%,#FFD8A0 0 16px,rgba(255,190,120,.5) 17px,transparent 46px),linear-gradient(180deg,#B9A9C6,#F2BE8C 62%,#F6D6B0)}
+.tod-night .sc-sky{background:radial-gradient(circle at 82% 28%,#F2EED8 0 11px,transparent 12px),radial-gradient(circle at 79% 24%,#2A3558 0 11px,transparent 12px),
+  radial-gradient(1.4px 1.4px at 18% 22%,#fff 99%,transparent),radial-gradient(1.2px 1.2px at 34% 12%,#fff 99%,transparent),radial-gradient(1.4px 1.4px at 58% 30%,#fff 99%,transparent),radial-gradient(1px 1px at 66% 14%,#fff 99%,transparent),radial-gradient(1.2px 1.2px at 92% 48%,#fff 99%,transparent),
+  linear-gradient(180deg,#0E1530,#2A3558 85%)}
+.tod-night .sc-sky{background-blend-mode:normal}
+.sc-floor{position:absolute;left:0;right:0;bottom:0;height:12px;background:var(--sp,var(--line))}
+.sc-time{position:absolute;left:14px;top:11px;display:flex;flex-direction:column;line-height:1;color:#1C2330}
+.sc-time b{font-family:var(--sign);font-size:2.35rem;font-weight:700;letter-spacing:.01em}
+.sc-time small{margin-top:.3rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+.tod-night .sc-time{color:#F4F1E8}
+.sc-cast{position:absolute;right:10px;bottom:12px;display:flex;align-items:flex-end}
+.sc-bust{display:block;width:84px;height:88px;margin-left:-22px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.18))}
+.sc-bust:first-child{margin-left:0}
+.sc-more{align-self:center;margin-left:4px;padding:.15rem .45rem;border-radius:999px;background:rgba(255,255,255,.85);color:#1C2330;font-size:.74rem;font-weight:700}
+.sc-sel{position:absolute;left:12px;bottom:20px;display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem .25rem .35rem;border-radius:999px;
+  background:var(--sp);color:var(--bg);font-size:.76rem;font-weight:700;letter-spacing:.02em;box-shadow:0 4px 12px -4px rgba(0,0,0,.35);animation:scpop .28s cubic-bezier(.3,1.5,.5,1)}
+.sc-sel svg.tick{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4}
+@keyframes scpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+/* The facts */
+.sc-body{display:flex;flex-direction:column;gap:.3rem;padding:.85rem 1rem 1rem}
+.sc-unit{display:flex;align-items:center;gap:.4rem;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sp,var(--ink-2))}
+.sc-dot{width:8px;height:8px;border-radius:50%;background:var(--sp,var(--line));flex:none}
+.sc-title{font-family:var(--sign);font-size:1.4rem;font-weight:600;line-height:1.1;color:var(--ink)}
+.sc-card{font-size:.9rem;line-height:1.45;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sc .rg-facts{font-size:.78rem;font-weight:600;color:var(--ink-2)}
+.sc-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem .8rem;margin-top:.35rem;padding-top:.6rem;border-top:1px dashed var(--line)}
+.sc-st{display:flex;align-items:center;gap:.45rem}
+.sc-st small{font-size:.76rem;color:var(--ink-2)}
+.sc-cta{padding:0 1rem 1rem;animation:rise .22s ease-out}
+.sc-go{width:100%;justify-content:center;background:var(--sp);border-color:var(--sp);color:var(--bg);box-shadow:0 12px 24px -14px var(--sp)}
+.sc-go:hover{filter:brightness(1.08)}
+
+/* Selected: impossible to miss */
+.sc.on{border-color:var(--sp);border-width:2px;box-shadow:0 0 0 4px color-mix(in srgb,var(--sp) 22%,transparent),0 18px 34px -20px var(--sp);transform:translateY(-3px)}
+.sc.on .sc-body{background:color-mix(in srgb,var(--sp-bg) 55%,var(--surface))}
+.sc.on .sc-cta{background:color-mix(in srgb,var(--sp-bg) 55%,var(--surface))}
+.sc.on:hover{transform:translateY(-3px)}
+
+/* Shift pack and coming soon */
+.sc.in-pack .sc-cast{filter:saturate(.55)}
+.sc.in-pack .sc-title{color:var(--ink-2)}
+.sc-soon{border-style:dashed;background:transparent;box-shadow:none}
+.sc-soon .sc-pick{cursor:default}
+.sc-soon .sc-sky{background:repeating-linear-gradient(135deg,var(--surface-2) 0 12px,var(--bg) 12px 24px)}
+.sc-soon .sc-time{color:var(--ink-2)}
+.sc-soon .sc-floor{background:var(--line)}
+
+@media (prefers-reduced-motion:reduce){.sc,.sc.on,.sc:hover{transform:none!important;transition:none}.sc-sel,.sc-cta{animation:none}}
+:root[data-motion="reduced"] .sc,:root[data-motion="reduced"] .sc:hover{transform:none!important}
+@media (max-width:420px){.sc-art{height:118px}.sc-bust{width:74px;height:78px;margin-left:-20px}.sc-time b{font-size:2.05rem}}
+/* Time block sits above the faces and stays legible on any sky. */
+.sc-time{z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.tod-night .sc-time{text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.sc-time small + small{margin-top:.15rem}
+.sc-cast{z-index:1;right:8px}
+.sc-bust{width:78px;height:84px;margin-left:-24px}
+.sc-sel{z-index:3}
+@media (max-width:420px){.sc-bust{width:70px;height:76px;margin-left:-22px}}
+img.sc-bust{object-fit:contain;object-position:bottom}
 </style></head>
 <body><div id="app"></div>
 <script>window.Shift = window.Shift || {}; window.Shift.reviewHashes = {"psych-4n-1": "d41be0d8f3", "ed-podb-1": "feef63dbed", "medsurg-4w-1": "7baaa7d83c", "medsurg-4w-2": "d238106e89", "medsurg-4w-3": "f3e271bdc6", "ob-2n-1": "3e20f62c9d", "peds-5s-1": "074678aa45", "psych-3e-1": "5e587c7e38", "stepdown-6e-1": "dfec68f537"};
@@ -14726,6 +14808,13 @@ window.Shift = window.Shift || {};
     if (!CH[key]) return `<svg class="${cls || 'portrait'}" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="30" fill="var(--line)"/><path d="M42 34h16M44 34v14l-9 16h30l-9-16V34" stroke="var(--ink-2)" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>`;
     return `<svg class="${cls || 'portrait'}" viewBox="${VB.icon}" aria-hidden="true" data-rig="${key}" data-mode="icon" data-v="${enc(v)}"></svg>`;
   }
+  /* A portrait that never moves (shift-picker cards): drawn once, then reused as plain markup, so a screen full of
+     faces costs nothing per frame and almost nothing per redraw. */
+  const stills = {};
+  function still(key, cls, vb) {
+    const k = key + '|' + (vb || VB.bust), head = `<svg class="${cls || 'portrait'}" viewBox="${vb || VB.bust}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"`;
+    return stills[k] ? `<img class="${cls || 'portrait'}" src="${stills[k]}" alt="" aria-hidden="true" decoding="async">` : `${head} data-rig="${key}" data-mode="bust" data-still="${k}"></svg>`;
+  }
   function bust(key, v, cls, vb) { return `<svg class="${cls || 'portrait'}" viewBox="${vb || VB.bust}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" data-rig="${key}" data-mode="bust" data-v="${enc(v)}"></svg>`; }
   function place(key, mode, v, transform, ck) { return `<g data-rig="${key}" data-mode="${mode}" data-v="${enc(v)}" transform="${transform}"${ck ? ` data-ck="${ck}"` : ''}></g>`; }
   function hydrate(root) {
@@ -14736,8 +14825,10 @@ window.Shift = window.Shift || {};
       let ck = el.dataset.ck || key + ':' + mode; seen[ck] = (seen[ck] || 0) + 1; if (seen[ck] > 1) ck += ':' + seen[ck];
       let target = el; if (el.tagName.toLowerCase() === 'svg') { target = document.createElementNS('http://www.w3.org/2000/svg', 'g'); el.appendChild(target); }
       let v = {}; try { v = el.dataset.v ? JSON.parse(decodeURIComponent(el.dataset.v)) : {}; } catch (e) {}
-      const I = build(target, c, mode, ck, v); live.push(I);
+      const I = build(target, c, mode, ck, v);
       step(I, now(), 1 / 60, 0);
+      if (el.dataset.still) { const x = el.cloneNode(true); x.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); x.removeAttribute('class'); x.removeAttribute('data-rig'); x.removeAttribute('data-still'); stills[el.dataset.still] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(x)); el.removeAttribute('data-rig'); return; }
+      live.push(I);
     });
     if (!running && live.length) { running = true; last = now(); requestAnimationFrame(loop); }
   }
@@ -14769,7 +14860,7 @@ window.Shift = window.Shift || {};
   }
   function setReduced(on) { reduced = !!on || osReduced; }
   setReduced(false);
-  S.rig = { define, has, icon, bust, place, hydrate, poke, hover, say, setReduced, setPower, stats, derive, BASE };
+  S.rig = { define, has, icon, bust, still, place, hydrate, poke, hover, say, setReduced, setPower, stats, derive, BASE };
 })(window.Shift);
 
 /* The Shift — procedural editorial illustration (SVG). */
@@ -15540,13 +15631,40 @@ window.Shift = window.Shift || {};
     const g = E.store.load(), c = C(), done = (id) => prof.runs.filter((r) => r.caseId === id);
     const start = hhmm(c, 0), initial = c.patients.filter((d) => !d.arrives), adm = c.patients.filter((d) => d.arrives);
     const cols = Math.ceil(initial.length / 2) + (adm.length ? 1 : 0) - (initial.length % 2 && adm.length ? 1 : 0);
+    const saved = g && !g.ended ? E.getCase(g.caseId) : null;
+    // Shift picker card: an illustrated header (the shift's sky, its start time and its real patients), the facts, and,
+    // once picked, a bold ring and its own start button so choosing never depends on the hero scrolled out of view.
+    const tod = (k) => { const h = Math.floor(((k.start || 420) % 1440) / 60); return h >= 21 || h < 5 ? 'night' : h >= 13 ? 'eve' : 'day'; };
+    const TOD = { day: 'Day shift', eve: 'Evening shift', night: 'Night shift' };
     const rung = (id, i) => {
       const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
-      const prev = i ? done(CASES[i - 1]).length : 1;
-      const stn = (prof.stars || {})[id] || 0;
-      return `<button class="rung sp-${meta(id).sp} ${locked(id) ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${id === caseId}"><span class="rg-t">${hhmm(k, 0)}<small>to ${hhmm(k, k.length)}</small></span><span class="rg-m"><b><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b><span>${esc(k.card)}</span><small class="rg-facts">${esc(shiftFacts(k))}</small></span><span class="rg-l">${diffPips(id)}</span><span class="rg-s"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((i) => starSvg(i < stn, i, 'rs')).join('')}</span><small>${locked(id) ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title.replace(/ on .*/, '').toLowerCase()) + ' on ' + esc(E.getCase(CASES[i - 1]).unitShort || E.getCase(CASES[i - 1]).unit.split(',')[0])}</small></span></button>`;
+      const prev = i ? done(CASES[i - 1]).length : 1, on = id === caseId, lk = locked(id);
+      const stn = (prof.stars || {})[id] || 0, tm = tod(k);
+      const pts = k.patients.filter((x) => !x.arrives), shown = pts.slice(0, 3), more = k.patients.length - shown.length;
+      const status = lk ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title);
+      const cta = saved && g.caseId === id ? `<button class="btn btn-primary btn-go sc-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button>`
+        : lk ? `<button class="btn btn-primary btn-go sc-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>`
+        : `<button class="btn btn-primary btn-go sc-go" data-act="new">Start this shift <span aria-hidden="true">→</span></button>`;
+      return `<article class="sc sp-${meta(id).sp} tod-${tm} ${on ? 'on' : ''} ${lk ? 'in-pack' : ''}">
+        <button class="sc-pick ${lk ? 'in-pack' : ''}" data-act="pick-case" data-id="${id}" aria-pressed="${on}">
+          <span class="sc-art" aria-hidden="true">
+            <span class="sc-sky"></span>
+            <span class="sc-time"><b>${hhmm(k, 0)}</b><small>${TOD[tm]}</small><small>to ${hhmm(k, k.length)}</small></span>
+            ${on ? `<span class="sc-sel">${ICON.tick}Selected</span>` : ''}
+            <span class="sc-cast">${shown.map((d) => R.still(d.id, 'sc-bust')).join('')}${more > 0 ? `<span class="sc-more">+${more}</span>` : ''}</span>
+            <span class="sc-floor"></span>
+          </span>
+          <span class="sc-body">
+            <span class="sc-unit"><span class="sc-dot"></span>${esc(specOf(id).name)} · ${esc(specOf(id).unit)}</span>
+            <b class="sc-title"><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b>
+            <span class="sc-card">${esc(k.card)}</span>
+            <small class="rg-facts">${esc(shiftFacts(k))}</small>
+            <span class="sc-foot">${diffPips(id)}<span class="sc-st"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((j) => starSvg(j < stn, j, 'rs')).join('')}</span><small>${status}</small></span></span>
+          </span>
+        </button>
+        ${on ? `<div class="sc-cta">${cta}</div>` : ''}
+      </article>`;
     };
-    const saved = g && !g.ended ? E.getCase(g.caseId) : null;
     return `<div class="home">
       <div style="display:flex;justify-content:space-between;align-items:center"><span class="mark" style="cursor:default">The Shift</span>
       <span style="display:flex;gap:.3rem"><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button></span></div>
@@ -15570,10 +15688,10 @@ window.Shift = window.Shift || {};
       </section>
       <div>
         <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
-        <div class="ladder" role="group" aria-label="Choose a shift">
-          ${CASES.map((id, i) => (i === 0 || meta(CASES[i - 1]).sp !== meta(id).sp ? specHead(meta(id).sp) : '') + rung(id, i)).join('')}
-          <div class="spec-h sp-soon"><b>Coming later</b></div>
-          <div class="rung locked"><span class="rg-t">—</span><span class="rg-m"><b>In the works</b><span>ICU, labor and delivery, and more shifts on every unit.</span></span></div>
+        <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
+        <div class="ladder sc-grid" role="group" aria-label="Choose a shift">
+          ${CASES.map((id, i) => rung(id, i)).join('')}
+          <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">ICU, labor and delivery, and more shifts on every unit.</span></span></div></article>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
