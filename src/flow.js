@@ -4,7 +4,7 @@
    to be clinically specific (what happened in the ICU) lives in AFTER below. */
 window.Shift = window.Shift || {};
 (function (S) {
-  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : 'med');
+  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ld/.test(c.id) ? 'ld' : /^ed/.test(c.id) ? 'ed' : 'med');
   const seed = (str) => [...String(str)].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
   const ageNum = (d) => (typeof d.age === 'number' ? d.age : /mo/.test(d.age) ? 0 : parseFloat(d.age) || 0);
 
@@ -29,6 +29,7 @@ window.Shift = window.Shift || {};
     'psych-4n-1': { key: 'marco', name: 'Marco', role: 'Night RN', look: L('#D6A47E', '#B88660', '#9A5648', '#D48A70', '#2A1C12', 'short', '#1A1310', 'navy', ['goatee']) },
     'stepdown-6e-1': { key: 'ari', name: 'Ari', role: 'Oncoming RN', look: L('#E2B48E', '#C49670', '#A0594C', '#DC8E74', '#3A2616', 'short', '#2A1C14', 'teal', ['studs']) },
     'icu-3w-1': { key: 'rosa', name: 'Rosa', role: 'Oncoming ICU RN', look: L('#C08A64', '#A06E4C', '#86483A', '#C27C60', '#20140C', 'bun', '#1E1712', 'teal', ['studs']) },
+    'ld-2s-1': { key: 'gina', name: 'Gina', role: 'Oncoming L&D RN', look: L('#D9A982', '#BC8B64', '#A0594C', '#DC8E74', '#3A2616', 'bob', '#2A1C14', 'rose', ['studs']) },
     'ed-podb-1': { key: 'jo', name: 'Jo', role: 'Night RN', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'curlyshort', '#140E0A', 'navy', ['studs']) },
     'ob-2n-1': { key: 'maya', name: 'Maya', role: 'Oncoming RN', look: L('#E8C0A0', '#CC9E7E', '#AE6258', '#E4927C', '#2A1C12', 'bob', '#3A2618', 'rose', ['studs']) },
     'peds-5s-1': { key: 'june', name: 'June', role: 'Night RN', look: L('#EFCCAF', '#D4AA8C', '#B66A60', '#EE9C88', '#3C2A1E', 'long', '#1E1712', 'wine') },
@@ -320,6 +321,48 @@ window.Shift = window.Shift || {};
       later: 'Three days on pediatrics until his liver tests turned around, then back to 4 North. A suicide attempt with an unknown ingestion should get an acetaminophen level, whatever the patient says.',
     }),
   };
+  AFTER['ld-2s-1'] = {
+    '221': (s, P, A, at) => ({
+      unit: 'OR', nurse: 'or', emergent: true,
+      event: `Emergency cesarean at ${A.clock(at)} for a Category III tracing: absent variability with recurrent late decelerations. Oxytocin induction for gestational hypertension; tachysystole on the strip from report.`,
+      extra: [{ label: 'Oxytocin was still running at the time of the decision', key: true }, { label: 'Gestational hypertension, no severe features', key: true }, { label: 'First baby', key: false }],
+      course: [
+        { at: 0, st: 'crit', text: 'Spinal anesthesia, skin to delivery in 9 minutes. Baby girl, APGARs 3 and 7, cord arterial pH 7.09. To the NICU for observation.' },
+        { at: 70, st: 'serious', text: 'Mother in recovery, BP 150/96. Baby on room air in the NICU, glucose normal, feeding planned.' },
+        { at: 180, st: 'improving', text: 'Baby back in the room for skin-to-skin. Mother asking why the oxytocin "didn\'t just get turned down."' },
+      ],
+      later: 'Tachysystole (more than 5 contractions in 10 minutes, averaged over 30) cuts the time the placenta has to refill between contractions. With late decelerations, the first move is to stop or reduce the oxytocin, reposition, and give fluid, before the baby runs out of reserve.',
+    }),
+    '223': (s, P, A, at) => {
+      const dt = P.ruptAt !== null && P.statAt !== null ? P.statAt - P.ruptAt : 99, fast = dt <= 5;
+      return {
+        unit: 'OR', nurse: 'or', emergent: true,
+        event: `STAT cesarean at ${A.clock(at)} for uterine rupture during a trial of labor after cesarean: sudden constant pain, contractions stopped, loss of station, fetal bradycardia${fast ? '' : `, ${dt} minutes from the rupture to the STAT call`}.`,
+        extra: [{ label: 'Prior low transverse cesarean (operative report confirmed)', key: true }, { label: 'Fetal bradycardia 70 since the rupture', key: true }, { label: 'Two large-bore IVs, type and crossmatch', key: !!P.ivs }],
+        course: fast ? [
+          { at: 0, st: 'crit', text: 'General anesthesia. Baby boy delivered from the abdomen 11 minutes after the rupture: APGARs 4 and 8, intubated briefly, extubated in the NICU.' },
+          { at: 80, st: 'serious', text: 'Uterus repaired; 1,400 mL blood loss, two units given. Mother extubated, stable.' },
+          { at: 200, st: 'improving', text: 'Baby on room air, cooling not needed. Mother asking to see him.' },
+        ] : [
+          { at: 0, st: 'crit', text: 'General anesthesia. Baby boy delivered limp: APGARs 1 and 3, resuscitated, cord pH 6.91. Therapeutic hypothermia started in the NICU.' },
+          { at: 90, st: 'crit', text: 'Hysterectomy for uncontrolled bleeding. Massive transfusion protocol, six units.' },
+          { at: 220, st: 'serious', text: 'Mother in the ICU, stable. Baby cooling for 72 hours; the outcome will take weeks to know.' },
+        ],
+        later: 'During a trial of labor after cesarean, sudden constant pain, contractions that stop, loss of station and fetal bradycardia mean uterine rupture until proven otherwise. Every minute from rupture to delivery matters; the call is STAT, to the OR.',
+      };
+    },
+    '224': (s, P, A, at) => ({
+      unit: 'OR', nurse: 'or', emergent: true,
+      event: `Cesarean at ${A.clock(at)} for maternal sepsis from intraamniotic infection: temperature 39.4 °C, BP 88/46, fetal heart rate 180 with no variability. Ruptured 19 hours before arrival, GBS positive; fever since ${P.feverAt !== null ? A.clock(P.feverAt) : 'mid-morning'} without broad-spectrum antibiotics.`,
+      extra: [{ label: 'No ampicillin or gentamicin given before sepsis', key: true }, { label: 'GBS positive; penicillin ' + (P.pcnAt !== null ? 'given' : 'never given'), key: true }],
+      course: [
+        { at: 0, st: 'crit', text: 'Antibiotics and a fluid bolus in the OR. Baby boy, APGARs 5 and 7, to the NICU for a sepsis evaluation and antibiotics.' },
+        { at: 90, st: 'crit', text: 'Mother on norepinephrine in the ICU after delivery, lactate 4.1.' },
+        { at: 220, st: 'serious', text: 'Pressor off. Baby\'s blood culture pending, on antibiotics for at least 48 hours.' },
+      ],
+      later: 'Fever in labor with maternal and fetal tachycardia and a tender uterus is intraamniotic infection until proven otherwise. Penicillin for GBS does not treat it: broad-spectrum antibiotics, the provider and the pediatric team, fast.',
+    }),
+  };
   AFTER['icu-3w-1'] = {
     '713': (s, P, A, at) => ({
       unit: 'OR', nurse: 'or', emergent: true,
@@ -535,6 +578,14 @@ window.Shift = window.Shift || {};
       { id: 'pain', text: 'is asking for something for pain', cna: false, fix: (v) => `Rates pain ${v.pain} out of 10 and wants medicine. Check the MAR for what's ordered and when it was last given.`, ok: (d, P, v) => !d.newborn && v.pain >= 3 },
       { id: 'diaper', text: 'needs diapers and wants help with the first bath', cna: true, fix: 'Diapers, wipes and a bath demo at the bedside. Cord left dry.', ok: (d) => !!d.newborn },
     ],
+    ld: [
+      { id: 'ice', text: 'is asking for ice chips', cna: true, fix: 'Ice chips at the bedside. Clear liquids and ice chips are fine in labor for most women; check the diet order first.', ok: (d) => !/NPO/i.test(d.diet) },
+      { id: 'position', text: 'wants help changing position', cna: true, fix: 'Turned to her other side with the peanut ball between her knees. Changing position every 30 to 60 minutes helps the baby rotate and descend.' },
+      { id: 'monitor', text: 'says the monitor keeps losing the baby\'s heartbeat', cna: false, fix: 'Repositioned the ultrasound transducer, confirmed the fetal heart rate is distinct from her pulse, and watched the strip until it was continuous again.' },
+      { id: 'pain', text: 'is asking for something for the pain', cna: false, fix: (v) => `Rates pain ${v.pain} out of 10 with contractions. Talked through her options and her birth plan, then checked what's ordered.`, ok: (d, P, v) => v.pain >= 4 },
+      { id: 'partner', text: 'and her partner want to know how much longer', cna: false, fix: 'Gave an honest answer: where she is, how labor usually goes from here, and what would change the plan.' },
+      { id: 'cold', text: 'is shaking and asks for a warm blanket', cna: true, fix: 'Warm blanket. Shaking is common in transition and after an epidural; you checked her temperature too.' },
+    ],
     ed: [
       { id: 'water', text: 'is asking for something to drink', cna: false, fix: 'Checked the orders first: still waiting on results, so nothing by mouth yet. Explained why and offered a mouth swab.', ok: (d) => !d.newborn },
       { id: 'cold', text: 'is cold and wants a warm blanket', cna: true, fix: 'Warm blanket from the warmer.', ok: (d, P, v) => v.T < 38 },
@@ -555,6 +606,7 @@ window.Shift = window.Shift || {};
     med: ['What they had for breakfast', 'Every vital sign since the start of the shift, in order', 'That the TV remote doesn\'t work', 'The last nurse\'s opinion of the family'],
     psych: ['What was on TV in the dayroom', 'Every q15 check since the start of the shift, one by one', 'What they ate for breakfast', 'That they seem "manipulative"'],
     ob: ['What she named the baby', 'Every vital sign since delivery, in order', 'How many visitors came last night', 'The last nurse\'s opinion of her birth plan'],
+    ld: ['Her playlist for the birth', 'Every contraction since midnight, one by one', 'How many visitors are in the waiting room', 'The last nurse\'s opinion of her birth plan'],
     ed: ['How long they waited in the lobby', 'Every vital sign since arrival, in order', 'That the TV in the bay is broken', 'A guess about whether they\'re drug-seeking'],
     peds: ['Their favorite cartoon', 'Every vital sign since the start of the shift, in order', 'Which popsicle flavor they picked', 'A guess about how the parents get along'],
   };
@@ -569,6 +621,7 @@ window.Shift = window.Shift || {};
     if (k === 'psych') return `Checked in face to face; ${d.short} is ${v.pain >= 4 ? 'uncomfortable, pain ' + v.pain + ' out of 10' : 'up and settled'}. Room scanned: nothing new that could be used for harm. Offered ${P.restricted ? 'a chance to talk' : 'a snack and a chance to talk'}.`;
     if (k === 'ob' && d.newborn) return `Swaddled skin to skin or in the bassinet, breathing easy, color pink. Diaper checked, last feed noted, ID band matches ${d.family ? d.family.name + '\'s' : 'the mother\'s'} band, security tag on.`;
     if (k === 'ob') return `Pain ${v.pain} out of 10. Fundus checked by feel through the blanket, pad looked at, bathroom offered, water and call light in reach. The baby is asleep in the bassinet beside her, on their back.`;
+    if (k === 'ld') return `Pain ${v.pain} out of 10 with contractions. Strip watched through a few contractions, position changed, ice chips and the call light in reach, partner offered water.`;
     if (k === 'peds') return `Rails up, ${f.iv === 'running' ? 'IV site clean and the pump running, ' : ''}${ageNum(d) < 3 ? 'diaper checked' : 'bathroom offered'}, ${d.family ? 'parent offered a break and water' : 'call light in reach'}. Pain ${v.pain} out of 10.`;
     return `Pain ${v.pain} out of 10. Repositioned, offered the bathroom${/NPO|restrict/i.test(d.diet) ? '' : ' and water'}, call light and table within reach. Bed low and locked.`;
   }

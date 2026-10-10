@@ -2302,3 +2302,8 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .sp-icu{--sp:#0E6B6B;--sp-bg:#D3ECEA}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sp-icu{--sp:#6FD0C8;--sp-bg:#14302F}}
 :root[data-theme="dark"] .sp-icu{--sp:#6FD0C8;--sp-bg:#14302F}
+
+/* Labor and delivery: warm coral, related to mother-baby rose but distinct. */
+.sp-ld{--sp:#B4473A;--sp-bg:#F8DCD6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sp-ld{--sp:#F09A8C;--sp-bg:#3A1F1B}}
+:root[data-theme="dark"] .sp-ld{--sp:#F09A8C;--sp-bg:#3A1F1B}

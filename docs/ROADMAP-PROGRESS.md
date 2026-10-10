@@ -2,6 +2,17 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 17 — October 10, 2026 (branch `ld-shift`, built on `icu-shift`)
+
+### Done
+- **Shift 11: Days in Labor and Delivery** (`src/case-ld1.js`, `src/stories/ld1.js`), Advanced. Oxytocin tachysystole with a resident asking to go up; epidural hypotension and a birth before the doctor arrives (with APGAR scoring); a TOLAC uterine rupture; GBS prophylaxis and intraamniotic infection. Every strip read is a scored NICHD category decision. OB tech Renee replaces the aide; OR follow-up and report for emergency cesareans.
+- A **Labor and delivery** specialty (brick red) on the home screen, landing page and practice hub; L&D whiteboards; labor rooms' bedside monitor shows the fetal heart rate.
+- Three NCLEX items for the shift with full rationales; NCLEX step filing for L&D decisions reviewed by hand; `docs/cjmm-map.csv` regenerated.
+- New `tests/ld.py` (careful run: all four good, score 91; skipper: all go badly, score 20). L&D added to the sweep and follow-up lists.
+
+### Needs Nick
+- L&D nurse review (`/review/ld-2s-1/`): oxytocin restart rule, terbutaline dose and criteria, phenylephrine dose, gentamicin dosing, and the unattended-birth sequence.
+
 ## Session 16 — October 10, 2026 (branch `icu-shift`, built on `nclex-prep`)
 
 ### Done

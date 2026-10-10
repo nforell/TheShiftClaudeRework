@@ -260,6 +260,41 @@
         ],
         why: `Effective resuscitation shows up as perfusion getting better: a target MAP on less vasopressor, urine output of at least 0.5 mL/kg/h, a falling lactate, and warm skin with brisk refill. A climbing heart rate, new confusion or a rising vasopressor need mean the shock isn't controlled yet.` },
     ],
+    'ld-2s-1': [
+      { id: 'ld-mat', type: 'matrix', step: 'analyze',
+        stem: `The nurse is reviewing fetal heart rate tracings for clients in labor on continuous electronic fetal monitoring.`,
+        q: `For each tracing, indicate its NICHD category.`,
+        cols: [`Category I`, `Category II`, `Category III`],
+        rows: [
+          { t: `Baseline 135, moderate variability, accelerations, early decelerations`, ans: 0, why: `Normal baseline, moderate variability, and only early decelerations (head compression) make a Category I, normal tracing.` },
+          { t: `Baseline 150, minimal variability, recurrent late decelerations`, ans: 1, why: `Recurrent lates with minimal (not absent) variability are Category II: indeterminate, needing intrauterine resuscitation and close watching.` },
+          { t: `Baseline 140, absent variability, recurrent late decelerations`, ans: 2, why: `Absent variability with recurrent late decelerations is Category III: abnormal, and delivery is expected if it doesn't resolve quickly.` },
+          { t: `A smooth, regular, wavelike sinusoidal pattern`, ans: 2, why: `A sinusoidal pattern suggests severe fetal anemia or hypoxia and is Category III on its own.` },
+          { t: `Baseline 170, moderate variability, no decelerations`, ans: 1, why: `Fetal tachycardia (over 160) is outside Category I even with good variability; think maternal fever or infection.` },
+          { t: `Baseline 125, moderate variability, intermittent variable decelerations`, ans: 1, why: `Category I allows no variable or late decelerations, so intermittent variables with moderate variability are Category II.` },
+        ],
+        why: `Category I needs everything normal: baseline 110 to 160, moderate variability, and no late or variable decelerations. Category III is absent variability with recurrent lates, recurrent variables or bradycardia, or a sinusoidal pattern. Everything in between is Category II. Moderate variability is the best single sign that the baby is not acidotic.` },
+      { id: 'ld-bow', type: 'bowtie', step: 'hypo',
+        stem: `A 33-year-old client at 38 weeks is in a trial of labor after one prior low transverse cesarean. She suddenly reports severe, constant abdominal pain "different from the contractions." The toco shows contractions have stopped, the fetal head is no longer felt at 0 station, the fetal heart rate has been 70 for 3 minutes, and there is new vaginal bleeding. Maternal HR 118, BP 98/60.`,
+        q: `Complete the diagram: the condition the client is most likely experiencing, two actions the nurse should take, and two parameters to monitor.`,
+        cond: { opts: [`Uterine rupture`, `Placental abruption`, `Normal transition in labor`, `Epidural-related hypotension`], ans: 0 },
+        actions: { opts: [`Call the obstetrician and the OR team for an emergency cesarean`, `Start a second large-bore IV and send a type and crossmatch`, `Give IV fentanyl for the breakthrough pain`, `Increase the oxytocin to strengthen the contractions`, `Reposition her and wait 10 minutes for the heart rate to recover`], ans: [0, 1] },
+        params: { opts: [`Fetal heart rate`, `Maternal heart rate and blood pressure`, `Cervical dilation`, `Urine ketones`, `Deep tendon reflexes`], ans: [0, 1] },
+        why: `A prior cesarean, sudden constant pain, contractions that stop, loss of fetal station, fetal bradycardia and signs of maternal blood loss are uterine rupture. Delivery is the treatment and minutes matter, so the call is STAT for a cesarean, with access and blood ready. Watch the baby's heart rate and the mother's hemodynamics until she's in the OR.` },
+      { id: 'ld-sata', type: 'sata', step: 'act',
+        stem: `A 29-year-old client is being induced with oxytocin at 8 milliunits/min. The strip shows 6 contractions in 10 minutes averaged over 30 minutes and recurrent late decelerations with minimal variability. The order set says to increase oxytocin by 2 milliunits/min every 30 minutes until contractions are adequate.`,
+        q: `Which actions should the nurse take? Select all that apply.`,
+        opts: [
+          { t: `Stop the oxytocin infusion`, ok: true },
+          { t: `Turn her to a lateral position`, ok: true },
+          { t: `Give an IV fluid bolus as ordered`, ok: true },
+          { t: `Notify the provider of the tachysystole and the tracing`, ok: true },
+          { t: `Increase the oxytocin to 10 milliunits/min per the order set`, ok: false },
+          { t: `Apply oxygen by face mask as routine intrauterine resuscitation`, ok: false },
+          { t: `Place her supine with her legs elevated`, ok: false },
+        ],
+        why: `Tachysystole with late decelerations means the placenta can't refill between contractions. Stop the oxytocin, turn her to her side, give fluid, and tell the provider; terbutaline is next if it persists. An order to increase never applies while the tracing is abnormal.` },
+    ],
     'ob-2n-1': [
       { id: 'ob-bow', type: 'bowtie', step: 'hypo',
         stem: `A client is 2.5 hours after a vaginal birth that followed a 20-hour oxytocin induction; the newborn weighed 4.3 kg. She has not voided since birth. The fundus is boggy, 2 cm above the umbilicus and deviated to the right. Her pad is saturated in 30 minutes. HR 104, BP 112/68. She has asthma.`,
@@ -404,7 +439,7 @@
     ['psychosocial', 'Psychosocial Integrity', '6 to 12%'], ['basic', 'Basic Care and Comfort', '6 to 12%'], ['pharm', 'Pharmacological and Parenteral Therapies', '13 to 19%'],
     ['risk', 'Reduction of Risk Potential', '9 to 15%'], ['physio', 'Physiological Adaptation', '11 to 17%'],
   ];
-  const SPOF = { 'medsurg-4w-1': 'ms', 'medsurg-4w-2': 'ms', 'medsurg-4w-3': 'ms', 'stepdown-6e-1': 'sd', 'icu-3w-1': 'icu', 'ed-podb-1': 'ed', 'ob-2n-1': 'ob', 'psych-3e-1': 'psy', 'psych-4n-1': 'teen', 'peds-5s-1': 'peds' };
+  const SPOF = { 'medsurg-4w-1': 'ms', 'medsurg-4w-2': 'ms', 'medsurg-4w-3': 'ms', 'stepdown-6e-1': 'sd', 'icu-3w-1': 'icu', 'ld-2s-1': 'ld', 'ed-podb-1': 'ed', 'ob-2n-1': 'ob', 'psych-3e-1': 'psy', 'psych-4n-1': 'teen', 'peds-5s-1': 'peds' };
   const TAGS = {
     'ms1-bow': ['physio', 'Sepsis in older adults'], 'ms1-mat': ['pharm', 'Hold parameters'], 'ms1-sata': ['risk', 'Atelectasis prevention'],
     'ms2-bow': ['physio', 'Hyperkalemia'], 'ms2-hl': ['physio', 'Oxygen in COPD'], 'ms2-mat': ['pharm', 'Allergy check before surgery'],
@@ -414,6 +449,7 @@
     'p4-bow': ['pharm', 'Acute dystonia'], 'p4-cloze': ['physio', 'Refeeding syndrome'], 'p4-sata': ['psychosocial', 'Abuse disclosure'],
     'ed-bow': ['physio', 'Inferior STEMI'], 'ed-hl': ['risk', 'Thrombolytic eligibility'], 'ed-sata': ['physio', 'Anaphylaxis'],
     'ob-bow': ['physio', 'Postpartum hemorrhage'], 'ob-mat': ['pharm', 'Magnesium sulfate'], 'ob-cloze': ['health', 'Newborn hypoglycemia'],
+    'ld-mat': ['health', 'Fetal heart rate categories'], 'ld-bow': ['physio', 'Uterine rupture in TOLAC'], 'ld-sata': ['pharm', 'Oxytocin tachysystole'],
     'icu-bow': ['physio', 'Tamponade after heart surgery'], 'icu-mat': ['physio', 'Ventilator alarms'], 'icu-sata': ['physio', 'Septic shock response'],
     'pd-bow': ['physio', 'Status asthmaticus'], 'pd-mat': ['health', 'Pediatric vital signs'], 'pd-sata': ['safety', 'Weight-based dosing error'],
     'fx-analyze-1': ['physio', 'Left vs right heart failure'], 'fx-analyze-2': ['psychosocial', 'Eating disorder findings'], 'fx-analyze-3': ['health', 'Pathologic newborn jaundice'],

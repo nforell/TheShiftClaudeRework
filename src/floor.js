@@ -3,7 +3,7 @@
    and in what order, changes every time you play. */
 (function (S) {
   const L = (skin, shade, lip, blush, iris, hair, hcol, cloth, extra) => ({ skin, shade, lip, blush, iris, head: { w: 55, h: 61, jaw: .42 }, eye: 9.8, hair: { style: hair, color: hcol }, brow: { w: 3.6, color: hcol }, body: { w: 81, cloth }, extras: extra || [], smile: .35, tired: true });
-  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : /^icu/.test(c.id) ? 'icu' : 'med');
+  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) || /^ld/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : /^icu/.test(c.id) ? 'icu' : 'med');
   const RN = { med: 'Bri', psych: 'Noor', peds: 'Hana', ob: 'Lucy', ed: 'Sid', icu: 'Dee' };
   const STAFF = {
     'fl-rn-med': { name: 'Bri', role: 'RN, next pod', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'bun', '#140E0A', 'wine') },

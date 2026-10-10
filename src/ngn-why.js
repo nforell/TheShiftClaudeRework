@@ -431,5 +431,43 @@ window.Shift.ngnWhy = {
    "No: Needing more vasopressor to hold the same MAP means the shock is getting worse, even if the number looks fine."
   ],
   "tip": "In shock questions, judge the patient by perfusion (mental status, urine, skin, lactate) and by how much support it takes to get there, not by a single number."
+ },
+ "ld-mat": {
+  "tip": "Classify by the worst feature: start with variability, then the type and timing of decelerations, then the baseline."
+ },
+ "ld-bow": {
+  "cond": [
+   "Yes: A scarred uterus, sudden constant pain, contractions that stop, loss of station, fetal bradycardia and maternal tachycardia are the classic picture of rupture.",
+   "No: Abruption also causes pain and bleeding, but contractions continue or the uterus is rigid; the baby doesn't move back up out of the pelvis.",
+   "No: Transition is intense, but contractions keep coming and the baby keeps descending. Stopped contractions with lost station are never normal.",
+   "No: Epidural hypotension can drop the fetal heart rate, but it doesn't cause severe constant pain, bleeding or loss of station, and she has no epidural."
+  ],
+  "actions": [
+   "Yes: Rupture is fixed by delivery and repair; every minute of fetal bradycardia matters, so the call is STAT for the OR.",
+   "Yes: She can bleed fast into her abdomen. Two large-bore IVs and blood in the room prepare for hemorrhage.",
+   "No: Treating the pain as breakthrough pain is the classic trap; it delays the diagnosis while the baby is without oxygen.",
+   "No: Oxytocin is contraindicated in a suspected rupture; it would worsen bleeding and the tear.",
+   "No: Waiting for recovery works for some decelerations, not for rupture. The bradycardia won't recover until the baby is delivered."
+  ],
+  "params": [
+   "Yes: The fetal heart rate shows how the baby is tolerating every minute until delivery.",
+   "Yes: Rising heart rate and falling pressure track hidden blood loss into the abdomen.",
+   "No: Cervical exams don't change management once rupture is suspected and can delay the move to the OR.",
+   "No: Ketones reflect hydration and energy use in labor, not a surgical emergency.",
+   "No: Reflexes are monitored with magnesium sulfate, not for uterine rupture."
+  ],
+  "tip": "In TOLAC questions, sudden pain plus loss of station or stopped contractions points to rupture; choose the option that gets the baby delivered fastest."
+ },
+ "ld-sata": {
+  "opts": [
+   "Yes: Stopping the oxytocin lets the uterus relax so the placenta can refill between contractions.",
+   "Yes: Lateral positioning takes the uterus off the vena cava and improves blood flow to the placenta.",
+   "Yes: A fluid bolus improves maternal circulating volume and uteroplacental perfusion.",
+   "Yes: The provider needs to know about tachysystole with an abnormal tracing; terbutaline may be ordered if it persists.",
+   "No: An order to increase never applies while the tracing is abnormal; more oxytocin means more contractions and less recovery time.",
+   "No: Current ACOG guidance doesn't support routine maternal oxygen for intrauterine resuscitation; it's reserved for maternal hypoxia.",
+   "No: Supine positioning compresses the vena cava and worsens placental perfusion; lateral is the position for resuscitation."
+  ],
+  "tip": "For oxytocin and an abnormal strip, remember the order: stop the drug, turn her, give fluid, tell the provider."
  }
 };

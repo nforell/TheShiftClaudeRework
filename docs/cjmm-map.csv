@@ -385,6 +385,159 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,1,"You chose to see Mr. Pham first.","rank-first",src/case-icu1.js:977
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of the patient in shock.","rank-first",src/case-icu1.js:978
 "Take action",safety,-3,"Mr. Kowalski's MAP stayed under 55 for 15 minutes.","711-crash",src/case-icu1.js:998
+"Recognize cues",assess,2,"You checked Ms. Fuentes's tracing and counted ${alN(P)} contractions in 10 minutes${alCat(P) >= 2 ? ', with late decelerations' : ''}.","221-efm",src/case-ld1.js:93
+"Recognize cues",assess,1,"You checked Ms. Fuentes's tracing.","221-efm",src/case-ld1.js:93
+"Take action",safety,1,"You turned Ms. Fuentes onto her side.","221-lateral",src/case-ld1.js:97
+"Generate solutions",judgment,0,"You put Ms. Fuentes on oxygen for the tracing.","221-o2",src/case-ld1.js:101
+"Generate solutions",safety,-3,"You increased Ms. Fuentes's oxytocin with ${n > 5 ? n + ' contractions in 10 minutes' : 'a Category ' + cat + ' tracing'}.","221-oxy-up",src/case-ld1.js:121
+"Take action",meds,1,"You titrated Ms. Fuentes's oxytocin on a Category I tracing with ${n} contractions in 10 minutes.","221-oxy-titrate",src/case-ld1.js:122
+"Take action",safety,varies,"You cut Ms. Fuentes's oxytocin in half for ${cat >= 2 ? 'a Category II tracing' : 'tachysystole'}.","221-oxy-down",src/case-ld1.js:127
+"Take action",meds,-1,"You lowered Ms. Fuentes's oxytocin without a reason on the strip.","221-oxy-down",src/case-ld1.js:128
+"Take action",safety,2,"You stopped Ms. Fuentes's oxytocin for ${n > 5 ? 'tachysystole' : 'a Category ' + cat + ' tracing'}${cat >= 2 && n > 5 ? ' with late decelerations' : ''}.","221-oxy-stop",src/case-ld1.js:134
+"Take action",judgment,0,"You stopped Ms. Fuentes's oxytocin with a normal strip.","221-oxy-stop",src/case-ld1.js:135
+"Evaluate outcomes",meds,2,"You restarted Ms. Fuentes's oxytocin at half the last rate after the strip recovered.","221-restart",src/case-ld1.js:142
+"Evaluate outcomes",safety,-2,"You restarted Ms. Fuentes's oxytocin before the strip had recovered for 30 minutes.","221-restart",src/case-ld1.js:143
+"Take action",safety,-2,"You left Ms. Fuentes's oxytocin running unchanged with ${n > 5 ? 'tachysystole' : 'a Category ' + cat + ' tracing'}.","221-oxy-nochange",src/case-ld1.js:147
+"Generate solutions",meds,-1,"You gave terbutaline with the oxytocin still running.","221-terb",src/case-ld1.js:155
+"Generate solutions",meds,2,"You gave terbutaline for tachysystole that persisted after stopping the oxytocin.","221-terb",src/case-ld1.js:156
+"Generate solutions",meds,0,"You gave terbutaline when contractions had already spaced out.","221-terb",src/case-ld1.js:157
+"Take action",comm,varies,"You called Dr. Adeyemi about Ms. Fuentes's tachysystole.","221-sbar",src/case-ld1.js:186
+"Take action",comm,0,"You called with an update on Ms. Fuentes.","221-sbar-fyi",src/case-ld1.js:194
+"Recognize cues",assess,2,"You checked Ms. Scott's tracing and found a prolonged deceleration.","222-efm",src/case-ld1.js:279
+"Recognize cues",assess,1,"You checked Ms. Scott's tracing.","222-efm-1",src/case-ld1.js:280
+"Recognize cues",assess,1,"You checked Ms. Scott's cervix and found her complete.","222-sve",src/case-ld1.js:296
+"Take action",safety,2,"You called for help as Ms. Scott's baby crowned.","222-help",src/case-ld1.js:301
+"Take action",safety,2,"You supported the baby's head as it delivered.","222-head",src/case-ld1.js:303
+"Recognize cues",assess,1,"You checked for a nuchal cord.","222-nuchal",src/case-ld1.js:305
+"Recognize cues",assess,-1,"You delivered the body without checking for a nuchal cord.","222-nuchal",src/case-ld1.js:308
+"Take action",safety,-2,"You pulled on the baby's head to deliver the shoulders.","222-pullhead",src/case-ld1.js:314
+"Take action",judgment,1,"You delayed cord clamping for a vigorous baby.","222-cord",src/case-ld1.js:319
+"Take action",judgment,-1,"You clamped the cord right away and separated a vigorous baby from her mother.","222-cord",src/case-ld1.js:321
+"Generate solutions",safety,1,"You waited for signs of separation and let the placenta deliver.","222-placenta",src/case-ld1.js:323
+"Take action",safety,-3,"You pulled on the cord before the placenta separated.","222-pullcord",src/case-ld1.js:326
+"Take action",judgment,1,"You massaged Ms. Scott's fundus.","222-massage",src/case-ld1.js:333
+"Take action",meds,2,"You gave phenylephrine for Ms. Scott's epidural hypotension.","222-phenyl",src/case-ld1.js:339
+"Take action",meds,-1,"You gave phenylephrine without hypotension.","222-phenyl",src/case-ld1.js:340
+"Prioritize hypotheses",judgment,-1,"You treated Ms. Scott's nausea while her pressure was ${brSBP(P)}/${brDBP(P)}.","222-ondan",src/case-ld1.js:344
+"Take action",meds,2,"You started Ms. Scott's postpartum oxytocin.","222-oxypp",src/case-ld1.js:348
+"Take action",comm,varies,"You called Dr. Adeyemi about Ms. Scott's hypotension and deceleration.","222-sbar",src/case-ld1.js:372
+"Take action",comm,varies,"You warned Dr. Adeyemi that Ms. Scott was complete with a fast history.","222-sbar-complete",src/case-ld1.js:377
+"Take action",comm,0,"You called with an update on Ms. Scott.","222-sbar-fyi",src/case-ld1.js:380
+"Recognize cues",assess,1,"You checked Ms. Haddad's tracing after the pain changed.","223-efm-rupt",src/case-ld1.js:456
+"Recognize cues",assess,2,"You checked Ms. Haddad's tracing and found recurrent variable decelerations.","223-efm-var",src/case-ld1.js:457
+"Recognize cues",assess,1,"You checked Ms. Haddad's tracing.","223-efm-1",src/case-ld1.js:458
+"Recognize cues",assess,1,"You read Ms. Haddad's prior operative report.","223-opnote",src/case-ld1.js:466
+"Take action",safety,1,"You made sure the team knew a TOLAC was in active labor.","223-team",src/case-ld1.js:468
+"Take action",comm,1,"You arranged the epidural Ms. Haddad asked for.","223-epidural",src/case-ld1.js:470
+"Recognize cues",assess,2,"You noticed Ms. Haddad's baby had lost station.","223-station",src/case-ld1.js:473
+"Take action",safety,varies,"You called a STAT cesarean for suspected uterine rupture ${d} minutes after it started.","223-stat",src/case-ld1.js:477
+"Take action",safety,varies,"You placed a second large-bore IV and sent crossmatch for Ms. Haddad.","223-ivs",src/case-ld1.js:481
+"Take action",safety,1,"You prepared Ms. Haddad for the OR.","223-prep",src/case-ld1.js:483
+"Prioritize hypotheses",judgment,-2,"You treated Ms. Haddad's bradycardia as something that might recover.","223-wait",src/case-ld1.js:485
+"Prioritize hypotheses",judgment,-3,"You gave Ms. Haddad fentanyl for the new constant pain.","223-fent-rupt",src/case-ld1.js:491
+"Take action",meds,1,"You gave Ms. Haddad fentanyl for labor pain on request.","223-fent",src/case-ld1.js:492
+"Take action",meds,1,"You gave sodium citrate before Ms. Haddad's emergency cesarean.","223-citrate",src/case-ld1.js:496
+"Prioritize hypotheses",judgment,-2,"You called about Ms. Haddad's rupture as a pain problem.","223-sbar-pain",src/case-ld1.js:520
+"Take action",comm,0,"You called a rupture without the signs of one.","223-sbar-early",src/case-ld1.js:522
+"Take action",comm,varies,"You called Dr. Adeyemi with the signs of uterine rupture.","223-sbar-rupt",src/case-ld1.js:525
+"Take action",comm,varies,"You called Dr. Adeyemi about new variable decelerations in a TOLAC.","223-sbar-var",src/case-ld1.js:532
+"Take action",comm,0,"You called with an update on Ms. Haddad.","223-sbar-fyi",src/case-ld1.js:535
+"Recognize cues",assess,2,"You checked Ms. Donnelly's tracing and noticed a baseline of ${clFHR(s, P)}.","224-efm",src/case-ld1.js:614
+"Recognize cues",assess,1,"You checked Ms. Donnelly's tracing.","224-efm-1",src/case-ld1.js:615
+"Recognize cues",assess,1,"You checked Ms. Donnelly's GBS status, allergies and rupture time.","224-gbs",src/case-ld1.js:619
+"Recognize cues",assess,2,"You noticed Ms. Donnelly's uterine tenderness and cloudy fluid.","224-tender",src/case-ld1.js:621
+"Take action",comm,1,"You told the pediatric team about Ms. Donnelly's infection.","224-peds",src/case-ld1.js:623
+"Generate solutions",comm,1,"You adapted the plan so Ms. Donnelly could keep moving.","224-saline",src/case-ld1.js:625
+"Evaluate outcomes",judgment,2,"You reassessed Ms. Donnelly after antibiotics and acetaminophen.","224-reassess",src/case-ld1.js:629
+"Take action",meds,0,"You gave Ms. Donnelly's penicillin after the fever started.","224-pcn",src/case-ld1.js:635
+"Generate solutions",meds,-3,"You held Ms. Donnelly's GBS prophylaxis.","224-pcn-hold",src/case-ld1.js:638
+"Take action",meds,varies,"You started ampicillin for Ms. Donnelly's intraamniotic infection${d <= 45 ? ' promptly' : ', after a delay'}.","224-amp",src/case-ld1.js:642
+"Take action",meds,1,"You gave gentamicin with the ampicillin.","224-gent",src/case-ld1.js:646
+"Take action",judgment,-1,"You treated Ms. Donnelly's fever before telling the provider.","224-apap",src/case-ld1.js:650
+"Take action",meds,1,"You gave acetaminophen for Ms. Donnelly's fever.","224-apap",src/case-ld1.js:651
+"Take action",comm,0,"You called about infection before Ms. Donnelly had a fever.","224-sbar-early",src/case-ld1.js:675
+"Analyze cues",judgment,-2,"You suggested penicillin already covered Ms. Donnelly's fever.","224-sbar-covered",src/case-ld1.js:677
+"Take action",comm,varies,"You called Dr. Adeyemi about intraamniotic infection in Ms. Donnelly.","224-sbar",src/case-ld1.js:680
+"Take action",comm,1,"You took Ms. Fuentes's report of her contractions seriously.","221-talk",src/case-ld1.js:699
+"Analyze cues",judgment,-1,"You told Ms. Fuentes the order meant the oxytocin would go up.","221-talk",src/case-ld1.js:700
+"Take action",comm,-1,"You brushed off Ms. Fuentes's question.","221-talk",src/case-ld1.js:701
+"Analyze cues",comm,1,"You explained the change in plan to Rafael honestly.","221-raf",src/case-ld1.js:708
+"Take action",comm,-1,"You told Rafael everything was fine.","221-raf",src/case-ld1.js:709
+"Take action",comm,-1,"You deflected Rafael's question.","221-raf",src/case-ld1.js:710
+"Analyze cues",comm,1,"You explained the epidural's effects to Ms. Scott.","222-talk",src/case-ld1.js:718
+"Recognize cues",assess,-1,"You let Ms. Scott's bladder question go.","222-talk",src/case-ld1.js:719
+"Take action",safety,1,"You coached Ms. Scott to pant as the head crowned.","222-coach",src/case-ld1.js:726
+"Take action",safety,-1,"You told Ms. Scott to push hard as the head crowned.","222-coach",src/case-ld1.js:727
+"Generate solutions",safety,-3,"You told Ms. Scott to hold the baby in.","222-legs",src/case-ld1.js:728
+"Take action",comm,1,"You taught Jordan what to watch for.","222-jor",src/case-ld1.js:735
+"Take action",comm,1,"You told Jordan what was happening and gave him a job.","222-jor-scared",src/case-ld1.js:741
+"Take action",comm,-1,"You sent Jordan out without an explanation.","222-jor-scared",src/case-ld1.js:742
+"Analyze cues",comm,1,"You explained the warning signs of rupture to Ms. Haddad.","223-talk",src/case-ld1.js:749
+"Take action",comm,-1,"You answered Ms. Haddad with reassurance instead of information.","223-talk",src/case-ld1.js:750
+"Take action",comm,1,"You answered Ms. Haddad's epidural question accurately.","223-epi",src/case-ld1.js:755
+"Analyze cues",judgment,-1,"You told Ms. Haddad to avoid an epidural in TOLAC.","223-epi",src/case-ld1.js:756
+"Take action",comm,1,"You told Ms. Haddad the truth and stayed with her.","223-rupt-talk",src/case-ld1.js:762
+"Take action",judgment,-2,"You called Ms. Haddad's rupture pain transition.","223-rupt-talk",src/case-ld1.js:763
+"Take action",comm,1,"You explained what Ms. Haddad's incision type means.","223-om",src/case-ld1.js:768
+"Analyze cues",judgment,-1,"You told Omar the incision type didn't matter.","223-om",src/case-ld1.js:769
+"Take action",comm,1,"You told Omar what was happening in plain words.","223-om-rupt",src/case-ld1.js:775
+"Take action",comm,-1,"You left Omar without an answer.","223-om-rupt",src/case-ld1.js:776
+"Generate solutions",comm,2,"You explained why Ms. Donnelly needs GBS prophylaxis, and kept her plan in view.","224-talk",src/case-ld1.js:782
+"Take action",comm,-1,"You answered ""policy.""","224-talk",src/case-ld1.js:783
+"Analyze cues",judgment,-2,"You offered to skip Ms. Donnelly's GBS prophylaxis without explaining the risk.","224-talk",src/case-ld1.js:784
+"Generate solutions",comm,1,"You told Ms. Donnelly about the infection honestly and kept her plan in the room.","224-fever-talk",src/case-ld1.js:790
+"Analyze cues",judgment,-2,"You told Ms. Donnelly her fever was probably nothing.","224-fever-talk",src/case-ld1.js:791
+"Analyze cues",comm,1,"You explained the monitoring to Jess and offered what's still possible.","224-jess",src/case-ld1.js:797
+"Take action",comm,-1,"You answered Jess with a rule instead of a reason.","224-jess",src/case-ld1.js:798
+"Take action",comm,1,"You answered Jess's question about a cesarean accurately.","224-jess-fever",src/case-ld1.js:803
+"Take action",comm,-1,"You suggested a cesarean was likely.","224-jess-fever",src/case-ld1.js:804
+"Take action",safety,-3,"Ms. Fuentes's tracing became Category III.","221-cat3",src/case-ld1.js:817
+"Prioritize hypotheses",safety,-3,"Ms. Scott's hypotension and prolonged deceleration went untreated for 15 minutes.","222-rescue",src/case-ld1.js:821
+"Prioritize hypotheses",priority,-2,"You weren't there when Ms. Scott's baby was born.","222-absent",src/case-ld1.js:824
+"Prioritize hypotheses",safety,-3,"Ms. Haddad's uterine rupture went 15 minutes without a STAT call.","223-late",src/case-ld1.js:836
+"Take action",safety,-3,"Ms. Donnelly's intraamniotic infection progressed to sepsis.","224-sepsis",src/case-ld1.js:842
+"Analyze cues",judgment,varies,"You read Ms. Fuentes's strip as Category II.","221-read",src/case-ld1.js:850
+"Analyze cues",judgment,-2,"You read Ms. Fuentes's contractions as adequate and planned to keep titrating.","221-read",src/case-ld1.js:851
+"Analyze cues",judgment,varies,"You called Ms. Fuentes's strip Category III.","221-read",src/case-ld1.js:852
+"Generate solutions",judgment,varies,"You declined to increase Ms. Fuentes's oxytocin${P.efmAt !== null ? ' because of what was on the strip' : ''}.","221-res",src/case-ld1.js:853
+"Generate solutions",safety,varies,"You agreed to increase Ms. Fuentes's oxytocin because the resident asked.","221-res",src/case-ld1.js:854
+"Generate solutions",judgment,1,"You held off on the oxytocin until you'd looked at the strip.","221-res",src/case-ld1.js:855
+"Prioritize hypotheses",judgment,-2,"You planned to recheck Ms. Scott's 82/44 in 15 minutes.","222-later",src/case-ld1.js:857
+"Analyze cues",judgment,2,"You read Ms. Scott's strip as Category II from maternal hypotension.","222-read",src/case-ld1.js:858
+"Analyze cues",judgment,-2,"You read Ms. Scott's prolonged deceleration as Category I.","222-read",src/case-ld1.js:859
+"Analyze cues",judgment,-1,"You called Ms. Scott's strip Category III.","222-read",src/case-ld1.js:860
+"Generate solutions",safety,-3,"You told Ms. Scott to hold the baby in.","222-legs",src/case-ld1.js:861
+"Analyze cues",judgment,-2,"You had Ms. Haddad's monitor alarm silenced as normal labor.","223-var-ok",src/case-ld1.js:865
+"Analyze cues",judgment,2,"You read Ms. Haddad's strip as Category II and planned to call.","223-read",src/case-ld1.js:866
+"Analyze cues",judgment,-2,"You read recurrent variable decelerations as Category I.","223-read",src/case-ld1.js:867
+"Analyze cues",judgment,-1,"You called Ms. Haddad's strip Category III.","223-read",src/case-ld1.js:868
+"Prioritize hypotheses",judgment,-2,"You read Ms. Haddad's sudden constant pain as transition.","223-pain",src/case-ld1.js:869
+"Analyze cues",judgment,-2,"You blamed the flat contraction line on the toco.","223-toco",src/case-ld1.js:870
+"Analyze cues",judgment,-2,"You put Ms. Donnelly's fever down to the room.","224-wash",src/case-ld1.js:872
+"Analyze cues",judgment,2,"You read Ms. Donnelly's strip as Category II with fetal tachycardia.","224-read",src/case-ld1.js:873
+"Analyze cues",judgment,-2,"You called a baseline of 170 normal.","224-read",src/case-ld1.js:874
+"Analyze cues",judgment,-1,"You called Ms. Donnelly's strip Category III.","224-read",src/case-ld1.js:875
+"Generate solutions",deleg,-2,"You asked the OB tech to interpret a fetal monitor tracing.","deleg-strip",src/case-ld1.js:902
+"Generate solutions",deleg,-2,"You asked the OB tech to check a cervix.","deleg-sve",src/case-ld1.js:903
+"Generate solutions",deleg,-2,"You asked the OB tech to titrate oxytocin.","deleg-oxy",src/case-ld1.js:904
+"Generate solutions",deleg,-1,"You delegated vital signs on ${nm}, who isn't stable.","'deleg-vitals-' + pid",src/case-ld1.js:907
+"Generate solutions",deleg,1,"You delegated ${task.label.toLowerCase()} to the OB tech.","'deleg-good-' + task.id",src/case-ld1.js:911
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-ld1.js:944
+"Recognize cues",assess,-1,"You never reviewed ${d.short}'s fetal monitor tracing yourself.","d.id + '-nostrip'",src/case-ld1.js:945
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-ld1.js:946
+"Take action",safety,-2,"Ms. Fuentes's oxytocin was never reduced or stopped for tachysystole.","221-never",src/case-ld1.js:949
+"Take action",comm,-1,"Dr. Adeyemi never heard about Ms. Fuentes's tachysystole.","221-norep",src/case-ld1.js:950
+"Take action",safety,-1,"Ms. Scott's bladder was never emptied.","222-nocath",src/case-ld1.js:951
+"Take action",meds,-2,"Ms. Scott's postpartum oxytocin never went in.","222-nooxy",src/case-ld1.js:952
+"Recognize cues",assess,-2,"You never checked Ms. Scott's fundus after the placenta.","222-nofundus",src/case-ld1.js:953
+"Take action",safety,-1,"Ms. Haddad never had IV access.","223-noiv",src/case-ld1.js:954
+"Take action",comm,-3,"Ms. Donnelly's fever never reached the provider.","224-norep",src/case-ld1.js:955
+"Take action",comm,-1,"The pediatric team never heard about Ms. Donnelly's infection.","224-nopeds",src/case-ld1.js:956
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-ld1.js:960
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-ld1.js:961
+"Prioritize hypotheses",priority,2,"You chose to see Ms. Fuentes first.","rank-first",src/case-ld1.js:1018
+"Prioritize hypotheses",priority,1,"You chose to see Ms. Scott first.","rank-first",src/case-ld1.js:1019
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of the oxytocin causing tachysystole.","rank-first",src/case-ld1.js:1020
 "Evaluate outcomes",judgment,1,"You reassessed Mr. Bell's pain and sedation after his oxycodone.","412-reassess",src/case-medsurg1.js:80
 "Take action",safety,1,"You got Mr. Bell using his incentive spirometer with a splinting pillow.","412-is",src/case-medsurg1.js:96
 "Recognize cues",safety,-1,"You got Mr. Bell up for his first walk without checking orthostatic vital signs.","412-walk-blind",src/case-medsurg1.js:111
@@ -1065,32 +1218,32 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,1,"You chose to see Mr. Okoro first.","rank-first",src/case-stepdown1.js:675
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Mrs. Mendes and Mr. Okoro.","rank-first",src/case-stepdown1.js:676
 "Take action",safety,-3,"Mr. Okoro went into hemorrhagic shock from a retroperitoneal bleed.","603-shock",src/case-stepdown1.js:697
-"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:597
-"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:598
-"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:599
-"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:630
-"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:647
-"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:671
-"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:673
-"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:684
-"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:685
-"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:686
-"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:687
-"Take action",comm,1,"You told the charge nurse about your error.","${d.id}-err-charge-${e.base}",src/flow.js:793
-"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:846
-"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:847
-"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:848
-"Take action",comm,-2,"You never told the provider about your error with ${d.short}: ${e.what}.","${d.id}-err-hidden-${e.base}",src/flow.js:858
-"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:861
-"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:862
-"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:863
-"Recognize cues",assess,-1,"${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.","${d.id}-watch-${r.key.split(':')[1]}",src/flow.js:867
-"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:871
-"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:876
-"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:2071
-"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:2078
-"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:2172
-"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:2263
-"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:2292
-"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:2308
-"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:2309
+"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:650
+"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:651
+"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:652
+"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:683
+"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:700
+"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:724
+"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:726
+"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:737
+"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:738
+"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:739
+"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:740
+"Take action",comm,1,"You told the charge nurse about your error.","${d.id}-err-charge-${e.base}",src/flow.js:846
+"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:899
+"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:900
+"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:901
+"Take action",comm,-2,"You never told the provider about your error with ${d.short}: ${e.what}.","${d.id}-err-hidden-${e.base}",src/flow.js:911
+"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:914
+"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:915
+"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:916
+"Recognize cues",assess,-1,"${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.","${d.id}-watch-${r.key.split(':')[1]}",src/flow.js:920
+"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:924
+"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:929
+"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:2073
+"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:2080
+"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:2174
+"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:2265
+"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:2294
+"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:2310
+"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:2311

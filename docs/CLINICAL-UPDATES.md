@@ -2,6 +2,16 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 10, 2026: Shift 11, Days in Labor and Delivery (needs L&D nurse review)
+
+| Patient | Teaching | Basis |
+|---|---|---|
+| 221 oxytocin induction | Tachysystole is more than 5 contractions in 10 minutes averaged over 30; it is about the uterus, not the FHR category. On oxytocin with tachysystole: reduce or stop, left lateral, IV bolus, tell the provider, terbutaline if it persists off oxytocin. The order set's "increase every 30 minutes" is not a reason to go up on a tachysystolic uterus. Maternal oxygen is not routine intrauterine resuscitation. Restart at half the last rate after about 30 minutes of a Category I tracing, per protocol. | ACOG Practice Bulletins 106 and 107; ACOG Committee Opinion on oxygen for intrauterine resuscitation (2022); AWHONN oxytocin safety guidance. |
+| 222 epidural, then an unplanned birth | Epidural hypotension with a prolonged deceleration: left lateral, bolus, phenylephrine per the anesthesia order, call anesthesia. A full bladder under an epidural slows descent and raises PPH risk: scan and straight cath. Unattended birth: call for help, never tell her to cross her legs or hold the head back, controlled delivery of the head, check for a nuchal cord, dry and stimulate, skin to skin, delayed cord clamping 30 to 60 seconds for a vigorous term baby, no traction on the cord, postpartum oxytocin, fundal check. APGAR at 1 and 5 minutes as an analysis decision. | ASA/SOAP obstetric anesthesia practice; AWHONN; NRP 8th edition; ACOG Committee Opinion 814 (delayed cord clamping); ACOG Practice Bulletin 183 (PPH). |
+| 223 TOLAC with uterine rupture | TOLAC needs continuous EFM, IV access and a team immediately available; read the prior operative report. Recurrent variable decelerations are often the first sign. Rupture: sudden constant pain, loss of contractions on the toco, loss of station, fetal bradycardia, maternal tachycardia and falling pressure. STAT call for an emergency cesarean, second large-bore IV, type and crossmatch, neonatal team to the OR. Not "transition", not "the toco slipped". | ACOG Practice Bulletin 205 (VBAC). |
+| 224 GBS and intraamniotic infection | Intrapartum GBS prophylaxis on time (penicillin G 5 million units, then 2.5 to 3 million every 4 hours; adequate at 4 hours or more before birth). Fever with a long rupture, maternal and fetal tachycardia and a tender uterus is intraamniotic infection: tell the provider, ampicillin plus gentamicin, acetaminophen, pediatrics to the birth. GBS prophylaxis does not treat it. Not by itself a reason for cesarean. | CDC/ACOG 2019 GBS prophylaxis (Committee Opinion 797); ACOG Committee Opinion 712. |
+| Fetal monitoring throughout | Every strip read uses NICHD three-tier categories and is scored as an Analyze cues decision. The bedside monitor in labor rooms shows the FHR. | NICHD 2008 consensus; ACOG Practice Bulletin 106. |
+
 ## October 10, 2026: Shift 10, Days in the ICU (needs critical care nurse review)
 
 | Patient | Teaching | Basis |

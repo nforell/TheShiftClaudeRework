@@ -9,7 +9,7 @@ from fonts import fontroute
 from playwright.sync_api import sync_playwright
 GAME = (ROOT / 'dist' / 'the-shift.html').as_uri()
 QUICK = '--quick' in sys.argv
-CASES = [a for a in sys.argv[1:] if not a.startswith('--')] or ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'icu-3w-1', 'ed-podb-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1']
+CASES = [a for a in sys.argv[1:] if not a.startswith('--')] or ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'icu-3w-1', 'ed-podb-1', 'ld-2s-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1']
 STYLES = ['doer', 'idle'] if QUICK else ['doer', 'idle', 'random1', 'random2']
 PROFILE = "localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{theme:'light',sound:'off',music:'off',motion:'reduced',feedback:'debrief'},seen:{orient:1,'coach:station':1,'coach:room':1,tour:1},done:{}}))"
 

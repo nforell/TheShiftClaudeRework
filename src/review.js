@@ -18,6 +18,7 @@
     'stepdown-6e-1': { reviewers: [], hash: '', references: [] },
     'peds-5s-1': { reviewers: [], hash: '', references: [] },
     'icu-3w-1': { reviewers: [], hash: '', references: [] },
+    'ld-2s-1': { reviewers: [], hash: '', references: [] },
     'ob-2n-1': { reviewers: [], hash: '', references: [] },
     'ed-podb-1': { reviewers: [], hash: '', references: [] },
   };
