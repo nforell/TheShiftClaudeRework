@@ -2,6 +2,17 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 10, 2026: NCLEX practice hub, pocket reference, transition-to-practice floor calls
+
+**All of this needs nurse review before launch.** Written to current US standard teaching and checked item by item for an answer key that scores full marks and a rationale for every option.
+
+| Where | What's new | Basis |
+|---|---|---|
+| `src/ngn-cases.js` | 19 unfolding case studies in the NGN format (one client, a chart that grows, six items in clinical judgment order): sepsis from pneumonia, heart failure, pediatric DKA, hip replacement with PE, variceal bleed, stroke, preeclampsia, infant dehydration, burns with inhalation injury, alcohol withdrawal, AKI with hyperkalemia, serotonin syndrome, COPD with pneumonia, post-op hemorrhage, TBI with rising ICP, placental abruption, preterm labor, bacterial meningitis, NMS. | Surviving Sepsis 2021, AHA/ACC HF 2022, ADA/ISPAD, CHEST VTE, AASLD, AHA/ASA stroke, ACOG 222, AAP, ABA/ABLS, ASAM, KDIGO, GOLD 2024, Brain Trauma Foundation 4th ed., ACOG fetal heart rate and preterm labor guidance, IDSA meningitis. |
+| `src/ngn-bank.js` | 202 standalone items across all eight NCLEX-RN Client Needs categories and all six judgment steps, in every NGN format plus multiple choice, ordered response and 34 dosage calculations (tablets, liquids, IV and drip rates, mcg/kg/min titrations, heparin and insulin protocols, pediatric safe-dose ranges, Holliday-Segar, Parkland). | 2023 NCLEX-RN test plan; ISMP; NCSBN delegation guidelines; CDC isolation and immunization schedules; USPSTF screening. |
+| `src/ref.js` | Pocket reference: 20 cards (labs, ABGs, drug levels and antidotes, high-alert meds, IV math, insulin, vitals by age, isolation, transfusion, rapid response, restraints, SBAR/I-PASS, delegation, prioritization, scales, documentation, fluids and electrolytes, OB/newborn, the new-grad year). Values are common textbook ranges; cards say where practice varies. | Standard references. |
+| `src/floor-more.js` | 70 more floor calls (106 in all): professional and legal practice (unsafe assignment, error disclosure, near misses, chain of command, verbal and telephone orders, tenfold doses, consent, POLST, social media, gifts, blood refusal, interpreters, diversion, lateral violence, harassment, fatigue, floating, witnessing documents, student co-signs, recording, bedside report, late entries) and unit clinical calls (C. diff, TB, PPE doffing, pressure injury, CLABSI, CAUTI, suicide screen on a medical unit, elopement, latex, MRI safety, site marking, heparin double check, breast milk mix-up, car seats, VT, tamponade signs, PCA oversedation, postpartum preeclampsia, shoulder dystocia, newborn fever, and more). | ANA Code of Ethics, NCSBN, Joint Commission NPSGs, CDC, CMS, OSHA. |
+
 ## October 7, 2026: practice question rationales and focus practice
 
 | Where | What's new or changed | Basis |

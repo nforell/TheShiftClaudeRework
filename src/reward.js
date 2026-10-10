@@ -73,7 +73,7 @@
   const DOMS = (S.engine && S.engine.DOMAINS) || [];
   const TRACKS = DOMS.map(([id, label]) => ({ id: 'dom-' + id, dom: id, label, how: `Good calls in ${label.toLowerCase()}`, tiers: [5, 20, 50], val: (p) => (p.life && p.life.good && p.life.good[id]) || 0 })).concat([
     { id: 'lessons', label: 'Lessons learned', how: 'Mistakes fixed on a later shift', tiers: [1, 10, 30], val: (p) => Object.values(p.lessons || {}).filter((l) => l.fixed).length },
-    { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 15, (S.floor ? S.floor.POOL.length : 28)], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
+    { id: 'floor', label: 'Floor-call collection', how: 'Floor calls answered with the best choice', tiers: [5, 20, 50], val: (p) => Object.values(p.floorSeen || {}).filter((v) => v === 'best').length },
     { id: 'shifts', label: 'Shifts worked', how: 'Shifts finished through handoff', tiers: [1, 10, 25], val: (p) => (p.life && p.life.shifts) || 0 },
     { id: 'stories', label: 'Their stories', how: 'Moments you shared with patients and families', tiers: [10, 40, 90], val: (p) => (p.life && p.life.beats) || 0 },
     { id: 'stars', label: 'Stars', how: 'Best stars, added across every shift', tiers: [5, 10, 15], val: (p) => Object.values(p.stars || {}).reduce((n, x) => n + x, 0) },

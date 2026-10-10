@@ -2,6 +2,24 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 15 — October 9 to 10, 2026 (branch `nclex-prep`)
+
+Nick's goal: as much clinical-grade content as possible, so the game genuinely prepares people for the NCLEX and the move into the RN role.
+
+### Done
+- **NCLEX practice hub** from the home screen: unfolding case studies (19) with a growing chart and tabs that flag new entries; a question bank (250) filterable by Client Needs, step, format and status; sets of ten; calculations scored by the rounding the question asks for; set and case results by step; readiness by category and step. Progress lives in the profile and syncs to a class like the debrief questions.
+- **Pocket reference** (20 cards) from the home screen, the hub and the menu.
+- **Floor calls** 36 → 106, weighted to the professional, legal and teamwork judgment new grads say school didn't cover. The floor-call collection track's gold tier is now 50 (it was the pool size).
+- Phones: the home and hub headers keep a Menu button so Settings and How it plays stay reachable.
+- New `tests/practice.py` (every item well-formed; the hub, a case study, a set, readiness and the reference with real clicks at 390 and 1280). Full suite clean.
+
+### Needs Nick
+- **Clinical review of the new content before launch** (see docs/CLINICAL-UPDATES.md, October 10). The writers flagged judgment calls worth a nurse's eye: SBT screening thresholds, magnesium ranges, CIWA-Ar protocol cutoffs, Parkland 4 vs 2 mL/kg (ABLS now starts adults at 2), air embolism positioning, metformin and contrast.
+
+### Up next
+1. Shift 10: ICU (brief written: septic shock on norepinephrine, ventilated ARDS, post-CABG tamponade, a family meeting and comfort care).
+2. Labor and delivery.
+
 ## Session 14 — October 4, 2026 (branch `talk-in-scene`)
 
 Nick's ask: make it obvious you can talk to people, and show conversations in the room instead of sending you to a button and a pop-up.

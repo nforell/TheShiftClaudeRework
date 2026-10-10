@@ -46,7 +46,7 @@
         params: { opts: [`Cardiac rhythm on telemetry`, `Blood glucose`, `Serum sodium`, `Platelet count`, `Urine specific gravity`], ans: [0, 1] },
         why: `Peaked T waves mean the potassium is affecting the heart. Calcium stabilizes the heart muscle within minutes; insulin with dextrose shifts potassium into cells. Watch the rhythm, and the glucose after insulin.` },
       { id: 'ms2-hl', type: 'highlight', step: 'cues',
-        stem: `Nurse's note, 15:30, for a 68-year-old with a COPD exacerbation who usually runs SpO₂ 88–92%.`,
+        stem: `Nurse's note, 15:30, for a 68-year-old with a COPD exacerbation who usually runs SpO₂ 88 to 92%.`,
         q: `Highlight the findings that require follow-up.`,
         parts: [
           { t: `Respiratory therapist increased oxygen from 2 L to 6 L at 14:00 for an SpO₂ of 87%.`, ok: true },
@@ -287,25 +287,32 @@
     ],
   };
 
-  const TYPE = { bowtie: 'Bowtie', matrix: 'Matrix', sata: 'Select all that apply', highlight: 'Highlight', cloze: 'Drop-down' };
-  const max = (it) => it.type === 'bowtie' ? 5 : it.type === 'matrix' ? it.rows.length : it.type === 'cloze' ? it.parts.filter((p) => typeof p !== 'string').length : it.type === 'sata' ? it.opts.filter((o) => o.ok).length : it.parts.filter((p) => p.ok).length;
-  /* Answers: bowtie { c: i, a: [i..], p: [i..] }, matrix { r: [col per row] }, sata/highlight { s: [i..] }, cloze { d: [i per blank] } */
+  const TYPE = { bowtie: 'Bowtie', matrix: 'Matrix', sata: 'Select all that apply', highlight: 'Highlight', cloze: 'Drop-down', mc: 'Multiple choice', order: 'Ordered response', num: 'Calculation' };
+  const max = (it) => it.type === 'mc' || it.type === 'order' || it.type === 'num' ? 1 : it.type === 'bowtie' ? 5 : it.type === 'matrix' ? it.rows.length : it.type === 'cloze' ? it.parts.filter((p) => typeof p !== 'string').length : it.type === 'sata' ? it.opts.filter((o) => o.ok).length : it.parts.filter((p) => p.ok).length;
+  /* Answers: bowtie { c: i, a: [i..], p: [i..] }, matrix { r: [col per row] }, sata/highlight { s: [i..] }, cloze { d: [i per blank] },
+     mc { m: i }, order { o: [original index in the order placed] }, num { n: 'typed text' } */
+  const numOf = (x) => { const v = parseFloat(String(x == null ? '' : x).replace(/,/g, '').trim()); return isFinite(v) ? v : null; };
+  const numOk = (it, x) => { const v = numOf(x); return v !== null && Math.abs(v - it.ans) <= (it.tol || 0) + 1e-9; };
   function score(it, a) {
     a = a || {};
+    if (it.type === 'mc') return a.m !== undefined && it.opts[a.m] && it.opts[a.m].ok ? 1 : 0;
+    if (it.type === 'order') return (a.o || []).length === it.opts.length && a.o.every((x, i) => x === i) ? 1 : 0;
+    if (it.type === 'num') return numOk(it, a.n) ? 1 : 0;
     if (it.type === 'bowtie') return (a.c === it.cond.ans ? 1 : 0) + (a.a || []).filter((i) => it.actions.ans.includes(i)).length + (a.p || []).filter((i) => it.params.ans.includes(i)).length;
     if (it.type === 'matrix') return it.rows.filter((r, i) => (a.r || [])[i] === r.ans).length;
     if (it.type === 'cloze') { let k = 0; return it.parts.filter((p) => typeof p !== 'string').filter((p) => (a.d || [])[k++] === p.ans).length; }
     const list = it.type === 'sata' ? it.opts : it.parts, s = a.s || [];
     return Math.max(0, s.filter((i) => list[i].ok).length - s.filter((i) => !list[i].ok).length);
   }
-  const complete = (it, a) => { a = a || {}; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
+  const complete = (it, a) => { a = a || {}; if (it.type === 'mc') return a.m !== undefined; if (it.type === 'order') return (a.o || []).length === it.opts.length; if (it.type === 'num') return numOf(a.n) !== null; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
   /* Per-option rationale for any item, in one shape: { cond, actions, params } for bowtie, opts for select-all,
      parts for highlight, blanks (one list per blank) for drop-down, and a tip. Shift items take theirs from
      ngn-why.js; focus items carry theirs inline. Missing pieces come back as empty lists. */
   function whys(it) {
     const w = (S.ngnWhy || {})[it.id] || {}, o = { tip: it.tip || w.tip || '' };
     if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => { o[k] = (it.whys && it.whys[k]) || w[k] || []; });
-    else if (it.type === 'sata') o.opts = it.opts.map((x, i) => x.why || (w.opts || [])[i] || '');
+    else if (it.type === 'sata' || it.type === 'mc') o.opts = it.opts.map((x, i) => x.why || (w.opts || [])[i] || '');
+    else if (it.type === 'order') o.steps = it.opts.map((x, i) => (it.whys || [])[i] || '');
     else if (it.type === 'highlight') o.parts = it.parts.map((x, i) => x.why || (w.parts || [])[i] || '');
     else if (it.type === 'cloze') { let b = 0; o.blanks = it.parts.filter((x) => typeof x !== 'string').map((x) => x.whys || (w.blanks || [])[b++] || []); }
     return o;
@@ -316,10 +323,28 @@
     matrix: 'Matrix items are scored 0 or 1 per row: each row you mark correctly earns 1 point. A wrong row earns 0 but takes nothing away.',
     cloze: 'Drop-down items are scored 0 or 1 per blank: each correct choice earns 1 point.',
     sata: 'Select-all items are scored plus or minus: +1 for each correct option you choose, -1 for each incorrect one, never below 0. Options you leave unchosen cost nothing, but a correct option you miss is a point you did not earn.',
+    mc: 'Multiple-choice items are scored 0 or 1: one best answer earns the point.',
+    order: 'Ordered-response items are scored all or nothing: every step must be in the right place to earn the point.',
+    num: 'Calculation items are scored 0 or 1: the answer must match, rounded as the question asks.',
     highlight: 'Highlight items are scored plus or minus: +1 for each finding you correctly highlight, -1 for each one you highlight that did not need follow-up, never below 0.',
   };
   function breakdown(it, a) {
     a = a || {}; const rows = [];
+    if (it.type === 'mc') {
+      const ok = a.m !== undefined && it.opts[a.m] && it.opts[a.m].ok, best = it.opts.find((o) => o.ok);
+      rows.push({ part: 'Your answer', pick: a.m !== undefined ? it.opts[a.m].t : '', ok: !!ok, pts: ok ? 1 : 0, want: best.t });
+      return { rows, rule: RULE.mc, math: ok ? 'Best answer chosen' : 'Not the best answer', score: ok ? 1 : 0, max: 1, pm: false };
+    }
+    if (it.type === 'order') {
+      const o = a.o || []; o.forEach((x, k) => rows.push({ part: `Step ${k + 1}`, pick: it.opts[x], ok: x === k, pts: 0, want: it.opts[k] }));
+      const wrong = rows.filter((r) => !r.ok).length, sc = wrong ? 0 : 1;
+      return { rows, rule: RULE.order, math: wrong ? `${wrong} of ${rows.length} steps out of place, so 0 of 1` : 'Every step in place', score: sc, max: 1, pm: false, all: true };
+    }
+    if (it.type === 'num') {
+      const ok = numOk(it, a.n);
+      rows.push({ part: 'Your answer', pick: `${String(a.n || '').trim()} ${it.unit}`, ok, pts: ok ? 1 : 0, want: `${it.ans} ${it.unit}` });
+      return { rows, rule: RULE.num, math: ok ? 'Correct' : `The answer is ${it.ans} ${it.unit}`, score: ok ? 1 : 0, max: 1, pm: false, work: it.work };
+    }
     if (it.type === 'bowtie') {
       rows.push({ part: 'Condition', pick: it.cond.opts[a.c], ok: a.c === it.cond.ans, pts: a.c === it.cond.ans ? 1 : 0, want: it.cond.opts[it.cond.ans] });
       [['a', 'actions', 'Action'], ['p', 'params', 'Parameter']].forEach(([k, g, lab]) => (a[k] || []).forEach((i, n) => { const ok = it[g].ans.includes(i); rows.push({ part: `${lab} ${n + 1}`, pick: it[g].opts[i], ok, pts: ok ? 1 : 0 }); }));
@@ -337,22 +362,60 @@
     const math = pm ? `${right} correct ${right === 1 ? 'choice' : 'choices'} (+${right})${wrong ? ` minus ${wrong} incorrect (-${wrong})` : ''} = ${sum}${sum < 0 ? ', raised to the floor of 0' : ''}` : `${right} of ${rows.length} ${it.type === 'matrix' ? 'rows' : it.type === 'cloze' ? 'blanks' : 'parts'} correct`;
     return { rows, rule: RULE[it.type], math, score: sc, max: max(it), pm };
   }
-  /* Every item, and lookup by id (focus items included), for the debrief and the instructor dashboard. */
+  /* NCLEX-RN Client Needs categories (2023 test plan) with their share of the exam, and the tags for the shift and focus
+     items, so every item can be practiced and tracked by category, step and unit. */
+  const CN = [
+    ['mgmt', 'Management of Care', '15 to 21%'], ['safety', 'Safety and Infection Control', '10 to 16%'], ['health', 'Health Promotion and Maintenance', '6 to 12%'],
+    ['psychosocial', 'Psychosocial Integrity', '6 to 12%'], ['basic', 'Basic Care and Comfort', '6 to 12%'], ['pharm', 'Pharmacological and Parenteral Therapies', '13 to 19%'],
+    ['risk', 'Reduction of Risk Potential', '9 to 15%'], ['physio', 'Physiological Adaptation', '11 to 17%'],
+  ];
+  const SPOF = { 'medsurg-4w-1': 'ms', 'medsurg-4w-2': 'ms', 'medsurg-4w-3': 'ms', 'stepdown-6e-1': 'sd', 'ed-podb-1': 'ed', 'ob-2n-1': 'ob', 'psych-3e-1': 'psy', 'psych-4n-1': 'teen', 'peds-5s-1': 'peds' };
+  const TAGS = {
+    'ms1-bow': ['physio', 'Sepsis in older adults'], 'ms1-mat': ['pharm', 'Hold parameters'], 'ms1-sata': ['risk', 'Atelectasis prevention'],
+    'ms2-bow': ['physio', 'Hyperkalemia'], 'ms2-hl': ['physio', 'Oxygen in COPD'], 'ms2-mat': ['pharm', 'Allergy check before surgery'],
+    'ms3-bow': ['physio', 'Acute stroke'], 'ms3-sata': ['pharm', 'Opioid sedation on a PCA'], 'ms3-cloze': ['physio', 'DKA insulin infusion'],
+    'sd-bow': ['risk', 'Bleeding after PCI'], 'sd-mat': ['pharm', 'Heparin-induced thrombocytopenia'], 'sd-sata': ['pharm', 'QT prolongation'],
+    'p3-bow': ['pharm', 'Lithium toxicity'], 'p3-hl': ['psychosocial', 'Suicide warning signs'], 'p3-mat': ['psychosocial', 'Least restrictive care'],
+    'p4-bow': ['pharm', 'Acute dystonia'], 'p4-cloze': ['physio', 'Refeeding syndrome'], 'p4-sata': ['psychosocial', 'Abuse disclosure'],
+    'ed-bow': ['physio', 'Inferior STEMI'], 'ed-hl': ['risk', 'Thrombolytic eligibility'], 'ed-sata': ['physio', 'Anaphylaxis'],
+    'ob-bow': ['physio', 'Postpartum hemorrhage'], 'ob-mat': ['pharm', 'Magnesium sulfate'], 'ob-cloze': ['health', 'Newborn hypoglycemia'],
+    'pd-bow': ['physio', 'Status asthmaticus'], 'pd-mat': ['health', 'Pediatric vital signs'], 'pd-sata': ['safety', 'Weight-based dosing error'],
+    'fx-analyze-1': ['physio', 'Left vs right heart failure'], 'fx-analyze-2': ['psychosocial', 'Eating disorder findings'], 'fx-analyze-3': ['health', 'Pathologic newborn jaundice'],
+    'fx-analyze-4': ['risk', 'Pulmonary embolism'], 'fx-eval-1': ['physio', 'Pneumonia response'], 'fx-eval-2': ['pharm', 'Naloxone response'],
+    'fx-eval-3': ['psychosocial', 'Alcohol withdrawal (CIWA-Ar)'], 'fx-eval-4': ['physio', 'Fluid bolus in a toddler'], 'fx-cues-1': ['psychosocial', 'Adolescent suicide risk'],
+    'fx-cues-2': ['health', 'Newborn assessment'], 'fx-act-1': ['physio', 'Opioid overdose'], 'fx-act-2': ['physio', 'Prolapsed cord'],
+    'fx-act-3': ['mgmt', 'SBAR for an unstable rhythm'], 'fx-act-4': ['psychosocial', 'De-escalation'], 'fx-solve-1': ['mgmt', 'Delegation'],
+    'fx-solve-2': ['pharm', 'Pediatric give or hold'], 'fx-solve-3': ['psychosocial', 'Adolescent safety plan'], 'fx-hypo-1': ['physio', 'Intussusception'],
+    'fx-hypo-2': ['mgmt', 'ED triage priority'], 'fx-hypo-3': ['mgmt', 'Which client first'],
+  };
+  let tagged = false;
+  function tagAll() {
+    if (tagged) return; tagged = true;
+    Object.entries(ITEMS).forEach(([cid, L]) => L.forEach((x) => { x.sp = x.sp || SPOF[cid]; x.src = x.src || cid; }));
+    Object.values(ITEMS).flat().concat(S.ngnFocus || []).forEach((x) => { const g = TAGS[x.id]; if (g) { x.cn = x.cn || g[0]; x.topic = x.topic || g[1]; } });
+    (S.ngnCases || []).forEach((c) => c.items.forEach((x, i) => { x.cs = c.id; x.csi = i; x.sp = x.sp || c.sp; x.topic = x.topic || c.topic; }));
+  }
+  /* Every item, and lookup by id (focus, bank and case-study items included), for the debrief, the practice hub and the
+     instructor dashboard. bank() is everything that stands alone (no case record needed). */
   const focusItems = () => S.ngnFocus || [];
-  const all = () => Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems());
-  const byId = (id) => all().find((x) => x.id === id) || null;
+  const bank = () => { tagAll(); return Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems(), S.ngnBank || []); };
+  const cases = () => { tagAll(); return S.ngnCases || []; };
+  const all = () => bank().concat(cases().reduce((n, c) => n.concat(c.items), []));
+  let IDX = null;
+  const byId = (id) => { if (!IDX || IDX.n !== all().length) { IDX = { n: all().length, m: new Map(all().map((x) => [x.id, x])) }; } return IDX.m.get(id) || null; };
+  const caseById = (id) => cases().find((c) => c.id === id) || null;
   /* Focus practice: for each weak step (lowest first), up to `per` items that test it. Prefers items written for
      focus practice, then other shifts' items; skips this shift's own three and anything already answered, unless
      that leaves nothing to offer. */
   function focus(steps, caseId, done, per, sp) {
     done = done || {}; per = per || 2; const own = new Set((ITEMS[caseId] || []).map((x) => x.id)), out = [], used = new Set();
     steps.forEach((st) => {
-      const pool = focusItems().filter((x) => x.step === st).concat(Object.entries(ITEMS).filter(([cid]) => cid !== caseId).reduce((n, [, L]) => n.concat(L.filter((x) => x.step === st)), []))
+      const pool = focusItems().filter((x) => x.step === st).concat((S.ngnBank || []).filter((x) => x.step === st), Object.entries(ITEMS).filter(([cid]) => cid !== caseId).reduce((n, [, L]) => n.concat(L.filter((x) => x.step === st)), []))
         .filter((x) => !own.has(x.id) && !used.has(x.id)).sort((x, y) => (y.sp === sp) - (x.sp === sp));   // same unit first, then the order above
       const fresh = pool.filter((x) => !done[x.id]), pick = (fresh.length ? fresh : pool).slice(0, per);
       pick.forEach((x) => { used.add(x.id); out.push(x); });
     });
     return out;
   }
-  S.ngn = { ITEMS, TYPE, RULE, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, byId, focus };
+  S.ngn = { ITEMS, TYPE, RULE, CN, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, bank, cases, byId, caseById, focus, numOf };
 })(window.Shift = window.Shift || {});
