@@ -17,6 +17,12 @@
     '401-recheck': 'eval', '407-checkback': 'eval', '403-plan': 'eval', '405-reassess': 'eval', '409-results': 'eval',
     '401-labs': 'cues', '409-admit': 'cues', '403-skin': 'cues',
     '303-postim': 'eval', '303-postim-none': 'eval', '303-debrief': 'eval', '303-checks': 'eval', '303-obs': 'solve', '303-obs-miss': 'solve', '405-docrev': 'cues', '405-docrev-miss': 'cues',
+    // ICU (3 West): decide what should and shouldn't be done; name the problem; check whether it worked.
+    '711-central-early': 'solve', '711-meto': 'solve', '711-lisin': 'solve', '711-vaso': 'solve', '711-npo': 'solve', '711-ir-delay': 'solve',
+    '712-sbt': 'solve', '712-restrain': 'solve', '712-oversed': 'solve', '712-noorder': 'solve', '713-meto': 'solve', '713-lasix': 'solve', '714-meetprep': 'solve', '714-donate': 'solve',
+    '711-blanket': 'analyze', '713-alb': 'analyze', '713-sbar-early': 'analyze',
+    '712-silence': 'hypo', '712-sedate-alarm': 'hypo', '713-sbar': 'hypo', '713-norep': 'hypo',
+    '711-sbar-lac': 'eval', '711-lac-norep': 'eval', '712-release': 'eval', '712-still-restrained': 'eval', '714-sbar-comfort': 'eval', '714-son-unanswered': 'eval',
   };
   const EVAL = /\b(re-?check|re-?assess|re-?scor|re-?scan|re-?evaluat|did it work|follow(?:ed)?[ -]?up|after treating|after (?:the |her |his )?(?:dose|insulin|treatment|transfusion|bolus|naloxone|juice)|repeat (?:level|glucose|potassium|labs?|vitals|score|sodium|lithium|CIWA)|trend|through the first|still on .* at handoff|watched .* through|kept checking|came back to|post-?(?:transfusion|dose)|response to|whether .* worked)/i;
   const CUES = /^(?:You )?(?:checked|assessed|looked|listened|noticed|caught|scanned|counted|weighed|examined|took (?:a |her |his |their )?(?:full )?(?:set of )?vitals|asked .* about|spotted|saw|read|reviewed|verified|confirmed|measured|palpated|auscultated|did (?:a |the )?(?:neuro|skin|full)|got (?:a |the )?(?:full|current|fresh))\b|without (?:a |any )?current|without (?:checking|scanning|assessing|looking|a (?:pain|sedation|neuro|heart rate|glucose|blood pressure))|without (?:a |any )?baseline|learned .*(?:baseline|history)|went unrecognized|went unnoticed|nobody noticed|missed (?:the |her |his )?(?:cue|sign|change|finding)|never assessed|unseen\b/i;

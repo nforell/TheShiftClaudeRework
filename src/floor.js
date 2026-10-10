@@ -3,14 +3,15 @@
    and in what order, changes every time you play. */
 (function (S) {
   const L = (skin, shade, lip, blush, iris, hair, hcol, cloth, extra) => ({ skin, shade, lip, blush, iris, head: { w: 55, h: 61, jaw: .42 }, eye: 9.8, hair: { style: hair, color: hcol }, brow: { w: 3.6, color: hcol }, body: { w: 81, cloth }, extras: extra || [], smile: .35, tired: true });
-  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : 'med');
-  const RN = { med: 'Bri', psych: 'Noor', peds: 'Hana', ob: 'Lucy', ed: 'Sid' };
+  const kindOf = (c) => (/^psych/.test(c.id) ? 'psych' : /^peds/.test(c.id) ? 'peds' : /^ob/.test(c.id) ? 'ob' : /^ed/.test(c.id) ? 'ed' : /^icu/.test(c.id) ? 'icu' : 'med');
+  const RN = { med: 'Bri', psych: 'Noor', peds: 'Hana', ob: 'Lucy', ed: 'Sid', icu: 'Dee' };
   const STAFF = {
     'fl-rn-med': { name: 'Bri', role: 'RN, next pod', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'bun', '#140E0A', 'wine') },
     'fl-rn-psych': { name: 'Noor', role: 'RN, B hall', look: L('#C99A74', '#AA7C58', '#8E5246', '#C8866C', '#2A1B10', 'long', '#1A120C', 'grey') },
     'fl-rn-peds': { name: 'Hana', role: 'RN, next pod', look: L('#E8C0A0', '#CC9E7E', '#AE6258', '#E4927C', '#2A1C12', 'long', '#1A1410', 'teal') },
     'fl-rn-ob': { name: 'Lucy', role: 'RN, next pod', look: L('#B98460', '#9A6846', '#7E4535', '#BE7A5E', '#20140C', 'bun', '#2A1C14', 'rose') },
     'fl-rn-ed': { name: 'Sid', role: 'RN, triage', look: L('#C99A72', '#A97B54', '#8E5246', '#CC8A70', '#2A1A10', 'short', '#201A16', 'navy', ['beard']) },
+    'fl-rn-icu': { name: 'Dee', role: 'RN, bed 715', look: L('#E2B48E', '#C49670', '#A0594C', '#DC8E74', '#3A2616', 'ponytail', '#2A1C14', 'teal') },
     'fl-sec': { name: 'Officer Dale', role: 'Security', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'buzz', '#140E0A', 'grey') },
     'fl-pharm': { name: 'Rene', role: 'Pharmacist', look: L('#C08A64', '#A06E4C', '#86483A', '#C27C60', '#20140C', 'short', '#2A2A2A', 'grey', ['glasses']) },
     'fl-clerk': { name: 'Pat', role: 'Unit clerk', look: L('#F2D6BE', '#D8B49A', '#B87068', '#EEA090', '#5A7A9A', 'bob', '#9A9A9A', 'blue', ['glasses']) },
@@ -419,9 +420,9 @@
 
   function init(s, c) {
     const r = rng((s.seed || 1) ^ 0x5eed), k = kindOf(c);
-    const pool = POOL.filter((x) => x.k.includes(k)).map((x) => [x.id, r()]).sort((a, b) => a[1] - b[1]).map((x) => x[0]);
+    const pool = POOL.filter((x) => x.k.includes(k) || (k === 'icu' && x.k.includes('med') && !x.noIcu)).map((x) => [x.id, r()]).sort((a, b) => a[1] - b[1]).map((x) => x[0]);
     // Each shift gets at least one call from its own specialty in the first two.
-    const own = pool.findIndex((id) => item(id).k.length === 1); if (own > 1) { const [x] = pool.splice(own, 1); pool.splice(1, 0, x); }
+    const own = pool.findIndex((id) => item(id).k.length === 1 && item(id).k[0] === k); if (own > 1) { const [x] = pool.splice(own, 1); pool.splice(1, 0, x); }
     s.floor = { order: pool.slice(0, MAX), n: 0, next: 70 + Math.floor(r() * 25), q: [] };
   }
   function busy(s, A, c) { return c.patients.some((d) => { const P = s.p[d.id]; return P && (!d.arrives || P.arrived) && !P.icu && !P.gone && d.status(s, P, A) === 'urgent'; }); }

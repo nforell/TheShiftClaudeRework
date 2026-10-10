@@ -225,6 +225,41 @@
         ],
         why: `Epinephrine IM is first-line; antihistamines don't treat airway swelling or shock. Undiluted IV push epinephrine causes arrhythmias and MI. Supine with legs up, oxygen and fluids support circulation while it works.` },
     ],
+    'icu-3w-1': [
+      { id: 'icu-bow', type: 'bowtie', step: 'hypo',
+        stem: `A 70-year-old client is 18 hours after coronary artery bypass grafting. Mediastinal chest tube output was 90 to 110 mL/h overnight and has been 5 mL in the last hour. HR 124 (92 two hours ago), BP 86/72 (118/64 two hours ago), CVP 18 mm Hg (8 two hours ago). Heart sounds are muffled and the neck veins are distended.`,
+        q: `Complete the diagram: the condition the client is most likely experiencing, two actions the nurse should take, and two parameters to monitor.`,
+        cond: { opts: [`Cardiac tamponade`, `Hypovolemia from bleeding that has stopped`, `Postoperative atrial fibrillation`, `Acute left ventricular failure`], ans: 0 },
+        actions: { opts: [`Notify the cardiac surgeon immediately`, `Prepare for emergency re-exploration at the bedside`, `Increase the IV fluid rate and reassess in 1 hour`, `Document that the chest tube bleeding has resolved`, `Give furosemide for the high CVP`], ans: [0, 1] },
+        params: { opts: [`Heart rate, blood pressure and pulse pressure`, `CVP and neck vein distention`, `Serum potassium`, `Blood glucose`, `Urine specific gravity`], ans: [0, 1] },
+        why: `Chest tubes that suddenly stop draining after heart surgery, with a rising heart rate and CVP, a falling and narrowing pressure, muffled heart sounds and distended neck veins, is tamponade from clotted tubes until proven otherwise. The fix is surgical: the surgeon at the bedside and a chest ready to open. Trend the hemodynamics that show the heart is being squeezed.` },
+      { id: 'icu-mat', type: 'matrix', step: 'analyze',
+        stem: `The nurse is caring for clients on volume-control mechanical ventilation and reviews possible causes of ventilator alarms.`,
+        q: `For each cause, indicate whether it would trigger a high-pressure alarm or a low-pressure alarm.`,
+        cols: [`High-pressure alarm`, `Low-pressure alarm`],
+        rows: [
+          { t: `Thick secretions in the endotracheal tube`, ans: 0, why: `Secretions narrow the airway, so the ventilator needs more pressure to deliver the set volume.` },
+          { t: `The client biting down on the endotracheal tube`, ans: 0, why: `A bitten, kinked tube obstructs flow and raises peak pressure.` },
+          { t: `The circuit disconnected from the endotracheal tube`, ans: 1, why: `With the circuit open, pressure can't build: the ventilator loses its seal and alarms low.` },
+          { t: `Air leaking around a deflated endotracheal tube cuff`, ans: 1, why: `A cuff leak lets volume escape, so the system can't reach its expected pressure.` },
+          { t: `Coughing or fighting the ventilator`, ans: 0, why: `Coughing against a delivered breath spikes airway pressure; it may also signal pain, secretions or anxiety.` },
+          { t: `A tension pneumothorax`, ans: 0, why: `Rising pressure in the chest makes the lung stiff to inflate, raising peak and plateau pressures, with falling SpO₂ and blood pressure.` },
+        ],
+        why: `High pressure means resistance to flow: obstruction (secretions, biting, kinks), coughing, or a stiffer lung (pneumothorax, bronchospasm). Low pressure means a leak or disconnection. When an alarm comes with a falling SpO₂ and you can't find the cause fast, disconnect and bag with 100% oxygen while you work through DOPE: displacement, obstruction, pneumothorax, equipment.` },
+      { id: 'icu-sata', type: 'sata', step: 'eval',
+        stem: `A 64-year-old client weighing 80 kg has septic shock from an obstructed, infected kidney. Six hours ago the client received antibiotics, IV fluid and norepinephrine, and a nephrostomy drained the kidney two hours ago. Lactate was 4.6 mmol/L at the start.`,
+        q: `Which findings indicate that resuscitation is effective? Select all that apply.`,
+        opts: [
+          { t: `MAP 70 mm Hg on a norepinephrine dose that has been weaned down`, ok: true },
+          { t: `Urine output 50 mL/h for the last 2 hours`, ok: true },
+          { t: `Lactate 2.1 mmol/L`, ok: true },
+          { t: `Capillary refill 2 seconds and warm hands`, ok: true },
+          { t: `Heart rate 124, up from 110`, ok: false },
+          { t: `New confusion; was oriented this morning`, ok: false },
+          { t: `Norepinephrine increased twice in the last hour to keep MAP 65`, ok: false },
+        ],
+        why: `Effective resuscitation shows up as perfusion getting better: a target MAP on less vasopressor, urine output of at least 0.5 mL/kg/h, a falling lactate, and warm skin with brisk refill. A climbing heart rate, new confusion or a rising vasopressor need mean the shock isn't controlled yet.` },
+    ],
     'ob-2n-1': [
       { id: 'ob-bow', type: 'bowtie', step: 'hypo',
         stem: `A client is 2.5 hours after a vaginal birth that followed a 20-hour oxytocin induction; the newborn weighed 4.3 kg. She has not voided since birth. The fundus is boggy, 2 cm above the umbilicus and deviated to the right. Her pad is saturated in 30 minutes. HR 104, BP 112/68. She has asthma.`,
@@ -369,7 +404,7 @@
     ['psychosocial', 'Psychosocial Integrity', '6 to 12%'], ['basic', 'Basic Care and Comfort', '6 to 12%'], ['pharm', 'Pharmacological and Parenteral Therapies', '13 to 19%'],
     ['risk', 'Reduction of Risk Potential', '9 to 15%'], ['physio', 'Physiological Adaptation', '11 to 17%'],
   ];
-  const SPOF = { 'medsurg-4w-1': 'ms', 'medsurg-4w-2': 'ms', 'medsurg-4w-3': 'ms', 'stepdown-6e-1': 'sd', 'ed-podb-1': 'ed', 'ob-2n-1': 'ob', 'psych-3e-1': 'psy', 'psych-4n-1': 'teen', 'peds-5s-1': 'peds' };
+  const SPOF = { 'medsurg-4w-1': 'ms', 'medsurg-4w-2': 'ms', 'medsurg-4w-3': 'ms', 'stepdown-6e-1': 'sd', 'icu-3w-1': 'icu', 'ed-podb-1': 'ed', 'ob-2n-1': 'ob', 'psych-3e-1': 'psy', 'psych-4n-1': 'teen', 'peds-5s-1': 'peds' };
   const TAGS = {
     'ms1-bow': ['physio', 'Sepsis in older adults'], 'ms1-mat': ['pharm', 'Hold parameters'], 'ms1-sata': ['risk', 'Atelectasis prevention'],
     'ms2-bow': ['physio', 'Hyperkalemia'], 'ms2-hl': ['physio', 'Oxygen in COPD'], 'ms2-mat': ['pharm', 'Allergy check before surgery'],
@@ -379,6 +414,7 @@
     'p4-bow': ['pharm', 'Acute dystonia'], 'p4-cloze': ['physio', 'Refeeding syndrome'], 'p4-sata': ['psychosocial', 'Abuse disclosure'],
     'ed-bow': ['physio', 'Inferior STEMI'], 'ed-hl': ['risk', 'Thrombolytic eligibility'], 'ed-sata': ['physio', 'Anaphylaxis'],
     'ob-bow': ['physio', 'Postpartum hemorrhage'], 'ob-mat': ['pharm', 'Magnesium sulfate'], 'ob-cloze': ['health', 'Newborn hypoglycemia'],
+    'icu-bow': ['physio', 'Tamponade after heart surgery'], 'icu-mat': ['physio', 'Ventilator alarms'], 'icu-sata': ['physio', 'Septic shock response'],
     'pd-bow': ['physio', 'Status asthmaticus'], 'pd-mat': ['health', 'Pediatric vital signs'], 'pd-sata': ['safety', 'Weight-based dosing error'],
     'fx-analyze-1': ['physio', 'Left vs right heart failure'], 'fx-analyze-2': ['psychosocial', 'Eating disorder findings'], 'fx-analyze-3': ['health', 'Pathologic newborn jaundice'],
     'fx-analyze-4': ['risk', 'Pulmonary embolism'], 'fx-eval-1': ['physio', 'Pneumonia response'], 'fx-eval-2': ['pharm', 'Naloxone response'],

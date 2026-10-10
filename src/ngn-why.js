@@ -393,5 +393,43 @@ window.Shift.ngnWhy = {
    "Yes: A pound-for-kilogram weight error is a system problem, and reporting it, even as a near miss, helps prevent the same error for other children."
   ],
   "tip": "When a weight looks wrong for the age, suspect a pounds-for-kilograms mix-up; the answers that hold, verify and report are correct, and any option that gives some form of the dose is a distractor."
+ },
+ "icu-bow": {
+  "cond": [
+   "Yes: Chest tube output that stops abruptly while HR and CVP climb, the pressure falls and narrows, the heart sounds muffle and the neck veins distend is Beck's triad and tamponade.",
+   "No: The tempting read is that the bleeding stopped. But stopped bleeding brings the heart rate down and the pressure up; here every sign is moving the wrong way, and the CVP is rising, not falling.",
+   "No: Atrial fibrillation is common after bypass and can drop the pressure, but it doesn't explain a rising CVP, muffled heart sounds and chest tubes that suddenly stopped draining.",
+   "No: Left heart failure raises pressure in the lungs and causes crackles; it doesn't explain clotted chest tubes, a narrowing pulse pressure and muffled heart sounds."
+  ],
+  "actions": [
+   "Yes: Tamponade after cardiac surgery is a surgical emergency. The surgeon needs to know now, by phone, not in a note.",
+   "Yes: The definitive treatment is evacuating the clot, often by reopening the chest in the ICU. Preparing the sterile setup saves minutes.",
+   "No: Fluid can briefly support filling, but it doesn't relieve compression, and waiting an hour lets the pressure keep falling toward arrest.",
+   "No: Documenting the bleeding as resolved is the classic trap; the drainage stopped because the tubes clotted while blood kept collecting around the heart.",
+   "No: The high CVP comes from compression, not fluid overload. A diuretic would drop preload the heart depends on and worsen the shock."
+  ],
+  "params": [
+   "Yes: A rising heart rate and a falling, narrowing pressure show how hard the heart is being squeezed and whether the intervention worked.",
+   "Yes: CVP and neck veins rise as blood backs up behind a compressed heart; they fall once the tamponade is relieved.",
+   "No: Potassium matters after bypass for arrhythmias, but it doesn't track tamponade or the response to evacuating it.",
+   "No: Glucose control matters after heart surgery for wound healing, but it isn't a measure of tamponade.",
+   "No: Specific gravity reflects urine concentration, not cardiac filling or output in an emergency."
+  ],
+  "tip": "When a drain suddenly stops after surgery, ask why before you celebrate: compare the drain with the vital sign trends, and believe the trends."
+ },
+ "icu-mat": {
+  "tip": "Sort ventilator alarms by mechanism: anything that resists flow raises pressure; anything that lets air escape lowers it."
+ },
+ "icu-sata": {
+  "opts": [
+   "Yes: Holding the MAP goal while the vasopressor dose comes down means vascular tone and volume are recovering.",
+   "Yes: For an 80 kg client, 50 mL/h is above 0.5 mL/kg/h, so the kidneys are being perfused.",
+   "Yes: A lactate falling from 4.6 to 2.1 shows tissue perfusion improving; lactate clearance is a key resuscitation marker.",
+   "Yes: Warm hands and a brisk capillary refill show blood is reaching the skin again, an easy bedside sign of perfusion.",
+   "No: A rising heart rate suggests ongoing hypovolemia, fever or pain; it is not a sign that the shock is resolving.",
+   "No: New confusion can mean the brain is underperfused. A worsening mental status is a red flag, not improvement.",
+   "No: Needing more vasopressor to hold the same MAP means the shock is getting worse, even if the number looks fine."
+  ],
+  "tip": "In shock questions, judge the patient by perfusion (mental status, urine, skin, lactate) and by how much support it takes to get there, not by a single number."
  }
 };

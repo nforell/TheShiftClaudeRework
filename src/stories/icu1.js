@@ -1,0 +1,153 @@
+/* Days in the ICU. Stories for Frank, Tuan (through Michael), Beatrice and Joseph (through Abena). */
+(function (S) {
+  S.story.add('icu-3w-1', {
+    '711': {
+      who: 'linda', watch: true, idle: ['fr_after', 'linda_after'], after: ['linda_talk'],
+      gate: (s, P) => !P.crash && P.sev < 1.2 && !P.away,
+      guarded: [`Linda doesn't look away from the monitor. "Not now. I'm watching his numbers."`, `"Can it wait? He just opened his eyes."`],
+      presence: `You stand with Linda at the foot of the bed for a few minutes. She tells you which number she's been watching. You tell her which one you watch. After that she sits down for the first time since midnight.`,
+      beats: [
+        { need: 0, learn: `Linda hasn't left since 01:00 and hasn't eaten.`,
+          text: `"Forty-one years. He's never been sick a day. He fixed the porch light on Sunday." She's still in her coat. "I haven't left. I don't want to miss anything."`,
+          choices: [
+            { label: `You've been here all night. He's being watched every minute, and I'll call your cell the moment anything changes. Can I get you something to eat or a place to lie down for an hour?`, rap: 1, set: { lindaRest: true },
+              judge: [`comm`, 1, `You looked after Mr. Kowalski's wife, too.`, `Family members keeping vigil in the ICU have high rates of anxiety and depression afterward. A meal, a nap and a promise to call are nursing care.`],
+              reply: `"A sandwich. Maybe." She takes her coat off. "You'll call?" You write your name and the unit number on the whiteboard.` },
+            { label: `Visiting hours are flexible. Stay as long as you want.`, rap: 0, reply: `"I will." She keeps her coat on.` },
+            { label: `You should go home and sleep. There's nothing you can do here.`, rap: -1, reply: `"There's nothing I can do at home either." She turns back to the monitor.` },
+          ] },
+        { need: 1, learn: `Frank ignored a week of back pain because he "didn't want to bother anyone".`,
+          text: `"He had that back pain a whole week. I said go to the doctor. He said it was the stone again and he'd pass it like last time." She shakes her head. "He doesn't like to bother anyone."`,
+          choices: [
+            { label: `A lot of people wait. A stone that blocks the kidney and then gets infected can turn into this fast. When he's home, fever or chills with a stone means the ER the same day.`, rap: 1, set: { taughtStone: true },
+              judge: [`comm`, 1, `You taught Mr. Kowalski's wife when an obstructing stone becomes an emergency.`, `An obstructed, infected kidney is a urologic emergency. Families who know the warning signs bring patients in hours earlier next time.`],
+              reply: `"Fever and a stone, go in." She says it twice. "I'm putting it on the fridge. Under the electrician's license."` },
+            { label: `You can't blame yourself.`, rap: 1, reply: `"I don't. I blame him." She almost smiles.` },
+          ] },
+        { need: 2, learn: `He wired the house himself; the porch light is still on.`,
+          text: `"The porch light's still on. He fixed it Sunday and I don't know which switch." She laughs, then doesn't. "He wired the whole house. I never had to know anything."`,
+          choices: [
+            { label: `Then that's the first thing he gets to teach you when he's home.`, rap: 1, reply: `"He'll love that. He'll draw a diagram." She takes out her phone and takes a picture of him sleeping, monitor and all.` },
+            { label: `That's sweet.`, rap: 0, reply: `"It is." She looks at his hands.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Frank went home on day eight with a stent in his ureter and the stone gone. ${P.taughtStone ? 'There is a note on the fridge under his electrician\'s license: "Fever and a stone, go in."' : ''} He showed Linda the switch for the porch light. It was on a diagram.`,
+        warm: `Frank was transferred to the floor on day four and home on day eight. He told the urologist he'd "pass the next one at home," and Linda told the urologist he wouldn't.`,
+        distant: `Frank Kowalski left the ICU on day four. His chart lists norepinephrine, a nephrostomy and resolved septic shock. It doesn't mention the porch light.`,
+        hard: (s, P) => (P.injury ? `Frank survived, but the skin and muscle on his left forearm did not. He had two operations on the arm, and he can't grip a screwdriver yet. Linda keeps the porch light on.` : `Frank needed two more days of vasopressors and a week of dialysis. He went to rehab, then home. Linda says he's slower now, and quieter.`),
+      },
+    },
+    '712': {
+      who: 'michael', watch: true, idle: ['mic_after'], after: ['mic_talk'],
+      gate: (s, P) => !P.arrest && !(P.plug > .3),
+      guarded: [`Michael is reading the ventilator, not you. "Sorry. Give me a minute. I'm doing math I'm not supposed to do."`, `"Later? He just settled."`],
+      presence: `You sit with Michael while the ventilator cycles. He narrates the waveform under his breath like a habit, then stops himself. "Sorry. I'm his partner today, not a CRNA." You tell him that's allowed.`,
+      beats: [
+        { need: 0, learn: `Michael is a nurse anesthetist and keeps reading the vent settings.`,
+          text: `"I know what PEEP 12 and 60 percent mean. That's the problem." He rubs his eyes. "At work I'd fix it. Here I just watch the numbers and hate them."`,
+          choices: [
+            { label: `You know enough to be scared, and none of the control. You don't have to be his clinician here. Would it help if I walked you through the plan each time something changes, the same way I'd tell the team?`, rap: 1, set: { micPlan: true },
+              judge: [`comm`, 1, `You gave Mr. Pham's partner a clear role and a plan.`, `Families who work in health care often feel they have to supervise care. Offering structured updates, and permission to just be family, lowers that load.`],
+              reply: `"Yes. Please. Like report." He sits back for the first time. "I can do report."` },
+            { label: `Try not to look at the numbers.`, rap: -1, reply: `"I can't not look." He keeps looking.` },
+            { label: `He's in good hands.`, rap: 0, reply: `"I know. I trained some of these hands." He doesn't smile.` },
+          ] },
+        { need: 1, learn: `Tuan skipped his flu shot because "the band trip was that week".`,
+          text: `"He skipped his flu shot. The band trip was that week and he said he'd go after. I'm a nurse. I should have dragged him." He looks at the IV pole. "Isn't that stupid."`,
+          choices: [
+            { label: `It's not stupid. It's what busy people do. When he's well, a yearly flu shot and the pneumonia vaccine matter more for him now, and you'll both get the reminder from us at discharge.`, rap: 1, set: { vaxTeach: true },
+              judge: [`comm`, 1, `You planned prevention with Mr. Pham's partner.`, `After severe influenza, annual vaccination and age- and risk-appropriate pneumococcal vaccination are standard teaching. Framed without blame, it sticks.`],
+              reply: `"Every October. I'll put it in both our calendars." He types it in right then.` },
+            { label: `Lots of people skip it.`, rap: 0, reply: `"Lots of people aren't on a vent." He puts the phone away.` },
+          ] },
+        { need: 2, learn: `The marching band is learning "September" for when he's back.`,
+          text: `"The kids sent a video. The sophomores are learning 'September' for when he's back." He holds the phone near Tuan's ear. "Hearing is the last thing to go and the first thing back. You'd know that."`,
+          choices: [
+            { label: `Play it for him. Talk to him like he can hear you; a lot of people remember voices from the ICU. I'll tell him myself that the band is waiting.`, rap: 1, reply: `The brass section is a little flat. Tuan's heart rate drifts down six beats. Michael notices too. Neither of you says anything.` },
+            { label: `Keep the volume low so he can rest.`, rap: 0, reply: `"Sure." He turns it down to nothing.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Tuan was extubated on day nine and went to rehab on day sixteen. ${P.vaxTeach ? 'Both of their calendars say "flu shots" in October.' : ''} He conducted the homecoming game from a stool. The sophomores were still flat. He told them they were perfect.`,
+        warm: `Tuan came off the ventilator on day nine. He remembers almost nothing of the ICU except a trumpet that was a little flat.`,
+        distant: `Tuan Pham was extubated on day nine and discharged to rehab. His record says ICU delirium resolved. Michael remembers the numbers.`,
+        hard: (s, P) => (P.arrest ? `Tuan arrested on the ventilator at 09:20 from a mucus plug. He was resuscitated, but spent another three weeks in the ICU and has trouble finding words. Michael brings the band videos anyway.` : `Tuan pulled out his own breathing tube and had to be reintubated in a hurry. He spent eleven more days on the ventilator.`),
+      },
+    },
+    '713': {
+      idle: ['bea_after'], after: ['bea_talk'],
+      gate: (s, P) => !P.gone && !(P.tamp > .35) && !P.arrest,
+      guarded: [`"Not just now, dear. It hurts to talk."`, `She waves you off with the pillow. "Ask me later. I'm busy breathing."`],
+      presence: `You sit by Beatrice while she holds the heart pillow. She doesn't talk. After a while she starts reading the whiteboard out loud in a story-time voice, and the respiratory therapist laughs in the hallway.`,
+      beats: [
+        { need: 0, learn: `She's afraid to cough because she thinks her chest will open.`,
+          text: `"They want me to cough. I'm afraid it'll pop open." She clutches the red heart pillow. "They told me it's wired shut. Wires can come undone."`,
+          choices: [
+            { label: `That's a very common fear. Hug the pillow hard against your chest when you cough; it supports the bone while it heals. The wires are strong, and coughing is what keeps pneumonia away. Let's do one together.`, rap: 1, set: { coughTaught: true },
+              judge: [`comm`, 1, `You taught Mrs. Holloway to splint and cough.`, `Splinting the sternum with a pillow makes coughing less painful and protects the incision. After heart surgery, effective coughing and deep breathing prevent atelectasis and pneumonia.`],
+              reply: `She coughs, hard, hugging the pillow. "Oh. That wasn't so bad." She does two more without being asked.` },
+            { label: `You'll be fine. Just cough.`, rap: -1, reply: `She coughs once, barely. "There."` },
+          ] },
+        { need: 1, learn: `Her daughter Carol hasn't come because she doesn't know Beatrice had surgery this week.`,
+          text: `"Carol doesn't know it was this week. I told her it was next month. She has the twins." She looks at the door. "I didn't want a fuss."`,
+          choices: [
+            { label: `That sounds like you were protecting her. Would you like help calling her today? You'll go home needing someone around for a while, and she'd probably rather hear it from you.`, rap: 1, set: { carolCalled: true },
+              judge: [`comm`, 1, `You helped Mrs. Holloway plan for support at home.`, `After cardiac surgery, patients need help at home for weeks: driving, lifting, wound checks. Planning it early prevents unsafe discharges and readmissions.`],
+              reply: `"She'll be furious." She smiles. "Bring me the phone after lunch."` },
+            { label: `You should tell her.`, rap: 0, reply: `"I know, dear." She doesn't.` },
+          ] },
+        { need: 2, learn: `She ran story time at the Elmhurst library for 30 years.`,
+          text: `"Thirty years of story time. I could do 'Goodnight Moon' in my sleep. I probably have." She looks at the pacing wires. "Nobody reads to grown-ups."`,
+          choices: [
+            { label: `Then tell me one. I'll listen while I check your chest tubes.`, rap: 1, reply: `She tells you about a bear who couldn't sleep until he counted the stars twice. You finish the chest tube check before the bear does.` },
+            { label: `Maybe your daughter could bring some books.`, rap: 1, reply: `"Picture books. The good ones." She makes a list on her napkin.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Beatrice went home on day six. ${P.carolCalled ? 'Carol was furious for about ten minutes and then moved into the spare room for three weeks.' : ''} At her cardiac rehab graduation she read the group a picture book about a bear. Everyone clapped.`,
+        warm: `Beatrice went home on day seven. She still hugs the red heart pillow when she sneezes, a year later, out of habit.`,
+        distant: `Beatrice Holloway was discharged on post-op day seven. Her chart says sternal precautions taught. It doesn't say who reads to her.`,
+        hard: (s, P) => (P.arrest ? `Beatrice's heart stopped from tamponade before the surgeon could reopen her chest. She was resuscitated at the bedside, but woke slowly, and went to a nursing facility. Carol reads to her now.` : `Beatrice went back to the operating room from tamponade and spent four extra days in the ICU. She says she doesn't remember any of it, which she thinks is a mercy.`),
+      },
+    },
+    '714': {
+      who: 'abena', watch: true, idle: ['ab_after'], after: ['ab_talk'],
+      gate: (s, P) => !P.dying,
+      guarded: [`Abena holds his hand and shakes her head. "Not now. We are praying."`, `Kofi answers for her. "Can you give us a minute?"`],
+      presence: `You stand at the bedside with the family. Abena takes your hand without looking at you and keeps praying. When she finishes she says "Thank you," and you understand that this was the thing to do.`,
+      beats: [
+        { need: 0, learn: `Joseph wrote his advance directive after his own father died on a ventilator.`,
+          text: `"In 2019 he wrote that paper. After his father. His father was on the machines for two months." Abena smooths the blanket over his chest. "Joseph said, never like that. Not for me."`,
+          choices: [
+            { label: `Thank you for telling me. That sounds like a decision he made carefully, for you as much as for himself. Would it help to bring that to the meeting with Dr. Siddiqui, in his words?`, rap: 1, set: { adVoice: true },
+              judge: [`comm`, 1, `You helped Mrs. Mensah carry her husband's wishes into the meeting.`, `Substituted judgment means deciding as the patient would. Helping the surrogate say what the patient wanted, and why, is a core nursing role in a family meeting.`],
+              reply: `"In his words." She nods. "Yes. I can say it. I have heard him say it many times."` },
+            { label: `The doctors will go over all of that at the meeting.`, rap: 0, reply: `"Yes." She looks at the clock.` },
+            { label: `Every family has to make that choice eventually.`, rap: -1, reply: `"It is not every family. It is Joseph." She turns back to him.` },
+          ] },
+        { need: 1, learn: `Kofi and his sister Ama disagree about stopping; Kofi feels it's giving up.`,
+          text: `Kofi takes you aside in the hallway. "My mother has decided. My sister agrees. I feel like we are giving up on him. In church we pray for miracles."`,
+          who: 'kofi',
+          choices: [
+            { label: `It makes sense to feel that way, and you're not giving up on him by honoring what he asked for. Many families keep praying through this. Would you like the chaplain, or your pastor, to be with you at the meeting?`, rap: 1, set: { pastorAsked: true },
+              judge: [`comm`, 1, `You supported a family member in moral distress without taking sides.`, `Family disagreement is common at the end of life. Acknowledging the feeling, linking the decision to the patient's own wishes, and offering spiritual care respects the family's faith and the surrogate's role.`],
+              reply: `"Pastor Owusu. He's downstairs." He wipes his face with his sleeve. "He should be there. Dad would want him there."` },
+            { label: `The medical facts are clear. There's no chance of recovery.`, rap: -1, reply: `"You don't know that. Only God knows that." He walks away.` },
+          ] },
+        { need: 2, learn: `Joseph whistled the same three hymns under every bus for 31 years.`,
+          text: `"At the depot they called him the whistler. Same three hymns, under every bus, thirty-one years." Abena hums a few bars. "The drivers are coming tonight. All of them."`,
+          choices: [
+            { label: `Let's make room for them. I'll talk to the charge nurse about visitors in shifts, so everyone who wants to can say goodbye.`, rap: 1, reply: `That night eleven bus drivers come up in pairs. Some of them whistle. Nobody asks them to stop.` },
+            { label: `It's a small room, but we'll try.`, rap: 0, reply: `"We will be quiet." She keeps humming.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Joseph died just before one o'clock with his family around him and a hymn being sung slightly off key. ${P.adVoice ? 'Abena told the meeting what he wanted in his own words, and nobody had to guess.' : ''} The transit authority named a bay at the depot after him. The drivers still whistle in it.`,
+        warm: `Joseph died that afternoon, comfortable, with Abena holding his hand. His family said afterward that the ICU felt like it had room for them.`,
+        distant: `Joseph Mensah died after a transition to comfort care. The chart is complete. The family's memory of the day is less clear.`,
+        hard: (s, P) => `Joseph died that afternoon. The family remembers confusion: who was supposed to decide, who said what about donation, and a long time when nobody came. Kofi wrote a letter to the hospital about it.`,
+      },
+    },
+  });
+})(window.Shift);
