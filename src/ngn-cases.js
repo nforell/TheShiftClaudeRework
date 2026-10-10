@@ -7101,7 +7101,7 @@ window.Shift.ngnCases = [
     "tab": "History and Physical",
     "at": 0,
     "time": "",
-    "text": "G2P10:01 at 34 weeks 2 days by first-trimester ultrasound. Chronic hypertension diagnosed 4 years ago; takes labetalol 200 mg PO twice daily, last dose at 20:00 last night. Prior term vaginal birth 3 years ago. 20-week anatomy ultrasound: posterior fundal placenta, well clear of the cervix. Blood type O negative; received Rh immune globulin 300 mcg at 28 weeks. Nonsmoker, denies substance use. Weight 82 kg (180 lb). No known drug allergies."
+    "text": "G2 P1001 at 34 weeks 2 days by first-trimester ultrasound. Chronic hypertension diagnosed 4 years ago; takes labetalol 200 mg PO twice daily, last dose at 20:00 last night. Prior term vaginal birth 3 years ago. 20-week anatomy ultrasound: posterior fundal placenta, well clear of the cervix. Blood type O negative; received Rh immune globulin 300 mcg at 28 weeks. Nonsmoker, denies substance use. Weight 82 kg (180 lb). No known drug allergies."
    },
    {
     "tab": "Nurses' Notes",
@@ -7351,7 +7351,7 @@ window.Shift.ngnCases = [
      {
       "t": "Type and crossmatch 2 units of packed red blood cells",
       "ok": true,
-      "why": "Yes: her hemoglobin has dropped to 9.4 g/dL with ongoing bleeding and surgery ahead, so blood must be ready before it is needed."
+      "why": "Yes: Her hemoglobin is already 9.4 g/dL with ongoing bleeding and surgery ahead, so blood must be ready before it is needed."
      },
      {
       "t": "Prepare the client for cesarean birth",
@@ -7872,7 +7872,7 @@ window.Shift.ngnCases = [
      {
       "t": "BP 108/64, up from 86/50 at 11:00",
       "ans": 0,
-      "why": "her pressure recovered after repositioning and the dose hold, so placental perfusion is better supported."
+      "why": "her pressure has recovered from 86/50 at 11:00, so placental perfusion is better supported."
      },
      {
       "t": "Patellar reflexes absent, 2+ at 14:00",
@@ -7926,7 +7926,7 @@ window.Shift.ngnCases = [
     "tab": "Vital Signs",
     "at": 0,
     "time": "13:35",
-    "text": "T 39.6 °C (103.3 °F), HR 148, RR 30, BP 94/56, SpO₂ 97% on room air, capillary refill 3 seconds. Normal for age: HR 80 to 120, RR 22 to 34, SBP 90 to 110."
+    "text": "T 39.6 °C (103.3 °F), HR 148, RR 30, BP 94/56, SpO₂ 97% on room air, capillary refill 3 seconds. Normal for age: HR 80 to 120, RR 20 to 28, SBP 89 to 112."
    },
    {
     "tab": "Nurses' Notes",

@@ -1314,7 +1314,7 @@ window.Shift.ngnBank = [
    {
     "t": "Pertussis",
     "ans": 1,
-    "why": "pertussis spreads in large droplets from coughing, so a surgical mask within close range and a private room are enough."
+    "why": "pertussis spreads in large droplets from coughing, so a surgical mask on entering the room and a private room are enough."
    },
    {
     "t": "Influenza",
@@ -2421,7 +2421,7 @@ window.Shift.ngnBank = [
    "Dose: 0.1 units/kg/h × 72 kg = 7.2 units/h",
    "Rate: 7.2 units/h ÷ 1 unit/mL = 7.2 mL/h"
   ],
-  "why": "Multiply the weight by the ordered units per kg, then divide by the concentration. Potassium must be at least 3.3 mEq/L before insulin starts, because insulin drives potassium into the cells. Insulin is high alert, so a second nurse verifies the rate.",
+  "why": "Multiply the weight by the ordered units per kg, then divide by the concentration. Potassium must be at least 3.5 mEq/L before insulin starts, because insulin drives potassium into the cells. Insulin is high alert, so a second nurse verifies the rate.",
   "tip": "With a 1 unit/mL bag, units/h and mL/h are the same number, which makes a quick check easy."
  },
  {
@@ -3344,7 +3344,7 @@ window.Shift.ngnBank = [
   "opts": [
    "Check the pH: 7.30 is below 7.35, so the client is acidotic",
    "Check the PaCO₂ and HCO₃: PaCO₂ 54 mm Hg is above 45 (acid direction); HCO₃ 25 mEq/L is within 22 to 26 (normal)",
-   "Match the abnormal value that moves in the same direction as the pH: the PaCO₂, so this is respiratory acidosis",
+   "Name the primary disorder from the value that explains the pH: a PaCO₂ of 54 mm Hg is acidic and matches the low pH, so this is respiratory acidosis",
    "Check for compensation: the HCO₃ has not risen and the pH is still abnormal, so the acidosis is uncompensated"
   ],
   "whys": [
@@ -4659,7 +4659,7 @@ window.Shift.ngnBank = [
   "actions": {
    "opts": [
     "Infuse 0.9% sodium chloride IV as ordered",
-    "Start a continuous IV regular insulin infusion as ordered once potassium is confirmed at 3.3 mEq/L or higher",
+    "Start a continuous IV regular insulin infusion as ordered once potassium is confirmed at 3.5 mEq/L or higher",
     "Give sodium bicarbonate IV push",
     "Give insulin glargine subcutaneously as the only insulin",
     "Give 50 mL of 50% dextrose IV"
@@ -4704,7 +4704,7 @@ window.Shift.ngnBank = [
     "No: peak flow measures airflow in asthma; her rapid breathing is a compensation for metabolic acidosis, not airway obstruction."
    ]
   },
-  "why": "Missed insulin, hyperglycemia, ketones, low bicarbonate and Kussmaul respirations make this DKA. Treatment is IV isotonic fluid, then an IV regular insulin infusion once potassium is at least 3.3 mEq/L, with potassium replaced as it falls. Glucose and potassium are checked often because both change quickly with treatment.",
+  "why": "Missed insulin, hyperglycemia, ketones, low bicarbonate and Kussmaul respirations make this DKA. Treatment is IV isotonic fluid, then an IV regular insulin infusion once potassium is at least 3.5 mEq/L, with potassium replaced as it falls. Glucose and potassium are checked often because both change quickly with treatment.",
   "tip": "In DKA, remember that insulin lowers potassium; any answer about starting insulin must account for the potassium level."
  },
  {
@@ -7604,9 +7604,9 @@ window.Shift.ngnBank = [
     "why": "Yes: cortisol supports glucose levels. Its absence causes hypoglycemia, which needs prompt treatment."
    },
    {
-    "t": "Na 128 mEq/L, K 5.8 mEq/L.",
+    "t": "Na 128 mEq/L, K 4.8 mEq/L.",
     "ok": true,
-    "why": "Yes: low sodium and high potassium fit adrenal insufficiency. High potassium also threatens the heart rhythm."
+    "why": "Yes: Low sodium fits adrenal insufficiency and needs correction with IV saline and hydrocortisone. Potassium usually stays normal after steroid withdrawal because aldosterone is still made."
    },
    {
     "t": "Morning stiffness in both hands.",
@@ -7624,7 +7624,7 @@ window.Shift.ngnBank = [
     "why": "No: this temperature is within normal limits and does not need follow-up."
    }
   ],
-  "why": "Long-term steroid use suppresses the adrenal glands. Stopping suddenly causes adrenal crisis: shock, hypoglycemia, hyponatremia and hyperkalemia. The nurse anticipates IV hydrocortisone, IV fluids and glucose, and monitors the heart rhythm.",
+  "why": "Long-term steroid use suppresses the adrenal glands. Stopping suddenly causes adrenal crisis: shock, hypoglycemia and hyponatremia. Hyperkalemia is typical of primary adrenal insufficiency (Addison disease), not steroid withdrawal. The nurse anticipates IV hydrocortisone, IV fluids and glucose.",
   "tip": "When a client on long-term steroids presents in shock, ask when the last dose was taken.",
   "cn": "physio"
  },
@@ -8093,15 +8093,15 @@ window.Shift.ngnBank = [
   "cn": "pharm",
   "sp": "ms",
   "topic": "Gentamicin mg/kg dose",
-  "stem": "A 69-year-old client with gram-negative sepsis weighs 172 lb. The order reads gentamicin 5 mg/kg IV once daily. Convert the weight to kilograms and",
+  "stem": "A 69-year-old client with gram-negative sepsis weighs 172 lb. The order reads gentamicin 5 mg/kg IV once daily.",
   "q": "How many mg should the client receive?",
   "ans": 391,
   "tol": 0,
   "unit": "mg",
   "round": "Round to the nearest whole number.",
   "work": [
-   "Weight: 172 lb / 2.2 = 78.18, rounded to 78.2 kg.",
-   "Dose: 5 mg/kg x 78.2 kg",
+   "Weight: 172 lb / 2.2 = 78.18 kg (keep the full value until the last step).",
+   "Dose: 5 mg/kg x 78.18 kg = 390.9 mg, rounded to 391 mg",
    "= 391 mg",
    "Answer: 391 mg"
   ],
@@ -8162,15 +8162,15 @@ window.Shift.ngnBank = [
   "cn": "pharm",
   "sp": "peds",
   "topic": "Pediatric ibuprofen maximum dose",
-  "stem": "A 5-year-old client weighs 41 lb. The provider orders ibuprofen 200 mg PO every 6 hours as needed for pain. The reference dose is ibuprofen 10 mg/kg per dose. Convert the weight to kilograms and",
+  "stem": "A 5-year-old client weighs 41 lb. The provider orders ibuprofen 200 mg PO every 6 hours as needed for pain. The reference dose is ibuprofen 10 mg/kg per dose.",
   "q": "What is the maximum single dose for this child in mg?",
   "ans": 186,
   "tol": 0,
   "unit": "mg",
   "round": "Round to the nearest whole number.",
   "work": [
-   "Weight: 41 lb / 2.2 = 18.64, rounded to 18.6 kg.",
-   "Maximum single dose: 10 mg/kg x 18.6 kg = 186 mg.",
+   "Weight: 41 lb / 2.2 = 18.64 kg (keep the full value until the last step).",
+   "Maximum single dose: 10 mg/kg x 18.64 kg = 186.4 mg, rounded to 186 mg.",
    "Compare: ordered 200 mg is more than 186 mg.",
    "Answer: 186 mg; the order exceeds the safe dose, so hold and clarify"
   ],

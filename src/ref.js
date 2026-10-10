@@ -604,7 +604,7 @@ window.Shift.ref = [
      [
       "Long: detemir",
       "Onset 1 to 2 h; minimal peak; lasts 12 to 24 h",
-      "Once or twice daily; US availability varies (being phased out); check your formulary"
+      "Once or twice daily; discontinued in the US at the end of 2024; still used in some other countries"
      ],
      [
       "Long: degludec",
