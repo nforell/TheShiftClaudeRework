@@ -2,6 +2,16 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 10, 2026: Shift 10, Days in the ICU (needs critical care nurse review)
+
+| Patient | Teaching | Basis |
+|---|---|---|
+| 711 septic shock | Norepinephrine first line, MAP 65 or higher, wean above 75; vasopressin at 0.03 units/min added at norepinephrine 20 mcg/min or more; confirm central line tip before use; peripheral extravasation: stop, leave the catheter, aspirate, elevate, phentolamine per protocol; hold home beta-blocker and ACE inhibitor; repeat lactate; source control; surrogate consent when the patient lacks capacity. | Surviving Sepsis Campaign 2021; ISMP; Infusion Nurses Society standards. |
+| 712 ARDS on the ventilator | Vt 6 mL/kg PBW, plateau 30 or less, permissive hypercapnia; SAT paired with SBT only when the SBT screen passes (FiO₂ and PEEP thresholds vary by protocol); CPOT and CAM-ICU; analgesia first; least-restrictive measures before restraints, with an order, monitoring and release by behavior; DOPE for a high-pressure alarm with falling SpO₂. | ARDSNet; SCCM PADIS 2018 and the ABCDEF bundle; CMS 42 CFR 482.13. |
+| 713 day 1 after CABG | Tamponade from clotted chest tubes (Beck's triad, rising CVP, narrowing pulse pressure): STAT surgeon, bedside re-exploration; no routine stripping; potassium and magnesium replacement to prevent post-op AF; insulin infusion goal 140 to 180. | STS practice guidelines; AHA/AATS post-cardiac surgery care. |
+| 714 anoxic brain injury | Timely OPO referral before any withdrawal discussion; the nurse doesn't raise donation (designated requester); surrogate hierarchy and substituted judgment; double effect for comfort medication; glycopyrrolate for secretions; family presence at extubation. | CMS 42 CFR 482.45; ANA Code of Ethics; palliative care practice. |
+| Floor calls (ICU) | Damped arterial line before titrating; agitation on the ventilator; central line removal (air embolism prevention); hypoglycemia on an insulin infusion. | Standard critical care references. |
+
 ## October 10, 2026: NCLEX practice hub, pocket reference, transition-to-practice floor calls
 
 **All of this needs nurse review before launch.** Written to current US standard teaching and checked item by item for an answer key that scores full marks and a rationale for every option.

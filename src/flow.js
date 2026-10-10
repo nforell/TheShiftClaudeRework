@@ -28,6 +28,7 @@ window.Shift = window.Shift || {};
     'psych-3e-1': { key: 'owen', name: 'Owen', role: 'Oncoming RN', look: L('#C79470', '#A87652', '#8E5244', '#C98468', '#2A1B10', 'curls', '#20150F', 'grey', ['beard']) },
     'psych-4n-1': { key: 'marco', name: 'Marco', role: 'Night RN', look: L('#D6A47E', '#B88660', '#9A5648', '#D48A70', '#2A1C12', 'short', '#1A1310', 'navy', ['goatee']) },
     'stepdown-6e-1': { key: 'ari', name: 'Ari', role: 'Oncoming RN', look: L('#E2B48E', '#C49670', '#A0594C', '#DC8E74', '#3A2616', 'short', '#2A1C14', 'teal', ['studs']) },
+    'icu-3w-1': { key: 'rosa', name: 'Rosa', role: 'Oncoming ICU RN', look: L('#C08A64', '#A06E4C', '#86483A', '#C27C60', '#20140C', 'bun', '#1E1712', 'teal', ['studs']) },
     'ed-podb-1': { key: 'jo', name: 'Jo', role: 'Night RN', look: L('#8A5A3C', '#6E4530', '#6A3A2C', '#A8604A', '#1E130C', 'curlyshort', '#140E0A', 'navy', ['studs']) },
     'ob-2n-1': { key: 'maya', name: 'Maya', role: 'Oncoming RN', look: L('#E8C0A0', '#CC9E7E', '#AE6258', '#E4927C', '#2A1C12', 'bob', '#3A2618', 'rose', ['studs']) },
     'peds-5s-1': { key: 'june', name: 'June', role: 'Night RN', look: L('#EFCCAF', '#D4AA8C', '#B66A60', '#EE9C88', '#3C2A1E', 'long', '#1E1712', 'wine') },
@@ -317,6 +318,19 @@ window.Shift = window.Shift || {};
         { at: 170, st: 'improving', text: 'INR steady. Ate crackers. Asked if his mom could bring his bass.' },
       ],
       later: 'Three days on pediatrics until his liver tests turned around, then back to 4 North. A suicide attempt with an unknown ingestion should get an acetaminophen level, whatever the patient says.',
+    }),
+  };
+  AFTER['icu-3w-1'] = {
+    '713': (s, P, A, at) => ({
+      unit: 'OR', nurse: 'or', emergent: true,
+      event: `Cardiac arrest from tamponade at ${A.clock(at)}: chest tubes clotted off at 08:15, then rising HR and CVP, a narrowing pressure and muffled heart sounds. Emergency resternotomy at the bedside, then the OR.`,
+      extra: [{ label: 'CABG x3 yesterday: sternal wires, epicardial pacing wires', key: true }, { label: 'Chest tube output stopped at 08:15', key: true }, { label: 'Retired children\'s librarian', key: false }],
+      course: [
+        { at: 0, st: 'crit', text: 'Chest opened in the ICU, 600 mL of clot evacuated, rhythm back after 6 minutes. To the OR for bleeding control.' },
+        { at: 90, st: 'crit', text: 'Back from the OR: a bleeding vein graft branch tied off. Two vasopressors, intubated, cooling not needed.' },
+        { at: 200, st: 'serious', text: 'Pressors weaning. Sedation lightened; she squeezed her daughter\'s hand.' },
+      ],
+      later: 'Four extra ICU days and a slow recovery. After heart surgery, chest tube output that suddenly stops while the heart rate and CVP climb and the pressure narrows is tamponade until proven otherwise. It needs the surgeon at the bedside, not a note that the bleeding stopped.',
     }),
   };
   AFTER['stepdown-6e-1'] = {

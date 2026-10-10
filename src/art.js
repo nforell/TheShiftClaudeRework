@@ -27,7 +27,7 @@
     return ['#FFDDB0', .38];
   }
   const ACCENT = { med: '#93AFC7', psych: '#D2A877', peds: '#F2C35A', ob: '#D9A3B0', ed: '#8FB0A0' };
-  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : /^ob/.test(id) ? 'ob' : /^ed/.test(id) ? 'ed' : 'med'; };
+  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : /^ob/.test(id) ? 'ob' : /^ed/.test(id) ? 'ed' : /^icu/.test(id) ? 'icu' : 'med'; };
   /* Something on the wall that makes it a room someone lives in for a few days. Psych walls have nothing that can be
      pulled down or broken, so they get a painted mural; med and peds get the patient whiteboard. */
   function wallArt(kind, s, tele) {
@@ -36,8 +36,8 @@
     const H = 'font-family="Kalam, Segoe Print, cursive"';
     const head = kind === 'peds' ? `<text x="826" y="84" ${H} font-size="17" font-weight="700" fill="${red}">Hi! I'm your nurse</text><path d="M968 66 l5 10 11 2 -8 8 2 11 -10 -5 -10 5 2 -11 -8 -8 11 -2 Z" fill="none" stroke="#D9A21E" stroke-width="2"/>` : `<text x="826" y="84" ${H} font-size="16" font-weight="700" fill="${blue}">Your care team</text>`;
     return `<g transform="${tele ? 'translate(150 62) scale(.8)' : 'translate(-24 48) scale(.92)'}"><rect x="812" y="58" width="184" height="124" rx="3" fill="#FCFCFA" stroke="#B8BCC0" stroke-width="4"/><rect x="812" y="176" width="184" height="8" rx="2" fill="#9EA4AA"/><rect x="900" y="172" width="22" height="6" rx="2" fill="${blue}"/>
-      ${head}<text x="826" y="110" ${H} font-size="14" fill="${blue}">RN: you</text>${aide ? `<text x="826" y="132" ${H} font-size="14" fill="${blue}">CNA: ${aide}</text>` : ''}
-      <text x="826" y="${aide ? 156 : 134}" ${H} font-size="14" fill="${green}">${kind === 'peds' ? 'Mom/Dad can stay!' : kind === 'ob' ? 'Feeds: every 2-3 h' : kind === 'ed' ? 'Waiting on: results' : 'Goal: home soon'}</text><path d="M828 ${aide ? 162 : 140} q40 4 92 -1" stroke="${green}" stroke-width="1.6" fill="none" opacity=".7"/>
+      ${head}<text x="826" y="110" ${H} font-size="14" fill="${blue}">RN: you</text>${aide ? `<text x="826" y="132" ${H} font-size="14" fill="${blue}">${kind === 'icu' ? 'Tech' : 'CNA'}: ${aide}</text>` : ''}
+      <text x="826" y="${aide ? 156 : 134}" ${H} font-size="14" fill="${green}">${kind === 'peds' ? 'Mom/Dad can stay!' : kind === 'ob' ? 'Feeds: every 2-3 h' : kind === 'ed' ? 'Waiting on: results' : kind === 'icu' ? 'Visiting: open' : 'Goal: home soon'}</text><path d="M828 ${aide ? 162 : 140} q40 4 92 -1" stroke="${green}" stroke-width="1.6" fill="none" opacity=".7"/>
       <path d="M940 120 q8 -12 22 -4 q-6 14 -18 10" stroke="#C9CDD1" stroke-width="5" fill="none" opacity=".5" stroke-linecap="round"/></g>`;
   }
   const hot = (id, label, inner) => `<g class="clue" data-act="clue" data-id="${id}" tabindex="0" role="button" aria-label="${label}">${inner}</g>`;

@@ -2297,3 +2297,8 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .rec-tabs{flex-wrap:wrap;overflow:visible}
 .ngn-mx th{white-space:normal;font-size:.78rem;line-height:1.25;min-width:5.5rem;vertical-align:bottom}
 .cs-q .ngn-mx td.wrap{min-width:0}
+
+/* Critical care: deep teal, distinct from step-down red and med-surg navy. */
+.sp-icu{--sp:#0E6B6B;--sp-bg:#D3ECEA}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sp-icu{--sp:#6FD0C8;--sp-bg:#14302F}}
+:root[data-theme="dark"] .sp-icu{--sp:#6FD0C8;--sp-bg:#14302F}
