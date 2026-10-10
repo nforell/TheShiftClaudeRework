@@ -2,6 +2,29 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 17 — October 10, 2026 (branch `ld-shift`, built on `icu-shift`)
+
+### Done
+- **Shift 11: Days in Labor and Delivery** (`src/case-ld1.js`, `src/stories/ld1.js`), Advanced. Oxytocin tachysystole with a resident asking to go up; epidural hypotension and a birth before the doctor arrives (with APGAR scoring); a TOLAC uterine rupture; GBS prophylaxis and intraamniotic infection. Every strip read is a scored NICHD category decision. OB tech Renee replaces the aide; OR follow-up and report for emergency cesareans.
+- A **Labor and delivery** specialty (brick red) on the home screen, landing page and practice hub; L&D whiteboards; labor rooms' bedside monitor shows the fetal heart rate.
+- Three NCLEX items for the shift with full rationales; NCLEX step filing for L&D decisions reviewed by hand; `docs/cjmm-map.csv` regenerated.
+- New `tests/ld.py` (careful run: all four good, score 91; skipper: all go badly, score 20). L&D added to the sweep and follow-up lists.
+
+### Needs Nick
+- L&D nurse review (`/review/ld-2s-1/`): oxytocin restart rule, terbutaline dose and criteria, phenylephrine dose, gentamicin dosing, and the unattended-birth sequence.
+
+## Session 16 — October 10, 2026 (branch `icu-shift`, built on `nclex-prep`)
+
+### Done
+- **Shift 10: Days in the ICU** (`src/case-icu1.js`, `src/stories/icu1.js`), Expert. Four patients, each with a hidden deterioration, real orders with traps, family conversations, story arcs and end-of-shift outcomes (see README and docs/CLINICAL-UPDATES.md). The ICU tech replaces the aide; four ICU floor calls; three NCLEX items with full rationales; an oncoming ICU nurse; OR follow-up for a missed tamponade.
+- A **Critical care** specialty (deep teal) on the home screen, landing page and practice hub. Whiteboards in ICU rooms read "Tech" and "Visiting: open".
+- Intubated patients now show an **endotracheal tube** (rig extra `ett`), and patients on a ventilator are never offered "wants to talk".
+- NCLEX step filing for ICU decisions reviewed by hand (OVERRIDE in `src/cjmm.js`); `docs/cjmm-map.csv` regenerated.
+- New `tests/icu.py` (careful run: all four good, score 92; skipper: all four go badly, score 22). ICU added to the sweep and follow-up lists.
+
+### Needs Nick
+- Critical care nurse review (`/review/icu-3w-1/`): the SBT screen thresholds, vasopressin trigger, insulin protocol steps, and the OPO trigger wording.
+
 ## Session 15 — October 9 to 10, 2026 (branch `nclex-prep`)
 
 Nick's goal: as much clinical-grade content as possible, so the game genuinely prepares people for the NCLEX and the move into the RN role.

@@ -2,7 +2,7 @@
 (function (S) {
   const E = S.engine, OR = S.orient, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
-  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'ed-podb-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
+  const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'icu-3w-1', 'ed-podb-1', 'ld-2s-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
   /* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
      plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
@@ -45,7 +45,9 @@
     sd: { name: 'Cardiac step-down', unit: '6 East', blurb: 'Telemetry, drips and protocols that run on numbers. Best after med-surg.' },
     psy: { name: 'Adult psychiatry', unit: '3 East', blurb: 'Locked adult unit: holds, seclusion, the right to refuse, and medical problems hiding behind psych diagnoses.' },
     teen: { name: 'Adolescent psychiatry', unit: '4 North', blurb: 'Teens 14 to 17: consent, privacy, restraint charting and mandated reporting.' },
+    icu: { name: 'Critical care', unit: '3 West ICU', blurb: 'Two to four patients who can die this hour: vasopressors, ventilators, fresh hearts, and families deciding. Best after step-down.' },
     ed: { name: 'Emergency', unit: 'ED Pod B', blurb: 'Patients arrive with clocks running: stroke windows, door-to-balloon times, an airway that is closing.' },
+    ld: { name: 'Labor and delivery', unit: 'L&D, 2 South', blurb: 'Every patient is two patients: fetal monitoring, oxytocin, an epidural, a trial of labor after cesarean, fever in labor, and a birth you catch yourself.' },
     ob: { name: 'Mother-baby', unit: '2 North', blurb: 'The first day after birth: fundus checks, magnesium, newborn glucose, and the screens that catch what doesn\'t show.' },
     peds: { name: 'Pediatrics', unit: '5 South', blurb: 'Infants to teens: age-based vital signs, weight-based doses, and their families.' },
   };
@@ -58,6 +60,8 @@
     'psych-3e-1': { sp: 'psy', d: 4, why: 'Legal holds and seclusion charted step by step, plus a medical emergency on a psych unit. Uses California law (switch in Settings).' },
     'psych-4n-1': { sp: 'teen', d: 5, why: 'Minors: parents, privacy and mandated reports, restraint charting, refeeding labs and a hidden overdose. The hardest shift.' },
     'ed-podb-1': { sp: 'ed', d: 4, why: 'Five patients, two arriving mid-shift, each with a time-critical treatment that depends on a fact someone has to ask for. Assumes med-surg basics.' },
+    'icu-3w-1': { sp: 'icu', d: 5, why: 'Septic shock on a vasopressor, a ventilator alarm, a tamponade that looks like the bleeding stopped, and a family meeting about stopping life support. Assumes step-down basics.' },
+    'ld-2s-1': { sp: 'ld', d: 4, why: 'Four women in labor and four babies on the monitor: tachysystole on an oxytocin order that says go up, epidural hypotension, a uterine rupture, fever in labor, and a delivery before the doctor arrives. Assumes mother-baby basics.' },
     'ob-2n-1': { sp: 'ob', d: 3, why: 'Mothers and a newborn at once: bleeding, a high-alert drip, weight-based newborn dosing and a mental health screen. Assumes med-surg basics.' },
     'peds-5s-1': { sp: 'peds', d: 4, why: 'Normal vital signs change with age and every dose depends on weight. Parents, an interpreter and a safeguarding concern.' },
   };
@@ -400,7 +404,7 @@
         <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
         <div class="ladder sc-grid" role="group" aria-label="Choose a shift">
           ${CASES.map((id, i) => rung(id, i)).join('')}
-          <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">ICU, labor and delivery, and more shifts on every unit.</span></span></div></article>
+          <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">More shifts on every unit.</span></span></div></article>
         </div>
         ${careerHTML()}
         <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
@@ -803,7 +807,7 @@
     }).join('')}</ul>`;
   }
   const RISKY = /restrain|seclu|stop the (insulin|pca)|stop the infusion|straight cath|massage|search his room|1:1|pause the insulin|release/i;
-  const ROUND = { med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'], ob: ['Hourly round', 'Fundus, pad, pain, bathroom, baby on their back'], ed: ['Hourly round', 'Pain, what they\'re waiting on, things in reach'] };
+  const ROUND = { ld: ['Labor round', 'Strip through a few contractions, position, comfort, ice chips, partner'], med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'], ob: ['Hourly round', 'Fundus, pad, pain, bathroom, baby on their back'], ed: ['Hourly round', 'Pain, what they\'re waiting on, things in reach'] };
   function paneCare(d, P) {
     const Ax = A(), list = (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)), rd = ROUND[F.kindOf(C())], last = F.roundRow(s, Ax, d, P);
     const top = `${P.bell ? `<li><button class="fs-row urgent" data-act="bell" data-id="${d.id}"><span class="fs-l"><b>Answer the call light</b><small>${esc(P.bell.who)} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${esc(P.bell.text)} · since ${E.clock(P.bell.at)}</small></span><span class="fs-t"></span><span class="fs-c">2 min</span></button></li>` : ''}<li><button class="fs-row ${last && last.late ? 'due' : ''} ${stamped(rd[0]) ? 'stamped' : ''}" style="${stamped(rd[0]) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="round" data-id="${d.id}"><span class="fs-l"><b>${rd[0]}</b><small>${rd[1]}${P.roundAt !== undefined ? ` · last ${E.clock(P.roundAt)}` : ''}</small></span><span class="fs-t">${P.roundAt !== undefined ? `${ICON.tick}${E.clock(P.roundAt)}` : ''}</span><span class="fs-c">2 min</span></button></li>`;
@@ -885,7 +889,7 @@
     let h = '';
     if (cid || line) {
       const story = !!(STY && STY.waiting(s, C(), d, P, Ax)), fresh = !!(node && node.choices && !(s.seenDlg || {})[cid]);
-      const wants = cid && (story || fresh), label = wants && !d.newborn ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
+      const wants = cid && (story || fresh), label = wants && !d.newborn && !d.vented ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
       h += `<div class="sb idle ${wants ? 'wants' : ''} ${ui.captionPoke ? 'fresh' : ''}" data-anchor="pt">${line ? `<p class="sb-tx">${speechHTML(line.text, !line.quiet)}</p>` : ''}${cid ? `<button class="sb-go" data-act="talk">${wants ? '<i class="ping" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span><small>3 min</small></button>` : ''}<i class="sb-tail" aria-hidden="true"></i></div>`;
     }
     if (d.family && fl.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<div class="sb idle fam" data-anchor="fam"><button class="sb-go" data-act="family"><span>Talk with ${esc(d.family.name)}</span><small>${d.family.cost} min</small></button><i class="sb-tail" aria-hidden="true"></i></div>`;
@@ -1309,8 +1313,8 @@
 
   /* ------------ NCLEX practice: case studies, question bank, readiness ------------ */
   const CNL = (id) => (NG && NG.CN ? (NG.CN.find((x) => x[0] === id) || [])[1] : '') || '';
-  const SPN = { ms: 'Med-surg', sd: 'Step-down', icu: 'ICU', ed: 'Emergency', ob: 'Maternity', peds: 'Pediatrics', psy: 'Adult psych', teen: 'Teen psych', comm: 'Community', periop: 'Perioperative' };
-  const SPC = { ms: 'ms', sd: 'sd', icu: 'sd', ed: 'ed', ob: 'ob', peds: 'peds', psy: 'psy', teen: 'teen', comm: 'ms', periop: 'ms' };
+  const SPN = { ms: 'Med-surg', sd: 'Step-down', icu: 'ICU', ld: 'Labor and delivery', ed: 'Emergency', ob: 'Maternity', peds: 'Pediatrics', psy: 'Adult psych', teen: 'Teen psych', comm: 'Community', periop: 'Perioperative' };
+  const SPC = { ms: 'ms', sd: 'sd', icu: 'icu', ld: 'ld', ed: 'ed', ob: 'ob', peds: 'peds', psy: 'psy', teen: 'teen', comm: 'ms', periop: 'ms' };
   // The chart for a case-study item: every entry that has appeared by now, by tab; what just appeared is marked New.
   function recordHTML(c, i) {
     const vis = c.record.filter((r) => r.at <= i), tabs = []; vis.forEach((r) => { if (!tabs.includes(r.tab)) tabs.push(r.tab); });

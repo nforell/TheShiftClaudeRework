@@ -2,6 +2,26 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 10, 2026: Shift 11, Days in Labor and Delivery (needs L&D nurse review)
+
+| Patient | Teaching | Basis |
+|---|---|---|
+| 221 oxytocin induction | Tachysystole is more than 5 contractions in 10 minutes averaged over 30; it is about the uterus, not the FHR category. On oxytocin with tachysystole: reduce or stop, left lateral, IV bolus, tell the provider, terbutaline if it persists off oxytocin. The order set's "increase every 30 minutes" is not a reason to go up on a tachysystolic uterus. Maternal oxygen is not routine intrauterine resuscitation. Restart at half the last rate after about 30 minutes of a Category I tracing, per protocol. | ACOG Practice Bulletins 106 and 107; ACOG Committee Opinion on oxygen for intrauterine resuscitation (2022); AWHONN oxytocin safety guidance. |
+| 222 epidural, then an unplanned birth | Epidural hypotension with a prolonged deceleration: left lateral, bolus, phenylephrine per the anesthesia order, call anesthesia. A full bladder under an epidural slows descent and raises PPH risk: scan and straight cath. Unattended birth: call for help, never tell her to cross her legs or hold the head back, controlled delivery of the head, check for a nuchal cord, dry and stimulate, skin to skin, delayed cord clamping 30 to 60 seconds for a vigorous term baby, no traction on the cord, postpartum oxytocin, fundal check. APGAR at 1 and 5 minutes as an analysis decision. | ASA/SOAP obstetric anesthesia practice; AWHONN; NRP 8th edition; ACOG Committee Opinion 814 (delayed cord clamping); ACOG Practice Bulletin 183 (PPH). |
+| 223 TOLAC with uterine rupture | TOLAC needs continuous EFM, IV access and a team immediately available; read the prior operative report. Recurrent variable decelerations are often the first sign. Rupture: sudden constant pain, loss of contractions on the toco, loss of station, fetal bradycardia, maternal tachycardia and falling pressure. STAT call for an emergency cesarean, second large-bore IV, type and crossmatch, neonatal team to the OR. Not "transition", not "the toco slipped". | ACOG Practice Bulletin 205 (VBAC). |
+| 224 GBS and intraamniotic infection | Intrapartum GBS prophylaxis on time (penicillin G 5 million units, then 2.5 to 3 million every 4 hours; adequate at 4 hours or more before birth). Fever with a long rupture, maternal and fetal tachycardia and a tender uterus is intraamniotic infection: tell the provider, ampicillin plus gentamicin, acetaminophen, pediatrics to the birth. GBS prophylaxis does not treat it. Not by itself a reason for cesarean. | CDC/ACOG 2019 GBS prophylaxis (Committee Opinion 797); ACOG Committee Opinion 712. |
+| Fetal monitoring throughout | Every strip read uses NICHD three-tier categories and is scored as an Analyze cues decision. The bedside monitor in labor rooms shows the FHR. | NICHD 2008 consensus; ACOG Practice Bulletin 106. |
+
+## October 10, 2026: Shift 10, Days in the ICU (needs critical care nurse review)
+
+| Patient | Teaching | Basis |
+|---|---|---|
+| 711 septic shock | Norepinephrine first line, MAP 65 or higher, wean above 75; vasopressin at 0.03 units/min added at norepinephrine 20 mcg/min or more; confirm central line tip before use; peripheral extravasation: stop, leave the catheter, aspirate, elevate, phentolamine per protocol; hold home beta-blocker and ACE inhibitor; repeat lactate; source control; surrogate consent when the patient lacks capacity. | Surviving Sepsis Campaign 2021; ISMP; Infusion Nurses Society standards. |
+| 712 ARDS on the ventilator | Vt 6 mL/kg PBW, plateau 30 or less, permissive hypercapnia; SAT paired with SBT only when the SBT screen passes (FiO₂ and PEEP thresholds vary by protocol); CPOT and CAM-ICU; analgesia first; least-restrictive measures before restraints, with an order, monitoring and release by behavior; DOPE for a high-pressure alarm with falling SpO₂. | ARDSNet; SCCM PADIS 2018 and the ABCDEF bundle; CMS 42 CFR 482.13. |
+| 713 day 1 after CABG | Tamponade from clotted chest tubes (Beck's triad, rising CVP, narrowing pulse pressure): STAT surgeon, bedside re-exploration; no routine stripping; potassium and magnesium replacement to prevent post-op AF; insulin infusion goal 140 to 180. | STS practice guidelines; AHA/AATS post-cardiac surgery care. |
+| 714 anoxic brain injury | Timely OPO referral before any withdrawal discussion; the nurse doesn't raise donation (designated requester); surrogate hierarchy and substituted judgment; double effect for comfort medication; glycopyrrolate for secretions; family presence at extubation. | CMS 42 CFR 482.45; ANA Code of Ethics; palliative care practice. |
+| Floor calls (ICU) | Damped arterial line before titrating; agitation on the ventilator; central line removal (air embolism prevention); hypoglycemia on an insulin infusion. | Standard critical care references. |
+
 ## October 10, 2026: NCLEX practice hub, pocket reference, transition-to-practice floor calls
 
 **All of this needs nurse review before launch.** Written to current US standard teaching and checked item by item for an answer key that scores full marks and a rationale for every option.

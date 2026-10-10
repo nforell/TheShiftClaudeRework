@@ -27,7 +27,7 @@
     return ['#FFDDB0', .38];
   }
   const ACCENT = { med: '#93AFC7', psych: '#D2A877', peds: '#F2C35A', ob: '#D9A3B0', ed: '#8FB0A0' };
-  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : /^ob/.test(id) ? 'ob' : /^ed/.test(id) ? 'ed' : 'med'; };
+  const kindOf = (s) => { const id = (s && s.caseId) || ''; return /^psych/.test(id) ? 'psych' : /^peds/.test(id) ? 'peds' : /^ob/.test(id) ? 'ob' : /^ed/.test(id) ? 'ed' : /^icu/.test(id) ? 'icu' : /^ld/.test(id) ? 'ld' : 'med'; };
   /* Something on the wall that makes it a room someone lives in for a few days. Psych walls have nothing that can be
      pulled down or broken, so they get a painted mural; med and peds get the patient whiteboard. */
   function wallArt(kind, s, tele) {
@@ -36,8 +36,8 @@
     const H = 'font-family="Kalam, Segoe Print, cursive"';
     const head = kind === 'peds' ? `<text x="826" y="84" ${H} font-size="17" font-weight="700" fill="${red}">Hi! I'm your nurse</text><path d="M968 66 l5 10 11 2 -8 8 2 11 -10 -5 -10 5 2 -11 -8 -8 11 -2 Z" fill="none" stroke="#D9A21E" stroke-width="2"/>` : `<text x="826" y="84" ${H} font-size="16" font-weight="700" fill="${blue}">Your care team</text>`;
     return `<g transform="${tele ? 'translate(150 62) scale(.8)' : 'translate(-24 48) scale(.92)'}"><rect x="812" y="58" width="184" height="124" rx="3" fill="#FCFCFA" stroke="#B8BCC0" stroke-width="4"/><rect x="812" y="176" width="184" height="8" rx="2" fill="#9EA4AA"/><rect x="900" y="172" width="22" height="6" rx="2" fill="${blue}"/>
-      ${head}<text x="826" y="110" ${H} font-size="14" fill="${blue}">RN: you</text>${aide ? `<text x="826" y="132" ${H} font-size="14" fill="${blue}">CNA: ${aide}</text>` : ''}
-      <text x="826" y="${aide ? 156 : 134}" ${H} font-size="14" fill="${green}">${kind === 'peds' ? 'Mom/Dad can stay!' : kind === 'ob' ? 'Feeds: every 2-3 h' : kind === 'ed' ? 'Waiting on: results' : 'Goal: home soon'}</text><path d="M828 ${aide ? 162 : 140} q40 4 92 -1" stroke="${green}" stroke-width="1.6" fill="none" opacity=".7"/>
+      ${head}<text x="826" y="110" ${H} font-size="14" fill="${blue}">RN: you</text>${aide ? `<text x="826" y="132" ${H} font-size="14" fill="${blue}">${kind === 'icu' || kind === 'ld' ? 'Tech' : 'CNA'}: ${aide}</text>` : ''}
+      <text x="826" y="${aide ? 156 : 134}" ${H} font-size="14" fill="${green}">${kind === 'peds' ? 'Mom/Dad can stay!' : kind === 'ob' ? 'Feeds: every 2-3 h' : kind === 'ed' ? 'Waiting on: results' : kind === 'icu' ? 'Visiting: open' : kind === 'ld' ? 'Birth plan: ask me' : 'Goal: home soon'}</text><path d="M828 ${aide ? 162 : 140} q40 4 92 -1" stroke="${green}" stroke-width="1.6" fill="none" opacity=".7"/>
       <path d="M940 120 q8 -12 22 -4 q-6 14 -18 10" stroke="#C9CDD1" stroke-width="5" fill="none" opacity=".5" stroke-linecap="round"/></g>`;
   }
   const hot = (id, label, inner) => `<g class="clue" data-act="clue" data-id="${id}" tabindex="0" role="button" aria-label="${label}">${inner}</g>`;
@@ -53,11 +53,13 @@
     if (!psy || f.o2) back += `<rect x="404" y="58" width="222" height="34" rx="7" fill="var(--scene-panel)"/><circle cx="426" cy="75" r="6.5" fill="#6FA785"/><circle cx="446" cy="75" r="6.5" fill="var(--scene-frame)" stroke="#9AA9A6"/><rect x="592" y="67" width="22" height="16" rx="3" fill="var(--scene-frame)" stroke="#9AA9A6"/>`;
     if (!psy || f.o2) back += hot('o2', 'Oxygen flowmeter', `<rect x="562" y="62" width="16" height="36" rx="4" fill="#DCE8E5" stroke="#86A39C"/><circle cx="570" cy="${f.o2 ? 92 - Math.min(+f.o2 || 2, 10) * 2.4 : 90}" r="3.5" fill="${+f.o2 >= 5 ? '#D9822B' : '#2F8F6B'}"/>${f.o2 ? `<path d="M570 98 C 572 140 590 160 576 172" stroke="#BFE2E8" stroke-width="3" fill="none"/>` : ''}`);
     if (f.tele) {
-      const hr = S.engine.api(s).vitals(def.id).HR;
+      const vv = S.engine.api(s).vitals(def.id), hr = vv.HR;
+      // Labor rooms: the bedside screen is the fetal monitor, so it shows the baby's heart rate under the mother's.
+      const fm = /FHR\D*?(\d+)(s)?/.exec(vv.extra || ''), fhr = fm ? +fm[1] + (fm[2] ? 5 : 0) : 0;
       back += hot('monitor', 'Cardiac monitor', `<rect x="648" y="112" width="124" height="74" rx="7" fill="#0f1b1f" stroke="#2b3a3f" stroke-width="3"/>
         <polyline points="${f.teleWave === 'afib' ? '656,152 660,150 664,153 668,151 671,152 674,138 677,160 680,152 684,150 688,153 692,151 696,152 699,136 702,161 705,152 711,151 716,153 719,152 722,137 725,160 728,152 734,150 739,153 744,151 750,152 753,138 756,160 759,152 764,151' : f.teleWave === 'tors' ? '656,152 660,140 664,166 668,134 672,170 676,130 680,174 684,132 688,170 692,140 696,162 700,146 704,158 708,144 712,162 716,134 720,172 724,128 728,176 732,130 736,170 740,138 744,164 748,146 752,158 756,150 764,152' : f.teleWave === 'stemi' ? '656,152 668,152 672,156 676,128 680,158 684,142 690,138 698,140 704,152 722,152 726,156 730,128 734,158 738,142 744,138 752,140 758,152 764,152' : f.teleWave === 'peaked' ? '656,152 666,152 670,144 674,160 678,152 686,152 693,122 700,152 712,152 716,144 720,160 724,152 732,152 739,122 746,152 764,152' : '656,152 670,152 674,140 678,162 682,152 706,152 710,136 714,164 718,152 740,152 746,144 750,158 754,152 764,152'}" stroke="#58d68d" stroke-width="1.8" fill="none" class="ecg"/>
         <text x="764" y="132" text-anchor="end" fill="${hr < 50 ? '#ff6b5f' : '#58d68d'}" font-size="16" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${hr}</text>
-        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">SpO₂</text><text x="764" y="180" text-anchor="end" fill="#7fc8e8" font-size="13" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
+        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${fhr ? 'FHR' : 'SpO₂'}</text><text x="764" y="180" text-anchor="end" fill="${fhr && (fhr < 110 || fhr > 160) ? '#ff6b5f' : '#7fc8e8'}" font-size="13" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${fhr || S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
     }
     // IV pole, pump and line
     const ivOn = f.iv && f.iv !== 'lock', blood = f.iv === 'blood', bag = blood ? '#9E1B22' : '#E8F2F6', line = blood ? '#B3262D' : '#BCD7E0';

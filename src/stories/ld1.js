@@ -1,0 +1,153 @@
+/* Days in Labor and Delivery. Stories for Daniela, Brianna, Fatima (through Omar after the rupture) and Claire. */
+(function (S) {
+  S.story.add('ld-2s-1', {
+    '221': {
+      watch: true, idle: ['al_after'], after: ['al_talk'],
+      gate: (s, P) => !P.gone && P.fs < .45 && Math.round(P.ctx) <= 5,
+      guarded: [`"Can we talk after this one? I have to breathe."`, `She shakes her head and grips Rafael's hand. "Not now."`],
+      presence: `You stay through two contractions without saying anything, your hand flat on her belly feeling each one build and fade. Afterward she says, "You counted with me. I noticed."`,
+      beats: [
+        { need: 0, learn: `Daniela's blood pressure scared her more than labor does; her mother had a stroke at 52.`,
+          text: `"Everyone keeps asking about headaches. My mom had a stroke at fifty-two. High blood pressure. When they said 'gestational hypertension' I didn't hear anything after that."`,
+          choices: [
+            { label: `That's a lot to carry into labor. Your pressure has stayed out of the dangerous range, and that's what all the questions are for: headache, vision changes, pain under your ribs. Tell me right away if you notice any of them. And after the baby, this usually settles, but it's a reason to keep checking your pressure for life.`, rap: 1, set: { bpTaught: true },
+              judge: [`comm`, 1, `You taught Ms. Fuentes the warning signs and the long view.`, `Gestational hypertension can turn into preeclampsia during labor or after birth, and it raises lifelong cardiovascular risk. Patients who know the warning signs report them early.`],
+              reply: `"Headache, vision, ribs. And forever." She almost laughs. "Rafael, write that down." He does, on the playlist printout.` },
+            { label: `Try not to think about that right now.`, rap: -1, reply: `"I can't not think about it." She looks at the blood pressure cuff.` },
+            { label: `Your pressures are fine.`, rap: 0, reply: `"Fine like 'fine' or fine like 'not a stroke'?" She doesn't wait for an answer.` },
+          ] },
+        { need: 1, learn: `She agreed to the induction because she was afraid of waiting, and now feels it "went wrong".`,
+          text: `"I said yes to the induction because the doctor said waiting was riskier for my blood pressure. Then the Pitocin made it all too much. Did I do this wrong?"`,
+          choices: [
+            { label: `You didn't do anything wrong. Inducing for your blood pressure was a good decision. The medicine needed adjusting, which happens a lot, and adjusting it is my job. You noticing they were too close together actually helped.`, rap: 1, set: { noBlame: true },
+              judge: [`comm`, 1, `You took the blame off Ms. Fuentes.`, `Women often feel responsible when an intervention doesn't go smoothly. A plain statement that the decision was sound, and the adjustment is routine, helps her keep trusting the team and herself.`],
+              reply: `She closes her eyes. "Okay. I helped." Rafael kisses her hand.` },
+            { label: `These things happen.`, rap: 0, reply: `"I guess." She doesn't look convinced.` },
+          ] },
+        { need: 2, learn: `The baby is named Lucía, for Rafael's grandmother, who crossed the border carrying his father.`,
+          text: `"Lucía is for his grandmother. She walked across the desert with Rafael's dad on her hip. He was two." Rafael adds, quietly, "She'd have liked you. She didn't like anybody."`,
+          choices: [
+            { label: `Then Lucía's got a lot to live up to. I'll make sure the first thing she hears is her name.`, rap: 1, reply: `Rafael laughs and has to wipe his eyes. "Abuela would have said you talk too much."` },
+            { label: `That's a beautiful name.`, rap: 0, reply: `"It is." Rafael nods and goes back to the playlist.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Lucía was born that evening at 7 pounds 2 ounces, after a labor that went slower and safer than the order set wanted. ${P.bpTaught ? 'Daniela checks her blood pressure every Sunday now; Rafael logs it in the playlist app.' : ''} Rafael played Selena for her first breath. Her first word was not "abuela," but he tells everyone it was.`,
+        warm: `Lucía was born that evening. Daniela remembers that the contractions got easier when someone finally turned the medicine down.`,
+        distant: `Daniela Fuentes delivered vaginally that evening after an oxytocin induction. The chart lists tachysystole, resolved.`,
+        hard: (s, P) => (P.gone ? `Lucía was born by emergency cesarean and spent four days in the NICU. She's fine now, but Daniela says she can't hear the word "Pitocin" without her chest getting tight, and she isn't sure she'll have another.` : `Lucía was born after a long, hard day. Daniela remembers more alarms than music.`),
+      },
+    },
+    '222': {
+      watch: true, idle: ['br_after', 'br_baby'], after: ['br_talk'],
+      gate: (s, P) => P.hypo < .3 && !(P.crown && P.bornAt === null) && !P.pulledCord && P.qbl < 900,
+      guarded: [`"Hang on, I'm texting my mom about Mason."`, `"Can it wait? I'm about to fall asleep."`],
+      presence: `You sit at the foot of the bed for a few minutes while she dozes. Jordan wakes up, sees you there, and goes back to sleep like that settles something.`,
+      beats: [
+        { need: 0, learn: `Her first birth was fast and frightening: she delivered in triage with no doctor.`,
+          text: `"Mason came so fast I had him in triage. The nurse caught him with one glove on. Everyone keeps saying 'second babies are faster' like it's a joke."`,
+          choices: [
+            { label: `It's not a joke to you, and you're right to take it seriously. We're ready for this one: the warmer, the delivery table, and a team that knows your history. If you feel pressure or like pushing, you tell me right away, even if you just got checked.`, rap: 1, set: { fastPlan: true },
+              judge: [`comm`, 1, `You took Ms. Scott's history of a fast birth seriously.`, `A previous precipitous birth predicts another, and the woman usually knows before the exam does. Plan for it and give her permission to call early.`],
+              reply: `"Pressure, call. Even if you just checked." She relaxes for the first time. "Okay. Somebody's listening."` },
+            { label: `Don't worry, the epidural will slow things down.`, rap: -1, reply: `"That's not how it works." She's right.` },
+          ] },
+        { need: 1, learn: `She's worried Mason will feel replaced, and Jordan's mother is watching him.`,
+          text: `"Mason asked if the baby is going to sleep in his bed. And if we're going to keep him." She laughs, but not really. "Three-year-olds."`,
+          choices: [
+            { label: `That's such a three-year-old worry, and a real one. A lot of parents have the baby "give" the big brother a present, and give him a job when he visits, like handing you the diaper. It helps him feel like hers, not replaced.`, rap: 1, set: { sibTaught: true },
+              judge: [`comm`, 1, `You gave Ms. Scott practical help with sibling adjustment.`, `Sibling preparation is part of family-centered maternity care, and it's often what a second-time mother is actually worried about.`],
+              reply: `"A present from the baby." She's already texting Jordan's mom. "Dinosaur. It has to be a dinosaur."` },
+            { label: `He'll get used to it.`, rap: 0, reply: `"Eventually." She puts her phone down.` },
+          ] },
+        { need: 2, learn: `They're naming her June, after the month Brianna's grandmother died.`,
+          text: `Brianna looks at the baby. "June. My grandma died in June. She raised me. I wanted something good in that month."`,
+          when: (s, P) => P.bornAt !== null,
+          choices: [
+            { label: `Then June gets to be the month she came, too. Hi, June.`, rap: 1, reply: `June opens one eye at her name. Brianna laughs and cries at the same time. Jordan takes a picture of you all, which you'll never see.` },
+            { label: `That's lovely.`, rap: 0, reply: `"Yeah." She kisses the top of the baby's head.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `June was home in two days. ${P.sibTaught ? 'Mason got a plastic stegosaurus "from June" and now introduces her as his baby.' : ''} Brianna tells everyone her daughter was born in eleven minutes and caught by a nurse who never once told her to slow down, just to breathe.`,
+        warm: `June went home on day two. Brianna remembers the nurse's hands more than the doctor's.`,
+        distant: `Brianna Scott had a spontaneous vaginal birth attended by nursing staff before the provider arrived. Mother and baby were discharged on day two.`,
+        hard: (s, P) => (P.pulledCord || P.qbl >= 1000 ? `June is fine. Brianna lost a lot of blood and needed two units; she remembers the room going gray and someone pressing on her belly, hard. She doesn't want to talk about that part.` : `June was born without anyone ready. She's fine. Brianna says she keeps having the dream where nobody comes.`),
+      },
+    },
+    '223': {
+      who: 'omar', watch: true, idle: ['fa_after', 'om_after'], after: ['om_talk'],
+      gate: (s, P) => !P.rupt && !P.gone,
+      guarded: [`Omar is coaching her through a contraction and holds up one finger. "One minute."`, `"Later? She's finally resting."`],
+      presence: `You stand with Omar by the window while Fatima walks the room. He offers you a date every time she passes, and you take the second one. He says his mother would count that as a yes to dinner.`,
+      beats: [
+        { need: 0, learn: `Fatima felt she "failed" at her first birth when Yusuf was breech.`,
+          text: `Omar, quietly: "She thinks she failed last time. Yusuf was breech; it wasn't anything she did. She's been reading VBAC papers at two in the morning for four years."`,
+          choices: [
+            { label: `A breech baby isn't a failure of anything, and neither would another cesarean be. What she can control is being informed and having a team that's ready, and she's done her part. I'll make sure we've done ours.`, rap: 1, set: { noFail: true },
+              judge: [`comm`, 1, `You reframed "success" for Ms. Haddad's family.`, `TOLAC counseling includes preparing for either outcome. Tying a woman's worth to the route of birth sets her up for grief if she needs a repeat cesarean.`],
+              reply: `"Either way." He nods slowly. "I'll tell her you said that. She'll argue. Then she'll feel better."` },
+            { label: `She has a good chance this time.`, rap: 0, reply: `"Seventy-something percent. She told me." He smiles a little.` },
+          ] },
+        { need: 1, learn: `Yusuf, four, recorded a drum song for the baby and wants it played at the birth.`,
+          text: `"Yusuf recorded a song for the baby. It's mostly drum." He plays three seconds; it is entirely drum. "He wants it played when she's born. Is that allowed?"`,
+          choices: [
+            { label: `If there's a speaker and a minute, absolutely. Tell me where it is on your phone and I'll make sure it's ready.`, rap: 1, set: { drum: true }, reply: `He queues it up and hands you the phone like it's a sacred object. "Track one. Volume all the way."` },
+            { label: `We'll see, it can get busy.`, rap: 0, reply: `"Of course." He puts the phone back in his pocket.` },
+          ] },
+        { need: 2, learn: `Omar fainted at Yusuf's birth and is terrified of the OR.`,
+          text: `"I'll be honest. Last time, in the OR, I fainted. They had to put me in a wheelchair. If anything happens, I don't know if I can go in."`,
+          choices: [
+            { label: `Thank you for telling me. If she needs the OR in an emergency, partners usually wait outside anyway, and someone will stay with you and come to you as soon as there's news. If it's a planned surgery, you can sit by her head, and you'll be seated the whole time.`, rap: 1, set: { omarPrep: true },
+              judge: [`comm`, 1, `You prepared Omar for an emergency before it happened.`, `Families cope better with a STAT they were told might happen. Knowing where they'll wait and who will update them is part of the plan.`],
+              reply: `"Outside, someone comes to me. Okay." He breathes out. "That I can do."` },
+            { label: `Nothing's going to happen.`, rap: -1, reply: `"That's what they said last time." He looks at the monitor.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Fatima and her daughter Maryam went home on day four. ${P.omarPrep ? 'Omar waited outside the OR, just as you told him, and Renee sat with him until the news came.' : ''} ${P.drum ? 'Yusuf\'s drum song played in the recovery room. Maryam slept through it.' : ''} Fatima has started a new folder on her laptop: "Uterine rupture: outcomes." She says it isn't for her. It's for the next person who asks.`,
+        warm: `Fatima and Maryam went home on day four. She told her obstetrician the nurse believed her the moment she said it wasn't a contraction.`,
+        distant: `Fatima Haddad underwent emergency cesarean for uterine rupture during a trial of labor. Mother and infant were discharged on day four.`,
+        hard: `Maryam spent eleven days in the NICU and was cooled for three of them. Fatima lost her uterus. She doesn't read VBAC papers anymore. Omar says she reads the NICU discharge instructions every night instead.`,
+        mixed: `Maryam spent two days in the NICU for observation and went home with her mother. Fatima says the minutes before the OR are a blur, except for her own voice saying "it's not a contraction."`,
+      },
+    },
+    '224': {
+      watch: true, idle: ['cl_after'], after: ['cl_talk', 'cl_fever'],
+      gate: (s, P) => !P.gone && P.inf < 1 && (P.feverAt === null || P.ampAt !== null),
+      guarded: [`"I'm in my zone. Can we talk later?"`, `Jess answers for her. "She's riding a big one. Give us a few?"`],
+      presence: `You sit on the floor next to the birth ball, low and quiet, while the whale sounds play. After a few contractions Claire reaches down without looking and squeezes your shoulder.`,
+      beats: [
+        { need: 0, learn: `Claire's birth plan came from her sister's traumatic birth, not from ideology.`,
+          text: `"People think I'm one of those birth-plan people. My sister had a terrible birth. Nobody told her anything; things just happened to her. My plan isn't about no medicine. It's about knowing."`,
+          choices: [
+            { label: `Then that's the plan I'll follow most closely: nothing happens without you knowing why. If something has to change, I'll tell you what, why, and what we can keep.`, rap: 1, set: { knowing: true },
+              judge: [`comm`, 1, `You heard what Ms. Donnelly's birth plan was really about.`, `A birth plan is a communication tool. What women most often want protected is information and a say, and that survives almost any change in the clinical plan.`],
+              reply: `She looks at you for a long moment. "Okay. That's the whole thing. That's all I want."` },
+            { label: `We'll try to stick to your plan as much as possible.`, rap: 0, reply: `"Everyone says that." She closes her eyes for the next contraction.` },
+          ] },
+        { need: 1, learn: `She is afraid the fever means she'll need a cesarean, which she sees as losing control.`,
+          when: (s, P) => P.feverAt !== null,
+          text: `"Be honest. With the infection, am I going to end up with a C-section? Because that's the thing I was most afraid of."`,
+          choices: [
+            { label: `Not because of the infection. The antibiotics treat it, and labor can keep going. A cesarean would be for the usual reasons, like the baby not tolerating labor, and if that ever came up, you'd hear it from me first, with time to ask questions.`, rap: 1, set: { csTalk: true },
+              judge: [`comm`, 1, `You answered Ms. Donnelly's fear about cesarean honestly.`, `Intraamniotic infection isn't an indication for cesarean by itself. An honest, specific answer keeps her informed and in the room.`],
+              reply: `"With time to ask questions." She repeats it. "Okay. I'll keep going."` },
+            { label: `Let's not worry about that yet.`, rap: -1, reply: `"So yes." She goes quiet.` },
+          ] },
+        { need: 2, learn: `They're naming the baby Wren, because Claire designs gardens for birds.`,
+          text: `Jess, grinning: "Tell her the name." Claire: "Wren. I design gardens for birds. Half my job is figuring out where small things feel safe."`,
+          choices: [
+            { label: `That might be the best description of this job I've ever heard, too.`, rap: 1, reply: `Claire laughs, then has a contraction, then laughs again. "Put that on a mug."` },
+            { label: `Cute name.`, rap: 0, reply: `"Thanks." Jess writes it on the whiteboard in big letters.` },
+          ] },
+      ],
+      epi: {
+        close: (s, P) => `Wren was born at 3:40 that afternoon, unmedicated, in low light, with the pediatric team in the corner and antibiotics in the bag. ${P.knowing ? 'Claire says the best part of her birth plan turned out to be the part nobody can write down: she always knew why.' : ''} Wren had two days of antibiotics and a clean culture. Jess wrote the nurses a card with a bird on it.`,
+        warm: `Wren was born that afternoon. She needed 48 hours of antibiotics, and went home on day three with both her mothers.`,
+        distant: `Claire Donnelly delivered vaginally after treatment for intraamniotic infection. The infant was evaluated for sepsis and discharged on day three.`,
+        hard: `Wren was born by cesarean with a positive blood culture and spent a week in the NICU. Claire was in the ICU for a day. When she talks about that morning, she says the worst part was realizing no one had told her anything until it was an emergency.`,
+      },
+    },
+  });
+})(window.Shift);

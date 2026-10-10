@@ -3,6 +3,53 @@
 (function (S) {
   if (!S.floor) return;
   S.floor.POOL.push(...[
+ { "id": "icu-aline", "k": ["icu"], "from": "fl-rn", "title": "A flat line", "dom": "assess", "cost": 3, "exp": 15,
+  "ping": "{rn}, from bed 715: \"Can you look at this before I go up on the norepi?\"",
+  "text": "Her arterial line reads 72/58, MAP 63, and the waveform looks rounded and flat, with no notch. A cuff pressure two minutes ago was 104/62. The order says titrate norepinephrine to MAP 65 or higher.",
+  "q": "What do you tell her?",
+  "opts": [
+   { "t": "Don't titrate yet. Check the line: flush it, look for bubbles, clots or a kink, re-level and zero at the phlebostatic axis, then compare with the cuff", "v": 2, "fb": "A damped waveform reads falsely low systolic and narrow. Fix the line first, then treat the patient, not the number." },
+   { "t": "Go up on the norepinephrine. The arterial line is more accurate than a cuff", "v": -1, "fb": "Only when the waveform is good. A damped line under-reads the pressure, and chasing it with a vasopressor gives a patient with a decent pressure too much drug." },
+   { "t": "Titrate by the cuff pressure from now on and leave the arterial line alone", "v": 0, "fb": "The cuff is a useful check, but the arterial line is there for beat-to-beat pressure in shock. Troubleshoot it rather than abandon it." },
+   { "t": "Recheck the cuff and call the provider about the difference", "v": 1, "fb": "A reasonable step, but troubleshooting the line is a nursing skill you can do in two minutes before calling." }
+  ],
+  "teach": "Before you act on an invasive pressure, check the waveform. Damped: flush, check for air, clots and kinks, level the transducer to the phlebostatic axis (4th intercostal space, mid-axillary line) and zero it, then compare with a cuff.",
+  "miss": { "text": "The norepinephrine went up for a damped arterial line until Nova caught it.", "why": "A flat, rounded waveform means the line is lying, not the patient." } },
+ { "id": "icu-selfext", "k": ["icu"], "from": "@cna", "title": "Reaching", "dom": "safety", "cost": 3, "exp": 10, "must": true,
+  "ping": "{cna}: \"The man in 716 keeps grabbing at his breathing tube. Dee's at lunch.\"",
+  "text": "He's intubated, sedation was lightened for an awakening trial an hour ago, and he has one hand on the tube. No restraint order. His RASS is +2 and he's looking around wildly.",
+  "q": "What do you do?",
+  "opts": [
+   { "t": "Go now: hold his hand away from the tube, reorient him calmly, check the tube's position, and call his nurse's cover and the provider about sedation and delirium", "v": 2, "fb": "Presence first: an unplanned extubation can happen in seconds. Then treat the cause (pain, delirium, fear) and get the team involved." },
+   { "t": "Tell {cna} to tie his wrists to the bed until Dee gets back", "v": -1, "fb": "Restraints need an order, a reason that less restrictive measures failed, and monitoring. A tech can't decide on them and you can't delegate that." },
+   { "t": "Restart his sedation at the old rate", "v": 0, "fb": "Maybe, eventually, by order and protocol. But he needs someone at the bedside now, and a quick look at why he's agitated." },
+   { "t": "Ask {cna} to stay with him and keep his hands down while you find Dee", "v": 1, "fb": "Better than nothing, but an RN needs to assess him now: tube position, oxygenation, pain and delirium are nursing judgments." }
+  ],
+  "teach": "Agitation on a ventilator is a safety emergency and a symptom. Be at the bedside, protect the airway, then look for the cause (pain, delirium, hypoxia, a full bladder) with the ABCDEF bundle. Restraints are a last resort and need an order.",
+  "miss": { "text": "The patient in 716 pulled out his breathing tube.", "why": "Unplanned extubation is a preventable airway emergency; a call like this needs a nurse at the bedside right away." } },
+ { "id": "icu-cvc-out", "k": ["icu"], "from": "fl-rn", "title": "Line out", "dom": "safety", "cost": 3, "exp": 20,
+  "ping": "{rn}: \"Quick one. I'm pulling a central line and he wants to sit up for it. Fine?\"",
+  "text": "It's an internal jugular line, no longer needed. The patient is alert, breathing comfortably, and asks to sit on the edge of the bed while it comes out.",
+  "q": "What do you tell her?",
+  "opts": [
+   { "t": "Lie him flat or slightly head down, have him hold his breath or bear down as it comes out, then pressure and an occlusive dressing, and keep him flat for 30 minutes", "v": 2, "fb": "Positioning and a Valsalva raise the pressure in the chest so air can't be pulled into the vein. The occlusive dressing seals the tract." },
+   { "t": "Sitting is fine if he's comfortable. Just put gauze on it", "v": -1, "fb": "Sitting up lowers venous pressure in the neck; a breath in as the catheter leaves can pull air in. An air embolism can be fatal." },
+   { "t": "Have him take a deep breath in as you pull", "v": 0, "fb": "That's backward. Inhaling lowers intrathoracic pressure and invites air in. Exhale or bear down." },
+   { "t": "Lie him flat and use an occlusive dressing", "v": 1, "fb": "Good, but add a Valsalva or a held breath at the moment of removal, and keep him lying down for a while after." }
+  ],
+  "teach": "Removing a central line: supine or Trendelenburg, Valsalva or exhalation at removal, firm pressure, an occlusive dressing, and a period lying flat. Watch for sudden dyspnea, chest pain or hypotension (air embolism)." },
+ { "id": "icu-insulin-low", "k": ["icu", "med"], "from": "@cna", "title": "Low sugar", "dom": "meds", "cost": 2, "exp": 12,
+  "ping": "{cna}: \"The man in 715 on the insulin drip just checked at 58.\"",
+  "text": "He's on an IV insulin infusion by protocol, NPO, with no dextrose running. He's sweaty and a little confused. His nurse is in another room.",
+  "q": "What do you do?",
+  "opts": [
+   { "t": "Stop the insulin infusion, give IV dextrose per the hypoglycemia protocol, recheck in 15 minutes, and tell his nurse and the provider", "v": 2, "fb": "On an infusion, the first move is to stop the source, then treat with IV dextrose because he's NPO and confused, then recheck." },
+   { "t": "Give him orange juice", "v": -1, "fb": "He's NPO and confused: oral fluids risk aspiration. IV dextrose per protocol is the route here." },
+   { "t": "Turn the insulin rate down by half and recheck in an hour", "v": 0, "fb": "A glucose of 58 with symptoms needs the infusion stopped and treatment now, and a recheck in 15 minutes, not an hour." },
+   { "t": "Recheck the glucose to make sure it's real", "v": 1, "fb": "A quick recheck is fine if it doesn't delay treatment. With symptoms, treat first and confirm after." }
+  ],
+  "teach": "Hypoglycemia on an insulin infusion: stop the infusion, treat per protocol (IV dextrose if NPO or impaired), recheck in 15 minutes, notify, and find the cause (missed feeding, a stopped dextrose line, a protocol error)." },
+
  {
   "id": "pp-unsafe-assign",
   "k": [

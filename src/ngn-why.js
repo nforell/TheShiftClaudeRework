@@ -393,5 +393,81 @@ window.Shift.ngnWhy = {
    "Yes: A pound-for-kilogram weight error is a system problem, and reporting it, even as a near miss, helps prevent the same error for other children."
   ],
   "tip": "When a weight looks wrong for the age, suspect a pounds-for-kilograms mix-up; the answers that hold, verify and report are correct, and any option that gives some form of the dose is a distractor."
+ },
+ "icu-bow": {
+  "cond": [
+   "Yes: Chest tube output that stops abruptly while HR and CVP climb, the pressure falls and narrows, the heart sounds muffle and the neck veins distend is Beck's triad and tamponade.",
+   "No: The tempting read is that the bleeding stopped. But stopped bleeding brings the heart rate down and the pressure up; here every sign is moving the wrong way, and the CVP is rising, not falling.",
+   "No: Atrial fibrillation is common after bypass and can drop the pressure, but it doesn't explain a rising CVP, muffled heart sounds and chest tubes that suddenly stopped draining.",
+   "No: Left heart failure raises pressure in the lungs and causes crackles; it doesn't explain clotted chest tubes, a narrowing pulse pressure and muffled heart sounds."
+  ],
+  "actions": [
+   "Yes: Tamponade after cardiac surgery is a surgical emergency. The surgeon needs to know now, by phone, not in a note.",
+   "Yes: The definitive treatment is evacuating the clot, often by reopening the chest in the ICU. Preparing the sterile setup saves minutes.",
+   "No: Fluid can briefly support filling, but it doesn't relieve compression, and waiting an hour lets the pressure keep falling toward arrest.",
+   "No: Documenting the bleeding as resolved is the classic trap; the drainage stopped because the tubes clotted while blood kept collecting around the heart.",
+   "No: The high CVP comes from compression, not fluid overload. A diuretic would drop preload the heart depends on and worsen the shock."
+  ],
+  "params": [
+   "Yes: A rising heart rate and a falling, narrowing pressure show how hard the heart is being squeezed and whether the intervention worked.",
+   "Yes: CVP and neck veins rise as blood backs up behind a compressed heart; they fall once the tamponade is relieved.",
+   "No: Potassium matters after bypass for arrhythmias, but it doesn't track tamponade or the response to evacuating it.",
+   "No: Glucose control matters after heart surgery for wound healing, but it isn't a measure of tamponade.",
+   "No: Specific gravity reflects urine concentration, not cardiac filling or output in an emergency."
+  ],
+  "tip": "When a drain suddenly stops after surgery, ask why before you celebrate: compare the drain with the vital sign trends, and believe the trends."
+ },
+ "icu-mat": {
+  "tip": "Sort ventilator alarms by mechanism: anything that resists flow raises pressure; anything that lets air escape lowers it."
+ },
+ "icu-sata": {
+  "opts": [
+   "Yes: Holding the MAP goal while the vasopressor dose comes down means vascular tone and volume are recovering.",
+   "Yes: For an 80 kg client, 50 mL/h is above 0.5 mL/kg/h, so the kidneys are being perfused.",
+   "Yes: A lactate falling from 4.6 to 2.1 shows tissue perfusion improving; lactate clearance is a key resuscitation marker.",
+   "Yes: Warm hands and a brisk capillary refill show blood is reaching the skin again, an easy bedside sign of perfusion.",
+   "No: A rising heart rate suggests ongoing hypovolemia, fever or pain; it is not a sign that the shock is resolving.",
+   "No: New confusion can mean the brain is underperfused. A worsening mental status is a red flag, not improvement.",
+   "No: Needing more vasopressor to hold the same MAP means the shock is getting worse, even if the number looks fine."
+  ],
+  "tip": "In shock questions, judge the patient by perfusion (mental status, urine, skin, lactate) and by how much support it takes to get there, not by a single number."
+ },
+ "ld-mat": {
+  "tip": "Classify by the worst feature: start with variability, then the type and timing of decelerations, then the baseline."
+ },
+ "ld-bow": {
+  "cond": [
+   "Yes: A scarred uterus, sudden constant pain, contractions that stop, loss of station, fetal bradycardia and maternal tachycardia are the classic picture of rupture.",
+   "No: Abruption also causes pain and bleeding, but contractions continue or the uterus is rigid; the baby doesn't move back up out of the pelvis.",
+   "No: Transition is intense, but contractions keep coming and the baby keeps descending. Stopped contractions with lost station are never normal.",
+   "No: Epidural hypotension can drop the fetal heart rate, but it doesn't cause severe constant pain, bleeding or loss of station, and she has no epidural."
+  ],
+  "actions": [
+   "Yes: Rupture is fixed by delivery and repair; every minute of fetal bradycardia matters, so the call is STAT for the OR.",
+   "Yes: She can bleed fast into her abdomen. Two large-bore IVs and blood in the room prepare for hemorrhage.",
+   "No: Treating the pain as breakthrough pain is the classic trap; it delays the diagnosis while the baby is without oxygen.",
+   "No: Oxytocin is contraindicated in a suspected rupture; it would worsen bleeding and the tear.",
+   "No: Waiting for recovery works for some decelerations, not for rupture. The bradycardia won't recover until the baby is delivered."
+  ],
+  "params": [
+   "Yes: The fetal heart rate shows how the baby is tolerating every minute until delivery.",
+   "Yes: Rising heart rate and falling pressure track hidden blood loss into the abdomen.",
+   "No: Cervical exams don't change management once rupture is suspected and can delay the move to the OR.",
+   "No: Ketones reflect hydration and energy use in labor, not a surgical emergency.",
+   "No: Reflexes are monitored with magnesium sulfate, not for uterine rupture."
+  ],
+  "tip": "In TOLAC questions, sudden pain plus loss of station or stopped contractions points to rupture; choose the option that gets the baby delivered fastest."
+ },
+ "ld-sata": {
+  "opts": [
+   "Yes: Stopping the oxytocin lets the uterus relax so the placenta can refill between contractions.",
+   "Yes: Lateral positioning takes the uterus off the vena cava and improves blood flow to the placenta.",
+   "Yes: A fluid bolus improves maternal circulating volume and uteroplacental perfusion.",
+   "Yes: The provider needs to know about tachysystole with an abnormal tracing; terbutaline may be ordered if it persists.",
+   "No: An order to increase never applies while the tracing is abnormal; more oxytocin means more contractions and less recovery time.",
+   "No: Current ACOG guidance doesn't support routine maternal oxygen for intrauterine resuscitation; it's reserved for maternal hypoxia.",
+   "No: Supine positioning compresses the vena cava and worsens placental perfusion; lateral is the position for resuscitation."
+  ],
+  "tip": "For oxytocin and an abnormal strip, remember the order: stop the drug, turn her, give fluid, tell the provider."
  }
 };
