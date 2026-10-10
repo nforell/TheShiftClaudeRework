@@ -45,6 +45,11 @@ What changed in content, and why, is logged in [docs/CLINICAL-UPDATES.md](docs/C
 ## Beta instrumentation
 Analytics, in-game feedback, the landing-page signup and the installable app are set up in `src/config.js` and `src/telemetry.js`. Paste a PostHog project key into `src/config.js` to start receiving data; until then nothing is sent. The debrief can score by skill or by the six NCSBN clinical judgment steps (`src/cjmm.js`, review map in `docs/cjmm-map.csv`). Progress and what's next: [docs/ROADMAP-PROGRESS.md](docs/ROADMAP-PROGRESS.md).
 
+## NCLEX practice and the pocket reference
+- **NCLEX practice** (home screen, and Menu): 19 unfolding case studies in the Next Generation NCLEX format (`src/ngn-cases.js`; the chart grows as the case unfolds, six items per case in clinical judgment order), a 250-question bank (`src/ngn-bank.js` plus every shift and focus item) filterable by NCLEX-RN Client Needs category, judgment step, format and status, sets of ten (new questions first, then missed ones), dosage calculations with the working shown, and a readiness view by category and step. Every option of every item explains why it is or isn't right. Tested by `tests/practice.py`.
+- **Pocket reference** (`src/ref.js`): 20 quick cards for the floor and the exam.
+- **More floor calls** (`src/floor-more.js`): 106 in all, many on the professional and legal side of the first year as an RN.
+
 ## Classes, practice questions and the shift pack
 - **Practice questions** (`src/ngn.js`): three NCLEX-style items after every debrief (bowtie, matrix, select-all, highlight, drop-down), scored the NCSBN way. After checking, every option shows why it is or isn't correct (`src/ngn-why.js`), with the points worked out part by part and a test-taking tip.
 - **Focus practice** (`src/ngn-focus.js`): two questions each for the player's two lowest NCLEX steps that shift, drawn from 20 step-targeted items plus other shifts' items.
