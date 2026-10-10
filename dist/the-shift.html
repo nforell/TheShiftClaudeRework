@@ -40989,11 +40989,18 @@ window.Shift = window.Shift || {};
         for (let i = -3; i <= 3; i++) front += `<circle cx="${i * w * .21}" cy="${-h * .66 + Math.abs(i) * 3}" r="${h * .14}" fill="${shade(col, 8)}"/>`;
         break;
       case 'hijab': {
-        const dk2 = shade(col, -18), lt2 = shade(col, 22);
-        back = `<path d="M ${-w * 1.16} ${h * .2} C ${-w * 1.28} ${-h * 1.28} ${w * 1.28} ${-h * 1.28} ${w * 1.16} ${h * .2} L ${w * 1.1} ${h * 1.45} L ${-w * 1.1} ${h * 1.45} Z" fill="${dk2}"/>`;
-        front = `<path d="M ${-w * 1.12} ${h * .98} C ${-w * 1.24} ${-h * 1.24} ${w * 1.24} ${-h * 1.24} ${w * 1.12} ${h * .98} L ${w * .8} ${h * .82} C ${w * .96} ${h * .1} ${w * .82} ${-h * .64} 0 ${-h * .68} C ${-w * .82} ${-h * .64} ${-w * .96} ${h * .1} ${-w * .8} ${h * .82} Z" fill="${col}"/>`
-          + `<path d="M ${-w * .82} ${h * .8} Q 0 ${h * 1.3} ${w * .82} ${h * .8} L ${w * 1.1} ${h * 1.5} Q 0 ${h * 1.75} ${-w * 1.1} ${h * 1.5} Z" fill="${col}"/>`
-          + `<path d="M ${-w * .74} ${-h * .5} C ${-w * .3} ${-h * .78} ${w * .3} ${-h * .78} ${w * .74} ${-h * .5}" stroke="${lt2}" stroke-width="2" fill="none" opacity=".7"/><path d="M ${w * .9} ${h * .9} Q ${w * .4} ${h * 1.35} ${-w * .2} ${h * 1.42}" stroke="${dk2}" stroke-width="1.6" fill="none" opacity=".7"/>`;
+        // A wrapped scarf: it covers the whole crown and the ears, frames the face in an oval from the forehead to just
+        // under the chin, then drapes over the shoulders. Drawn as an outer shape with a face-shaped opening (evenodd).
+        const dk2 = shade(col, -20), lt2 = shade(col, 20);
+        const outer = `M 0 ${-h * 1.17} C ${w * .78} ${-h * 1.17} ${w * 1.21} ${-h * .7} ${w * 1.21} ${h * .05} C ${w * 1.21} ${h * .72} ${w * 1.02} ${h * 1.16} ${w * .72} ${h * 1.36} L ${-w * .72} ${h * 1.36} C ${-w * 1.02} ${h * 1.16} ${-w * 1.21} ${h * .72} ${-w * 1.21} ${h * .05} C ${-w * 1.21} ${-h * .7} ${-w * .78} ${-h * 1.17} 0 ${-h * 1.17} Z`;
+        const hole = `M 0 ${-h * .68} C ${w * .62} ${-h * .68} ${w * .9} ${-h * .32} ${w * .89} ${h * .14} C ${w * .87} ${h * .6} ${w * .5} ${h * 1.07} 0 ${h * 1.07} C ${-w * .5} ${h * 1.07} ${-w * .87} ${h * .6} ${-w * .89} ${h * .14} C ${-w * .9} ${-h * .32} ${-w * .62} ${-h * .68} 0 ${-h * .68} Z`;
+        back = `<path d="M ${-w * 1.24} ${h * .1} C ${-w * 1.24} ${-h * 1.24} ${w * 1.24} ${-h * 1.24} ${w * 1.24} ${h * .1} L ${w * 1.34} ${h * 1.8} L ${-w * 1.34} ${h * 1.8} Z" fill="${dk2}"/>`;
+        front = `<path d="${outer} ${hole}" fill="${col}" fill-rule="evenodd" stroke="${dk2}" stroke-width="1.2"/>`
+          + `<path d="M ${-w * .86} ${h * 1.18} C ${-w * .4} ${h * 1.42} ${w * .4} ${h * 1.42} ${w * .86} ${h * 1.18} L ${w * 1.3} ${h * 1.86} Q 0 ${h * 2.1} ${-w * 1.3} ${h * 1.86} Z" fill="${col}"/>`
+          + `<path d="${hole}" fill="none" stroke="${dk2}" stroke-width="3" opacity=".45"/>`
+          + `<path d="M ${-w * .62} ${-h * .86} C ${-w * .25} ${-h * 1.02} ${w * .25} ${-h * 1.02} ${w * .62} ${-h * .86}" stroke="${lt2}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>`
+          + `<path d="M ${w * 1.05} ${h * .3} C ${w * 1.02} ${h * .8} ${w * .82} ${h * 1.12} ${w * .5} ${h * 1.3}" stroke="${dk2}" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"/>`
+          + `<path d="M ${-w * .3} ${h * 1.42} Q ${w * .3} ${h * 1.6} ${w * .9} ${h * 1.78}" stroke="${dk2}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/>`;
         break;
       }
       case 'shag':
@@ -41017,7 +41024,7 @@ window.Shift = window.Shift || {};
   function headSVG(c, uid) {
     const { w, h } = c.head, face = faceD(w, h, c.head.jaw), H = hair(c), ex = c.extras || []; let s = `<g class="r-head">`;
     s += H.back;
-    [-1, 1].forEach((d) => {
+    if (c.hair.style !== 'hijab') [-1, 1].forEach((d) => {
       s += `<ellipse cx="${d * w * .97}" cy="${h * .14}" rx="8.5" ry="12.5" fill="${c.skin}" stroke="${c.shade}" stroke-width="1.4"/><ellipse cx="${d * w * .99}" cy="${h * .15}" rx="4.4" ry="8" fill="${c.shade}" opacity=".35"/><path d="M ${d * w} ${h * .05} q ${d * 4.5} 7 0 15" stroke="${c.shade}" stroke-width="1.6" fill="none"/>`;
       if (ex.includes('hoops')) s += `<circle cx="${d * w * .99}" cy="${h * .42}" r="6" fill="none" stroke="#D4A941" stroke-width="2"/>`;
       if (ex.includes('gold')) s += `<circle cx="${d * w * .99}" cy="${h * .36}" r="3.2" fill="#D4A941"/>`;
