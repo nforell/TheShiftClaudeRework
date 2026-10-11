@@ -194,7 +194,7 @@ pre{white-space:pre-wrap;background:var(--surface-2);border-radius:8px;padding:.
       : null;
     if (res === 'sent') { msg('Sent. Thank you — every flagged item gets looked at, and you\'ll hear back by email.', 'ok'); return; }
     const pre = document.getElementById('rv-text'); pre.textContent = asText(); pre.hidden = false;
-    try { navigator.clipboard.writeText(asText()); } catch (e) { /* select the text instead */ }
+    try { const w = navigator.clipboard.writeText(asText()); if (w && w.catch) w.catch(() => {}); } catch (e) { /* select the text instead */ }
     location.href = `mailto:${(S.config || {}).feedbackEmail || ''}?subject=${encodeURIComponent('Clinical review: ' + c.title)}&body=${encodeURIComponent('My review is below (also copied to the clipboard; paste it here if it got cut off).\n\n' + asText().slice(0, 1500))}`;
     msg('Your email app should open. The full review is copied: paste it into the email if it got cut off.', 'ok');
   });

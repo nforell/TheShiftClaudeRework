@@ -18,6 +18,9 @@
     for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
     return b;
   }
+  // Safari rejects suspend/resume when it isn't ready (backgrounded, interrupted by a call, no user gesture yet).
+  // The rejection is harmless, so swallow it instead of letting it reach the crash guard.
+  const quiet = (p) => { try { if (p && typeof p.catch === 'function') p.catch(() => {}); } catch (e) { /* ignore */ } };
   function audio() {
     if (!on && !musicOn) return null;
     try {
@@ -36,9 +39,9 @@
         dly = ctx.createDelay(2); dly.delayTime.value = .43;
         const fb = ctx.createGain(); fb.gain.value = .34; const dlp = ctx.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 2200;
         dly.connect(dlp); dlp.connect(fb); fb.connect(dly); dlp.connect(verbIn); dlp.connect(mus);
-        document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
+        document.addEventListener('visibilitychange', () => { if (!ctx) return; try { quiet(document.hidden ? ctx.suspend() : ctx.resume()); } catch (e) { /* closed */ } });
       }
-      if (ctx.state === 'suspended' && !document.hidden) ctx.resume();
+      if (ctx.state !== 'running' && ctx.state !== 'closed' && !document.hidden) quiet(ctx.resume());
       if (musicOn && !started) startMusic();
       return ctx;
     } catch (e) { on = false; musicOn = false; return null; }
