@@ -2408,7 +2408,7 @@ window.Shift.terms = {"version": "2026-10-02", "updated": "October 2, 2026", "co
    events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
 window.Shift = window.Shift || {};
 window.Shift.config = Object.assign({
-  version: '0.6.0-beta',
+  version: '0.6.1-beta',
   posthogKey: 'phc_tisU8pDBvqfZjZj4Xhdur9yhtnhzqAAcmDwByf35n3Rc',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',
@@ -28666,6 +28666,9 @@ window.Shift = window.Shift || {};
     for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
     return b;
   }
+  // Safari rejects suspend/resume when it isn't ready (backgrounded, interrupted by a call, no user gesture yet).
+  // The rejection is harmless, so swallow it instead of letting it reach the crash guard.
+  const quiet = (p) => { try { if (p && typeof p.catch === 'function') p.catch(() => {}); } catch (e) { /* ignore */ } };
   function audio() {
     if (!on && !musicOn) return null;
     try {
@@ -28684,9 +28687,9 @@ window.Shift = window.Shift || {};
         dly = ctx.createDelay(2); dly.delayTime.value = .43;
         const fb = ctx.createGain(); fb.gain.value = .34; const dlp = ctx.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 2200;
         dly.connect(dlp); dlp.connect(fb); fb.connect(dly); dlp.connect(verbIn); dlp.connect(mus);
-        document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
+        document.addEventListener('visibilitychange', () => { if (!ctx) return; try { quiet(document.hidden ? ctx.suspend() : ctx.resume()); } catch (e) { /* closed */ } });
       }
-      if (ctx.state === 'suspended' && !document.hidden) ctx.resume();
+      if (ctx.state !== 'running' && ctx.state !== 'closed' && !document.hidden) quiet(ctx.resume());
       if (musicOn && !started) startMusic();
       return ctx;
     } catch (e) { on = false; musicOn = false; return null; }
@@ -43786,6 +43789,7 @@ window.Shift = window.Shift || {};
   function ovHealth() {
     const pm = performance.memory, rs = R.stats ? R.stats() : {}, last = PERF.last || {};
     let err = null; try { err = JSON.parse(localStorage.getItem('theshift.lastError') || 'null'); } catch (e) { /* storage off */ }
+    let asy = null; try { asy = JSON.parse(localStorage.getItem('theshift.lastAsync') || 'null'); } catch (e) { /* storage off */ }
     const nodes = document.getElementsByTagName('*').length, save = (() => { try { return Math.round(((localStorage.getItem('theshift.save.v1') || '').length + (localStorage.getItem('theshift.profile.v1') || '').length) / 1024); } catch (e) { return null; } })();
     const row = (k, v, ok) => `<tr><th>${k}</th><td class="${ok === false ? 'ab' : ''}">${v}</td></tr>`;
     const lines = [
@@ -43800,9 +43804,9 @@ window.Shift = window.Shift || {};
       row('Usage data', esc(TEL.status())),
     ];
     const tel = TEL.recent.slice(-8).reverse();
-    const detail = `fps ${FM.fps} · redraw avg ${PERF.avg.toFixed(1)} worst ${PERF.worst.toFixed(0)} ms · nodes ${nodes} · heap ${pm ? (pm.usedJSHeapSize / 1e6).toFixed(1) + 'MB' : 'n/a'} · save ${save}KB · ${navigator.userAgent}${err ? `\nlast error ${err.at}: ${err.msg} [${err.act} ${err.view} t=${err.t} ${err.caseId}]\n${err.stack}` : ''}`;
+    const detail = `fps ${FM.fps} · redraw avg ${PERF.avg.toFixed(1)} worst ${PERF.worst.toFixed(0)} ms · nodes ${nodes} · heap ${pm ? (pm.usedJSHeapSize / 1e6).toFixed(1) + 'MB' : 'n/a'} · save ${save}KB · ${navigator.userAgent}${err ? `\nlast error ${err.at}: ${err.msg} [${err.act} ${err.view} t=${err.t} ${err.caseId}]\n${err.stack}` : ''}${asy ? `\nlast browser refusal ${asy.at}: ${asy.name} ${asy.msg} [${asy.view}${asy.ov ? '/' + asy.ov : ''} ${asy.caseId}]` : ''}`;
     ui.healthText = detail;
-    return sheet('Health check', `<table class="health">${lines.join('')}</table>${err ? `<h3 style="margin:1rem 0 .3rem">Last error</h3><pre class="h-err">${esc(err.at + '\n' + err.msg + '\n' + err.stack)}</pre>` : '<p class="muted">No errors recorded.</p>'}${tel.length ? `<h3 style="margin:1rem 0 .3rem">Recent events</h3><pre class="h-err">${esc(tel.map((x) => `${x.at} ${x.event} ${JSON.stringify(x.p).slice(0, 90)}`).join('\n'))}</pre>` : ''}`, `<button class="btn" data-act="health-copy">Copy details</button><button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Health check' });
+    return sheet('Health check', `<table class="health">${lines.join('')}</table>${err ? `<h3 style="margin:1rem 0 .3rem">Last error</h3><pre class="h-err">${esc(err.at + '\n' + err.msg + '\n' + err.stack)}</pre>` : '<p class="muted">No errors recorded.</p>'}${asy ? `<h3 style="margin:1rem 0 .3rem">Last browser refusal (handled)</h3><pre class="h-err">${esc(asy.at + '\n' + asy.name + ' ' + asy.msg)}</pre>` : ''}${tel.length ? `<h3 style="margin:1rem 0 .3rem">Recent events</h3><pre class="h-err">${esc(tel.map((x) => `${x.at} ${x.event} ${JSON.stringify(x.p).slice(0, 90)}`).join('\n'))}</pre>` : ''}`, `<button class="btn" data-act="health-copy">Copy details</button><button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Health check' });
   }
   function ovConfirm() {
     const c = ui.confirm;
@@ -44280,7 +44284,7 @@ window.Shift = window.Shift || {};
       CL.sendLink(email).then(() => { a.busy = false; a.sent = email; render(); }).catch((e) => { a.busy = false; a.err = /rate|seconds/i.test(e.message) ? 'Too many tries. Wait a minute, then send again.' : 'Couldn\'t send the link. Check your connection and try again.'; render(); });
     },
     'acct-again'() { ui.acct = { email: '' }; render(); },
-    'acct-sync'() { CL.sync().then(fromCloud); render(); },
+    'acct-sync'() { CL.sync().then(fromCloud).catch(() => {}); render(); },
     'acct-out'() { CL.signOut(); ui.ov = null; render(); hint(document.querySelector('.top .mark') || document.body, 'Signed out. Your progress stays on this device.'); },
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
@@ -44288,7 +44292,7 @@ window.Shift = window.Shift || {};
     rpt(el) { const k = el && el.dataset && el.dataset.k, tt = el && el.dataset && el.dataset.t; const j = k !== undefined && s ? s.judg.find((x) => (x.key || '') === k && String(x.t) === String(tt)) || null : null; ui.rp = { j, why: null, note: '' }; ui.ov = 'report'; render(); },
     'rpt-why'(el) { ui.rp.why = ui.rp.why === el.dataset.v ? null : el.dataset.v; render(); },
     'rpt-send'() { const r = ui.rp; if (!r || (!r.why && !r.note)) return; r.sent = TEL.feedback(r.j ? 'decision' : 'general', Object.assign(fbWhere(), { problem: r.why || '', note: (r.note || '').trim(), decision_key: r.j ? r.j.key || '' : '', decision_text: r.j ? r.j.text : '', patient: r.j ? r.j.pid || '' : '' })); render(); },
-    'health-copy'(el) { try { navigator.clipboard.writeText(ui.healthText || ''); hint(el, 'Copied'); } catch (e) { hint(el, 'Copy blocked here. Select the text instead.'); } },
+    'health-copy'(el) { copyText(ui.healthText || '').then((ok) => { if (ok) hint(el, 'Copied'); else hint(el, 'Copy blocked here. Select the text instead.'); }); },
     badge(el) { const b = RW.BADGES.find((x) => x.id === el.dataset.id); if (b) hint(el, `${b.label}: ${b.how}${prof.badges && prof.badges[b.id] ? ' ✓' : ''}`); },
     endask() { const late = s.t >= C().length - 30, left = pts().filter((x) => !gone(s.p[x.id]) && !(s.report && s.report[x.id])).map((x) => x.room); ui.confirm = { title: late ? 'End the shift?' : 'End the shift early?', text: late ? (left.length ? `You haven't given ${oncoming().name} report on ${left.join(', ')}. The next nurse starts blind on them.` : `${oncoming().name} has report on everyone. You'll see your debrief.`) : 'Unfinished work will count as missed in your debrief.', ok: late && left.length ? 'End without report' : 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },
     'end-yes'() { ui.ov = null; endShift(); },
@@ -44396,15 +44400,29 @@ window.Shift = window.Shift || {};
     document.body.appendChild(n);
     n.addEventListener('click', (e) => {
       const x = e.target.closest('[data-x]'); if (!x) return; e.stopPropagation();
-      if (x.dataset.x === 'copy') { try { navigator.clipboard.writeText(detail); x.textContent = 'Copied'; } catch (er) { x.textContent = 'Select the text above'; } return; }
+      if (x.dataset.x === 'copy') { copyText(detail).then((ok) => { x.textContent = ok ? 'Copied' : 'Select the text above'; }); return; }
       n.remove(); document.querySelectorAll('.ff,.xpop,.coach,.coach-ring').forEach((q) => q.remove());
       if (x.dataset.x === 'home') { if (s && !s.ended) save(); ui.view = 'home'; }
       ui.ov = null; ui.ff = null; ui.pops = []; ui.critQ = [];
       try { render(true); } catch (e2) { ui.view = 'home'; try { render(true); } catch (e3) { /* truly stuck */ } }
     });
   }
-  addEventListener('error', (e) => { if (e.error) crashed(e.error, 'async'); });
-  addEventListener('unhandledrejection', (e) => crashed(e.reason, 'promise'));
+  /* A thrown error in the game's own code shows the crash card. Errors from browser extensions don't. A rejected
+     promise is never game logic (the game's state code is synchronous): it's the browser declining something
+     (audio, clipboard, a network call, the install prompt), so it's logged quietly instead of blanking the game. */
+  addEventListener('error', (e) => { if (!e.error) return; const f = String(e.filename || ''); if (f && !f.startsWith(location.href.split('#')[0].split('?')[0]) && !f.startsWith(location.origin)) return; crashed(e.error, 'async'); });
+  addEventListener('unhandledrejection', (e) => {
+    try { e.preventDefault(); } catch (er) { /* old browsers */ }
+    const r = e.reason, info = { at: new Date().toISOString(), act: 'promise', msg: String((r && r.message) || r), name: String((r && r.name) || ''), view: ui.view, ov: ui.ov || '', caseId: s ? s.caseId : caseId };
+    try { localStorage.setItem('theshift.lastAsync', JSON.stringify(info)); } catch (er) { /* storage off */ }
+    try { TEL.track('error_async', { msg: info.msg.slice(0, 200), name: info.name, view: info.view, ov: info.ov, case: info.caseId }); } catch (er) { /* never let reporting crash */ }
+  });
+  // Copy text: the clipboard API where allowed, a hidden textarea where it isn't. Resolves true or false, never rejects.
+  function copyText(text) {
+    const legacy = () => { try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; } };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(() => true, () => legacy()); } catch (e) { /* fall through */ }
+    return Promise.resolve(legacy());
+  }
   function onClick(e) {
     armIdle();
     if (ui.dragJust) { ui.dragJust = false; return; }
@@ -44544,7 +44562,7 @@ window.Shift = window.Shift || {};
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
     ui.view = 'home'; safe('boot', () => render(true));
-    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }); }
+    if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }).catch(() => {}); }
     addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
     addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });
     TEL.track('app_open', { has_save: !!(s && !s.ended), shifts_done: prof.runs.length, standalone: standalone() });
