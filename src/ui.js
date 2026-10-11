@@ -1719,6 +1719,26 @@
     (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; (m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []).forEach((t) => out.push({ mid: m.id, t, name: m.name.charAt(0).toLowerCase() + m.name.slice(1) })); });
     return out.sort((a, b) => b.t - a.t).slice(0, 8);
   }
+  /* SBAR: what the nurse has already done for this patient, from the shift log, so a call always reflects the
+     latest actions even where the case's own findings list doesn't. Skips anything a case item already says. */
+  function doneFor(pid, items) {
+    const latest = new Map();
+    s.log.forEach((l) => { if (l.pid === pid && l.label && (l.kind === 'act' || l.kind === 'find')) latest.set(l.label, l); });
+    const have = items.filter((i) => i.need).map((i) => i.label.toLowerCase());
+    return [...latest.values()].filter((l) => {
+      const m = l.label.match(/^(.+?) (given|held|declined|offered, declined)$/); if (!m) return true;
+      const k = m[1].toLowerCase().split(/[ ,(]/)[0];
+      return !have.some((h) => h.includes(k) && (m[2] === 'given' ? /\b(gave|given|after)\b/.test(h) : /\b(held|hold|declin|refus)/.test(h)));
+    }).sort((a, b) => b.t - a.t).slice(0, 8);
+  }
+  function didText(l) {
+    const m = l.label.match(/^(.+?) (given|held|declined|offered, declined)$/), c = (x) => x.charAt(0).toLowerCase() + x.slice(1);
+    if (m) return m[2] === 'given' ? `Gave ${c(m[1])}` : m[2] === 'held' ? `Held ${c(m[1])}` : `${m[1]}: offered, patient declined`;
+    const x = l.label.replace(/ \((ordered|protocol[^)]*|new order)\)$/i, ''), w = x.split(' ')[0], past = PAST[w];
+    return past ? past + x.slice(w.length) : `Done: ${c(x)}`;
+  }
+  // Past tense for the verbs that start action labels, so "Start a bolus" is reported as "Started a bolus".
+  const PAST = { Check: 'Checked', Call: 'Called', Start: 'Started', Recheck: 'Rechecked', Reassess: 'Reassessed', Review: 'Reviewed', Give: 'Gave', Turn: 'Turned', Ask: 'Asked', Read: 'Read', Remove: 'Removed', Draw: 'Drew', Apply: 'Applied', Offer: 'Offered', Chart: 'Charted', Coach: 'Coached', Walk: 'Walked', Reorient: 'Reoriented', Stop: 'Stopped', Look: 'Looked', Sit: 'Sat', Weigh: 'Weighed', Prepare: 'Prepared', Send: 'Sent', Raise: 'Raised', Increase: 'Increased', Bring: 'Brought', Repeat: 'Repeated', Change: 'Changed', Put: 'Put', Measure: 'Measured', Search: 'Searched', Place: 'Placed', Gently: 'Gently', Keep: 'Kept', Assess: 'Assessed', Extubate: 'Extubated', Get: 'Got', Feel: 'Felt', Pull: 'Pulled', Wait: 'Waited', Reposition: 'Repositioned', Count: 'Counted', Lower: 'Lowered', Score: 'Scored', Dim: 'Dimmed', Pick: 'Picked', Return: 'Returned', Stay: 'Stayed', Hang: 'Hung', Swap: 'Swapped', Massage: 'Massaged', Pause: 'Paused', Resume: 'Resumed', Release: 'Released', Debrief: 'Debriefed', Compare: 'Compared', Clean: 'Cleaned', Hold: 'Held', Warm: 'Warmed', Document: 'Documented', Page: 'Paged', Make: 'Made', Run: 'Ran', Evaluate: 'Evaluated', Disconnect: 'Disconnected', Pass: 'Passed', Join: 'Joined', Carry: 'Carried', Help: 'Helped', Lay: 'Laid', Support: 'Supported', Let: 'Let', Dry: 'Dried', Clamp: 'Clamped', Confirm: 'Confirmed', Notify: 'Notified', Cool: 'Cooled', Stimulate: 'Stimulated', 'Stimulate:': 'Stimulated:', 'Position:': 'Positioned:', Straight: 'Did a straight', Bladder: 'Did a bladder', Orthostatic: 'Checked orthostatic', Fall: 'Set up fall', Seizure: 'Set up seizure', Bedside: 'Did a bedside', 'Two-person': 'Did a two-person', Second: 'Placed a second' };
   function ovSbar() {
     const pid = ui.sbar.pid;
     if (!pid) {
@@ -1734,6 +1754,7 @@
       ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)); if (!es.length && !gv.length) return '';
         const box = (id, label) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="${id}" ${ui.sbar.picked.includes(id) ? 'checked' : ''}><span>${esc(label)}</span></label>`;
         return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}</details>`; })()}
+      ${(() => { const dn = doneFor(pid, items); return dn.length ? `<fieldset class="sbar-sec sbar-did" style="border:0;padding:0"><legend><h3><i>✓</i>What you've already done</h3></legend><p class="muted" style="margin:.2rem 0 .4rem">Tell the provider what's in place so the plan builds on it.</p>${dn.map((l) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="did:${l.id}" ${ui.sbar.picked.includes('did:' + l.id) ? 'checked' : ''}><span><span class="did-t">${E.clock(l.t)}</span>${esc(didText(l))}</span></label>`).join('')}</fieldset>` : ''; })()}
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
@@ -2359,12 +2380,14 @@
         const rx = ui.sbar.picked.filter((id) => id.startsWith('rx:')).map((id) => { const [, mid, t] = id.split(':'); return { mid, t: +t, e: (s.errors || []).find((e) => e.pid === pid && e.medId === mid && e.t === +t) }; });
         const errs = ui.sbar.picked.filter((id) => id.startsWith('err:')).map((id) => (s.errors || []).find((e) => 'err:' + e.id === id)).concat(rx.map((r) => r.e)).filter(Boolean);
         const fine = rx.filter((r) => !r.e).map((r) => `The ${d.meds.find((m) => m.id === r.mid).name.toLowerCase()} at ${E.clock(r.t)} was ordered and appropriate. Thanks for double-checking.`);
-        const picked = ui.sbar.picked.filter((id) => !/^(err|rx):/.test(id));
+        const picked = ui.sbar.picked.filter((id) => !/^(err|rx|did):/.test(id));
+        const did = ui.sbar.picked.filter((id) => id.startsWith('did:')).map((id) => s.log.find((l) => 'did:' + l.id === id)).filter(Boolean);
+        const noted = did.length ? `Good to know: ${did.slice(0, 3).map((l) => { const x = didText(l); return x.charAt(0).toLowerCase() + x.slice(1); }).join('; ')}${did.length > 3 ? `, and ${did.length - 3} more` : ''}.` : '';
         const items = d.sbar.items(s, P, Ax); const keys = picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
         const noise = picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
         const fix = errs.map((e) => F.tellMD(s, Ax, d, e, prov(pid).name));
-        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : ''].filter(Boolean).join(' ');
-        if (!keys.length && !errs.length && !fine.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
+        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : '', noted].filter(Boolean).join(' ');
+        if (!keys.length && !errs.length && !fine.length && !did.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov(pid).name}. "${reply}"`, 'info');
       });

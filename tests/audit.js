@@ -24,7 +24,7 @@
   document.querySelectorAll('[data-act]').forEach((el) => {
     if (el.dataset.scrim || !el.dataset.act) return; if (!vis(el) || el.closest('[inert]')) return;
     if (modal && !modal.contains(el) && !(modal.classList.contains('drawer') && el.closest('.drawer'))) return;
-    const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > H || r.right < 0 || r.left > W) return;
+    const r = el.getBoundingClientRect(); if (r.top + r.height / 2 < 0 || r.top + r.height / 2 >= H || r.left + r.width / 2 < 0 || r.left + r.width / 2 >= W) return;   // center off screen: not reachable here
     // clipped by a scrolling/clipping ancestor: not reachable at this scroll position, not a bug
     let clip = false; for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.overflow !== 'visible' || cs.overflowX !== 'visible' || cs.overflowY !== 'visible') { const q = p.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2; if (mx < q.left + 4 || mx > q.right - 4 || my < q.top + 4 || my > q.bottom - 4) { clip = true; break; } } }
     if (clip) return;
