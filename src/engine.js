@@ -172,6 +172,18 @@ window.Shift = window.Shift || {};
 
   /* Persistence — local for now; same shape could post to a backend later. */
   const KEY = 'theshift.save.v1', PROF = 'theshift.profile.v1';
+  /* Whatever is in storage (an older version, a cloud copy, a half-written save), hand the game a profile whose
+     fields have the types it expects, so a bad value can never stop the screen from drawing. */
+  const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
+  function cleanProfile(raw) {
+    const p = Object.assign({}, obj(raw));
+    p.runs = Array.isArray(p.runs) ? p.runs.filter((r) => r && typeof r === 'object' && typeof r.caseId === 'string').map((r) => Object.assign({}, r, { score: Number.isFinite(+r.score) ? +r.score : 0 })) : [];
+    p.settings = Object.assign({ theme: 'system', text: 'normal', motion: 'full' }, obj(p.settings));
+    ['seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons'].forEach((k) => { if (k in p) p[k] = obj(p[k]); });
+    Object.keys(p.ngn || {}).forEach((k) => { const r = p.ngn[k]; if (!r || typeof r !== 'object' || !Number.isFinite(+r.max) || !Number.isFinite(+r.score)) delete p.ngn[k]; });
+    if ('xp' in p && !Number.isFinite(+p.xp)) p.xp = 0;
+    return p;
+  }
   const store = {
     save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
     load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } },
@@ -179,7 +191,7 @@ window.Shift = window.Shift || {};
     profile() {
       let p = null;
       try { p = JSON.parse(localStorage.getItem(PROF) || 'null'); } catch (e) {}
-      return Object.assign({ runs: [], settings: { theme: 'system', text: 'normal', motion: 'full' } }, p || {});
+      return cleanProfile(p);
     },
     saveProfile(p) { try { localStorage.setItem(PROF, JSON.stringify(p)); } catch (e) {} },
   };
