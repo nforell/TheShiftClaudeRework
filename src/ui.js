@@ -38,7 +38,12 @@
   let prof = E.store.profile(); // persistent profile + settings
   const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption: null, toasts: [], rank: null, rankDone: false, dlg: null, med: null, sbar: null, delegMsg: null, nova: null, hIdx: 0, newLog: 0, filter: 'all', confirm: null, adv: null, stamp: null, justKey: null, busy: false };
 
-  const C = () => E.getCase(caseId);
+  /* The home screen's selected card (caseId) can differ from the shift in progress (s.caseId) while a game is
+     saved. Everywhere except home, the shift in progress wins, so game code never mixes one shift's patients
+     with another's case. */
+  const GAMEVIEW = { handoff: 1, station: 1, room: 1, debrief: 1 };
+  const inGame = () => !!(s && GAMEVIEW[ui.view]);
+  const C = () => E.getCase(s && ui.view !== 'home' && E.getCase(s.caseId) ? s.caseId : caseId);
   /* Shift picker: which specialty each shift belongs to and how hard it is (1–5), with the reason in one line. */
   const SPEC = {
     ms: { name: 'Medical-surgical', unit: '4 West', blurb: 'Adult general floor: post-op care, diabetes, infection, heart failure. Start here.' },
@@ -91,7 +96,7 @@
   const fromOf = (d) => d.from || 'the ED', admWord = (d) => d.arriveAs || 'Admission';
   const here = (d) => !d.arrives || (s && s.p[d.id].arrived);          // admitted patients appear mid-shift
   const pts = () => C().patients.filter(here);
-  const gone = (P) => P.icu || P.gone;                                   // off the unit (ICU, OR)
+  const gone = (P) => !P || P.icu || P.gone;                                 // off the unit (ICU, OR)
   const goneText = (P) => P.goneText || 'Transferred to ICU';
   /* A case can give patients their own provider (an OB for the mother, a pediatrician for the baby). */
   const provKey = (pid) => ((pid && def(pid) && def(pid).provider) || C().provider || 'chen');
@@ -655,7 +660,7 @@
           <div class="tools">
             ${(() => { const n = aideSuggest().length; return `<button class="btn ${n ? 'has-sug' : ''}" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>${n ? `${n} thing${n === 1 ? '' : 's'} ${esc(cna().name)} can take now` : `Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}`}</small></button>`; })()}
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
-            ${s.t >= C().length - 60 ? (() => { const L = pts().filter((x) => !gone(s.p[x.id])), n = L.filter((x) => s.report && s.report[x.id]).length; return `<button class="btn ${n < L.length ? 'btn-primary' : ''}" data-act="report" style="grid-column:1/-1"><b>${n < L.length ? `Give report to ${esc(oncoming().name)}` : `Report given to ${esc(oncoming().name)}`}</b><small>${n} of ${L.length} patients · 2 min each</small></button>`; })() : ''}
+            ${s.t >= C().length - 60 ? (() => { const L = pts().filter((x) => !gone(s.p[x.id])), n = L.filter((x) => s.report && s.report[x.id]).length; if (!L.length) return ''; return `<button class="btn ${n < L.length ? 'btn-primary' : ''}" data-act="report" style="grid-column:1/-1"><b>${n < L.length ? `Give report to ${esc(oncoming().name)}` : `Report given to ${esc(oncoming().name)}`}</b><small>${n} of ${L.length} patients · 2 min each</small></button>`; })() : ''}
             ${s.t >= C().length - 30 ? `<button class="btn ${pts().filter((x) => !gone(s.p[x.id])).every((x) => s.report && s.report[x.id]) ? 'btn-primary' : ''}" data-act="endask" style="grid-column:1/-1"><b>End shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
           </div>
         </aside>
@@ -1102,8 +1107,8 @@
     return (order.length ? order.map((g) => `<div class="les-g"><h4>${esc(g === 'floor' ? 'Floor calls' : caseTitle(g))}${g !== 'floor' && filter !== 'fixed' ? `<button class="btn btn-quiet les-play" data-act="pick-case" data-id="${g}">Replay to fix ›</button>` : ''}</h4><ul class="les">${groups[g].map((l) => `<li class="${l.fixed ? 'fixed' : ''}"><details><summary><span class="les-ic" aria-hidden="true">${l.fixed ? '✓' : '!'}</span><span class="les-t"><b>${esc(l.text)}</b><small>${esc((DOM[l.dom] || '') + (l.pid ? ' · ' + l.pid : ''))} · ${l.fixed ? `fixed ${ago(l.fixed)}` : l.times > 1 ? `happened ${l.times} times` : `first seen ${ago(l.first)}`}</small></span></summary><p>${esc(l.why)}</p></details></li>`).join('')}</ul></div>`).join('') : `<p class="empty">${filter === 'fixed' ? 'Nothing fixed yet. Replay a shift and avoid a mistake you made before.' : 'No open lessons. Every mistake you\'ve made, you\'ve fixed.'}</p>`);
   }
   function floorHTML() {
-    const seen = prof.floorSeen || {}, P = FL.POOL, KIND = { med: 'Med-surg', psych: 'Psych', peds: 'Peds' };
-    return `<p class="muted ach-note">Floor calls come at random. Answer one with the best choice to collect it; anything less can be collected on a later shift.</p><div class="fcol">${P.map((x) => { const v = seen[x.id]; return `<div class="fc-t ${v || 'unseen'}" title="${esc(v ? x.title : 'Not seen yet')}"><span class="fc-g" aria-hidden="true">${v === 'best' ? '★' : v ? '◐' : '?'}</span><b>${v ? esc(x.title) : 'Not seen yet'}</b><small>${x.k.length > 1 ? 'Any unit' : KIND[x.k[0]]}${v && v !== 'best' ? ' · try again' : ''}</small></div>`; }).join('')}</div>`;
+    const seen = prof.floorSeen || {}, P = FL.POOL, KIND = { med: 'Med-surg', psych: 'Psych', peds: 'Peds', ob: 'Maternity and L&D', ed: 'Emergency', icu: 'ICU', sd: 'Step-down', ld: 'Labor and delivery' };
+    return `<p class="muted ach-note">Floor calls come at random. Answer one with the best choice to collect it; anything less can be collected on a later shift.</p><div class="fcol">${P.map((x) => { const v = seen[x.id]; return `<div class="fc-t ${v || 'unseen'}" title="${esc(v ? x.title : 'Not seen yet')}"><span class="fc-g" aria-hidden="true">${v === 'best' ? '★' : v ? '◐' : '?'}</span><b>${v ? esc(x.title) : 'Not seen yet'}</b><small>${x.k.length > 1 ? 'Any unit' : esc(KIND[x.k[0]] || 'One unit')}${v && v !== 'best' ? ' · try again' : ''}</small></div>`; }).join('')}</div>`;
   }
   function vAwards() {
     const have = prof.badges || {}, tr = RW.TRACKS, tiers = RW.tiers(prof), medals = Object.values(tiers).reduce((n, x) => n + x, 0);
@@ -1855,9 +1860,11 @@
   /* ------------ report to the oncoming nurse ------------ */
   function reportPending(d, P) { return brainRows(d, P).filter((r) => !r.done && !r.prog && r.t !== null && !/^(rp|rd:)/.test(r.key || '') && (r.late || r.t <= C().length + 60)); }
   function reportItems(d, P) { return F.reportItems(s, A(), d, P, reportPending(d, P), stName); }
-  function openReport(pid) { const list = pts().filter((x) => !gone(s.p[x.id])); const first = pid || (prioList().find((id) => list.some((x) => x.id === id) && !(s.report && s.report[id])) || (list[0] || {}).id); ui.rep = { pid: first, picked: [], reply: null, review: null }; ui.ov = 'give'; ui.chart = null; render(); }
+  function openReport(pid) { const list = pts().filter((x) => !gone(s.p[x.id])); const first = pid || (prioList().find((id) => list.some((x) => x.id === id) && !(s.report && s.report[id])) || (list[0] || {}).id); if (!first || !def(first)) { stamp('Nobody left on the unit to report on'); return render(); } ui.rep = { pid: first, picked: [], reply: null, review: null }; ui.ov = 'give'; ui.chart = null; render(); }
   function ovGive() {
-    const r = ui.rep, on = oncoming(), list = prioList().map(def).filter((x) => !gone(s.p[x.id])), d = def(r.pid), P = s.p[r.pid], done = s.report && s.report[r.pid];
+    const r = ui.rep, on = oncoming(), list = prioList().map(def).filter((x) => x && !gone(s.p[x.id])), d = def(r.pid);
+    if (!d) { ui.ov = null; ui.rep = null; return ''; }
+    const _d = d, P = s.p[r.pid], done = s.report && s.report[r.pid];
     const tabs = `<div class="seg rep-tabs" role="group" aria-label="Patient">${list.map((x) => `<button data-act="rep-go" data-pid="${x.id}" aria-pressed="${x.id === r.pid}">${s.report && s.report[x.id] ? '✓ ' : ''}${x.room}</button>`).join('')}</div>`;
     let body = `<p class="muted" style="margin-top:0">${esc(on.name)} is taking your patients. For each one, pick what ${esc(on.name)} needs to hear. Unfinished work is fine to hand off; unmentioned work isn't.</p>${tabs}
       <div class="rep-who">${pface(d.id)}<div><b>${d.room} ${esc(d.name)}</b> <small class="muted">${ageSex(d)}</small><br><span class="muted">${esc(d.dx)}</span></div></div>`;
@@ -2003,6 +2010,7 @@
   const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
   function render(scrollTop) {
     const T0 = performance.now();
+    if (inGame() && caseId !== s.caseId && E.getCase(s.caseId)) { caseId = s.caseId; E.useCase(caseId); }
     applySettings();
     const root = $('#app');
     const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
@@ -2104,7 +2112,7 @@
   }
   /* What the score should feel like right now: the scene, how many patients are in danger, day or night. */
   function musicMood() {
-    if (!s || ui.view === 'home') return { scene: 'home', tension: 0, night: false };
+    if (!s || !GAMEVIEW[ui.view]) return { scene: 'home', tension: 0, night: false };
     if (ui.view === 'debrief' || s.ended) return { scene: 'debrief', tension: 0, night: false };
     const Ax = A(); let t = 0;
     C().patients.forEach((d) => { if (!here(d)) return; const P = s.p[d.id]; if (gone(P)) return; const st = d.status(s, P, Ax); t += st === 'urgent' ? .5 : st === 'watch' ? .08 : 0; });
@@ -2503,7 +2511,7 @@
     'away-upd'() { const a = ui.away; a.noteText = null; let r = null; spend(3, (Ax) => { r = F.callUpdate(s, Ax, a.pid); }); if (s.ended) return; if (!ui.away) return render(); a.mode = null; a.reply = `${staff(s.p[a.pid].out.spec.nurse).name}: "${r.text}"`; a.replyFrom = s.p[a.pid].out.spec.nurse; a.review = null; FX.play(r.st === 'crit' ? 'worse' : r.st === 'improving' || r.st === 'stable' ? 'better' : 'msg'); render(); },
     bell(el) { const d = def(s.loc); if (!s.p[d.id].bell) return render(); doAct('Answered the call light', 2, (Ax) => { const tx = F.answerBell(s, Ax, d.id); logHere(d.id, tx, 'find'); s.log[s.log.length - 1].label = 'Call light'; return tx; }); if (STY && !s.ended) STY.fromBell(s, d.id); if (!s.ended) render(); },
     round(el) { const d = def(s.loc), lab = ROUND[F.kindOf(C())][0]; doAct(lab, 2, (Ax) => { const tx = F.round(s, Ax, d.id); logHere(d.id, tx, 'find'); s.log[s.log.length - 1].label = lab; return tx; }); if (!s.ended) render(); },
-    report(el) { if (!s || s.ended) return; openReport(el.dataset.pid || el.dataset.id || null); },
+    report(el) { if (!s || s.ended || !inGame()) return; openReport(el.dataset.pid || el.dataset.id || null); },
     'rep-go'(el) { ui.rep = { pid: el.dataset.pid, picked: [], reply: null, review: null }; render(); },
     'rep-pick'(el) { const p = ui.rep.picked, i = p.indexOf(el.dataset.id); if (i >= 0) p.splice(i, 1); else p.push(el.dataset.id); render(); },
     'rep-send'() { const r = ui.rep, d = def(r.pid), P = s.p[r.pid], items = reportItems(d, P), j0 = s.judg.length; let rep = ''; spend(2, (Ax) => { rep = F.giveReport(s, Ax, r.pid, r.picked, items); }); if (s.ended) return; if (!ui.rep) return render(); r.reply = rep; r.replyPid = r.pid; r.review = judgSince(j0, r.pid); reviewSound(r.review); stamp(`Report on ${d.short}`, 2); render(); },
