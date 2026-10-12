@@ -4,7 +4,7 @@
    events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
 window.Shift = window.Shift || {};
 window.Shift.config = Object.assign({
-  version: '0.6.3-beta',
+  version: '0.6.4-beta',
   posthogKey: 'phc_tisU8pDBvqfZjZj4Xhdur9yhtnhzqAAcmDwByf35n3Rc',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',
@@ -13,6 +13,9 @@ window.Shift.config = Object.assign({
   // Never put the secret / service_role key here.
   supabaseUrl: 'https://omcorltahsnnmpifefpm.supabase.co',
   supabaseKey: 'sb_publishable_gXXC0_aKPHdzsZu8N6UkLg_rljVc_89',
+  // Email copies of beta signups, reviews and problem reports, sent by supabase/functions/notify. Turn on after
+  // deploying that function with a mail sender (docs/EMAIL-SETUP.md).
+  notify: false,
   // The shift pack: a few shifts free, the rest (and every shift added later) for one payment. Off until Stripe is
   // set up (docs/ROADMAP-PROGRESS.md, Session 9). checkoutUrl is a Stripe Payment Link; its "after payment" page
   // should be https://<your site>/play/?pack=thanks. Purchases are recorded by supabase/functions/stripe-webhook.

@@ -58,6 +58,7 @@ Analytics, in-game feedback, the landing-page signup and the installable app are
 - **Showing the working**: the debrief explains how the score was averaged and where the star lines sit, and every skill and NCLEX step opens to show each decision's points (start at 60, +6 per point, −9 per point for the first three points of misses, −4.5 after), plus how the exam tests that step and how to reason through it (`CJ.GUIDE` in `src/cjmm.js`).
 - **Instructor dashboard** at `/teach/` (`site/teach.html`): make a class, share the code, see results by NCLEX step and skill, the most-missed decisions, practice-question results, and a CSV. Students join from **Menu → Your class**. Needs `supabase/classes-and-pack.sql`.
 - **Shift pack** (`config.pack` in `src/config.js`, off by default): a few shifts free, the rest for one payment through a Stripe Payment Link, recorded by `supabase/functions/stripe-webhook`. A class can carry a school license. Setup steps are in the progress log, Session 9.
+- **Email** (`docs/EMAIL-SETUP.md`): sign-in emails use the branded templates in `supabase/email-templates/` and need a real sender (Resend through Supabase custom SMTP); Supabase's built-in mailer only reaches the Supabase team. `supabase/functions/notify` emails copies of signups, reviews and reports (`config.notify`).
 
 ## Performance and testing
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the budgets, the built-in guardrails (crash guard, Lite graphics, Settings → Health check or `?health`), and the growth plan. Before pushing, run `python tests/run_all.py`.

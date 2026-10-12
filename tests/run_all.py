@@ -26,7 +26,7 @@ if r.returncode:
     bad += 1
     print('::error title=soak.py::' + (r.stderr.strip().splitlines() or r.stdout.strip().splitlines() or ['failed'])[-1][:300])
 # Analytics, feedback and signup end to end; then the installable app and offline play.
-for extra in ('telemetry.py', 'robust.py', 'safari.py', 'sbar_done.py', 'pwa.py', 'cloud.py', 'review.py', 'guide.py', 'law.py', 'teen.py', 'stepdown.py', 'ob.py', 'ed.py', 'ngn.py', 'teach.py', 'pack.py', 'clarity.py', 'restraint.py', 'pacing.py', 'terms.py', 'orient.py', 'errors.py', 'practice.py', 'icu.py', 'ld.py'):
+for extra in ('telemetry.py', 'robust.py', 'safari.py', 'sbar_done.py', 'pwa.py', 'cloud.py', 'email_link.py', 'review.py', 'guide.py', 'law.py', 'teen.py', 'stepdown.py', 'ob.py', 'ed.py', 'ngn.py', 'teach.py', 'pack.py', 'clarity.py', 'restraint.py', 'pacing.py', 'terms.py', 'orient.py', 'errors.py', 'practice.py', 'icu.py', 'ld.py'):
     r = subprocess.run([sys.executable, str(ROOT / 'tests' / extra)], capture_output=True, text=True)
     print((r.stdout.strip().splitlines() or [r.stderr.strip()[-300:]])[-1])
     if r.returncode:
