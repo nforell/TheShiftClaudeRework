@@ -677,6 +677,7 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 .res-text{font-family:var(--serif);font-size:1.18rem;line-height:1.55;margin:.9rem 0 .2rem;animation:tickIn .5s .2s both}
 .res-vit{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem;margin-top:.8rem}
 .res-vit div{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:.45rem .55rem;animation:tickIn .4s both}
+.res-vit.still div{animation:none}
 .res-vit div:nth-child(2){animation-delay:.06s}.res-vit div:nth-child(3){animation-delay:.12s}.res-vit div:nth-child(4){animation-delay:.18s}.res-vit div:nth-child(5){animation-delay:.24s}
 .res-vit span{display:block;font-size:.7rem;color:var(--ink-2)}
 .res-vit b{font-size:1.15rem;font-weight:600}
@@ -2386,3 +2387,11 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .sbar-did .opt span{display:flex;gap:.6rem;align-items:baseline}
 .did-t{flex:none;font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
 .ngn-rpt{margin:1rem 0 0;text-align:right}
+
+/* Debrief: the receipt under each moment, and floor-call tags */
+.moments .rcpt { margin: .35rem 0 .1rem; font-size: .85rem; }
+.moments .rcpt summary { cursor: pointer; color: var(--ink-2); min-height: 44px; display: flex; align-items: center; }
+.moments .rcpt ol { margin: .25rem 0 0; padding-left: 1.1rem; display: grid; gap: .2rem; }
+.moments .rcpt li { overflow-wrap: anywhere; }
+.moments .rcpt .aw-tm { font-variant-numeric: tabular-nums; font-weight: 600; margin-right: .25rem; }
+.moments .tm-fl { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }

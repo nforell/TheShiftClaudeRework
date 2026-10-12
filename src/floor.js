@@ -414,7 +414,28 @@
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const cnaKey = (c) => c.cna || 'luis';
   const fromKey = (c, it) => (it.from === '@cna' ? cnaKey(c) : it.from === 'fl-rn' ? 'fl-rn-' + kindOf(c) : it.from);
-  function fill(c, x) { const cn = (c.staff[cnaKey(c)] || {}).name || 'Your aide'; return String(x).replace(/\{rn\}/g, RN[kindOf(c)]).replace(/\{cna\}/g, cn); }
+  /* Floor calls are about the rest of the unit, never your own assignment. The calls are written once for every shift on a
+     unit type, so a room number in one can land on a room you're assigned (a colleague's "patient in 414" on a shift where
+     414 is yours). Any room on this shift's roster is moved to the nearest room that isn't. */
+  const roomMaps = new WeakMap();
+  function roomMap(c) {
+    if (roomMaps.has(c)) return roomMaps.get(c);
+    const mine = new Set(c.patients.map((d) => String(d.room || d.id))), used = new Set(mine), m = {};
+    [...mine].sort().forEach((r) => { if (!/^\d+$/.test(r)) return; let n = +r; do { n += 1; } while (used.has(String(n))); used.add(String(n)); m[r] = String(n); });
+    roomMaps.set(c, m); return m;
+  }
+  function rooms(c, t) {
+    const m = roomMap(c);
+    return t.replace(/(^|[^\d/.])(\d{2,3})(?![\d/.]|\s?(?:mg|mL|ml|kg|g\b|%|units|mcg|mEq|°))/g, (all, pre, r, at) => {
+      if (!m[r]) return all;
+      // Two-digit rooms (ED bays) only when the text says it's a place, so "RR 24" stays a breathing rate.
+      if (r.length < 3 && !/(?:bay|bed|room)\s$/i.test(t.slice(0, at + pre.length))) return all;
+      return pre + m[r];
+    });
+  }
+  function fill(c, x) { const cn = (c.staff[cnaKey(c)] || {}).name || 'Your aide'; return rooms(c, String(x).replace(/\{rn\}/g, RN[kindOf(c)]).replace(/\{cna\}/g, cn)); }
+  // "A long cough" -> "long cough", '"Something popped"' -> 'something popped', for "I took the ... call".
+  const callName = (it) => it.title.replace(/["“”]/g, '').replace(/^(a|an|the)\s+/i, '').replace(/^./, (ch) => ch.toLowerCase());
   const item = (id) => POOL.find((x) => x.id === id);
   const MAX = 5;
 
@@ -434,8 +455,8 @@
       if (x.done || s.t < x.exp) return;
       x.done = 'missed';
       const it = item(x.id), m = s.inbox.find((mm) => mm.floor === x.id); if (m) { m.done = true; m.read = true; }
-      A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${it.title.toLowerCase()} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.` });
-      if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, it.miss.text, it.miss.why);
+      A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${callName(it)} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.` });
+      if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, `Floor call you didn't get to (${it.title.replace(/["“”]/g, '')}): ${fill(c, it.miss.text)}`, fill(c, it.miss.why) + ' This was a call from the rest of the unit, not one of your assigned patients.');
     });
     if (F.n >= F.order.length || s.t < F.next || s.t > c.length - 25) return;
     if (F.q.some((x) => !x.done) || busy(s, A, c)) { F.next = s.t + 6; return; }
@@ -459,12 +480,12 @@
     const o = it.opts[i]; x.done = 'answered'; x.pick = i; x.v = o.v; x.t = s.t;
     const m = s.inbox.find((mm) => mm.floor === id); if (m) { m.done = true; m.read = true; }
     const best = it.opts.find((z) => z.v === 2);
-    A.judge('floor-' + id, it.dom, DELTA[o.v], `${it.title}: ${fill(c, o.t).replace(/^./, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^./, (ch) => ch.toLowerCase())}.` : ''));
+    A.judge('floor-' + id, it.dom, DELTA[o.v], `Floor call (${it.title.replace(/["“”]/g, '')}): ${fill(c, o.t).replace(/^./, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^./, (ch) => ch.toLowerCase())}.` : ''));
     return { v: o.v };
   }
   function open(s) { return s.floor ? s.floor.q.filter((x) => !x.done) : []; }
   function stats(s) { const q = s.floor ? s.floor.q : []; return { total: q.length, best: q.filter((x) => x.v === 2).length, answered: q.filter((x) => x.done === 'answered').length, missed: q.filter((x) => x.done === 'missed').length }; }
   function endChecks() {}
 
-  S.floor = { tick, view, answer, open, stats, endChecks, staffFor, STAFF, POOL, kindOf };
+  S.floor = { tick, view, answer, open, stats, endChecks, staffFor, STAFF, POOL, kindOf, fill, callName };
 })(window.Shift);

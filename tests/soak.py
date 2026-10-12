@@ -29,7 +29,9 @@ with sync_playwright() as p:
         while not st('s.ended') and n<60:
             q=pids[n % len(pids)]
             if st(f"!(s.p['{q}'].icu||s.p['{q}'].gone)&&(!Shift.engine.api(s).def('{q}').arrives||s.p['{q}'].arrived)"):
-                H('goto',pid=q); H('assess',sys='vitals'); H('res-close'); H('dock',id='care'); H('back')
+                H('goto',pid=q)
+                if st('s.ended'): break   # walking into the room can use the shift's last minute
+                H('assess',sys='vitals'); H('res-close'); H('dock',id='care'); H('back')
             for f in st("Shift.floor.open(s).map(x=>x.id)"): H('floor',id=f); H('floor-pick',i='0'); H('close')
             H('skip'); pg.wait_for_timeout(60)
             ov=pg.evaluate("Shift.ui._ui.ov")
