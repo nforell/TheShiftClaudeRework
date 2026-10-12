@@ -78,7 +78,10 @@ Source is plain JavaScript on a global `window.Shift` object:
 Rebuild after editing:
 
 ```
+cd tools/minify && npm ci && cd ../..   # once: installs the pinned minifier (esbuild)
 python3 build.py
 ```
+
+The build minifies the code and ships the NCLEX data (question bank, case studies, rationales) as JSON that's only parsed when practice or a debrief first needs it. `SHIFT_NO_MINIFY=1 python3 build.py` skips minifying for a quick local look, but commit a normal build: the GitHub check rebuilds and compares.
 
 `lab/character-lab.html` is the standalone character playground.

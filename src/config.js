@@ -4,7 +4,7 @@
    events stay on the device (Settings → Health check shows them) and feedback opens an email instead. */
 window.Shift = window.Shift || {};
 window.Shift.config = Object.assign({
-  version: '0.6.2-beta',
+  version: '0.6.3-beta',
   posthogKey: 'phc_tisU8pDBvqfZjZj4Xhdur9yhtnhzqAAcmDwByf35n3Rc',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',

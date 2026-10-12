@@ -2,6 +2,30 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 18 — October 10 to 11, 2026 (branches `nclex-debrief-tab`, `sbar-done-actions`, `safari-crash-fix`, `stability-pass`, `faster-start`)
+
+Nick's asks: make NCLEX review prominent, make SBAR reflect what you did, stop the crashes, make the game very playable, then make it load faster and bring the docs up to date.
+
+### Done
+- **NCLEX review tab** in the debrief, next to *Your shift*. The shift tab opens with an NCLEX card (weakest step, the six step scores, questions waiting). The tab has the six-step strip, a plan for the shift, this shift's questions and focus practice as cards, where thinking slipped, each step's guide and traps, and matching case studies. In-shift feedback names the NCLEX step each decision tests; shift cards show the NCLEX questions and case studies that come with them.
+- **SBAR: What you've already done.** Every call lists this shift's actions for that patient from the log (interventions, meds given, held or declined, calls), in the past tense, skipping what a case finding already says. The reply acknowledges them.
+- **iPhone crash fixed.** Safari rejects audio resume/suspend and clipboard writes; those rejected promises reached the crash guard and showed "Something went wrong" mid-shift. They're swallowed now; unhandled rejections are logged (`error_async` in PostHog, Health check) without the card. Thrown errors in game code still show it.
+- **Stability pass** (random real-tap play on all 11 shifts plus hostile conditions): fixed a crash when the home screen's selected shift differed from the saved one, a crash giving report with nobody left on the unit, profiles with null fields breaking every redraw (profiles are now repaired on load), and "undefined" labels in the floor-call collection.
+- **Faster start.** The build minifies with a pinned esbuild (`tools/minify`, `npm ci` once), ships the NCLEX data as JSON parsed on first use, and draws shift-card portraits below the fold as they scroll in. On a mid-range phone profile (4x CPU slowdown, 4G): home screen ready in about 2.3 s, down from 3.1 s; download 1.0 MB compressed.
+- **Report a problem with this question** on every practice question, for reviewers and players.
+- New tests: `tests/robust.py` (blocked and full storage, corrupted saves and profiles, offline, 320px, mid-game shift switch, report with nobody left), `tests/safari.py`, `tests/sbar_done.py`. The layout audit no longer flags buttons whose center is off screen.
+- `docs/REVIEWER-GUIDE.md`: the one-pager to send nurses with their review link.
+
+### Needs Nick
+- **Clinical sign-off.** No shift is marked reviewed yet. Send the reviewer guide with a `/review/<shift>/` link to one nurse per specialty, and record each sign-off in `src/review.js` (see docs/CLINICAL-REVIEW.md).
+- **Real iPhones.** The Safari fixes were tested by simulating Safari's refusals; have testers play a full shift on iPhone, then check PostHog `error` and `error_async`.
+- Lawyer review of `src/terms.json`; decide pricing and the free shifts before turning on the pack (`config.pack`), which still lists 3 free of 11.
+
+### Up next
+1. Read PostHog for where testers stop (report, the first med pass, before the debrief) and simplify there.
+2. Record clinical sign-offs as they come in, and fix what reviewers flag.
+3. If the game grows past about 14 shifts: load each shift's case file on demand (see docs/ARCHITECTURE.md, option 3).
+
 ## Session 17 — October 10, 2026 (branch `ld-shift`, built on `icu-shift`)
 
 ### Done

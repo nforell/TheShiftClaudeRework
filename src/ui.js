@@ -376,7 +376,7 @@
             <b class="sc-title"><span class="sr">${esc(specOf(id).name)}: </span>${esc(k.title)}</b>
             <span class="sc-card">${esc(k.card)}</span>
             <small class="rg-facts">${esc(shiftFacts(k))}</small>
-            ${NG ? (() => { const nq = NG.items(id).length, nc = NG.cases ? NG.cases().filter((c) => c.sp === meta(id).sp).length : 0; return nq || nc ? `<small class="sc-nx"><b>NCLEX</b>${nq ? `${nq} questions after the shift` : ''}${nq && nc ? ' · ' : ''}${nc ? `${nc} matching case stud${nc === 1 ? 'y' : 'ies'}` : ''}</small>` : ''; })() : ''}
+            ${NG ? (() => { const nq = NG.items(id).length, nc = NG.count ? NG.count.cases(meta(id).sp) : 0; return nq || nc ? `<small class="sc-nx"><b>NCLEX</b>${nq ? `${nq} questions after the shift` : ''}${nq && nc ? ' · ' : ''}${nc ? `${nc} matching case stud${nc === 1 ? 'y' : 'ies'}` : ''}</small>` : ''; })() : ''}
             <span class="sc-foot">${diffPips(id)}<span class="sc-st"><span class="rung-st" aria-label="${stn} of 3 stars">${[0, 1, 2].map((j) => starSvg(j < stn, j, 'rs')).join('')}</span><small>${status}</small></span></span>
           </span>
         </button>
@@ -404,7 +404,7 @@
           ${adm.map((d) => `<figure class="adm tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust', '-232 -112 464 232')}<figcaption><b>${d.room} ${esc(d.short)}, arriving ${hhmm(c, d.arrives)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(admWord(d)) + ' from ' + esc(fromOf(d)) + ': ' + esc(d.reason.toLowerCase())}</figcaption></figure>`).join('')}
         </div>
       </section>
-      ${NG && NG.bank ? `<section class="px-band"><div><p class="pr-k">NCLEX practice</p><h2>${NG.cases().length} unfolding case studies. ${NG.bank().length} questions. Every answer explained.</h2><p>NGN-style cases where the chart grows as the client changes, questions in all eight NCLEX-RN Client Needs categories, calculations, and a readiness view that shows what to study next.</p></div><div class="px-go"><button class="btn btn-primary btn-go" data-act="practice">Open NCLEX practice <span aria-hidden="true">→</span></button><button class="btn" data-act="ref">Pocket reference</button></div></section>` : ''}
+      ${NG && NG.bank ? `<section class="px-band"><div><p class="pr-k">NCLEX practice</p><h2>${NG.count.cases()} unfolding case studies. ${NG.count.bank()} questions. Every answer explained.</h2><p>NGN-style cases where the chart grows as the client changes, questions in all eight NCLEX-RN Client Needs categories, calculations, and a readiness view that shows what to study next.</p></div><div class="px-go"><button class="btn btn-primary btn-go" data-act="practice">Open NCLEX practice <span aria-hidden="true">→</span></button><button class="btn" data-act="ref">Pocket reference</button></div></section>` : ''}
       <div>
         <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
         <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
@@ -1297,7 +1297,7 @@
         ${cj.map((x) => meterHTML(x, E.tally(x.js), true, d)).join('')}</section>
       <section class="nx-more"><h3 class="nx-h">Keep going</h3><div class="nx-mg">
         ${cs.map(({ c, a }) => `<button class="pc sp-${SPC[c.sp] || 'ms'}" data-act="cs-open" data-id="${c.id}"><span class="pc-u">Case study · ${esc(SPN[c.sp] || '')}</span><b class="pc-t">${esc(c.title)}</b><span class="pc-c">${esc(c.client)}</span><span class="pc-f"><span>${a ? (a === 6 ? 'Finished' : `${a} of 6 answered`) : '6 questions'}</span><span class="pc-go">${a === 6 ? 'Retry' : a ? 'Continue' : 'Start'} ›</span></span></button>`).join('')}
-        ${NG.bank ? `<button class="pc nx-hub" data-act="practice"><span class="pc-u">NCLEX practice</span><b class="pc-t">${NG.cases().length} case studies, ${NG.bank().length} questions</b><span class="pc-c">Filter by Client Needs, judgment step and format, and see your readiness by category.</span><span class="pc-f"><span></span><span class="pc-go">Open ›</span></span></button>` : ''}
+        ${NG.bank ? `<button class="pc nx-hub" data-act="practice"><span class="pc-u">NCLEX practice</span><b class="pc-t">${NG.count.cases()} case studies, ${NG.count.bank()} questions</b><span class="pc-c">Filter by Client Needs, judgment step and format, and see your readiness by category.</span><span class="pc-f"><span></span><span class="pc-go">Open ›</span></span></button>` : ''}
       </div></section>
       <div class="nx-nav"><button class="btn" data-act="dtab" data-v="shift"><span aria-hidden="true">←</span> Back to your shift</button>${next ? `<button class="btn" data-act="next-case" data-id="${nextId}">Next: ${esc(next.title)}</button>` : ''}<button class="btn btn-quiet" data-act="home">Home</button></div>
     </section>`;
@@ -1370,6 +1370,7 @@
       const c = NG.caseById(q.cs);
       return sheet(`${esc(c.title)} · ${q.i + 1} of 6`, `<div class="cs-wrap">${recordHTML(c, q.i)}<div class="cs-q">${body}</div></div>`, foot, { wide: true, label: 'Case study question', cls: 'cs-sheet' });
     }
+    body += `<p class="ngn-rpt"><button class="rpt-btn" data-act="rpt" data-q="${esc(it.id)}">Report a problem with this question</button></p>`;
     return sheet(`Question ${q.i + 1} of ${its.length}: ${esc(NG.TYPE[it.type])}`, body, foot, { wide: true, label: 'Practice question' });
   }
 
@@ -1475,7 +1476,8 @@
   function ovReport() {
     const r = ui.rp || {}, j = r.j;
     if (r.sent) return sheet('Report sent', `<p>${r.sent === 'email' ? 'Your email app should have opened with the report filled in. Hit send there.' : 'Thank you. Clinical reports get looked at first.'}</p>`, `<button class="btn btn-primary" data-act="close">Done</button>`, { label: 'Report sent' });
-    return sheet(j ? 'Report a problem with this' : 'Send feedback', `${j ? `<blockquote class="rp-q"><b>${esc(j.text)}</b><span>${esc(j.why)}</span></blockquote>` : '<p class="muted" style="margin-top:0">Something wrong, confusing, or missing? Tell me what you saw.</p>'}
+    const qq = r.q;
+    return sheet(j ? 'Report a problem with this' : qq ? 'Report a problem with this question' : 'Send feedback', `${j ? `<blockquote class="rp-q"><b>${esc(j.text)}</b><span>${esc(j.why)}</span></blockquote>` : qq ? `<blockquote class="rp-q"><b>${esc(NG.TYPE[qq.type] || 'Question')} · ${esc(qq.id)}</b><span>${esc(String(qq.stem || qq.q || '').slice(0, 240))}</span></blockquote>` : '<p class="muted" style="margin-top:0">Something wrong, confusing, or missing? Tell me what you saw.</p>'}
       <div class="rp-why" role="group" aria-label="What kind of problem">${RPT.map(([v, l]) => `<button class="btn ${r.why === v ? 'btn-primary' : ''}" data-act="rpt-why" data-v="${v}" aria-pressed="${r.why === v}">${l}</button>`).join('')}</div>
       <label class="fb-l" for="rp-note">What would you expect instead?</label>
       <textarea id="rp-note" class="fb-t" data-bind="rp.note" rows="4" maxlength="2000" placeholder="Optional, but the more specific the better">${esc(r.note || '')}</textarea>`,
@@ -2235,7 +2237,7 @@
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
-    close() { if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
+    close() { if (ui.ov === 'report' && ui.rp && ui.rp.back === 'ngn' && ui.ngn) { ui.rp = null; ui.ov = 'ngn'; return render(); } if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
     'h-go'(el) { if (ui.hIdx === +el.dataset.i) return render(); s.hHeard = Array.from(new Set((s.hHeard || []).concat(C().patients.filter((x) => !x.arrives)[ui.hIdx].id))); ui.hIdx = +el.dataset.i; ui.hFresh = true; render(true); },
     'h-done'() { if (!s) return; TEL.track('report_done', { case: caseId, flags: s.brain.length, heard: ui.hIdx + 1 }); ui.rankMoved = null; ui.rank = C().patients.filter((p) => !p.arrives).map((p) => p.id); ui.rankDone = false; ui.ov = 'rank'; render(); },
@@ -2475,9 +2477,9 @@
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
     'fb-send'() { const f = ui.fb || {}; if (!f.note && !f.pay) return; const d = s && s.ended ? E.debrief(s) : null; f.sent = TEL.feedback('debrief', Object.assign(fbWhere(), { would_pay: f.pay || '', note: (f.note || '').trim(), score: d ? d.overall : null })); render(); },
-    rpt(el) { const k = el && el.dataset && el.dataset.k, tt = el && el.dataset && el.dataset.t; const j = k !== undefined && s ? s.judg.find((x) => (x.key || '') === k && String(x.t) === String(tt)) || null : null; ui.rp = { j, why: null, note: '' }; ui.ov = 'report'; render(); },
+    rpt(el) { const k = el && el.dataset && el.dataset.k, tt = el && el.dataset && el.dataset.t, qid = el && el.dataset && el.dataset.q; const j = k !== undefined && s ? s.judg.find((x) => (x.key || '') === k && String(x.t) === String(tt)) || null : null; const q = qid && NG ? NG.byId(qid) : null; ui.rp = { j, q, back: q && ui.ov === 'ngn' ? 'ngn' : null, why: null, note: '' }; ui.ov = 'report'; render(); },
     'rpt-why'(el) { ui.rp.why = ui.rp.why === el.dataset.v ? null : el.dataset.v; render(); },
-    'rpt-send'() { const r = ui.rp; if (!r || (!r.why && !r.note)) return; r.sent = TEL.feedback(r.j ? 'decision' : 'general', Object.assign(fbWhere(), { problem: r.why || '', note: (r.note || '').trim(), decision_key: r.j ? r.j.key || '' : '', decision_text: r.j ? r.j.text : '', patient: r.j ? r.j.pid || '' : '' })); render(); },
+    'rpt-send'() { const r = ui.rp; if (!r || (!r.why && !r.note)) return; r.sent = TEL.feedback(r.j ? 'decision' : r.q ? 'question' : 'general', Object.assign(fbWhere(), { problem: r.why || '', note: (r.note || '').trim(), decision_key: r.j ? r.j.key || '' : '', decision_text: r.j ? r.j.text : '', patient: r.j ? r.j.pid || '' : '', question_id: r.q ? r.q.id : '', question_type: r.q ? r.q.type : '', question_step: r.q ? r.q.step || '' : '', question_stem: r.q ? String(r.q.stem || r.q.q || '').slice(0, 300) : '' })); render(); },
     'health-copy'(el) { copyText(ui.healthText || '').then((ok) => { if (ok) hint(el, 'Copied'); else hint(el, 'Copy blocked here. Select the text instead.'); }); },
     badge(el) { const b = RW.BADGES.find((x) => x.id === el.dataset.id); if (b) hint(el, `${b.label}: ${b.how}${prof.badges && prof.badges[b.id] ? ' ✓' : ''}`); },
     endask() { const late = s.t >= C().length - 30, left = pts().filter((x) => !gone(s.p[x.id]) && !(s.report && s.report[x.id])).map((x) => x.room); ui.confirm = { title: late ? 'End the shift?' : 'End the shift early?', text: late ? (left.length ? `You haven't given ${oncoming().name} report on ${left.join(', ')}. The next nurse starts blind on them.` : `${oncoming().name} has report on everyone. You'll see your debrief.`) : 'Unfinished work will count as missed in your debrief.', ok: late && left.length ? 'End without report' : 'End shift', act: 'end-yes' }; ui.ov = 'confirm'; render(); },

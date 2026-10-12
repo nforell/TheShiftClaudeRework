@@ -1,0 +1,6 @@
+{
+  "name": "the-shift-build",
+  "private": true,
+  "description": "Build-time minifier for The Shift (used by build.py). Pinned so every machine builds the same dist/.",
+  "devDependencies": { "esbuild": "0.25.10" }
+}

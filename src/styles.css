@@ -2385,3 +2385,4 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .sc-nx b{margin-right:.35rem;padding:.02rem .35rem;border-radius:4px;background:color-mix(in srgb,var(--teal) 14%,var(--surface));color:var(--teal);font-size:.92em;letter-spacing:.03em}
 .sbar-did .opt span{display:flex;gap:.6rem;align-items:baseline}
 .did-t{flex:none;font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
+.ngn-rpt{margin:1rem 0 0;text-align:right}

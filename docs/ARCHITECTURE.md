@@ -2,6 +2,19 @@
 
 This is the working guide for growing the game without it getting slow or unstable. It records what was measured, the budgets every change should stay inside, the guardrails already built in, and the options for when the game outgrows its current shape.
 
+## Startup on a phone (October 2026)
+
+Measured with `/play/` served compressed, 4x CPU slowdown and a 4G connection (a mid-range phone):
+
+| Measure | Before Oct 11 | Now |
+|---|---|---|
+| Download (compressed) | 1.08 MB | 1.0 MB |
+| Game file (uncompressed) | 3.7 MB | 3.1 MB |
+| Scripts parsed and run | ~1.0 s | ~0.7 s |
+| Home screen ready to tap | ~3.1 s | ~2.3 s |
+
+What made the difference: the build minifies (pinned esbuild in `tools/minify`); the NCLEX data (bank, case studies, rationales, focus items: about a quarter of the game) ships as JSON blocks parsed the first time practice or a debrief reads them, with the home screen's counts precomputed in `ngnMeta`; and shift-card portraits below the fold are drawn as they scroll into view. Most of what's left is clinical text, which minifying doesn't shrink. The next lever is option 3 below.
+
 ## What the game costs today (September 2026, desktop Chromium)
 
 | Measure | Now | Budget |
@@ -52,6 +65,9 @@ Every patient has a short arc in `src/stories/<case>.js`, run by `src/story.js`.
 ## Guardrails already built in
 
 - **Crash guard** (`safe`/`crashed` in `ui.js`): any error in a click, redraw or timer shows a "Something went wrong" card with Keep playing, Home and Copy details. The error is also stored as `theshift.lastError`.
+- **Browser refusals aren't crashes.** A rejected promise (Safari declining audio or the clipboard, a failed network call, the install prompt) is logged to `theshift.lastAsync`, the Health check and PostHog `error_async`, and never shows the crash card. Thrown errors in game code still do; errors from browser-extension scripts are ignored.
+- **Profiles are repaired on load** (`cleanProfile` in `engine.js`): wrong types from an older version or a cloud copy can't stop a redraw.
+- **The selected card never leaks into a game.** Outside the home screen, `C()` is the shift in progress, and game views resync to it on every render.
 - **Never blank:** if a redraw produces nothing, the game falls back to the home screen.
 - **Frame monitor:** if the device runs under ~30 fps for a few seconds, Graphics = Auto switches to **Lite** (characters at 12 fps, no looping CSS effects, no header blur). Players can force Full or Lite in Settings.
 - **Characters animate at 30 fps**, and only while on screen.
@@ -62,6 +78,7 @@ Every patient has a short arc in `src/stories/<case>.js`, run by `src/story.js`.
 
 ```
 pip install playwright && playwright install chromium
+cd tools/minify && npm ci && cd ../..   # the pinned minifier the build uses
 python tests/run_all.py     # build, sweep 13 configurations, soak; exits 1 on any problem
 python tests/sweep.py peds-5s-1 390          # one shift at phone width
 python tests/soak.py                          # three shifts back to back: memory and redraw times
@@ -76,7 +93,7 @@ The sweep visits every screen and sheet (home, report, triage, station, every ro
 In the order I would take them:
 
 1. **Make Vercel the main way to play; keep the artifact as a demo.** A normal browser tab has more memory and fewer restrictions than an embedded viewer. Nothing changes in the code; it's where you send testers.
-2. **Minify the build.** Add a minify step to `build.py` (esbuild or terser via npm). Expect the file to shrink by 40–50%. Worth doing around 8 shifts.
+2. **Minify the build.** Done (October 2026): pinned esbuild, plus lazily parsed NCLEX data. See *Startup on a phone* above.
 3. **Load shifts on demand (Vercel only).** Split the build into the engine and UI (loaded once) plus one file per shift, fetched when chosen, with a service worker for offline play. This keeps the first load small no matter how many units you add. The single-file artifact can keep shipping two or three shifts.
 4. **Redraw only what changed.** Swap the whole-screen `innerHTML` for a tiny template library such as lit-html (about 5 KB), which keeps the same template-string style but patches only the parts that changed. This is the biggest structural change, so do it alongside the next large UI feature, not on its own.
 5. **Static portraits where they don't need to move.** Pre-render idle character faces for lists (roster, phone, board) as cached SVG, and animate only the patient in the room and the one in a critical moment.

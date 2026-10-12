@@ -1,6 +1,20 @@
-import pathlib
+import pathlib, os, subprocess
 src=pathlib.Path(__file__).parent/'src'
-css=(src/'styles.css').read_text()
+# Minify with a pinned esbuild (tools/minify), so every machine builds byte-identical dist/. One-time setup:
+#   cd tools/minify && npm ci
+# SHIFT_NO_MINIFY=1 skips it for a quick local build (dist/ will then differ from the committed one).
+ESB = pathlib.Path(__file__).parent/'tools'/'minify'/'node_modules'/'.bin'/('esbuild.cmd' if os.name == 'nt' else 'esbuild')
+NOMIN = os.environ.get('SHIFT_NO_MINIFY') == '1'
+if not NOMIN and not ESB.exists():
+    sys_ = __import__('sys'); sys_.stderr.write('The minifier is not installed. Run:  cd tools/minify && npm ci\n(or set SHIFT_NO_MINIFY=1 for a quick unminified local build)\n'); sys_.exit(1)
+def _esb(code, loader):
+    if NOMIN: return code
+    r = subprocess.run([str(ESB), '--minify', '--loader=' + loader, '--target=es2020', '--charset=utf8', '--legal-comments=none', '--log-level=error'], input=code.encode('utf-8'), capture_output=True)
+    if r.returncode: raise SystemExit('esbuild failed: ' + r.stderr.decode()[:2000])
+    return r.stdout.decode('utf-8').rstrip('\n')
+minjs = lambda code: _esb(code, 'js').replace('</script', '<\\/script')
+mincss = lambda code: _esb(code, 'css')
+css=mincss((src/'styles.css').read_text())
 # Clinical review: each shift's content hash (its case file + story file), so the game can tell a reviewed shift
 # from one that changed after review. See src/review.js and docs/CLINICAL-REVIEW.md.
 import hashlib, json, sys
@@ -12,7 +26,21 @@ pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.d
 # Terms of use and disclaimer: one source (src/terms.json) for the in-game sheet and the /terms/ page.
 TERMS = json.loads((src/'terms.json').read_text())
 pre += 'window.Shift.terms = ' + json.dumps(TERMS).replace('</', '<\\/') + ';\n'
-js=pre+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-why.js','ngn-focus.js','ngn-bank.js','ngn-cases.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui.js'])
+# The NCLEX data (rationales, focus items, the question bank, case studies) is about a quarter of the game. It ships
+# as JSON blocks that are parsed the first time something reads them, so starting the game doesn't pay for it; the
+# home screen's counts come from ngnMeta, computed here.
+DATA = {'ngnWhy': 'ngn-why.js', 'ngnFocus': 'ngn-focus.js', 'ngnBank': 'ngn-bank.js', 'ngnCases': 'ngn-cases.js'}
+def _data(f):
+    s = (src/f).read_text(); i = s.index('window.Shift.ngn'); body = s[s.index('=', i) + 1:].strip().rstrip(';')
+    return json.loads(body)
+DATAV = {k: _data(f) for k, f in DATA.items()}
+meta = {'focus': len(DATAV['ngnFocus']), 'bank': len(DATAV['ngnBank']), 'cases': [{'id': c['id'], 'sp': c.get('sp')} for c in DATAV['ngnCases']]}
+datablocks = ''.join(f'<script type="application/json" id="sd-{k}">' + json.dumps(v, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + '</script>\n' for k, v in DATAV.items())
+lazy = ('window.Shift.ngnMeta = ' + json.dumps(meta) + ';\n'
+  "(function (S) { ['ngnWhy', 'ngnFocus', 'ngnBank', 'ngnCases'].forEach(function (k) { var v; Object.defineProperty(S, k, { configurable: true, enumerable: true, "
+  "get: function () { if (v === undefined) { var el = document.getElementById('sd-' + k); try { v = el ? JSON.parse(el.textContent) : undefined; (S.dataParsed = S.dataParsed || []).push(k); } catch (e) { v = undefined; } if (v === undefined) v = k === 'ngnWhy' ? {} : []; } return v; }, "
+  "set: function (x) { v = x; } }); }); })(window.Shift);\n")
+js=minjs(pre+lazy+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui.js']))
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -28,7 +56,7 @@ html=f'''<!doctype html>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@200..800&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>{css}</style></head>
 <body><div id="app"></div>
-<script>{js}</script>
+{datablocks}<script>{js}</script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {{}}));</script></body></html>'''
 root=pathlib.Path(__file__).parent; dist=root/'dist'
 # The game: /play/ on the site, plus a standalone single file.
@@ -37,7 +65,7 @@ root=pathlib.Path(__file__).parent; dist=root/'dist'
 # The beta landing page at / and its screenshots at /assets/.
 import shutil
 # The landing page shares the game's config and telemetry, so a visit, a signup and the shifts played line up.
-tel='<script>'+(src/'config.js').read_text()+'\n'+(src/'telemetry.js').read_text()+'</script>'
+tel='<script>'+minjs((src/'config.js').read_text()+'\n'+(src/'telemetry.js').read_text())+'</script>'
 (dist/'index.html').write_text((root/'site'/'index.html').read_text().replace('<!--TELEMETRY-->', tel))
 # Installable app: manifest, icons, and a service worker whose cache name follows the app version.
 import re
@@ -47,7 +75,7 @@ ver=re.search(r"version: '([^']+)'", (src/'config.js').read_text()).group(1)
 shutil.copytree(root/'site'/'icons', dist/'icons', dirs_exist_ok=True)
 # Clinical review pages: /review/ lists the shifts, /review/<shift>/ is the reviewer's checklist.
 LOGIC=['config.js','telemetry.js','engine.js','cjmm.js','review.js','flow.js','floor.js','floor-more.js','reward.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js']
-logic='<script>'+pre+''.join((src/f).read_text()+'\n' for f in LOGIC)+'</script>'
+logic='<script>'+minjs(pre+''.join((src/f).read_text()+'\n' for f in LOGIC))+'</script>'
 common=DEC.find([src/'flow.js'])   # call lights, transfers, PRN follow-up, report: scored on every shift
 decs={cid: DEC.find(fs)+common for cid, fs in CF.items()}
 rv=(root/'site'/'review.html').read_text().replace('<!--SCRIPTS-->', logic+'<script>window.REVIEW_DECISIONS='+json.dumps(decs).replace('</','<\\/')+';</script>')
@@ -57,7 +85,7 @@ for cid in CF:
     (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
 # Instructor dashboard: the shifts' logic (titles, skills, NCLEX steps), accounts, and the practice questions.
 TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js']+[f for f in LOGIC if f.startswith('case-')]
-(dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+''.join((src/f).read_text()+'\n' for f in TEACH)+'</script>'))
+(dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+minjs(''.join((src/f).read_text()+'\n' for f in TEACH))+'</script>'))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 import html as _h
 _sum = '<ul>' + ''.join(f'<li><b>{_h.escape(h)}</b> {_h.escape(x)}</li>' for h, x in TERMS['summary']) + '</ul>'
