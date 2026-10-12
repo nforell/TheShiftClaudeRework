@@ -489,5 +489,12 @@
     });
     return out;
   }
-  S.ngn = { ITEMS, TYPE, RULE, CN, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, bank, cases, byId, caseById, focus, numOf };
+  /* Counts for the home screen and shift cards, from the build's ngnMeta when it's there, so drawing home doesn't
+     unpack the whole question bank. Falls back to counting the data itself. */
+  const shiftN = () => Object.values(ITEMS).reduce((n, L) => n + L.length, 0);
+  const count = {
+    bank: () => { const m = S.ngnMeta; return m ? shiftN() + m.focus + m.bank : bank().length; },
+    cases: (sp) => { const m = S.ngnMeta, L = m ? m.cases : cases(); return sp ? L.filter((c) => c.sp === sp).length : L.length; },
+  };
+  S.ngn = { ITEMS, TYPE, RULE, CN, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, bank, cases, byId, caseById, focus, numOf, count };
 })(window.Shift = window.Shift || {});

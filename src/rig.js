@@ -335,18 +335,29 @@
   }
   function bust(key, v, cls, vb) { return `<svg class="${cls || 'portrait'}" viewBox="${vb || VB.bust}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" data-rig="${key}" data-mode="bust" data-v="${enc(v)}"></svg>`; }
   function place(key, mode, v, transform, ck) { return `<g data-rig="${key}" data-mode="${mode}" data-v="${enc(v)}" transform="${transform}"${ck ? ` data-ck="${ck}"` : ''}></g>`; }
+  /* Stills below the fold wait until they're about to scroll into view, so the first screen draws only the faces
+     you can see. Once drawn, a still is plain markup for the rest of the visit. */
+  let io = null;
+  function one(el, seen) {
+    const key = el.dataset.rig, mode = el.dataset.mode || 'icon', c = CH[key]; if (!c) return;
+    let ck = el.dataset.ck || key + ':' + mode; seen[ck] = (seen[ck] || 0) + 1; if (seen[ck] > 1) ck += ':' + seen[ck];
+    let target = el; if (el.tagName.toLowerCase() === 'svg') { target = document.createElementNS('http://www.w3.org/2000/svg', 'g'); el.appendChild(target); }
+    let v = {}; try { v = el.dataset.v ? JSON.parse(decodeURIComponent(el.dataset.v)) : {}; } catch (e) {}
+    const I = build(target, c, mode, ck, v);
+    step(I, now(), 1 / 60, 0);
+    if (el.dataset.still) { const x = el.cloneNode(true); x.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); x.removeAttribute('class'); x.removeAttribute('data-rig'); x.removeAttribute('data-still'); stills[el.dataset.still] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(x)); el.removeAttribute('data-rig'); return; }
+    live.push(I);
+  }
   function hydrate(root) {
     live.forEach(remember); live = [];
-    const seen = {};
+    if (io) { io.disconnect(); io = null; }
+    const seen = {}, vh = window.innerHeight || 800, lazy = typeof IntersectionObserver === 'function';
     root.querySelectorAll('[data-rig]').forEach((el) => {
-      const key = el.dataset.rig, mode = el.dataset.mode || 'icon', c = CH[key]; if (!c) return;
-      let ck = el.dataset.ck || key + ':' + mode; seen[ck] = (seen[ck] || 0) + 1; if (seen[ck] > 1) ck += ':' + seen[ck];
-      let target = el; if (el.tagName.toLowerCase() === 'svg') { target = document.createElementNS('http://www.w3.org/2000/svg', 'g'); el.appendChild(target); }
-      let v = {}; try { v = el.dataset.v ? JSON.parse(decodeURIComponent(el.dataset.v)) : {}; } catch (e) {}
-      const I = build(target, c, mode, ck, v);
-      step(I, now(), 1 / 60, 0);
-      if (el.dataset.still) { const x = el.cloneNode(true); x.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); x.removeAttribute('class'); x.removeAttribute('data-rig'); x.removeAttribute('data-still'); stills[el.dataset.still] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(x)); el.removeAttribute('data-rig'); return; }
-      live.push(I);
+      if (lazy && el.dataset.still && !stills[el.dataset.still] && el.getBoundingClientRect().top > vh * 1.4) {
+        if (!io) io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && e.target.dataset.rig) { io.unobserve(e.target); one(e.target, {}); } }), { rootMargin: '500px 0px' });
+        io.observe(el); return;
+      }
+      one(el, seen);
     });
     if (!running && live.length) { running = true; last = now(); requestAnimationFrame(loop); }
   }

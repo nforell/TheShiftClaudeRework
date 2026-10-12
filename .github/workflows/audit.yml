@@ -25,6 +25,13 @@ jobs:
         with:
           python-version: '3.11'
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install the build's minifier (pinned, so dist/ matches)
+        run: npm ci --prefix tools/minify --no-audit --no-fund
+
       - name: Install Playwright and Chromium
         run: |
           pip install playwright
