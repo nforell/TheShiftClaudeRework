@@ -69,17 +69,28 @@
     try { location.href = `mailto:${CFG.feedbackEmail || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n') + `\n\nversion: ${CFG.version || ''}`)}`; } catch (e) { /* blocked */ }
     return 'email';
   }
+  /* An email copy to the developer (supabase/functions/notify), on top of PostHog. Off until config.notify is true,
+     which is set once that function is deployed with a mail sender (docs/EMAIL-SETUP.md). Best effort, never blocks. */
+  const trim = (f) => { const o = {}; Object.entries(f || {}).forEach(([k, v]) => { if (k === 'flagged') return; o[k] = typeof v === 'string' ? v.slice(0, k === 'text' ? 45000 : 3000) : v; }); return o; };   // the review's text already lists what was flagged
+  function notify(kind, fields) {
+    if (!CFG.notify || !CFG.supabaseUrl || !CFG.supabaseKey || !/^https:$/.test(location.protocol)) return;
+    try {
+      fetch(String(CFG.supabaseUrl).replace(/\/$/, '') + '/functions/v1/notify', { method: 'POST', keepalive: true,
+        headers: { 'Content-Type': 'application/json', apikey: CFG.supabaseKey },
+        body: JSON.stringify({ kind, fields: trim(fields), version: CFG.version || '', page: location.pathname }) }).catch(() => {});
+    } catch (e) { /* offline */ }
+  }
   /* Feedback: returns 'sent', or 'email' when it opened a prefilled email instead. */
   function feedback(kind, fields) {
     const props = Object.assign({ kind }, fields);
-    if (canSend()) { direct('feedback', props); return 'sent'; }
+    if (canSend()) { direct('feedback', props); notify(kind, fields); return 'sent'; }
     return mail('The Shift beta: ' + kind, props);
   }
   /* Beta list signup from the landing page. The address is attached to this install's anonymous id so the
      list can be matched to who actually played. */
   function signup(email, role) {
     const props = { kind: 'signup', role: role || '', $set: { email, role: role || '' } };
-    if (canSend()) { direct('beta_signup', props); return 'sent'; }
+    if (canSend()) { direct('beta_signup', props); notify('signup', { email, role: role || '' }); return 'sent'; }
     return mail('Add me to The Shift beta list', { email, role: role || '' });
   }
 

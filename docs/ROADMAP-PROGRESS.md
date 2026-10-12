@@ -2,6 +2,21 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 19 — October 12, 2026 (branch `email-polish`)
+
+Nick's ask: does the backend work (sign-up emails etc.)? The sign-in email he tried looked sketchy.
+
+### Done
+- **Finding:** sign-in used Supabase's built-in test mailer. It delivers only to the Supabase team ("Email address not authorized" for everyone else), sends 2 emails an hour, and links to `omcorltahsnnmpifefpm.supabase.co`. Beta signups, reviews and reports reach PostHog only; nothing reaches an inbox.
+- **Branded sign-in email** (`supabase/email-templates/`): The Shift header, one "Sign in" button, plain explanation. The button links to the game page itself (`#token_hash=…&type=email`); the game trades the token for a session (`POST /auth/v1/verify`) and clears it from the address bar. Scanners that pre-open links can't use the token up. Old-style links still work.
+- **Plain-English errors** in the game and the teach dashboard: not open to everyone yet, too many emails, bad address, used or expired link (the sign-in sheet opens and says so).
+- **Inbox copies** (`supabase/functions/notify`): each beta signup, clinical review, problem report and feedback note emailed to one fixed address through Resend, with reply-to set to the sender. Off until deployed (`config.notify`).
+- `docs/EMAIL-SETUP.md`: the dashboard steps. New `tests/email_link.py`. v0.6.4-beta.
+
+### Needs Nick (before inviting testers to sign in)
+- Follow `docs/EMAIL-SETUP.md`: a domain, Resend, Supabase custom SMTP, paste the two templates, set the Site URL and Redirect URLs. Until then, tell testers to play without an account.
+- Optional: deploy `notify` and set `notify: true`.
+
 ## Session 18 — October 10 to 11, 2026 (branches `nclex-debrief-tab`, `sbar-done-actions`, `safari-crash-fix`, `stability-pass`, `faster-start`)
 
 Nick's asks: make NCLEX review prominent, make SBAR reflect what you did, stop the crashes, make the game very playable, then make it load faster and bring the docs up to date.
@@ -302,7 +317,7 @@ Sessions 1–2 merged to `main` (PR #1) and live.
 - Redirect URLs set (`https://the-shift-claude-rework.vercel.app/play/` and `https://the-shift-claude-rework-*.vercel.app/**`). Nick signed in on the preview with an email link on September 30: real sign-in works.
 
 ### Needs Nick
-- Before inviting many testers: Supabase's built-in email sender is only for light testing and is heavily rate-limited. Connect a real email sender (Authentication → Emails → SMTP; Resend has a free tier) before a big beta push.
+- Before inviting testers to sign in: Supabase's built-in email sender only delivers to the Supabase team. Set up a real sender and the branded templates (docs/EMAIL-SETUP.md).
 - Still worth doing once: sign in on a second device and check your shifts appear there.
 
 ### Up next

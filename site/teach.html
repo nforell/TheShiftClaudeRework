@@ -232,7 +232,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     const f = e.target.dataset.form; if (!f) return; e.preventDefault();
     if (f === 'link') {
       const em = document.getElementById('em').value.trim(); st.email = em; st.err = null; st.busy = true; render();
-      try { await CL.sendLink(em); st.sent = em; } catch (x) { st.err = /rate|seconds/i.test(x.message) ? 'Too many tries. Wait a minute, then send again.' : 'Couldn\'t send the link. Check the email and your connection.'; }
+      try { await CL.sendLink(em); st.sent = em; } catch (x) { st.err = CL.why ? CL.why(x) : 'Couldn\'t send the link. Check the email and your connection.'; }
       st.busy = false; render();
     } else if (f === 'make') {
       const n = document.getElementById('cn').value.trim(); if (!n) return; st.err = null; st.busy = true; render();

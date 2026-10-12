@@ -2469,7 +2469,7 @@
       const a = ui.acct || (ui.acct = {}), email = (a.email || '').trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { a.err = 'That email doesn\'t look right.'; return render(); }
       a.err = null; a.busy = true; render();
-      CL.sendLink(email).then(() => { a.busy = false; a.sent = email; render(); }).catch((e) => { a.busy = false; a.err = /rate|seconds/i.test(e.message) ? 'Too many tries. Wait a minute, then send again.' : 'Couldn\'t send the link. Check your connection and try again.'; render(); });
+      CL.sendLink(email).then(() => { a.busy = false; a.sent = email; render(); }).catch((e) => { a.busy = false; a.err = CL.why(e); render(); });
     },
     'acct-again'() { ui.acct = { email: '' }; render(); },
     'acct-sync'() { CL.sync().then(fromCloud).catch(() => {}); render(); },

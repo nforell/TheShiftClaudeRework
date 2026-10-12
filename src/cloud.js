@@ -43,14 +43,35 @@
     await call('/auth/v1/otp?redirect_to=' + encodeURIComponent(back), { method: 'POST', body: { email, create_user: true } });
     TEL.track('account_link_sent', {});
   }
-  /* 2. Coming back from the emailed link: the tokens arrive in the address after #. */
+  /* Why a link couldn't be sent, in words a player can act on. */
+  function why(e) {
+    const m = String((e && e.message) || '');
+    if (/not authori[sz]ed/i.test(m)) return 'Accounts aren\'t open to everyone yet. You can play without one; your progress saves on this device.';
+    if ((e && e.status === 429) || /rate|seconds|too many/i.test(m)) return 'Too many sign-in emails just now. Wait a few minutes, then send again.';
+    if (/invalid|valid email|format/i.test(m)) return 'That email address doesn\'t look right. Check it and try again.';
+    return 'Couldn\'t send the link. Check your connection and try again.';
+  }
+  /* 2. Coming back from the emailed link. The branded email (supabase/email-templates) links straight to this page
+     with a one-time token_hash after #, which is traded for a session here; the older Supabase link arrives with the
+     tokens themselves after #. Either way the address bar is cleaned so nothing is left in it. */
   async function fromLink() {
     const h = new URLSearchParams(location.hash.replace(/^#/, ''));
-    if (h.get('error_description')) { linked = true; meta.err = h.get('error_description').replace(/\+/g, ' '); put(SYNCK, meta); history.replaceState(null, '', location.pathname + location.search); return false; }
-    if (!h.get('access_token')) return false;
-    linked = true;
-    keep({ access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), expires_in: h.get('expires_in') });
-    history.replaceState(null, '', location.pathname + location.search);   // don't leave tokens in the address bar
+    const clean = () => history.replaceState(null, '', location.pathname + location.search);
+    const fail = (t) => { linked = true; meta.err = t; put(SYNCK, meta); clean(); TEL.track('account_link_failed', {}); return false; };
+    if (h.get('error_description')) return fail(/expired|invalid/i.test(h.get('error_description')) ? 'That sign-in link has expired or was already used. Send yourself a new one.' : h.get('error_description').replace(/\+/g, ' '));
+    if (h.get('token_hash')) {
+      let t;
+      try { t = await call('/auth/v1/verify', { method: 'POST', body: { type: h.get('type') || 'email', token_hash: h.get('token_hash') } }); }
+      catch (e) { return fail(e.status >= 400 && e.status < 500 ? 'That sign-in link has expired or was already used. Send yourself a new one.' : 'Couldn\'t finish signing in. Check your connection, then open the link again.'); }
+      if (!t || !t.access_token) return fail('Couldn\'t finish signing in. Send yourself a new link.');
+      linked = true; clean(); meta.err = null; put(SYNCK, meta);
+      keep(t);
+    } else {
+      if (!h.get('access_token')) return false;
+      linked = true;
+      keep({ access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), expires_in: h.get('expires_in') });
+      clean();   // don't leave tokens in the address bar
+    }
     try { const u = await call('/auth/v1/user', { auth: true }); sess.user = { id: u.id, email: u.email }; put(SK, sess); } catch (e) { signOut(true); return false; }
     TEL.track('account_signed_in', {});
     return true;
@@ -208,7 +229,7 @@
   })();
 
   S.cloud = {
-    on, ready, sendLink, sync: () => sync('manual'), signOut, onChange: (f) => listeners.push(f),
+    on, ready, sendLink, why, sync: () => sync('manual'), signOut, onChange: (f) => listeners.push(f),
     user: () => (sess && sess.user) || null,
     linked: () => linked,   // this page load came from the emailed link
     status: () => (!on() ? null : !sess ? { state: 'out', err: meta.err || null } : { state: 'in', email: sess.user && sess.user.email, at: meta.at || null, err: meta.err || null, busy: !!busy }),
