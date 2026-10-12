@@ -550,85 +550,89 @@ step,skill_area,points,decision,key,where
 "Generate solutions",meds,-1,"You held Mr. Bell's amlodipine with a BP well above the hold parameter.","412-aml-hold",src/case-medsurg1.js:184
 "Take action",comm,1,"You reported Mr. Bell's fever, low SpO₂ and crackles together.","412-sbar-atel",src/case-medsurg1.js:207
 "Evaluate outcomes",judgment,1,"You rechecked Mrs. Okafor's glucose about 15 minutes after treating her low.","414-recheck",src/case-medsurg1.js:248
-"Take action",safety,-1,"You tried oral juice when Mrs. Okafor could no longer swallow safely.","414-juice-unsafe",src/case-medsurg1.js:318
-"Take action",safety,2,"You treated Mrs. Okafor's hypoglycemia with 15 g of fast carbohydrate.","414-juice",src/case-medsurg1.js:320
-"Analyze cues",judgment,1,"You followed the recovery with a protein-and-carb snack.","414-snack",src/case-medsurg1.js:330
-"Take action",safety,2,"You gave IV dextrose when Mrs. Okafor could no longer swallow safely.","414-d50",src/case-medsurg1.js:338
-"Take action",meds,-1,"You gave IV dextrose to a patient who was alert and able to drink juice.","414-d50",src/case-medsurg1.js:339
-"Take action",time,-1,"Mrs. Okafor's 08:00 cefazolin was given more than an hour late.","414-cef-late",src/case-medsurg1.js:350
-"Recognize cues",meds,-2,"You gave correction insulin without a current glucose.","414-corr-blind",src/case-medsurg1.js:360
-"Recognize cues",meds,-2,"You gave Mrs. Okafor her mealtime insulin without checking how much she ate.","414-prand-blind",src/case-medsurg1.js:368
-"Take action",meds,-2,"You gave mealtime insulin after documenting 20% intake.","414-prand-bad",src/case-medsurg1.js:369
-"Generate solutions",meds,2,"You held Mrs. Okafor's mealtime insulin after confirming she ate only 20%.","414-prand-hold",src/case-medsurg1.js:374
-"Recognize cues",assess,0,"You held mealtime insulin without checking her intake first.","414-prand-hold-guess",src/case-medsurg1.js:375
-"Take action",judgment,1,"You treated the nausea that was driving Mrs. Okafor's poor intake.","414-ond",src/case-medsurg1.js:382
-"Take action",comm,1,"You reported the nausea behind Mrs. Okafor's poor intake and got it treated.","414-sbar-nausea",src/case-medsurg1.js:401
-"Take action",comm,1,"You reported Mrs. Okafor's hypoglycemic episode to the provider.","414-sbar-hypo",src/case-medsurg1.js:403
-"Take action",safety,1,"You set up fall precautions for Mrs. Whitfield.","416-fall",src/case-medsurg1.js:492
-"Analyze cues",judgment,1,"You drew blood cultures before Mrs. Whitfield's first antibiotic dose.","416-cult",src/case-medsurg1.js:497
-"Take action",judgment,2,"You started Mrs. Whitfield's fluid bolus.","416-bolus",src/case-medsurg1.js:505
-"Take action",comm,2,"You clarified Mrs. Whitfield's allergy with her daughter and closed the loop with pharmacy.","416-pharm",src/case-medsurg1.js:515
-"Take action",judgment,2,"You called a rapid response for Mrs. Whitfield.","416-rrt",src/case-medsurg1.js:526
-"Take action",judgment,1,"You called a rapid response early for Mrs. Whitfield.","416-rrt-early",src/case-medsurg1.js:530
-"Generate solutions",time,1,"You cleared the allergy hold and got Mrs. Whitfield's first antibiotic in early in the shift.","416-abx-time",src/case-medsurg1.js:543
-"Take action",time,0,"Mrs. Whitfield's first antibiotic went in by mid-morning, about seven hours after she arrived.","416-abx-time",src/case-medsurg1.js:544
-"Take action",time,-1,"Mrs. Whitfield's first antibiotic dose was delayed past 09:30.","416-abx-late",src/case-medsurg1.js:545
-"Take action",meds,-2,"You gave lisinopril with an SBP of ${v.SBP}.","416-lis",src/case-medsurg1.js:554
-"Take action",judgment,-1,"You gave lisinopril to a patient whose BP was drifting down with an infection.","416-lis",src/case-medsurg1.js:555
-"Generate solutions",meds,1,"You held Mrs. Whitfield's lisinopril.","416-lis-hold",src/case-medsurg1.js:558
-"Take action",safety,-1,"You gave oral medication to a patient too drowsy to swallow safely.","416-apap-asp",src/case-medsurg1.js:564
-"Take action",judgment,-2,"You asked for sedation for Mrs. Whitfield's agitation.","416-sleep",src/case-medsurg1.js:595
-"Take action",comm,-1,"You raised sepsis for Mrs. Whitfield without the data to back it.","416-sbar-thin",src/case-medsurg1.js:602
-"Generate solutions",comm,-1,"Your update on Mrs. Whitfield didn't give Dr. Chen enough to act on.","416-sbar-miss",src/case-medsurg1.js:603
-"Take action",safety,1,"You sat Mr. Ortiz upright when he became short of breath.","418-hob",src/case-medsurg1.js:687
-"Take action",safety,1,"You titrated Mr. Ortiz's oxygen for SpO₂ below 92%.","418-o2",src/case-medsurg1.js:688
-"Take action",safety,1,"You had atropine and pads ready for Mr. Ortiz.","418-atropine",src/case-medsurg1.js:690
-"Take action",safety,1,"You lowered Mr. Ortiz's head of bed and stayed with him through his symptomatic bradycardia.","418-brady-care",src/case-medsurg1.js:691
-"Take action",meds,-2,"You gave metoprolol without counting Mr. Ortiz's apical pulse.","418-meto-blind",src/case-medsurg1.js:700
-"Take action",meds,-3,"You gave metoprolol with a heart rate of ${v.HR}.","418-meto-low",src/case-medsurg1.js:701
-"Recognize cues",meds,2,"You counted an apical pulse of ${P.k.hr} and held Mr. Ortiz's metoprolol.","418-meto-hold",src/case-medsurg1.js:706
-"Recognize cues",assess,-1,"You held metoprolol without a current heart rate.","418-meto-hold-guess",src/case-medsurg1.js:707
-"Take action",meds,-2,"You gave losartan with an SBP of ${v.SBP}.","418-los",src/case-medsurg1.js:714
-"Take action",meds,-1,"You gave IV furosemide with a potassium of 3.3 and no replacement in.","418-lasix-k",src/case-medsurg1.js:722
-"Take action",meds,1,"You addressed Mr. Ortiz's low potassium around his diuretic.","418-lasix-k",src/case-medsurg1.js:723
-"Take action",time,-1,"Mr. Ortiz's 09:00 furosemide went in late.","418-lasix-late",src/case-medsurg1.js:724
-"Generate solutions",meds,-1,"You held potassium from a patient with a potassium of 3.3 on a loop diuretic.","418-kcl-hold",src/case-medsurg1.js:728
-"Generate solutions",meds,-1,"You held Mr. Ortiz's anticoagulant without a reason.","418-apix-hold",src/case-medsurg1.js:731
-"Take action",comm,1,"You flagged Mr. Ortiz's low potassium to the provider.","418-sbar-k",src/case-medsurg1.js:749
-"Generate solutions",comm,1,"You told the provider you held Mr. Ortiz's metoprolol.","418-sbar-meto",src/case-medsurg1.js:750
-"Take action",comm,2,"You escalated Mr. Ortiz's symptomatic bradycardia promptly.","418-sbar-brady",src/case-medsurg1.js:751
-"Take action",comm,1,"You reported worsening congestion with the data to support it.","418-sbar-fl",src/case-medsurg1.js:752
-"Recognize cues",assess,2,"You called Ruth and learned Mrs. Whitfield's baseline and allergy history.","416-ruth",src/case-medsurg1.js:816
-"Take action",comm,2,"You taught Rosa about fluid and sodium limits and confirmed with teach-back.","418-teach",src/case-medsurg1.js:819
-"Generate solutions",deleg,-2,"You delegated Mr. Bell's first post-op walk to the CNA.","412-deleg-walk",src/case-medsurg1.js:839
-"Analyze cues",judgment,-3,"Mrs. Whitfield progressed to septic shock before anyone escalated her care.","416-shock",src/case-medsurg1.js:842
-"Analyze cues",judgment,-2,"Dr. Chen recognized Mrs. Whitfield's sepsis on rounds before you escalated it.","416-rounds",src/case-medsurg1.js:844
-"Take action",safety,-2,"Mr. Bell developed early atelectasis: T 38.2, SpO₂ 91%, crackles.","412-atel",src/case-medsurg1.js:845
-"Take action",safety,1,"Your bed alarm caught Mrs. Whitfield trying to get up.","416-fall-caught",src/case-medsurg1.js:846
-"Take action",safety,-2,"Mrs. Whitfield nearly fell climbing out of bed with no fall precautions in place.","416-fall-near",src/case-medsurg1.js:846
-"Take action",safety,-2,"Mrs. Okafor's hypoglycemia went untreated for 25 minutes.","414-untreated",src/case-medsurg1.js:850
-"Generate solutions",deleg,-1,"You asked the CNA to reassess a patient's mental status.","deleg-assess",src/case-medsurg1.js:873
-"Generate solutions",deleg,-2,"You asked the CNA to give medications.","deleg-meds",src/case-medsurg1.js:874
-"Generate solutions",deleg,-1,"You asked the CNA to do patient teaching.","deleg-teach",src/case-medsurg1.js:875
-"Generate solutions",deleg,1,"You delegated Mr. Bell's second walk after walking him yourself first.","deleg-walk412-ok",src/case-medsurg1.js:879
-"Generate solutions",deleg,-1,"You sent Mrs. Whitfield, newly confused and a high fall risk, for a walk.","deleg-walk416",src/case-medsurg1.js:882
-"Generate solutions",deleg,-1,"You sent an unstable Mr. Ortiz for a walk.","deleg-walk418",src/case-medsurg1.js:883
-"Generate solutions",deleg,1,"You delegated routine data collection to the CNA.","deleg-good",src/case-medsurg1.js:885
-"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-medsurg1.js:927
-"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-medsurg1.js:930
-"Take action",safety,-1,"Mr. Bell's Foley was never removed despite an 08:00 order.","412-foley-left",src/case-medsurg1.js:934
-"Evaluate outcomes",judgment,-1,"You didn't reassess Mr. Bell's pain and sedation after his opioid.","412-noreassess",src/case-medsurg1.js:935
-"Recognize cues",assess,-1,"Mrs. Okafor's pre-breakfast glucose was never checked.","414-nobg",src/case-medsurg1.js:937
-"Generate solutions",comm,-1,"You held Mrs. Okafor's mealtime insulin but didn't notify the provider as ordered.","414-hold-notify",src/case-medsurg1.js:938
-"Take action",comm,-1,"The elevated lactate on Mrs. Whitfield wasn't reported to the provider.","416-lact-unreported",src/case-medsurg1.js:944
-"Generate solutions",comm,-1,"You held Mr. Ortiz's metoprolol but didn't tell the provider.","418-hold-notify",src/case-medsurg1.js:946
-"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-medsurg1.js:950
-"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-medsurg1.js:951
-"Generate solutions",deleg,1,"You held Luis back from Mr. Bell's first walk until you could assess him.","412-deleg-hold",src/case-medsurg1.js:976
-"Take action",comm,-2,"You told Dr. Chen Mrs. Whitfield had ""no changes.""","416-nochange",src/case-medsurg1.js:977
-"Prioritize hypotheses",priority,2,"You chose to see Mrs. Whitfield first after report.","rank-first",src/case-medsurg1.js:995
-"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first after report, ahead of Mrs. Whitfield.","rank-first",src/case-medsurg1.js:996
-"Prioritize hypotheses",priority,-1,"You ranked stable Mrs. Okafor near the top.","rank-414",src/case-medsurg1.js:997
+"Generate solutions",meds,2,"You held Mrs. Okafor's mealtime insulin when she was barely eating, and confirmed she ate only 20%.","414-prand-hold",src/case-medsurg1.js:256
+"Generate solutions",meds,1,"You held Mrs. Okafor's mealtime insulin, then confirmed she ate only 20%.","414-prand-hold",src/case-medsurg1.js:257
+"Take action",comm,1,"You found out why Mrs. Okafor rarely checks her glucose at home and got it to the case manager.","414-cm",src/case-medsurg1.js:321
+"Take action",safety,-1,"You tried oral juice when Mrs. Okafor could no longer swallow safely.","414-juice-unsafe",src/case-medsurg1.js:335
+"Take action",safety,2,"You treated Mrs. Okafor's hypoglycemia with 15 g of fast carbohydrate.","414-juice",src/case-medsurg1.js:337
+"Analyze cues",judgment,1,"You followed the recovery with a protein-and-carb snack.","414-snack",src/case-medsurg1.js:347
+"Take action",safety,2,"You gave IV dextrose when Mrs. Okafor could no longer swallow safely.","414-d50",src/case-medsurg1.js:355
+"Take action",meds,-1,"You gave IV dextrose to a patient who was alert and able to drink juice.","414-d50",src/case-medsurg1.js:356
+"Take action",time,-1,"Mrs. Okafor's 08:00 cefazolin was given more than an hour late.","414-cef-late",src/case-medsurg1.js:367
+"Recognize cues",meds,-2,"You gave correction insulin without a current glucose.","414-corr-blind",src/case-medsurg1.js:377
+"Recognize cues",meds,-2,"You gave Mrs. Okafor her mealtime insulin without checking how much she ate.","414-prand-blind",src/case-medsurg1.js:385
+"Take action",meds,-2,"You gave mealtime insulin after documenting 20% intake.","414-prand-bad",src/case-medsurg1.js:386
+"Generate solutions",meds,2,"You held Mrs. Okafor's mealtime insulin after confirming she ate only 20%.","414-prand-hold",src/case-medsurg1.js:391
+"Generate solutions",meds,1,"You held Mrs. Okafor's mealtime insulin after seeing at ${clock(P.intakeEarly)} that she was barely eating.","414-prand-hold",src/case-medsurg1.js:392
+"Recognize cues",assess,0,"You held mealtime insulin without checking her intake first.","414-prand-hold",src/case-medsurg1.js:393
+"Take action",judgment,1,"You treated the nausea that was driving Mrs. Okafor's poor intake.","414-ond",src/case-medsurg1.js:400
+"Take action",comm,1,"You reported the nausea behind Mrs. Okafor's poor intake and got it treated.","414-sbar-nausea",src/case-medsurg1.js:419
+"Take action",comm,1,"You reported Mrs. Okafor's hypoglycemic episode to the provider.","414-sbar-hypo",src/case-medsurg1.js:421
+"Take action",safety,1,"You set up fall precautions for Mrs. Whitfield.","416-fall",src/case-medsurg1.js:514
+"Analyze cues",judgment,1,"You drew blood cultures before Mrs. Whitfield's first antibiotic dose.","416-cult",src/case-medsurg1.js:519
+"Take action",judgment,2,"You started Mrs. Whitfield's fluid bolus.","416-bolus",src/case-medsurg1.js:527
+"Take action",comm,2,"You clarified Mrs. Whitfield's allergy with her daughter and closed the loop with pharmacy.","416-pharm",src/case-medsurg1.js:537
+"Take action",judgment,2,"You called a rapid response for Mrs. Whitfield.","416-rrt",src/case-medsurg1.js:548
+"Take action",judgment,1,"You called a rapid response early for Mrs. Whitfield.","416-rrt-early",src/case-medsurg1.js:552
+"Generate solutions",time,1,"You cleared the allergy hold and got Mrs. Whitfield's first antibiotic in early in the shift.","416-abx-time",src/case-medsurg1.js:565
+"Take action",time,0,"Mrs. Whitfield's first antibiotic went in by mid-morning, about seven hours after she arrived.","416-abx-time",src/case-medsurg1.js:566
+"Take action",time,-1,"Mrs. Whitfield's first antibiotic dose was delayed past 09:30.","416-abx-late",src/case-medsurg1.js:567
+"Take action",meds,-2,"You gave lisinopril with an SBP of ${v.SBP}.","416-lis",src/case-medsurg1.js:576
+"Take action",judgment,-1,"You gave lisinopril to a patient whose BP was drifting down with an infection.","416-lis",src/case-medsurg1.js:577
+"Generate solutions",meds,1,"You held Mrs. Whitfield's lisinopril.","416-lis-hold",src/case-medsurg1.js:580
+"Take action",safety,-1,"You gave oral medication to a patient too drowsy to swallow safely.","416-apap-asp",src/case-medsurg1.js:586
+"Take action",judgment,-2,"You asked for sedation for Mrs. Whitfield's agitation.","416-sleep",src/case-medsurg1.js:617
+"Take action",comm,-1,"You raised sepsis for Mrs. Whitfield without the data to back it.","416-sbar-thin",src/case-medsurg1.js:624
+"Generate solutions",comm,-1,"Your update on Mrs. Whitfield didn't give Dr. Chen enough to act on.","416-sbar-miss",src/case-medsurg1.js:625
+"Take action",safety,1,"You sat Mr. Ortiz upright when he became short of breath.","418-hob",src/case-medsurg1.js:709
+"Take action",safety,1,"You titrated Mr. Ortiz's oxygen for SpO₂ below 92%.","418-o2",src/case-medsurg1.js:710
+"Take action",safety,1,"You had atropine and pads ready for Mr. Ortiz.","418-atropine",src/case-medsurg1.js:712
+"Take action",safety,1,"You lowered Mr. Ortiz's head of bed and stayed with him through his symptomatic bradycardia.","418-brady-care",src/case-medsurg1.js:713
+"Take action",meds,-2,"You gave metoprolol without counting Mr. Ortiz's apical pulse.","418-meto-blind",src/case-medsurg1.js:722
+"Take action",meds,-3,"You gave metoprolol with a heart rate of ${v.HR}.","418-meto-low",src/case-medsurg1.js:723
+"Recognize cues",meds,2,"You counted an apical pulse of ${P.k.hr} and held Mr. Ortiz's metoprolol.","418-meto-hold",src/case-medsurg1.js:728
+"Recognize cues",assess,-1,"You held metoprolol without a current heart rate.","418-meto-hold-guess",src/case-medsurg1.js:729
+"Take action",meds,-2,"You gave losartan with an SBP of ${v.SBP}.","418-los",src/case-medsurg1.js:736
+"Take action",meds,-1,"You gave IV furosemide with a potassium of 3.3 and no replacement in.","418-lasix-k",src/case-medsurg1.js:744
+"Take action",meds,1,"You addressed Mr. Ortiz's low potassium around his diuretic.","418-lasix-k",src/case-medsurg1.js:745
+"Take action",time,-1,"Mr. Ortiz's 09:00 furosemide went in late.","418-lasix-late",src/case-medsurg1.js:746
+"Generate solutions",meds,-1,"You held potassium from a patient with a potassium of 3.3 on a loop diuretic.","418-kcl-hold",src/case-medsurg1.js:750
+"Generate solutions",meds,-1,"You held Mr. Ortiz's anticoagulant without a reason.","418-apix-hold",src/case-medsurg1.js:753
+"Take action",comm,1,"You flagged Mr. Ortiz's low potassium to the provider.","418-sbar-k",src/case-medsurg1.js:771
+"Generate solutions",comm,1,"You told the provider you held Mr. Ortiz's metoprolol.","418-sbar-meto",src/case-medsurg1.js:772
+"Take action",comm,2,"You escalated Mr. Ortiz's symptomatic bradycardia promptly.","418-sbar-brady",src/case-medsurg1.js:773
+"Take action",comm,1,"You reported worsening congestion with the data to support it.","418-sbar-fl",src/case-medsurg1.js:774
+"Recognize cues",assess,2,"You called Ruth and learned Mrs. Whitfield's baseline and allergy history.","416-ruth",src/case-medsurg1.js:838
+"Take action",comm,2,"You taught Rosa about fluid and sodium limits and confirmed with teach-back.","418-teach",src/case-medsurg1.js:841
+"Generate solutions",deleg,-2,"You delegated Mr. Bell's first post-op walk to the CNA.","412-deleg-walk",src/case-medsurg1.js:861
+"Analyze cues",judgment,-3,"Mrs. Whitfield progressed to septic shock before anyone escalated her care.","416-shock",src/case-medsurg1.js:864
+"Analyze cues",judgment,-2,"Dr. Chen recognized Mrs. Whitfield's sepsis on rounds before you escalated it.","416-rounds",src/case-medsurg1.js:866
+"Take action",safety,-2,"Mr. Bell developed early atelectasis: T 38.2, SpO₂ 91%, crackles.","412-atel",src/case-medsurg1.js:867
+"Take action",safety,1,"Your bed alarm caught Mrs. Whitfield trying to get up.","416-fall-caught",src/case-medsurg1.js:868
+"Take action",safety,-2,"Mrs. Whitfield nearly fell climbing out of bed with no fall precautions in place.","416-fall-near",src/case-medsurg1.js:868
+"Take action",safety,-2,"Mrs. Okafor's hypoglycemia went untreated for 25 minutes.","414-untreated",src/case-medsurg1.js:872
+"Generate solutions",deleg,-1,"You asked the CNA to reassess a patient's mental status.","deleg-assess",src/case-medsurg1.js:896
+"Generate solutions",deleg,-2,"You asked the CNA to give medications.","deleg-meds",src/case-medsurg1.js:897
+"Generate solutions",deleg,-1,"You asked the CNA to do patient teaching.","deleg-teach",src/case-medsurg1.js:898
+"Generate solutions",deleg,1,"You delegated Mr. Bell's second walk after walking him yourself first.","deleg-walk412-ok",src/case-medsurg1.js:902
+"Generate solutions",deleg,-1,"You sent Mrs. Whitfield, newly confused and a high fall risk, for a walk.","deleg-walk416",src/case-medsurg1.js:905
+"Generate solutions",deleg,-1,"You sent an unstable Mr. Ortiz for a walk.","deleg-walk418",src/case-medsurg1.js:906
+"Generate solutions",deleg,1,"You delegated routine data collection to the CNA.","deleg-good",src/case-medsurg1.js:908
+"Recognize cues",assess,-3,"You never went into ${d.room} this shift.","d.id + '-unseen'",src/case-medsurg1.js:950
+"Generate solutions",meds,-2,"${m.name} for ${d.short} (due ${clock(m.due)}) was never given or held.","m.id + '-missed'",src/case-medsurg1.js:953
+"Take action",safety,-1,"Mr. Bell's Foley was never removed despite an 08:00 order.","412-foley-left",src/case-medsurg1.js:957
+"Evaluate outcomes",judgment,-1,"You didn't reassess Mr. Bell's pain and sedation after his opioid.","412-noreassess",src/case-medsurg1.js:958
+"Recognize cues",assess,-1,"Mrs. Okafor's pre-breakfast glucose was never checked.","414-nobg",src/case-medsurg1.js:960
+"Generate solutions",comm,-1,"You held Mrs. Okafor's mealtime insulin but didn't notify the provider as ordered.","414-hold-notify",src/case-medsurg1.js:961
+"Take action",comm,-1,"The elevated lactate on Mrs. Whitfield wasn't reported to the provider.","416-lact-unreported",src/case-medsurg1.js:967
+"Generate solutions",comm,-1,"You held Mr. Ortiz's metoprolol but didn't tell the provider.","418-hold-notify",src/case-medsurg1.js:969
+"Recognize cues",assess,-1,"You flagged ${s.brain.length} lines in report, ${noise} of them noise.","brain",src/case-medsurg1.js:973
+"Recognize cues",assess,varies,"You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? ","brain",src/case-medsurg1.js:974
+"Generate solutions",deleg,1,"You held Luis back from Mr. Bell's first walk until you could assess him.","412-deleg-hold",src/case-medsurg1.js:1002
+"Take action",comm,-2,"You told Dr. Chen Mrs. Whitfield had ""no changes.""","416-nochange",src/case-medsurg1.js:1003
+"Prioritize hypotheses",priority,2,"You chose to see Mrs. Whitfield first after report.","rank-first",src/case-medsurg1.js:1021
+"Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first after report, ahead of Mrs. Whitfield.","rank-first",src/case-medsurg1.js:1022
+"Prioritize hypotheses",priority,-1,"You ranked stable Mrs. Okafor near the top.","rank-414",src/case-medsurg1.js:1023
 "Take action",safety,varies,"You turned Mrs. Kowalski's oxygen back to her 88–92% target.","421-titrate",src/case-medsurg2.js:67
 "Analyze cues",judgment,1,"You coached Mrs. Kowalski through pursed-lip breathing.","421-plb",src/case-medsurg2.js:76
 "Analyze cues",judgment,1,"You got Mrs. Kowalski onto BiPAP once she was retaining CO₂.","421-bipap",src/case-medsurg2.js:92
@@ -1218,32 +1222,35 @@ step,skill_area,points,decision,key,where
 "Prioritize hypotheses",priority,1,"You chose to see Mr. Okoro first.","rank-first",src/case-stepdown1.js:675
 "Prioritize hypotheses",priority,-1,"You put ${A.def(r[0]).short} first, ahead of Mrs. Mendes and Mr. Okoro.","rank-first",src/case-stepdown1.js:676
 "Take action",safety,-3,"Mr. Okoro went into hemorrhagic shock from a retroperitoneal bleed.","603-shock",src/case-stepdown1.js:697
-"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:650
-"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:651
-"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:652
-"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:683
-"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:700
-"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:724
-"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:726
-"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:737
-"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:738
-"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:739
-"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:740
-"Take action",comm,1,"You told the charge nurse about your error.","${d.id}-err-charge-${e.base}",src/flow.js:846
-"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:899
-"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:900
-"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:901
-"Take action",comm,-2,"You never told the provider about your error with ${d.short}: ${e.what}.","${d.id}-err-hidden-${e.base}",src/flow.js:911
-"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:914
-"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:915
-"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:916
-"Recognize cues",assess,-1,"${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.","${d.id}-watch-${r.key.split(':')[1]}",src/flow.js:920
-"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:924
-"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:929
-"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:2073
-"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:2080
-"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:2174
-"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:2265
-"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:2294
-"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:2310
-"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:2311
+"Prioritize hypotheses",priority,0,"${k === 'psych' ? d.short + ''s request' : d.room + ''s call light'} waited 25 minutes while you handled an emergency.","${d.id}-bell-${b.at}",src/flow.js:651
+"Prioritize hypotheses",priority,-1,"${d.short} waited 25 minutes at the station with no answer.","${d.id}-bell-${b.at}",src/flow.js:652
+"Prioritize hypotheses",priority,-1,"${d.room}'s call light rang for 25 minutes with no answer.","${d.id}-bell-${b.at}",src/flow.js:653
+"Generate solutions",deleg,-1,"You asked ${cn} to handle a call light that needed a nurse.","${pid}-bell-deleg-${b.id}",src/flow.js:684
+"Evaluate outcomes",time,-0.5,"You called ${where(o.spec.unit)} again about ${A.def(pid).short} with nothing new to learn.","${pid}-upd-again",src/flow.js:701
+"Take action",comm,-1,"Your report to ${nurse} in ${where(o.spec.unit)} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-xfer-report",src/flow.js:725
+"Take action",comm,0,"Your report to ${where(o.spec.unit)} included details that didn't matter.","${pid}-xfer-noise",src/flow.js:727
+"Take action",comm,1,"You told ${f.name} what happened and where ${d.short} is now.","${pid}-xfer-fam",src/flow.js:738
+"Take action",comm,-1,"You told ${f.name} everything would be fine.","${pid}-xfer-fam",src/flow.js:739
+"Take action",comm,-1,"You updated ${f.name} in English without an interpreter.","${pid}-xfer-fam",src/flow.js:740
+"Take action",comm,-1,"You told ${f.name} you couldn't discuss it.","${pid}-xfer-fam",src/flow.js:741
+"Take action",comm,1,"You told the charge nurse about your error.","${d.id}-err-charge-${e.base}",src/flow.js:847
+"Take action",time,-2,"${d.short}'s ${b.name} was ordered at ${A.clock(B.t0)}; ${names.join(' and ')} ${names.length > 1 ? 'were' : 'was'} never started.","${d.id}-bundle-${b.id}",src/flow.js:919
+"Take action",time,1,"You started all of ${d.short}'s ${b.name} within ${dur(gap)} of the orders (${A.clock(B.t0)} to ${A.clock(last.at)}).","${d.id}-bundle-${b.id}",src/flow.js:920
+"Analyze cues",time,varies,"${d.short}'s ${b.name} was ordered at ${A.clock(B.t0)}; the last item (${lc(last.it.label)}) started at ${A.clock(last.at)}, ${dur(gap)} later.","${d.id}-bundle-${b.id}",src/flow.js:921
+"Take action",comm,varies,"Your report on ${d.short} left out ${miss.slice(0, 2).map(nameOf).join(' and ')}.","${pid}-report",src/flow.js:951
+"Take action",comm,0.5,"Clean report on ${d.short}.","${pid}-report",src/flow.js:952
+"Take action",comm,0,"Your report on ${d.short} had filler in it.","${pid}-report-noise",src/flow.js:953
+"Take action",comm,-2,"You never told the provider about your error with ${d.short}: ${e.what}.","${d.id}-err-hidden-${e.base}",src/flow.js:963
+"Take action",comm,-1,"You never called report to ${where(sp.unit)} on ${d.short}.","${d.id}-xfer-report",src/flow.js:966
+"Take action",comm,-0.5,"No event note for ${d.short}'s transfer.","${d.id}-xfer-note",src/flow.js:967
+"Take action",comm,-0.5,"${sp.family.name} never heard from you about ${d.short}'s transfer.","${d.id}-xfer-fam",src/flow.js:968
+"Recognize cues",assess,-1,"${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.","${d.id}-watch-${r.key.split(':')[1]}",src/flow.js:974
+"Evaluate outcomes",meds,-1,"You didn't reassess ${d.short} after the ${miss[0].text.replace('Reassess after ', '').toLowerCase()}.","${d.id}-prn-reassess",src/flow.js:978
+"Take action",comm,varies,"You left without giving report on ${left.map((d) => d.room).join(', ')}.","report-missing",src/flow.js:983
+"Take action",time,-1,"You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.","d.id + '-repeat'",src/ui.js:2178
+"Take action",time,-1,"You repeated ${d.short}'s ${L0.toLowerCase()} with nothing new to find.","d.id + '-repeat'",src/ui.js:2185
+"Prioritize hypotheses",priority,1,"Your first-round priorities matched an experienced charge nurse's.","rank-all",src/ui.js:2279
+"Generate solutions",meds,-1,"You held ${d.short}'s ${m.name} without a clear clinical reason.","m.id + '-hold'",src/ui.js:2370
+"Take action",judgment,0,"You called a rapid response for ${d.short}.","d.id + '-rrt'",src/ui.js:2399
+"Take action",comm,-1,"Your call about ${d.short} had no clinically significant data in it.","pid + '-sbar-empty-' + s.t",src/ui.js:2417
+"Take action",comm,0,"Your SBAR on ${d.short} included details that didn't change the picture.","pid + '-sbar-noise'",src/ui.js:2418

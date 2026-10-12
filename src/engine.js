@@ -48,6 +48,13 @@ window.Shift = window.Shift || {};
         if (key && s.judg.some((j) => j.key === key)) return;
         s.judg.push({ key, t: s.t, domain, delta, text, why, pid });
       },
+      /* Replace an earlier judgment with the same key, for a decision that later evidence shows was better (or worse)
+         reasoned than it looked at the time: a hold made after a first look at the tray, confirmed by the full count. */
+      rejudge(key, domain, delta, text, why, pid) {
+        const i = s.judg.findIndex((j) => j.key === key), t = i >= 0 ? s.judg[i].t : s.t;
+        if (i >= 0) s.judg.splice(i, 1);
+        s.judg.push({ key, t, domain, delta, text, why, pid });
+      },
       hasJudg: (key) => s.judg.some((j) => j.key === key),
       msg(o) {
         const m = Object.assign({ id: ++s.seq, t: s.t, read: false, replies: null, done: false }, o);

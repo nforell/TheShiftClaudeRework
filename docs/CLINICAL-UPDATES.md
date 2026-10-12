@@ -2,6 +2,18 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## October 12, 2026: beta feedback on Shift 1, Days on 4 West (attribution and pacing)
+
+From a full playthrough by a beta tester. The scoring promise is specific, fair feedback, so the fixes favor checking the player's own log over guessing.
+
+| Where | What changed | Why |
+|---|---|---|
+| Floor calls (`src/floor.js`, `src/floor-more.js`) | Patients in floor calls no longer share a name with any shift's patient (Kowalski, Whitfield, Novak, Delgado, Lindqvist and nine others renamed). A room number in a floor call that lands on a room you're assigned is moved to the nearest room that isn't (the Foley call said "414", Mrs. Okafor's room). Calls about a colleague's patient now say you're covering; calls about a past patient say so. Floor-call decisions in the debrief are labeled "Floor call", and a missed one says it wasn't one of your patients. | The debrief docked a tester for "Mr. Kowalski's Foley" after they had removed Mr. Bell's; Kowalski was a floor call they never got to. The pharmacist's "Mr. Petrov" call read as their own patient. |
+| 414 mealtime insulin | Checking the tray before she has finished now counts as checking: a hold after that first look scores +1 ("barely eating"), and becomes the full +2 when the 20% count is confirmed. A blind hold confirmed later scores +1. | A tester who looked at the tray and then held was told they held "without checking intake." |
+| 416 sepsis bundle | Cultures, lactate and the bolus go on the Brain list as soon as they're ordered and turn overdue at 30 minutes. Nova checks in at 30 and 60 minutes if any are still waiting. The gap from orders to the last item is scored (within 60 min +1; up to 2 h −1; longer or never −2). The rapid response path now records the cultures and lactate it says it drew. | Orders sat unnoticed for about three game hours. Hour-1 bundle: Surviving Sepsis Campaign 2021. |
+| 414 case manager | Maya's question about a glucose meter now has answers: tell her you'll ask, and a "Ask about her glucose meter and strips at home" action appears in Care (she has a meter; strips cost too much, so she checks twice a week). | The question had no way to answer it. |
+| Debrief | Every moment about a patient has "What you'd done for them by then": the last entries from your own log, so feedback can be checked against what you did. | Trust in the debrief. |
+
 ## October 10, 2026: Shift 11, Days in Labor and Delivery (needs L&D nurse review)
 
 | Patient | Teaching | Basis |

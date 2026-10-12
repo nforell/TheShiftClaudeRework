@@ -248,6 +248,14 @@
     if (P.juiceAt !== null && s.t - P.juiceAt >= 10 && s.t - P.juiceAt <= 35) A.judge('414-recheck', 'judgment', 1, 'You rechecked Mrs. Okafor\'s glucose about 15 minutes after treating her low.', 'The rule of 15: 15 g of fast carbohydrate, recheck in 15 minutes, repeat if still under 70. Evaluating the outcome is what makes it a treatment instead of a guess.', '414');
     return v;
   }
+  /* Once the full tray count is in, a hold made earlier is re-scored on the evidence: a hold after a first look at the
+     tray becomes the full credit; a hold made blind becomes a partial one (the data came after the decision). */
+  function confirmHold(s, P, A) {
+    if (!P.prandHeld) return;
+    const j = s.judg.find((x) => x.key === '414-prand-hold'); if (!j || j.delta >= 2) return;
+    if (P.intakeEarly !== null && P.intakeEarly <= j.t) A.rejudge('414-prand-hold', 'meds', 2, `You held Mrs. Okafor's mealtime insulin when she was barely eating, and confirmed she ate only 20%.`, 'You matched the insulin to what she ate, not to the clock, and documented the number the order names. The order also asks you to notify the provider. Her nausea is the underlying problem worth reporting.', '414');
+    else A.rejudge('414-prand-hold', 'meds', 1, `You held Mrs. Okafor's mealtime insulin, then confirmed she ate only 20%.`, 'Right call, and the count backs it up. Next time look at the tray first: the order makes the dose conditional on intake, so the decision should rest on that number.', '414');
+  }
   const okaforNausea = (s, P) => s.t >= 60 && s.t < 240 && !(P.ondAt !== null && s.t > P.ondAt + 15);
 
   const okafor = {
@@ -260,7 +268,7 @@
     hx: ['Type 2 diabetes for 9 years', 'Hypertension', 'Peripheral neuropathy, both feet'],
     allergies: 'Sulfa drugs (hives)', code: 'Full code', weight: '88 kg',
     lines: ['PIV 22g left hand, saline lock'], mobility: 'Up as she likes. Keep the left leg elevated.', diet: 'Consistent carbohydrate',
-    init: { bgAt: null, lastBG: null, bgs: [], intakeKnown: false, corrAt: null, prandAt: null, prandHeld: false, notifiedHold: false, hypo: false, hypoAt: null, juiceAt: null, snackAt: null, d50At: null, hypoSevere: false, hypoResolved: false, cefAt: null, ondOrdered: false, ondAt: null, talked: false },
+    init: { bgAt: null, lastBG: null, bgs: [], intakeKnown: false, intakeEarly: null, corrAt: null, prandAt: null, prandHeld: false, notifiedHold: false, hypo: false, hypoAt: null, juiceAt: null, snackAt: null, d50At: null, hypoSevere: false, hypoResolved: false, cefAt: null, ondOrdered: false, ondAt: null, talked: false },
     nightVitals: { T: 37.5, HR: 82, SBP: 128, DBP: 78, RR: 16, SpO2: 98, O2: 'Room air', pain: 3 },
     labs: [
       { name: 'Glucose (serum)', val: 212, unit: 'mg/dL', ref: '70–99', flag: 'H', t: -120 },
@@ -306,10 +314,19 @@
     interventions: [
       { id: 'bg', label: 'Check blood glucose', cost: 3, run(s, P, A) { const v = checkBG(s, P, A, 'You'); return `Glucose ${v} mg/dL.` + (v < 70 ? ' Low.' : v >= 150 ? ' Correction scale applies.' : ''); } },
       {
+        id: 'meter', label: 'Ask about her glucose meter and strips at home', cost: 2, avail: (s, P) => s.fired.cm !== undefined && P.k.meter === undefined,
+        run(s, P, A) {
+          P.k.meter = s.t;
+          A.msg({ from: 'maya', pid: '414', text: 'Thank you. If the strips are the problem, I can get her a meter her plan covers and a 90-day supply before she goes. I\'ll set it up.' });
+          A.judge('414-cm', 'comm', 1, 'You found out why Mrs. Okafor rarely checks her glucose at home and got it to the case manager.', 'Going home on insulin is only safe if she can check her sugar. Cost is one of the most common reasons people stop, and a case manager can fix it, but only if someone asks.', '414');
+          return 'She has a meter. "The strips are the problem. Forty dollars a box, so I check maybe twice a week." She looks embarrassed. You message Maya.';
+        },
+      },
+      {
         id: 'intake', label: 'Check breakfast intake', cost: 1, avail: (s) => s.t >= 75,
-        run(s, P) {
-          if (s.t < 88) return 'Tray just arrived. She\'s picking at toast. "Stomach\'s off."';
-          P.intakeKnown = true; return 'About 20%: two bites of egg, half a slice of toast, some tea. "I can\'t. That antibiotic wrecks me."';
+        run(s, P, A) {
+          if (s.t < 88) { if (P.intakeEarly === null) P.intakeEarly = s.t; return 'Tray just arrived. She\'s picking at toast. "Stomach\'s off." Too early for a percentage; look again when she\'s done.'; }
+          P.intakeKnown = true; confirmHold(s, P, A); return 'About 20%: two bites of egg, half a slice of toast, some tea. "I can\'t. That antibiotic wrecks me."';
         },
       },
       {
@@ -363,7 +380,7 @@
       },
       {
         id: '414-prand', name: 'Insulin lispro, mealtime', dose: '6 units', route: 'SubQ', freq: 'With meals', due: 75, param: 'Hold if intake < 50%, then notify provider',
-        checks: (s, P) => [{ label: 'Breakfast intake', value: P.intakeKnown ? 'About 20%' : 'Not checked', ok: P.intakeKnown ? false : null }, { label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 90) }],
+        checks: (s, P) => [{ label: 'Breakfast intake', value: P.intakeKnown ? 'About 20%' : P.intakeEarly !== null ? `Barely started at ${clock(P.intakeEarly)} ("stomach's off")` : 'Not checked', ok: P.intakeKnown || P.intakeEarly !== null ? false : null }, { label: 'Glucose', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 90) }],
         give(s, P, A) {
           if (!P.intakeKnown) A.judge('414-prand-blind', 'meds', -2, 'You gave Mrs. Okafor her mealtime insulin without checking how much she ate.', 'Mealtime (prandial) insulin covers the carbohydrate a patient actually eats. The order made it conditional on at least 50% intake. She ate about 20% because of nausea.', '414');
           else A.judge('414-prand-bad', 'meds', -2, 'You gave mealtime insulin after documenting 20% intake.', 'The order said hold if intake is under 50%. Rapid-acting insulin with almost no carbohydrate on board is a setup for hypoglycemia.', '414');
@@ -372,7 +389,8 @@
         hold(s, P, A) {
           P.prandHeld = true;
           if (P.intakeKnown) A.judge('414-prand-hold', 'meds', 2, 'You held Mrs. Okafor\'s mealtime insulin after confirming she ate only 20%.', 'You matched the insulin to what she ate, not to the clock. The order also asks you to notify the provider. Her nausea is the underlying problem worth reporting.', '414');
-          else A.judge('414-prand-hold-guess', 'assess', 0, 'You held mealtime insulin without checking her intake first.', 'Right result, thin reasoning. Look at the tray: the decision should rest on the data the order names.', '414');
+          else if (P.intakeEarly !== null) A.judge('414-prand-hold', 'meds', 1, `You held Mrs. Okafor's mealtime insulin after seeing at ${clock(P.intakeEarly)} that she was barely eating.`, 'A good read of the tray: she had picked at toast and said her stomach was off. The order names a percentage, so close the loop by checking the tray again when she\'s done and documenting how much she ate.', '414');
+          else A.judge('414-prand-hold', 'assess', 0, 'You held mealtime insulin without checking her intake first.', 'Right result, thin reasoning. Look at the tray: the decision should rest on the data the order names.', '414');
           return 'Held: intake under 50%. The order says to notify the provider.';
         },
       },
@@ -427,6 +445,10 @@
   const tier = (sv) => sv < 35 ? 0 : sv < 55 ? 1 : sv < 75 ? 2 : 3;
   const whitfield = {
     id: '416', room: '416', name: 'Eleanor Whitfield', short: 'Mrs. Whitfield', age: 82, sex: 'F',
+    /* Time-critical orders: flow.js puts each item on the Brain list, has Nova check in at 30 and 60 minutes if any are
+       still waiting, and scores the gap between the orders and the last item. Hour-1 bundle (Surviving Sepsis Campaign). */
+    bundles: [{ id: 'sepsis', name: 'sepsis bundle', within: 60, start: (s, P) => (P.bundle && !P.icu ? P.bundleAt : null), why: 'Cultures, a lactate and fluids are the first hour of sepsis care: every hour of delay raises mortality. Orders don\'t treat anyone until someone starts them.',
+      items: [{ id: 'cult', label: 'Blood cultures × 2', at: (s, P) => P.culturesAt }, { id: 'lact', label: 'Lactate', at: (s, P) => P.lactAt }, { id: 'bolus', label: '1,000 mL saline bolus', at: (s, P) => P.bolusAt }] }],
     look: { skin: '#F0D2BE', shade: '#D2A48C', lip: '#B4655F', blush: '#E88A83', iris: '#5B7E9C', head: { w: 57, h: 59, jaw: .1 }, eye: 9.6,
       hair: { style: 'curls', color: '#ECE8E3' }, brow: { w: 3, color: '#BDB6AE' }, body: { w: 66, cloth: 'gown', cardigan: '#D98F9C' }, extras: ['pearls', 'wrinkles'], smile: .35, guard: true,
       lines: { calm: 'Is Ruth coming today, dear? Somebody has to feed Biscuit.', confused: 'I have to get home. Biscuit hasn\'t eaten since Tuesday.', fever: 'Something\'s wrong, isn\'t it, dear?', drowsy: 'Mm? Oh. Hello.', dys: 'I can\'t seem to catch up.', none: 'Her eyes flutter at your voice, then close.' } },
@@ -435,7 +457,7 @@
     hx: ['Hypertension', 'Hypothyroidism', 'Osteoarthritis, both knees'],
     allergies: 'Penicillin, reaction unknown', code: 'Full code', weight: '58 kg',
     lines: ['PIV 20g right antecubital, normal saline at 75 mL/h'], mobility: 'Up with assist of 1. High fall risk (Morse 55).', diet: 'Regular',
-    init: { sev: 22, allergyInfo: false, baseline: false, abxAvail: null, abxAt: null, escalated: false, bundle: false, bundleLate: false, culturesAt: null, lactAt: null, lactResult: null, lactReported: false, bolusAt: null, fallPrec: false, rrt: false, icu: false, apapAt: null, lisinoprilAt: null, pharmAsked: false },
+    init: { sev: 22, allergyInfo: false, baseline: false, abxAvail: null, abxAt: null, escalated: false, bundle: false, bundleAt: null, bundleLate: false, culturesAt: null, lactAt: null, lactResult: null, lactReported: false, bolusAt: null, fallPrec: false, rrt: false, icu: false, apapAt: null, lisinoprilAt: null, pharmAsked: false },
     nightVitals: { T: 37.9, HR: 98, SBP: 116, DBP: 68, RR: 20, SpO2: 95, O2: 'Room air', pain: 2 },
     labs: [
       { name: 'WBC', val: 13.2, unit: 'K/µL', ref: '4.5–11.0', flag: 'H', t: -270 },
@@ -521,12 +543,12 @@
         run(s, P, A) {
           P.rrt = true;
           if (P.sev >= 55) {
-            P.escalated = true; P.bundle = true; if (P.bolusAt === null) P.bolusAt = s.t;
+            P.escalated = true; P.bundle = true; if (P.bundleAt == null) P.bundleAt = s.t; if (P.bolusAt === null) P.bolusAt = s.t; if (P.culturesAt === null) P.culturesAt = s.t; if (P.lactAt === null) P.lactAt = s.t;
             if (P.abxAt === null) { P.abxAvail = s.t; A.s.meds['416-cef'].status = 'due'; }
             A.judge('416-rrt', 'judgment', 2, 'You called a rapid response for Mrs. Whitfield.', 'Hypotension, tachycardia, fever and altered mentation meet rapid response criteria. Calling is the right move, and the earlier the better.', '416');
             return 'The rapid response team arrives in four minutes. Bolus started, cultures and lactate drawn, and the ICU resident overrides the antibiotic hold. "Good call. Let\'s see how she responds."';
           }
-          P.escalated = true; P.bundle = true;
+          P.escalated = true; P.bundle = true; if (P.bundleAt == null) P.bundleAt = s.t;
           A.judge('416-rrt-early', 'judgment', 1, 'You called a rapid response early for Mrs. Whitfield.', 'Early calls are never wrong. A clear SBAR to her provider often gets the same orders faster, but trusting your worry is the habit that saves lives.', '416');
           A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4.');
           return 'The rapid response nurse looks her over. "Early sepsis picture. Agree with your concern." Sepsis orders are entered for you to start.';
@@ -594,7 +616,7 @@
         if (P.bundle) { return 'I\'m following her. Keep me posted on the lactate and her pressure after the bolus.'; }
         if (req === 'sleep') { A.judge('416-sleep', 'judgment', -2, 'You asked for sedation for Mrs. Whitfield\'s agitation.', 'New agitation in an older adult with infection is a symptom, not the problem. Sedatives worsen delirium and mask deterioration. Find and treat the cause.', '416'); return 'Nothing sedating for an 82-year-old with new delirium. What are her vitals doing?'; }
         if (keys >= 3) {
-          P.escalated = true; P.bundle = true; A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4. Hold lisinopril.');
+          P.escalated = true; P.bundle = true; if (P.bundleAt == null) P.bundleAt = s.t; A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4. Hold lisinopril.');
           if (P.abxAt === null && s.meds['416-cef'].status === 'verify') { P.abxAvail = s.t + 20; }
           A.judge('416-sbar', 'comm', req === 'sepsis' ? 2 : 1, req === 'sepsis' ? 'Your SBAR on Mrs. Whitfield named sepsis and asked for specific orders.' : 'You gave Dr. Chen the right data on Mrs. Whitfield, but didn\'t say what you were worried about.', 'Assessment and Recommendation are where nurses change outcomes: say what you think is happening and what you need. The pattern (fever, tachycardia, falling BP, acute confusion, low urine output) is sepsis until proven otherwise.', '416');
           return (req === 'sepsis' ? 'Agree. ' : 'That sounds like sepsis. ') + 'Cultures times two, lactate, a liter bolus now. I\'ll call pharmacy about the ceftriaxone myself. I\'m coming to see her.';
@@ -841,7 +863,7 @@
     { id: 'wh-bp', when: (s) => s.p['416'].sev >= 58 && !s.p['416'].escalated && !s.p['416'].icu, run(s, A) { const v = A.recordVitals('416', 'Luis (CNA)'); A.msg({ from: 'luis', pid: '416', urgent: true, text: `416's pressure is ${v.SBP}/${v.DBP}, heart rate ${v.HR}, temp ${v.T}. She's really drowsy. That\'s not right, is it?`, replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
     { id: 'wh-icu', when: (s) => s.p['416'].sev >= 82 && !s.p['416'].icu, run(s, A) { const P = s.p['416']; P.icu = true; P.rrt = true; A.judge('416-shock', 'judgment', -3, 'Mrs. Whitfield progressed to septic shock before anyone escalated her care.', 'The cues came early: fever, tachycardia, new confusion, low urine output, a falling BP and a delayed antibiotic. Sepsis rewards the nurse who connects trends before the pressure crashes.', '416'); A.msg({ from: 'luis', pid: '416', urgent: true, text: 'I called a rapid response on 416. She\'s barely waking up, pressure 74 systolic. They\'re taking her to the ICU.' }); A.note('416', 'Rapid response RN', 'Hypotension 74/42 refractory to 1 L bolus, lactate 4.6. Norepinephrine started. Transferred to ICU.'); } },
     { id: 'labs', when: (s) => s.t >= 180, run(s, A) { const P = s.p['416']; const w = P.sev < 35 ? 15.1 : 17.9, c = P.sev < 35 ? 1.4 : 1.6; A.addLab('416', { name: 'WBC', val: w, unit: 'K/µL', ref: '4.5–11.0', flag: 'H' }); A.addLab('416', { name: 'Creatinine', val: c, unit: 'mg/dL', ref: '0.6–1.1 (her baseline 0.9)', flag: 'H' }); A.addLab('416', { name: 'Bands', val: 12, unit: '%', ref: '0–5', flag: 'H' }); A.addLab('418', { name: 'Magnesium', val: 1.9, unit: 'mg/dL', ref: '1.7–2.2', flag: '' }); A.msg({ from: 'lab', pid: '416', text: `AM labs resulted for 416: WBC ${w} with 12% bands, creatinine ${c}.`, replies: [{ label: 'Open 416 labs', act: 'chart', pid: '416', tab: 'labs' }] }); } },
-    { id: 'rounds', when: (s) => s.t >= 195, run(s, A) { const P = s.p['416']; if (!P.escalated && !P.icu && P.sev >= 45) { P.escalated = true; P.bundle = true; P.bundleLate = true; if (s.meds['416-cef'].status === 'verify') { P.abxAvail = s.t + 5; } A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4. Hold lisinopril.'); A.judge('416-rounds', 'judgment', -2, 'Dr. Chen recognized Mrs. Whitfield\'s sepsis on rounds before you escalated it.', 'The provider shouldn\'t be the first to connect the dots. Trending your own assessments against the 07:00 report is how nurses catch sepsis hours earlier.', '416'); A.msg({ from: 'chen', pid: '416', urgent: true, text: 'I\'m in 416. She\'s hypotensive and confused. This is sepsis. I put in cultures, lactate and a liter bolus. Please start them now, and I\'ll get the antibiotic released.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } else { A.msg({ from: 'chen', text: P.escalated ? 'Rounded on your four. Nice work catching 416 early.' : 'Rounded on your four. No new orders.' }); } } },
+    { id: 'rounds', when: (s) => s.t >= 195, run(s, A) { const P = s.p['416']; if (!P.escalated && !P.icu && P.sev >= 45) { P.escalated = true; P.bundle = true; if (P.bundleAt == null) P.bundleAt = s.t; P.bundleLate = true; if (s.meds['416-cef'].status === 'verify') { P.abxAvail = s.t + 5; } A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4. Hold lisinopril.'); A.judge('416-rounds', 'judgment', -2, 'Dr. Chen recognized Mrs. Whitfield\'s sepsis on rounds before you escalated it.', 'The provider shouldn\'t be the first to connect the dots. Trending your own assessments against the 07:00 report is how nurses catch sepsis hours earlier.', '416'); A.msg({ from: 'chen', pid: '416', urgent: true, text: 'I\'m in 416. She\'s hypotensive and confused. This is sepsis. I put in cultures, lactate and a liter bolus. Please start them now, and I\'ll get the antibiotic released.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } else { A.msg({ from: 'chen', text: P.escalated ? 'Rounded on your four. Nice work catching 416 early.' : 'Rounded on your four. No new orders.' }); } } },
     { id: 'bell-atel', when: (s) => s.t >= 210, run(s, A) { const P = s.p['412']; const ok = (P.isCoached !== null && !P.isPoor) || P.ambulated; if (ok) return; P.atel = true; A.judge('412-atel', 'safety', -2, 'Mr. Bell developed early atelectasis: T 38.2, SpO₂ 91%, crackles.', 'Post-op day 1, a smoker, splinting from pain, no spirometry and no walking: the prevention bundle is pain control, IS every hour, and getting him up.', '412'); A.msg({ from: 'luis', pid: '412', text: 'Mr. Bell\'s temp is 38.2 and his sat is 91% on room air. He\'s breathing kind of shallow.', replies: [{ label: 'Go to 412', act: 'goto', pid: '412' }] }); A.recordVitals('412', 'Luis (CNA)'); } },
     { id: 'wh-fall', when: (s) => s.t >= 220 && s.p['416'].sev >= 38 && !s.p['416'].icu, run(s, A) { const P = s.p['416']; if (P.fallPrec) { A.judge('416-fall-caught', 'safety', 1, 'Your bed alarm caught Mrs. Whitfield trying to get up.', 'Precautions set earlier turned a fall into a redirection.', '416'); A.msg({ from: 'luis', pid: '416', text: 'Bed alarm went off in 416. She was trying to get up to "feed the cat." I got her settled. She\'s okay.' }); } else { A.judge('416-fall-near', 'safety', -2, 'Mrs. Whitfield nearly fell climbing out of bed with no fall precautions in place.', 'New confusion, an IV line, urinary urgency and age 82: a textbook fall risk. Bed alarm, low bed and call light take three minutes.', '416'); A.msg({ from: 'luis', pid: '416', urgent: true, text: 'Found 416 with one leg over the rail and her IV pulled tight. She said she had to feed the cat. I got her back in bed. There was no bed alarm on.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } } },
     { id: 'or-brady', when: (s) => ortizBrady(s, s.p['418']), run(s, A) { A.msg({ from: 'jae', pid: '418', urgent: true, text: 'Tele here. 418 is running in the low 40s, slow AFib. Is he okay?', replies: [{ label: 'Go to 418', act: 'goto', pid: '418' }] }); } },
@@ -849,7 +871,8 @@
     { id: 'ok-hypo', when: (s) => s.p['414'].prandAt !== null && okaforBG(s, s.p['414']) < 62, run(s, A) { const P = s.p['414']; P.hypo = true; P.hypoAt = s.t; A.msg({ from: 'luis', pid: '414', urgent: true, text: 'Mrs. Okafor in 414 is sweaty and shaky. She says she feels "off."', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'ok-severe', when: (s) => s.p['414'].hypo && !s.p['414'].hypoResolved && s.p['414'].juiceAt === null && s.t - s.p['414'].hypoAt >= 25, run(s, A) { s.p['414'].hypoSevere = true; A.judge('414-untreated', 'safety', -2, 'Mrs. Okafor\'s hypoglycemia went untreated for 25 minutes.', 'Shaky, sweaty and anxious on insulin is hypoglycemia until proven otherwise. Check, treat, recheck, and don\'t let it wait behind routine tasks.', '414'); A.msg({ from: 'luis', pid: '414', urgent: true, text: '414 isn\'t making sense. She\'s slurring. I checked her sugar: 36.', replies: [{ label: 'Go to 414', act: 'goto', pid: '414' }] }); } },
     { id: 'lact', when: (s) => s.p['416'].lactAt !== null && s.t >= s.p['416'].lactAt + 30, run(s, A) { const P = s.p['416']; const v = +(0.9 + P.sev * 0.034).toFixed(1); P.lactResult = v; A.addLab('416', { name: 'Lactate', val: v, unit: 'mmol/L', ref: '0.5–2.0', flag: v > 2 ? 'H' : '' }); A.msg({ from: 'lab', pid: '416', urgent: v >= 2, text: v >= 4 ? `Critical value, 416: lactate ${v} mmol/L. Read back and notify the provider.` : v >= 2 ? `416 lactate ${v} mmol/L, elevated. Sepsis protocol: notify the provider.` : `416 lactate ${v} mmol/L.`, replies: v >= 2 ? [{ label: 'Call Dr. Chen with an SBAR', act: 'sbar', pid: '416' }] : null }); } },
-    { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.' }); } },
+    /* The case manager's question has an answer: Mrs. Okafor knows it. Ask her (Care tab), and Maya hears back. */
+    { id: 'cm', when: (s) => s.t >= 250, run(s, A) { A.msg({ from: 'maya', pid: '414', text: 'Mrs. Okafor may go home tomorrow on oral antibiotics. Does she have a glucometer and strips at home? I\'ll check her insurance for supplies.', replies: [{ label: 'I\'ll ask her and let you know', act: 'cm-ask' }, { label: 'Can you ask her yourself? I\'m tied up', act: 'cm-self' }] }); } },
     { id: 'wh-drowsy', when: (s) => { const P = s.p['416']; return !P.escalated && !P.icu && P.sev >= 40; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: 'Heads up: 416 is a lot sleepier than she was at 7, and she didn\'t touch her breakfast. Her face looks flushed.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
     { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
     { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
@@ -894,7 +917,7 @@
       } else if (d.id === 'bg') {
         const P = s.p['414']; const v = checkBG(s, P, A, 'Luis (CNA)'); A.msg({ from: 'luis', pid: '414', text: `Mrs. Okafor's glucose is ${v}.` });
       } else if (d.id === 'intake') {
-        if (d.pid === '414') { if (s.t >= 88) s.p['414'].intakeKnown = true; A.msg({ from: 'luis', pid: '414', text: s.t >= 88 ? 'Mrs. Okafor ate maybe 20%. Says she\'s nauseous.' : 'She\'s just started eating.' }); }
+        if (d.pid === '414') { const P = s.p['414']; if (s.t >= 88) { P.intakeKnown = true; confirmHold(s, P, A); } else if (P.intakeEarly === null) P.intakeEarly = s.t; A.msg({ from: 'luis', pid: '414', text: s.t >= 88 ? 'Mrs. Okafor ate maybe 20%. Says she\'s nauseous.' : 'She\'s just started eating.' }); }
         else A.msg({ from: 'luis', pid: d.pid, text: { '412': 'Mr. Bell had most of his broth and juice.', '416': 'Mrs. Whitfield didn\'t touch her tray.', '418': 'Mr. Ortiz ate his wife\'s soup, not the tray. And the whole soda.' }[d.pid] });
       } else if (d.id === 'walk') {
         if (d.pid === '412') A.msg({ from: 'luis', pid: '412', text: 'Walked Mr. Bell to the window and back. Steady.' });
@@ -968,10 +991,13 @@
       const out = [];
       if (s.p['414'].bgAt === null && !s.deleg.some((x) => x.id === 'bg' && !x.done)) out.push({ t: 30, late: s.t > 75, text: '414 Glucose before breakfast' });
       if (s.p['412'].foleyOut === null) out.push({ t: 60, late: s.t > 120, text: '412 Remove Foley catheter' });
+      { const O = s.p['414']; if (O.cmAsk !== undefined && O.k.meter === undefined) out.push({ t: O.cmAsk, late: s.t > O.cmAsk + 30, text: '414 Ask about her glucose meter at home (for Maya)' }); }
       return out;
     },
     /* Reply buttons on phone messages that do more than navigate. Each costs a minute. */
     replies: {
+      'cm-ask'(s, A) { s.p['414'].cmAsk = s.t; A.log('414', 'You told Maya you\'d ask Mrs. Okafor about her meter and strips.', 'act'); },
+      'cm-self'(s, A) { A.msg({ from: 'maya', pid: '414', text: 'No problem, I\'ll catch her this afternoon.' }); },
       'bellwalk-yes'(s, A) { s.p['412'].walkDelegated = s.t; A.log('412', 'You told Luis to walk Mr. Bell.', 'act'); },
       'bellwalk-no'(s, A) { A.judge('412-deleg-hold', 'deleg', 1, 'You held Luis back from Mr. Bell\'s first walk until you could assess him.', 'A report of dizziness plus a first post-op walk makes this an RN assessment, not a delegated task.', '412'); A.msg({ from: 'luis', pid: '412', text: 'Copy. He\'s all yours for the first walk.' }); },
       'chen-nochange'(s, A) { const P = s.p['416']; if (P.sev >= 38) A.judge('416-nochange', 'comm', -2, 'You told Dr. Chen Mrs. Whitfield had "no changes."', 'An update is an assessment. Her fever, heart rate, BP and mental status had all moved since admission. "No changes" without a fresh look is how deterioration gets missed.', '416'); A.msg({ from: 'chen', text: 'Thanks, I\'ll see her on rounds.' }); },

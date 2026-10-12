@@ -631,6 +631,7 @@ window.Shift = window.Shift || {};
     const k = kindOf(c);
     c.patients.forEach((d) => {
       const P = s.p[d.id]; if (!P || (d.arrives && !P.arrived)) return;
+      if (d.bundles && !outOf(P)) bundleTick(s, A, c, d, P);
       // Transfer out: start following them.
       if (outOf(P) && !P.out) { P.out = { at: s.t, spec: spec(s, A, d, P, s.t), known: 0, handoff: null, note: null, fam: null, calls: [] }; P.bell = null; }
       if (P.out) {
@@ -869,6 +870,57 @@ window.Shift = window.Shift || {};
     return { key: 'rd:' + last, t: last + 60, late: s.t > last + 90, text: k === 'psych' ? 'Check-in round' : 'Hourly round', sub: `Last checked ${last <= 0 ? 'in report' : A.clock(last)}${P.bell ? ' · call light on' : ''}`, go: { act: 'round', id: d.id } };
   }
 
+  /* ---------- time-critical bundles ---------- */
+  /* A patient can declare bundles: orders that are only worth something if they start fast (a sepsis bundle). Each item
+     goes on the Brain list from the moment it's ordered and turns overdue at half the window; Nova checks in at half the
+     window and again at the full window if anything is still waiting; and the gap from orders to the last item is scored.
+     bundle: { id, name, within (min), start(s, P) -> time or null, why, items: [{ id, label, at(s, P) -> time or null }] } */
+  const lc = (x) => x.replace(/^[A-Z](?=[a-z])/, (ch) => ch.toLowerCase());   // "Lactate" -> "lactate", "1,000 mL" stays
+  const dur = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}` : `${m} min`);
+  function bundleState(s, d, P, b) {
+    const t0 = b.start(s, P); if (t0 === null || t0 === undefined) return null;
+    const items = b.items.map((it) => ({ it, at: it.at(s, P) })), left = items.filter((x) => x.at === null || x.at === undefined);
+    return { t0, items, left };
+  }
+  function bundleRows(s, A, d, P) {
+    const rows = [];
+    (d.bundles || []).forEach((b) => {
+      const B = bundleState(s, d, P, b); if (!B || outOf(P)) return;
+      B.items.forEach((x) => rows.push(x.at === null || x.at === undefined
+        ? { key: `bn:${b.id}:${x.it.id}`, t: B.t0, late: s.t >= B.t0 + Math.round(b.within / 2), text: `${x.it.label} (${b.name})`, sub: `Ordered ${A.clock(B.t0)}. Start within ${b.within} min`, go: { act: 'dock', id: 'care' } }
+        : { key: `bn:${b.id}:${x.it.id}`, t: x.at, done: true, text: `${x.it.label} (${b.name})`, sub: `Started ${A.clock(x.at)}` }));
+    });
+    return rows;
+  }
+  function bundleTick(s, A, c, d, P) {
+    (d.bundles || []).forEach((b) => {
+      const B = bundleState(s, d, P, b); if (!B) return;
+      s.bundles = s.bundles || {}; const k = d.id + ':' + b.id, st = s.bundles[k] = s.bundles[k] || { nudged: 0, scored: false };
+      if (!B.left.length) {
+        if (!st.scored) { st.scored = true; scoreBundle(s, A, d, b, B); }
+        return;
+      }
+      const el = s.t - B.t0, steps = [Math.round(b.within / 2), b.within];
+      if (st.nudged < steps.length && el >= steps[st.nudged] && s.t < c.length - 5) {
+        const names = B.left.map((x) => lc(x.it.label)), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+        A.msg({ from: c.staff.nova ? 'nova' : oncoming(c), pid: d.id, urgent: true, bundle: k,
+          text: st.nudged === 0 ? `${d.short}'s ${b.name} went in at ${A.clock(B.t0)}. ${list.replace(/^./, (ch) => ch.toUpperCase())} ${names.length > 1 ? 'haven\'t' : 'hasn\'t'} been started yet. Those are time-critical. Need a hand?`
+            : `It's been ${dur(el)} since ${d.short}'s ${b.name} was ordered and ${list} ${names.length > 1 ? 'are' : 'is'} still waiting. That's the window. Please go now, or tell me and I'll send someone.`,
+          replies: [{ label: `Go to ${d.room}`, act: 'goto', pid: d.id }] });
+        st.nudged += 1;
+      }
+    });
+  }
+  function scoreBundle(s, A, d, b, B) {
+    const done = B.items.filter((x) => x.at !== null && x.at !== undefined), last = done.reduce((m, x) => (x.at > m.at ? x : m), done[0] || { at: B.t0 });
+    const gap = done.length ? Math.max(0, last.at - B.t0) : null;
+    if (B.left.length) {
+      const names = B.left.map((x) => lc(x.it.label));
+      A.judge(`${d.id}-bundle-${b.id}`, 'time', -2, `${d.short}'s ${b.name} was ordered at ${A.clock(B.t0)}; ${names.join(' and ')} ${names.length > 1 ? 'were' : 'was'} never started.`, b.why, d.id);
+    } else if (gap <= b.within) A.judge(`${d.id}-bundle-${b.id}`, 'time', 1, `You started all of ${d.short}'s ${b.name} within ${dur(gap)} of the orders (${A.clock(B.t0)} to ${A.clock(last.at)}).`, b.why, d.id);
+    else A.judge(`${d.id}-bundle-${b.id}`, 'time', gap > b.within + 60 ? -2 : -1, `${d.short}'s ${b.name} was ordered at ${A.clock(B.t0)}; the last item (${lc(last.it.label)}) started at ${A.clock(last.at)}, ${dur(gap)} later.`, b.why, d.id);
+  }
+
   /* ---------- report to the oncoming nurse ---------- */
   function reportItems(s, A, d, P, pending, stName) {
     const items = [], v = A.lastVitals(d.id), st = d.status(s, P, A);
@@ -916,6 +968,8 @@ window.Shift = window.Shift || {};
         if (sp.family && o.fam === null && left >= 45) A.judge(`${d.id}-xfer-fam`, 'comm', -0.5, `${sp.family.name} never heard from you about ${d.short}'s transfer.`, 'After a transfer, families often hear nothing for hours. A two-minute call from the nurse who was there matters.', d.id);
         return;
       }
+      // Time-critical bundles never finished.
+      (d.bundles || []).forEach((b) => { const B = bundleState(s, d, P, b), k = d.id + ':' + b.id; if (B && B.left.length && !(s.bundles && s.bundles[k] && s.bundles[k].scored)) scoreBundle(s, A, d, b, B); });
       // Ordered checks that were never finished.
       watchRows(s, A, d, P).filter((r) => !r.done && r.t <= s.t - 20).slice(0, 1).forEach((r) => A.judge(`${d.id}-watch-${r.key.split(':')[1]}`, 'assess', -1, `${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.`, 'An order for repeated checks is how the team finds out whether the treatment worked. Each one is a task with a time on it.', d.id));
       // PRNs nobody went back to check.
@@ -936,5 +990,5 @@ window.Shift = window.Shift || {};
     return { unit: sp.unit, at: o.at, entries: sp.course.map((e) => ({ t: o.at + e.at, st: e.st, text: e.text, after: o.at + e.at > end })), later: sp.later };
   }
 
-  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, roundRow, recordErrors, errsFor, errLabel, tellMD, tellCharge, errRows, reportItems, giveReport, nextFor, entryAt, STAFF };
+  S.flow = { where, tick, endChecks, staffFor, oncoming, kindOf, ST, answerBell, bellToCna, round, roundText, callUpdate, handoffItems, giveHandoff, famChoices, famUpdate, writeNote, awayRows, prnRows, watchRows, bundleRows, roundRow, recordErrors, errsFor, errLabel, tellMD, tellCharge, errRows, reportItems, giveReport, nextFor, entryAt, STAFF };
 })(window.Shift);
