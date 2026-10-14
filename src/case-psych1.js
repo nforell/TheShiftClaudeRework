@@ -60,6 +60,7 @@
       lines: { calm: 'I\'m good. Really. I feel lighter today than I have in months.', anxious: 'Are you going to tell the doctor?', drowsy: 'Just resting.', none: 'He doesn\'t answer.' } },
     bio: 'Sound engineer. Divorced last year; his daughter Mia is six and lives with her mother. Close to his older sister Renata.',
     dx: 'Major depression, after an overdose', reason: 'Major depressive disorder, severe. Intentional overdose on Tuesday.',
+    live: (s, P) => (P.reported ? { legal: '5250, certified today' } : null),
     hx: ['Major depression since his twenties; first hospitalization', 'Overdose Tuesday, medically cleared in the ED', 'Alcohol use, heavier since the divorce'],
     allergies: 'No known drug allergies', code: 'Full code', weight: '74 kg',
     lines: ['None'], mobility: 'Independent', diet: 'Regular',
@@ -426,7 +427,7 @@
       if (P.seclOk) return { tone: 'mixed', title: 'Secluded as a last resort', text: 'She was an imminent danger and less restrictive measures had failed. The next goal is getting there less often.' };
       if (P.im !== null) return { tone: 'mixed', title: 'Needed emergency medication', text: 'By the time it came to IM medication, it was the right call. The oral PRN, offered earlier, might have kept it from getting there.' };
       if (P.esc < 1.6) return { tone: 'good', title: 'Calmer, no force used', text: 'Quiet room, fewer words, a PRN offered as a choice. She slept two hours after lunch, the first real sleep in days.' + (P.adjusted ? ' Lithium is going up tonight.' : '') };
-      return { tone: 'mixed', title: 'Still escalating at noon', text: 'She hasn\'t crossed into danger yet, but nothing has turned her around. The afternoon nurse inherits a crisis in progress.' };
+      return { tone: 'mixed', title: P.esc >= 2.6 ? 'Still escalating at noon' : 'Not settled at noon', text: P.esc >= 2.6 ? 'She hasn\'t crossed into danger yet, but nothing has turned her around. The afternoon nurse inherits a crisis in progress.' : 'Louder and more driven than she should be after a morning of care, though not in danger. Nothing that was tried has brought her down yet.' };
     },
   };
 
@@ -707,7 +708,7 @@
       },
       {
         id: 'restrict', label: 'Start the protocol: 1.5 L/day, supervised, sink water off', cost: 3, avail: (s, P) => !P.restricted,
-        run(s, P, A) { P.restricted = true; P.restAt = s.t; if (P.weighed || recent(s, P.k.neuro, 90)) A.judge('309-restrict', 'safety', 2, 'You started Linda\'s fluid restriction per protocol.', 'The protocol lets you act on the weight without waiting for a call back. Every hour of unrestricted water drops her sodium further.', '309'); else A.judge('309-restrict', 'safety', 1, 'You started Linda\'s fluid restriction.', 'Right move. The protocol runs on her weight, so weigh her too.', '309'); A.addOrder('309', 'Fluid restriction 1.5 L/day, supervised. Room water supply off per protocol.'); return 'Maintenance shuts off the valve under her sink. A pitcher with today\'s allowance, marked by the hour, goes on the desk. She glares at it.'; },
+        run(s, P, A) { P.restricted = true; P.restAt = s.t; P.naRest = P.na; if (P.weighed || recent(s, P.k.neuro, 90)) A.judge('309-restrict', 'safety', 2, 'You started Linda\'s fluid restriction per protocol.', 'The protocol lets you act on the weight without waiting for a call back. Every hour of unrestricted water drops her sodium further.', '309'); else A.judge('309-restrict', 'safety', 1, 'You started Linda\'s fluid restriction.', 'Right move. The protocol runs on her weight, so weigh her too.', '309'); A.addOrder('309', 'Fluid restriction 1.5 L/day, supervised. Room water supply off per protocol.'); return 'Maintenance shuts off the valve under her sink. A pitcher with today\'s allowance, marked by the hour, goes on the desk. She glares at it.'; },
       },
       { id: 'stat', label: 'Draw a STAT BMP (protocol)', cost: 4, avail: (s, P) => P.statAt === null, run(s, P) { P.statAt = s.t; return 'Drawn and sent. Result in about 30 minutes.'; } },
       { id: 'gum', label: 'Offer ice chips and sugar-free gum for thirst', cost: 2, run(s, P) { P.gum = true; return 'She chews two pieces at once. "Spearmint. The committee hates spearmint."'; } },
@@ -743,7 +744,7 @@
         if (req === 'prn') { A.judge('309-sbar-prn', 'judgment', -1, 'You asked to treat Linda\'s headache instead of its cause.', 'In polydipsia, a new headache with confusion is hyponatremia until the sodium says otherwise.', '309'); return 'What\'s her sodium doing? A headache in her is a symptom.'; }
         if ((picked.includes('wt') || picked.includes('na')) && req === 'med') {
           P.reported = true;
-          if (!P.restricted) { P.restricted = true; P.restAt = s.t; A.addOrder('309', 'Fluid restriction 1.5 L/day, supervised. Room water supply off.'); }
+          if (!P.restricted) { P.restricted = true; P.restAt = s.t; P.naRest = P.na; A.addOrder('309', 'Fluid restriction 1.5 L/day, supervised. Room water supply off.'); }
           if (P.statAt === null) P.statAt = s.t;
           if (P.statDone && P.na <= 125.5) { P.gone = true; P.goneText = 'Transferred to medicine'; A.judge('309-sbar', 'comm', 1, 'You reported Linda\'s critical sodium.', 'A critical value goes to the provider right away. Earlier would have been better.', '309'); return ['Under 125 with symptoms: she goes to medicine now for a monitored correction. I\'m calling them.'].concat(extra).join(' '); }
           A.judge('309-sbar', 'comm', 2, 'You reported Linda\'s water intoxication with the numbers.', 'Weight up, sodium falling, symptoms: that\'s the whole case, and it gets a STAT level and a plan in one call.', '309');
@@ -763,7 +764,7 @@
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Seizure from water intoxication', text: `Her sodium reached ${Math.round(P.na)}. She seized on the unit, the second time in three years. The weight, the cups and the headache were all there at 07:00.` };
       if (P.gone) return { tone: 'good', title: 'Caught, and sent for a safe correction', text: 'Her sodium was low enough to need monitored correction on medicine. She went before it became a seizure.' };
-      if (P.restricted && P.na >= 126) return { tone: 'good', title: 'Sodium holding, water restricted', text: `Restriction by ${clock(P.restAt)}, and her sodium stopped falling.` + (P.peg || P.bmReported ? ' Her bowels are being treated too.' : ' Four days without a bowel movement on clozapine went untreated, though.') };
+      if (P.restricted && P.na >= 126) return { tone: 'good', title: 'Sodium holding, water restricted', text: `Restriction by ${clock(P.restAt)}. Sodium ${Math.round(P.naRest)} then, ${Math.round(P.na)} at noon: ${P.na < P.naRest - .5 ? 'still drifting down, but slowly and above the danger line' : 'no longer falling'}.` + (P.peg || P.bmReported ? ' Her bowels are being treated too.' : ' Four days without a bowel movement on clozapine went untreated, though.') };
       if (P.restricted) return { tone: 'mixed', title: 'Restricted late', text: 'The restriction came after her sodium had already dropped into symptoms.' };
       return { tone: 'bad', title: 'Still drinking at noon', text: `Sodium around ${Math.round(P.na)} and falling. She was never weighed.` };
     },

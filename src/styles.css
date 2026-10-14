@@ -921,10 +921,15 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 
 /* Press and hold */
 .holdbtn{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
-.hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(255,255,255,.28);pointer-events:none}
-.fs-row .hold-fill{background:color-mix(in srgb,var(--red) 22%,transparent)}
-.holdbtn.holding .hold-fill{width:100%;transition:width .8s linear}
+.hold-fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--hp,0) * 100%);background:rgba(255,255,255,.34);pointer-events:none}
+.fs-row .hold-fill{background:color-mix(in srgb,var(--red) 26%,transparent)}
 .holdbtn.holding{transform:scale(.985)}
+.holdbtn.holding::after,.holdbtn.armed::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:currentColor;opacity:.55;transform-origin:left;transform:scaleX(var(--hp,0));pointer-events:none}
+.holdbtn.armed{outline:2px dashed currentColor;outline-offset:2px}
+.holdbtn.armed::after{transform:scaleX(1);opacity:.25;animation:armfade 4s linear forwards}
+@keyframes armfade{to{transform:scaleX(0)}}
+.holdbtn>span:last-child{white-space:nowrap}
+.hold-l small.hold-how{display:block;font-size:.72rem;font-weight:400;opacity:.85;margin-top:.1rem}
 .holdbtn>*:not(.hold-fill){position:relative}
 .hold-note{color:var(--red)!important;font-weight:700}
 

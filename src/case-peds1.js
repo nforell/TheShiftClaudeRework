@@ -69,7 +69,7 @@
       { id: 'ng', label: 'Hold PO: give the feed by NG (order: RR > 60)', cost: 5, avail: (s, P) => !P.ng, run(s, P, A) { P.ng = true; P.fedAt = s.t; const rr = A.vitals('501').RR; A.judge('501-ng', 'safety', rr > 60 ? 2 : 0, rr > 60 ? 'You switched Mateo to NG feeds when his RR was over 60.' : 'You started NG feeds for Mateo.', rr > 60 ? 'Nutrition without the aspiration risk. The order spelled out the threshold; you used it.' : 'Allowed by the order, though his rate was under 60.', '501'); return 'NG placed and verified, 90 mL of breast milk over 30 minutes by pump.'; } },
     ],
     comms: [
-      { id: 'rrt', label: 'Call the PICU team / rapid response', cost: 3, avail: (s, P) => !P.rrt && P.work > 1.7, run(s, P, A) { P.rrt = true; P.picuAt = s.t + 30; A.judge('501-rrt', 'judgment', P.work > 2.2 ? 2 : 1, 'You called the PICU team for Mateo.', 'Escalating flow, rising score and a tiring infant: babies with bronchiolitis get worse fast and apnea comes without warning. Early transfer is the safe move.', '501'); return 'The PICU fellow is at the crib in five minutes. "Good call. We\'ll take him upstairs for CPAP."'; } },
+      { id: 'rrt', label: 'Call the PICU team / rapid response', cost: 3, avail: (s, P) => !P.rrt && P.work > 1.7, run(s, P, A) { P.rrt = true; P.picuAt = s.t + 30; P.escBy = 'rrt'; A.judge('501-rrt', 'judgment', P.work > 2.2 ? 2 : 1, 'You called the PICU team for Mateo.', 'Escalating flow, rising score and a tiring infant: babies with bronchiolitis get worse fast and apnea comes without warning. Early transfer is the safe move.', '501'); return 'The PICU fellow is at the crib in five minutes. "Good call. We\'ll take him upstairs for CPAP."'; } },
     ],
     family: { name: 'Lucía', rel: 'Mother', mode: 'bedside', cost: 4, dialog: (s, P) => (P.interp ? 'lucia_after' : 'lucia_talk') },
     meds: [
@@ -96,7 +96,13 @@
       ],
       respond(s, P, A, picked, req) {
         if (req === 'neb') { A.judge('501-sbar-neb', 'judgment', -1, 'You asked for albuterol for bronchiolitis.', 'Bronchodilators don\'t help most infants with bronchiolitis. Supportive care is suction, oxygen, flow, hydration, and knowing when to escalate.', '501'); return 'Albuterol doesn\'t do much in bronchiolitis. What\'s his work of breathing doing?'; }
-        if (req === 'picu' && (picked.includes('work') || picked.includes('score') || picked.includes('vit'))) { if (!P.rrt) { P.rrt = true; P.picuAt = s.t + 30; } A.judge('501-sbar', 'comm', 2, 'You escalated Mateo\'s breathing with the findings.', 'Rate, retractions, score and flow are what the PICU needs to say yes on the phone.', '501'); return 'That\'s a PICU kid. I\'m calling them now. Keep suctioning, NPO, and don\'t leave him.'; }
+        if (req === 'picu' && (picked.includes('work') || picked.includes('score') || picked.includes('vit'))) { if (!P.rrt) { P.rrt = true; P.picuAt = s.t + 30; P.escBy = 'call'; } A.judge('501-sbar', 'comm', 2, 'You escalated Mateo\'s breathing with the findings.', 'Rate, retractions, score and flow are what the PICU needs to say yes on the phone.', '501'); return 'That\'s a PICU kid. I\'m calling them now. Keep suctioning, NPO, and don\'t leave him.'; }
+        // Repeat calls are answered from where he is now, not with the first answer again.
+        P.mdCalls = (P.mdCalls || 0) + 1;
+        if (P.rrt) return `The PICU team is already coming${P.picuAt > s.t ? `, by ${clock(P.picuAt)}` : ''}. Stay with him, keep the airway clear, and call if he pauses.`;
+        const worse = P.work > 1.9 && (picked.includes('work') || picked.includes('score') || picked.includes('vit'));
+        if (worse && P.mdCalls >= 2) { P.rrt = true; P.picuAt = s.t + 30; P.escBy = 'call'; A.judge('501-sbar', 'comm', 1, 'Mateo got escalated on your second call.', 'Rate, retractions and a falling score on high-flow were enough the first time. Say what you need: "I want the PICU to see him."', '501'); return 'That\'s the second call and he\'s still climbing. I\'m calling the PICU team to see him now. Keep him NPO and suction before they get here.'; }
+        if (worse) return 'He sounds worse than this afternoon. Suction first, then tell me what you think he needs.';
         return 'Keep suctioning and titrating the flow. Call me if he\'s worse.';
       },
     },
@@ -500,6 +506,11 @@
       respond(s, P, A, picked, req) {
         if (req === 'space') { P.spaced = true; A.judge('509-sbar-space', 'judgment', silent(P) ? -3 : -1, 'You asked to space Zoe\'s treatments because she was quieter.', 'In a severe flare, less wheeze can mean less air moving: a silent chest. Quiet plus retractions plus falling sat is danger, not improvement.', '509'); return silent(P) ? 'Quieter? What\'s her air movement like? Listen again before we change anything.' : 'Let\'s keep every two hours tonight.'; }
         if (req === 'esc' && (picked.includes('silent') || picked.includes('pas') || picked.includes('vit'))) { if (!P.rrt) { P.rrt = true; P.cont = true; P.mg = true; } A.judge('509-sbar', 'comm', 2, 'You escalated Zoe\'s asthma with the findings.', 'The score, the air movement and the albuterol timing: that\'s what earns continuous albuterol and the PICU.', '509'); return 'Starting continuous albuterol and a magnesium bolus, and the PICU is on the way. Stay with her.'; }
+        P.mdCalls = (P.mdCalls || 0) + 1;
+        if (P.rrt) return 'Continuous albuterol and magnesium are going, and the PICU knows her. Score her every 30 minutes and call me if she gets quieter or sleepier.';
+        const worse = (silent(P) || P.br > 1.8) && (picked.includes('silent') || picked.includes('pas') || picked.includes('vit'));
+        if (worse && P.mdCalls >= 2) { P.rrt = true; P.cont = true; P.mg = true; A.judge('509-sbar', 'comm', 1, 'Zoe got escalated on your second call.', 'A rising asthma score and a quieter chest were enough the first time. Ask for what she needs: continuous albuterol, magnesium, and the PICU.', '509'); return 'Second call and she\'s worse. Continuous albuterol, IV magnesium, and I\'m letting the PICU know. Stay with her.'; }
+        if (worse) return 'That doesn\'t sound like a kid who\'s turning the corner. What do you want to do about it?';
         return 'Keep the nebs on schedule and score her after each.';
       },
     },
@@ -567,6 +578,7 @@
   /* ---------- events ---------- */
   const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
+    { id: 'noah-cps-left', when: (s) => { const P = s.p['507']; return (P.gone || P.icu) && P.bruises && !P.cps; }, run(s, A) { A.msg({ from: 'nova', pid: '507', text: 'Noah\'s upstairs now. You saw those bruises: has a report been made? You can call it in from here.', replies: [{ label: 'Call the hotline and report it now', act: 'noah-cps' }, { label: 'The PICU team will handle it', act: 'noah-cps-no' }] }); } },
     { id: 'kiana-hi', when: (s) => s.t >= 4, run(s, A) { A.msg({ from: 'kiana', text: 'Hi! I\'m Kiana, I\'m your PCT tonight. 501 is working pretty hard and 507 has been crying since I got here. Holler if you need me.', replies: [{ label: 'Open tasks for Kiana', act: 'delegate' }] }); } },
     { id: 'bias', when: (s) => s.t >= 25, run(s, A) { A.msg({ from: 'kiana', pid: '503', text: '503 is on her call light again asking for pain meds. Callum said she\'s kind of a frequent flyer, so, FYI.', replies: [{ label: 'Her pain is real. I\'m going to assess her', act: 'bias-assess' }, { label: 'She can wait until something\'s due', act: 'bias-wait' }] }); } },
     { id: 'nova-idle', when: (s) => s.t >= 45 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Almost 16:00 and you haven\'t been in a room. Kids hide how sick they are until they can\'t. Go look.' }); } },
@@ -588,6 +600,8 @@
     { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to report. Before you give it: who could get worse overnight, and does the night nurse know why?' }); } },
   ];
   const replies = {
+    'noah-cps'(s, A) { const P = s.p['507']; if (P.cps) return; P.cps = true; P.cpsLate = true; A.judge('507-cps', 'safety', 1, 'You made the mandated report for Noah from the station after he left for the PICU.', 'The duty doesn\'t end when the patient leaves your unit. Earlier is better: the report starts the protective process for his siblings and home, not just for him.', '507'); A.msg({ from: 'nova', pid: '507', text: 'Report made. I put the reference number in his chart.' }); },
+    'noah-cps-no'(s, A) { A.judge('507-cps-skip', 'safety', -1, 'You left Noah\'s mandated report to the PICU team.', 'Every mandated reporter who suspects abuse has a personal duty to report. Someone else reporting doesn\'t discharge yours.', '507'); },
     'bias-assess'(s, A) { A.judge('503-bias', 'judgment', 1, 'You pushed back on the "frequent flyer" label.', 'Labels travel from nurse to nurse and change how pain gets treated. Assess the patient in front of you.', '503'); },
     'bias-wait'(s, A) { s.p['503'].biased = true; s.p['503'].relief = s.p['503'].relief.filter((r) => r.t > s.t); A.judge('503-bias', 'judgment', -2, 'You let Aaliyah wait for pain medicine because of a label.', 'Sickle cell pain is undertreated because of exactly this. Waits for analgesia are longer for these patients than for any other painful condition.', '503'); },
     'quiet-come'(s, A) { A.judge('509-quiet', 'judgment', 2, 'You recognized that a quieter asthmatic might be a silent chest.', 'Less wheeze with more work of breathing means less air moving. You went to look instead of taking the good news.', '509'); },

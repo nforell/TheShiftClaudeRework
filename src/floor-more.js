@@ -153,7 +153,7 @@
   "cost": 3,
   "exp": 20,
   "ping": "{cna} pulls you aside: \"Can I tell you something about Jordan?\"",
-  "text": "\"Every patient Jordan has says their pain meds do nothing. He's pulled the max PRN on all of them, every shift. And Ms. Ruiz said she never saw him waste anything, but her name is on the waste.\" You've noticed his breaks are long and he volunteers for every patient on opioids.",
+  "text": "\"Every patient Jordan has says their pain meds do nothing. He's pulled the max PRN on all of them, every shift. And Ms. Ortega said she never saw him waste anything, but her name is on the waste.\" You've noticed his breaks are long and he volunteers for every patient on opioids.",
   "q": "What do you do?",
   "opts": [
    {
@@ -196,7 +196,7 @@
   "ping": "Rene, from pharmacy, about a dose you gave an hour ago.",
   "text": {
    "med": "\"You pulled two 25 mg metoprolol tabs for Mr. Petrov. The order is 25 mg, not 50.\" You check: you gave both. Your mistake.",
-   "psych": "\"You pulled two 1 mg tabs of lorazepam for Mr. Ellis. The order is 1 mg, not 2.\" You check: you gave both. Your mistake.",
+   "psych": "\"You pulled two 1 mg tabs of lorazepam for Mr. Pruitt. The order is 1 mg, not 2.\" You check: you gave both. Your mistake.",
    "peds": "\"You pulled 4 mg of morphine for the 20 kg boy in 511. The order is 2 mg.\" You check: you gave all of it. Your mistake.",
    "ob": "\"You pulled two 5 mg oxycodone tabs for the mom in 224. The order is 5 mg, not 10.\" You check: you gave both. Your mistake.",
    "ed": "\"You pulled 2 mg of hydromorphone for bay 6. The order is 1 mg.\" You check: you gave all of it. Your mistake."
@@ -430,7 +430,7 @@
   "exp": 20,
   "ping": "{rn} shows you a phone: \"Did you see what Tasha posted?\"",
   "text": {
-   "med": "A coworker's public post: \"Guy in 412 thinks he's a pilot lol, longest night ever.\" A photo of the unit hallway shows the room number and a patient's name on the door.",
+   "med": "A coworker's public post: \"Guy in 410 thinks he's a pilot lol, longest night ever.\" A photo of the unit hallway shows the room number and a patient's name on the door.",
    "psych": "A coworker's public post: \"B hall full moon energy, our guy who thinks he's Jesus is back.\" A photo of the unit hallway shows the whiteboard with patient initials.",
    "peds": "A coworker's public post: \"Cutest baby in 511 going home today!\" with a photo of the baby and his name on the crib card.",
    "ob": "A coworker's public post: \"Delivered a 12 pounder tonight, mom was a champ!\" with a photo of the baby and the whiteboard with mom's last name.",
@@ -523,7 +523,7 @@
   "cost": 2,
   "exp": 18,
   "ping": "{rn}: \"Huge favor. I'm locked out of the computer.\"",
-  "text": "\"My login expired and IT says an hour. Can you chart that I gave 412 her 1400 meds and did her reassessment? Just put it under yours. Or I can tell you my password.\"",
+  "text": "\"My login expired and IT says an hour. Can you chart that I gave 410 her 1400 meds and did her reassessment? Just put it under yours. Or I can tell you my password.\"",
   "q": "What do you do?",
   "opts": [
    {
@@ -748,7 +748,7 @@
   "ping": "{rn}, your preceptor today: \"Come on, we're behind.\"",
   "text": {
    "med": "Mrs. Garza's ID band won't scan for her 0900 insulin. {rn}: \"Just override it. I've had her three days, I know it's her. Skip the double check too, it's just 4 units.\"",
-   "psych": "Mr. Ellis's ID band won't scan for his 0900 lithium. {rn}: \"Just override it. I've had him all week, I know it's him.\"",
+   "psych": "Mr. Pruitt's ID band won't scan for his 0900 lithium. {rn}: \"Just override it. I've had him all week, I know it's him.\"",
    "peds": "The band on the toddler in 511 won't scan for his 0900 insulin. {rn}: \"Just override it. I know it's him. Skip the double check too, it's half a unit.\"",
    "ob": "The mom in 224's band won't scan for her 0900 insulin. {rn}: \"Just override it. I know it's her. Skip the double check too, it's just 4 units.\"",
    "ed": "The band on bay 6 won't scan for his insulin. {rn}: \"Just override it. I triaged him myself. Skip the double check too, it's just 4 units.\""
@@ -840,7 +840,7 @@
   "cost": 3,
   "exp": 15,
   "ping": "Pat, shaken: \"A visitor told me to give you a message.\"",
-  "text": "\"The son of your patient in 412. He said, 'Tell that nurse if my mother falls again I'll be waiting for her in the parking garage.' Then he walked off the unit.\" Your shift ends in an hour.",
+  "text": "\"The son of a patient in 410, one you had yesterday. He said, 'Tell that nurse if my mother falls again I'll be waiting for her in the parking garage.' Then he walked off the unit.\" Your shift ends in an hour.",
   "q": "What do you do?",
   "opts": [
    {
@@ -1018,7 +1018,7 @@
   "ping": "{cna}: \"Your patient has a bag of meds from home on the table.\"",
   "text": {
    "med": "Mr. Petrov has his own bottles: metoprolol, an unlabeled bag of white pills, and fish oil. \"I always take mine. Your pharmacy gives the wrong brand.\" He just took one.",
-   "psych": "Mr. Ellis's sister handed him a pill bottle during the visit. It says sertraline, but the pills inside look different. He's about to take one.",
+   "psych": "Mr. Pruitt's sister handed him a pill bottle during the visit. It says sertraline, but the pills inside look different. He's about to take one.",
    "peds": "The mother of the boy in 511 brought his levetiracetam from home. \"I just give it at 8 like always.\" It's on the bedside table, along with gummy melatonin.",
    "ob": "The mom in 224 has her prenatal vitamins and an herbal supplement \"for milk supply\" on the tray. \"My doula said it's safe.\"",
    "ed": "The man in bay 9 is taking his own oxycodone from his pocket. \"You're making me wait. These are mine, they're prescribed.\""
@@ -1058,8 +1058,8 @@
   "dom": "assess",
   "cost": 3,
   "exp": 14,
-  "ping": "Kim, monitor tech: \"{rn}'s patient in 412 just had a run of VT.\" You're covering.",
-  "text": "Nine beats of ventricular tachycardia, now back in sinus at 88 with frequent PVCs. Mr. Delgado, 70, heart failure, on IV furosemide since yesterday. {rn} is on break.",
+  "ping": "Kim, monitor tech: \"{rn}'s patient in 410 just had a run of VT.\" You're covering.",
+  "text": "Nine beats of ventricular tachycardia, now back in sinus at 88 with frequent PVCs. Mr. Hargrove, 70, heart failure, on IV furosemide since yesterday. {rn} is on break.",
   "q": "What do you do?",
   "opts": [
    {
@@ -1095,7 +1095,7 @@
   "dom": "assess",
   "cost": 3,
   "exp": 10,
-  "ping": "Kim, monitor tech: \"Asystole on 418! {rn}'s patient!\"",
+  "ping": "Kim, monitor tech: \"Asystole on 424! {rn}'s patient!\"",
   "text": "Lead II is a flat line. On the same screen, the pulse oximetry waveform is still tracing at 82. {rn} is two rooms away with an isolation patient.",
   "q": "What do you do?",
   "opts": [
@@ -1392,7 +1392,7 @@
   "cost": 3,
   "exp": 18,
   "ping": "{rn}: \"My patient on a hold won't take his olanzapine. Can I just mix it into his pudding?\"",
-  "text": "Mr. Ruiz, 27, on a 72-hour involuntary hold. He's calm, sitting in the dayroom, and says the pills make him \"feel like a zombie.\" There's no court order for medication and no emergency.",
+  "text": "Mr. Ortega, 27, on a 72-hour involuntary hold. He's calm, sitting in the dayroom, and says the pills make him \"feel like a zombie.\" There's no court order for medication and no emergency.",
   "q": "What do you tell {rn}?",
   "opts": [
    {
@@ -1429,28 +1429,28 @@
   "cost": 4,
   "exp": 12,
   "ping": "{cna}: \"I found two patients together in a room on B hall with the door shut.\"",
-  "text": "Kayla, 19, and Mr. Brandt, 45. Her shirt is half off and she looks frightened; he says \"she wanted to.\" Kayla was admitted yesterday for mania.",
+  "text": "Tessa, 19, and Mr. Voss, 45. Her shirt is half off and she looks frightened; he says \"she wanted to.\" Tessa was admitted yesterday for mania.",
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Separate them now, keep Kayla safe with a staff member, talk with each privately, increase observation, notify the charge nurse and psychiatrist, and document what you saw in their words",
+    "t": "Separate them now, keep Tessa safe with a staff member, talk with each privately, increase observation, notify the charge nurse and psychiatrist, and document what you saw in their words",
     "v": 2,
     "fb": "A patient in acute mania may not be able to consent. Treat this as a possible assault: protect, assess, notify, and report per policy."
    },
    {
     "t": "Separate them and put both on closer observation",
     "v": 1,
-    "fb": "Good start, but Kayla needs to be assessed and the team notified now. This may need to be reported."
+    "fb": "Good start, but Tessa needs to be assessed and the team notified now. This may need to be reported."
    },
    {
     "t": "Remind both of them about unit rules and send them to their rooms",
     "v": 0,
-    "fb": "This treats a possible assault as a rule violation. Kayla may not be able to consent."
+    "fb": "This treats a possible assault as a rule violation. Tessa may not be able to consent."
    },
    {
     "t": "Put both of them in seclusion",
     "v": -1,
-    "fb": "Seclusion is for imminent danger to others, not punishment, and secluding Kayla punishes the person who may have been harmed."
+    "fb": "Seclusion is for imminent danger to others, not punishment, and secluding Tessa punishes the person who may have been harmed."
    }
   ],
   "teach": "Sexual contact on a psychiatric unit is a patient safety event: patients may lack capacity to consent. Separate, protect, assess, notify the provider, document objectively and report per policy and state law (Joint Commission sentinel event policy)."
@@ -1613,7 +1613,7 @@
   "dom": "assess",
   "cost": 3,
   "exp": 12,
-  "ping": "{cna}: \"Good news, I think. The asthma kid in 509 stopped wheezing.\"",
+  "ping": "{cna}: \"Good news, I think. The asthma kid in 511 stopped wheezing.\"",
   "text": "Jayden, 7, admitted for an asthma attack on albuterol every hour. He's slumped forward, quiet, and too tired to talk. SpO₂ 89%. You barely hear air moving in either lung.",
   "q": "What do you do?",
   "opts": [
@@ -1761,7 +1761,7 @@
   "dom": "meds",
   "cost": 4,
   "exp": 12,
-  "ping": "{cna}: \"{rn}'s patient on magnesium in 218 is really sleepy, and her breathing is slow.\" {rn} is in a delivery.",
+  "ping": "{cna}: \"{rn}'s patient on magnesium in 220 is really sleepy, and her breathing is slow.\" {rn} is in a delivery.",
   "text": "Mrs. Ochoa, 31, preeclampsia with severe features, on magnesium sulfate 2 g an hour. Respirations 10, hard to rouse, no patellar reflexes. Urine output 15 mL an hour for the past two hours.",
   "q": "What do you do?",
   "opts": [
@@ -1952,7 +1952,7 @@
   "exp": 20,
   "ping": "{rn}: \"The scanner just saved me. Got a second?\"",
   "text": {
-   "med": "\"I had 412's insulin in my hand in 410. The armband scan beeped wrong patient. Same last name, Nguyen, rooms side by side. Nothing was given. Do I really need to write that up?\"",
+   "med": "\"I had 410's insulin in my hand in 408. The armband scan beeped wrong patient. Same last name, Le, rooms side by side. Nothing was given. Do I really need to write that up?\"",
    "psych": "\"I brought Mr. Lee's clozapine to Mr. Li at the med window. The scan caught it. Nothing was given. Do I really need to write that up?\"",
    "peds": "\"I had 511's antibiotic at the bedside in 513. Two toddlers named Mia. The scan caught it. Nothing was given. Do I really need to write that up?\"",
    "ob": "\"I had the wrong baby's hepatitis B vaccine in 222. Twin last names on the bassinet cards. The scan caught it. Nothing was given. Do I really need to write that up?\"",
@@ -2223,8 +2223,8 @@
   "dom": "judgment",
   "cost": 2,
   "exp": 20,
-  "ping": "{cna}: \"Your patient in 410 wants a nurse to witness his paperwork.\"",
-  "text": "Mr. Delgado, 74, has his will and an advance directive on the tray table. \"My lawyer said I need two witnesses. You and the aide can do it, right? Just sign under my name.\"",
+  "ping": "{cna}: \"Mr. Hargrove in 410 wants a nurse to witness his paperwork.\"",
+  "text": "Mr. Hargrove, 74, has his will and an advance directive on the tray table. \"My lawyer said I need two witnesses. You and the aide can do it, right? Just sign under my name.\"",
   "q": "What do you do?",
   "opts": [
    {
@@ -2265,7 +2265,7 @@
   "cost": 2,
   "exp": 18,
   "ping": "A nursing student working with {rn} catches you at the station.",
-  "text": "\"Can you co-sign my 1000 assessment and the med I gave in 412? My instructor is on another floor and {rn} is in a room. It was just acetaminophen.\"",
+  "text": "\"Can you co-sign my 1000 assessment and the med I gave in 410? My instructor is on another floor and {rn} is in a room. It was just acetaminophen.\"",
   "q": "What do you do?",
   "opts": [
    {
@@ -2395,7 +2395,7 @@
   "dom": "safety",
   "cost": 3,
   "exp": 18,
-  "ping": "Lab: a positive C. diff toxin on the new admission in 412. Her nurse is off the floor.",
+  "ping": "Lab: a positive C. diff toxin on the new admission in 410. Her nurse is off the floor.",
   "text": "Mrs. Lindqvist, 79, came up from the ED three hours ago with diarrhea after a course of antibiotics. She's in a semi-private room with the curtain drawn. {cna} just came out of the room and is rubbing alcohol foam into her hands.",
   "q": "What do you do?",
   "opts": [
@@ -2608,7 +2608,7 @@
   "dom": "judgment",
   "cost": 2,
   "exp": 22,
-  "ping": "{rn}: \"Can you help me with a Foley question? I'm about to change the bag in 414.\"",
+  "ping": "{rn}: \"Can you help me with a Foley question? I'm about to change the bag in 420.\"",
   "text": "Mr. Kowalski, 73, post-op day 5 after a colectomy. He's walking the halls and eating. The Foley went in for surgery and is still there. No retention, no strict I and O order, no comfort-care plan. The unit has a nurse-driven catheter removal protocol.",
   "q": "What do you tell {rn}?",
   "opts": [
@@ -2649,7 +2649,7 @@
   "dom": "safety",
   "cost": 3,
   "exp": 14,
-  "ping": "{cna}: \"The man in 416 said something that's bugging me.\"",
+  "ping": "{cna}: \"The man in 422 said something that's bugging me.\"",
   "text": "Mr. Sato, 67, admitted with a COPD flare. His wife died in the spring. While {cna} was helping him wash, he said, \"Honestly, nobody would miss me if I didn't wake up.\" He has a razor and a bag of home medications in his drawer.",
   "q": "What do you do?",
   "opts": [
@@ -2740,10 +2740,10 @@
   "exp": 18,
   "ping": "{rn}: \"Transport's coming for my patient's procedure. Can you finish the checklist with her?\"",
   "text": {
-   "med": "Ms. Brandt, 39, is going for a cystoscopy. Going through the checklist, she says her lips swelled after a dental visit, she gets hives from balloons, and she can't eat bananas or kiwi. Her allergy list says \"NKDA.\"",
+   "med": "Ms. Voss, 39, is going for a cystoscopy. Going through the checklist, she says her lips swelled after a dental visit, she gets hives from balloons, and she can't eat bananas or kiwi. Her allergy list says \"NKDA.\"",
    "peds": "Owen, 9, with spina bifida, is going for a urology procedure. His mom says his lips swelled at a birthday party with balloons. His allergy list says \"NKDA.\"",
    "ob": "Mrs. Teo, 32, is going back for a scheduled cesarean. She mentions her hands itch and swell with dish gloves and her mouth tingles with avocado. Her allergy list says \"NKDA.\"",
-   "ed": "Ms. Brandt, 39, is about to have a laceration repaired and a Foley placed. She mentions her lips swelled after a dental visit and balloons give her hives. Her allergy list says \"NKDA.\""
+   "ed": "Ms. Voss, 39, is about to have a laceration repaired and a Foley placed. She mentions her lips swelled after a dental visit and balloons give her hives. Her allergy list says \"NKDA.\""
   },
   "q": "What do you do?",
   "opts": [
@@ -2918,9 +2918,9 @@
   "dom": "safety",
   "cost": 2,
   "exp": 15,
-  "ping": "{cna}: \"I'm warming a bottle for the baby in 214. The label looks a little off.\"",
+  "ping": "{cna}: \"I'm warming a bottle for the baby in 210. The label looks a little off.\"",
   "text": {
-   "peds": "An 8-week-old admitted with bronchiolitis, feeding from bottles of his mother's pumped milk. The bag {cna} pulled from the unit fridge is labeled for a baby in 218, with a similar last name. The baby is fussing and hungry.",
+   "peds": "An 8-week-old admitted with bronchiolitis, feeding from bottles of his mother's pumped milk. The bag {cna} pulled from the unit fridge is labeled for a baby in 220, with a similar last name. The baby is fussing and hungry.",
    "ob": "A 2-day-old in the nursery whose mother is pumping. The bag {cna} pulled from the fridge is labeled for another baby with a similar last name. The baby is fussing and hungry."
   },
   "q": "What do you do?",

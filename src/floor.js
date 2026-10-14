@@ -435,7 +435,7 @@
       x.done = 'missed';
       const it = item(x.id), m = s.inbox.find((mm) => mm.floor === x.id); if (m) { m.done = true; m.read = true; }
       A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${it.title.toLowerCase()} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.` });
-      if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, it.miss.text, it.miss.why);
+      if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, `Floor call you didn't get to${where(it)}: ${fill(c, it.miss.text)}`, fill(c, it.miss.why));
     });
     if (F.n >= F.order.length || s.t < F.next || s.t > c.length - 25) return;
     if (F.q.some((x) => !x.done) || busy(s, A, c)) { F.next = s.t + 6; return; }
@@ -451,15 +451,17 @@
     const opts = it.opts.map((o, i) => ({ i, t: fill(c, o.t), v: o.v, fb: fill(c, o.fb), key: r() })).sort((a, b) => a.key - b.key);
     const tx = typeof it.text === 'string' ? it.text : it.text[kindOf(c)] || it.text.med;
     const x = (s.floor && s.floor.q.find((q) => q.id === id)) || {};
-    return { id, title: it.title, from: fromKey(c, it), text: fill(c, tx), q: it.q, opts, teach: fill(c, it.teach), cost: it.cost, exp: x.exp, at: x.at, done: x.done, pick: x.pick, dom: it.dom };
+    return { id, title: it.title, from: fromKey(c, it), text: fill(c, tx), q: fill(c, it.q), opts, teach: fill(c, it.teach), cost: it.cost, exp: x.exp, at: x.at, done: x.done, pick: x.pick, dom: it.dom };
   }
   const DELTA = { 2: 0.5, 1: 0, 0: -0.5, '-1': -1 };
+  // Floor calls are about the rest of the unit, not the player's own patients: the debrief says whose bed it was.
+  const where = (it) => { const m = /\b(bed|room)\s+(\d{2,4})\b/i.exec(it.ping || ''); return m ? ` (${m[1].toLowerCase()} ${m[2]}, not your patient)` : ''; };
   function answer(s, A, id, i) {
     const c = A.c, it = item(id), x = s.floor.q.find((q) => q.id === id); if (!x || x.done) return null;
     const o = it.opts[i]; x.done = 'answered'; x.pick = i; x.v = o.v; x.t = s.t;
     const m = s.inbox.find((mm) => mm.floor === id); if (m) { m.done = true; m.read = true; }
     const best = it.opts.find((z) => z.v === 2);
-    A.judge('floor-' + id, it.dom, DELTA[o.v], `${it.title}: ${fill(c, o.t).replace(/^./, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^./, (ch) => ch.toLowerCase())}.` : ''));
+    A.judge('floor-' + id, it.dom, DELTA[o.v], `Floor call${where(it)}, ${it.title.replace(/^./, (ch) => ch.toLowerCase())}: ${fill(c, o.t).replace(/^./, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^./, (ch) => ch.toLowerCase())}.` : ''));
     return { v: o.v };
   }
   function open(s) { return s.floor ? s.floor.q.filter((x) => !x.done) : []; }

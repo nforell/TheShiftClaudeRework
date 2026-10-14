@@ -37,6 +37,14 @@ window.Shift = window.Shift || {};
     return s;
   }
 
+  /* Handoff flags, itemized: which critical lines were missed and which flagged lines weren't critical. */
+  function cueDetail(s, c) {
+    const short = (t) => { t = String(t).replace(/\s+/g, ' ').trim(); return t.length > 70 ? t.slice(0, t.lastIndexOf(' ', 68)) + '…' : t; };
+    const missed = [], extra = [];
+    c.patients.forEach((d) => (d.report || []).forEach((r, i) => { const k = d.id + ':' + i, on = s.brain.includes(k); if (r.key && !on) missed.push(`${d.room}: "${short(r.text)}"`); if (!r.key && on) extra.push(`${d.room}: "${short(r.text)}"`); }));
+    const list = (a) => a.slice(0, 6).join('; ') + (a.length > 6 ? `; and ${a.length - 6} more` : '');
+    return (missed.length ? ` Critical lines you didn't flag: ${list(missed)}.` : '') + (extra.length ? ` Flagged but not critical: ${list(extra)}.` : '');
+  }
   function api(s) {
     const c = cases[s.caseId];
     const a = {
@@ -46,6 +54,7 @@ window.Shift = window.Shift || {};
       log(pid, text, kind) { s.log.push({ id: ++s.seq, t: s.t, pid, text, kind: kind || 'info' }); },
       judge(key, domain, delta, text, why, pid) {
         if (key && s.judg.some((j) => j.key === key)) return;
+        if (key === 'brain') why = (why || '') + cueDetail(s, c);   // name the lines, so "4 that didn't matter" can be checked
         s.judg.push({ key, t: s.t, domain, delta, text, why, pid });
       },
       hasJudg: (key) => s.judg.some((j) => j.key === key),
@@ -72,6 +81,16 @@ window.Shift = window.Shift || {};
     return a;
   }
 
+  /* When a patient leaves the unit (ICU, OR, NICU, discharge), questions asked about them before they left
+     ("he won't wake to eat, is that normal?") stop offering answers: the situation those replies were for is over. */
+  function retireStale(s) {
+    Object.keys(s.p).forEach((pid) => {
+      const P = s.p[pid]; if (!P || !(P.icu || P.gone)) return;
+      if (P.leftAt === undefined) P.leftAt = s.t;
+      s.inbox.forEach((m) => { if (m.pid === pid && m.replies && !m.done && m.t < P.leftAt && !m.replies.some((r) => r.act === 'away' || r.act === 'floor')) { m.done = true; m.read = true; } });
+    });
+  }
+
   /* Move the clock. With `until`, stop early at the first minute it names a reason, and return that reason. */
   function advance(s, mins, until) {
     const c = cases[s.caseId];
@@ -90,6 +109,7 @@ window.Shift = window.Shift || {};
       });
       if (S.flow) S.flow.tick(s, A, c);
       if (S.floor) S.floor.tick(s, A, c);
+      retireStale(s);
       if (until) { why = until(s, A); if (why) break; }
     }
     if (s.t >= c.length) s.ended = true;

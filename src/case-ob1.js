@@ -268,6 +268,7 @@
           if (dose === 3) {
             P.stopped = s.t; P.rate = 0;
             if (dtr(P) === 'absent' || lRR(s, P) < 12) A.judge('214-stop', 'meds', 2, `You stopped Ms. Kealoha's magnesium for signs of toxicity.`, `Absent reflexes or a respiratory rate under 12: the protocol is yours to start. Stop, calcium if breathing is affected, call.`, '214');
+            else if (P.stopOrdered) A.judge('214-stop', 'meds', 2, `You stopped Ms. Kealoha's magnesium as ordered.`, `Still accumulating on 1 g/h with poor urine output: stopping until the level falls is the safe plan. Recheck the level and reflexes, and keep calling.`, '214');
             else if (P.ordered) A.judge('214-stop', 'meds', 0, `You stopped the magnesium when the order was to decrease it.`, `With severe preeclampsia she still needs seizure prophylaxis. Carry out the order as written, or call back to change it.`, '214');
             else { P.offOrder = true; A.judge('214-stop', 'judgment', 0, `You stopped the magnesium before toxicity and without a call.`, `Her reflexes were still there. The worry is right, but the next step is the provider: she still needs seizure prophylaxis.`, '214'); }
             return `Magnesium stopped at the pump. Line clamped and labeled.`;
@@ -331,6 +332,15 @@
         if (!picked.includes('uo') && !picked.includes('dtr')) return `Okay. What are her reflexes and urine output doing?`;
         if (P.called === null) P.called = s.t;
         const tox = dtr(P) === 'absent' || lRR(s, P) < 12;
+        // A second call is answered from where things stand now, not with the first call's order again.
+        if (P.ordered && !tox) {
+          if (P.stopped !== null) return `It's off, good. Level again in two hours and keep the reflex and urine checks hourly. I'll decide on restarting when the level is under 7.`;
+          if (P.rate >= 2) return `I ordered 1 gram an hour at ${clock(P.called)}. Is that running? Turn it down now, then recheck her reflexes and call me back with the level.`;
+          const lvl = P.levelAt !== null ? P.levelVal : null;
+          if ((lvl !== null && lvl >= 8) || P.uo < 30) { if (!P.stopOrdered) { P.stopOrdered = true; A.addOrder('214', `Stop magnesium sulfate${lvl !== null ? ` (level ${lvl} on 1 g/h)` : ''} with ongoing oliguria. Magnesium level and reflexes in 2 hours. Restart at 1 g/h only on provider order. Call for absent reflexes or RR under 12.`); A.judge('214-sbar2', 'comm', 1, `You called back when the magnesium kept accumulating on the lower rate.`, `A rate change is a plan, not an endpoint. When the number keeps moving the wrong way, call again.`, '214'); }
+            return `${lvl !== null ? `${lvl} on 1 gram an hour` : 'Still oliguric on 1 gram an hour'}, so it's still accumulating. Stop the magnesium for now. Level and reflexes in two hours; I'll decide on restarting then. Calcium at the bedside, and call me for absent reflexes or a rate under 12.`; }
+          return `Thanks. She's on 1 gram an hour; keep the hourly checks and call me with the next level.`;
+        }
         if (!P.ordered) { P.ordered = true; P.levelDue = s.t + 30; A.addOrder('214', tox ? `Stop magnesium sulfate. Calcium gluconate 1 g IV now if RR under 12. Stat magnesium level and BMP. Restart at 1 g/h only on my order. Strict I&O; no fluid bolus.` : `Decrease magnesium sulfate to 1 g/h. Stat magnesium level and BMP. Strict I&O, Foley hourly; no fluid bolus. Call for absent reflexes, RR under 12, or urine under 30 mL/h for 2 more hours.`); }
         A.judge('214-sbar', 'comm', !tox && picked.includes('uo') && picked.includes('cr') ? 2 : 1, `You called about magnesium accumulating in Ms. Kealoha.`, `Oliguria and a rising creatinine mean magnesium isn't being cleared. Falling reflexes are the early warning; the call should come before they're gone.`, '214');
         return tox ? `Stop it now. Calcium if her breathing is down. Level stat, I'm coming.` : `Good catch. Take it down to 1 gram an hour, stat level, no bolus. Call me if her reflexes go.`;

@@ -157,11 +157,11 @@ window.Shift = window.Shift || {};
         later: 'Intubated for three days, home on day nine. His work of breathing had been climbing for hours; escalating early is the difference between CPAP and a breathing tube.',
       } : {
         unit: 'PICU', nurse: 'picu', emergent: false,
-        event: `Work of breathing still climbing on high-flow. Rapid response, then to the PICU for CPAP at ${A.clock(at)}.`,
+        event: `Work of breathing still climbing on high-flow. ${P.escBy === 'call' ? 'Escalated by phone to the provider' : 'Rapid response'}, then to the PICU for CPAP at ${A.clock(at)}.`,
         extra: [{ label: 'Mom (Lucía) speaks Spanish: use the interpreter line', key: true }, { label: 'When he last fed, and how (bottle or NG)', key: true }],
         course: [
           { at: 0, st: 'serious', text: 'On CPAP 6 with 40% oxygen. Retractions easing. Lucía is at the bedside with a video interpreter.' },
-          { at: 60, st: 'improving', text: 'RR 48, down from the 70s. Slow NG feeds running. SpO₂ 95%.' },
+          { at: 60, st: 'improving', text: `RR 48, down from ${Math.max(Math.round(40 + P.work * 12), ...P.vit.map((v) => v.RR))} on the floor. Slow NG feeds running. SpO₂ 95%.` },
           { at: 150, st: 'improving', text: 'Settled and sleeping. They\'ll try him off CPAP tomorrow.' },
         ],
         later: 'Two days on CPAP, home on day five. Bronchiolitis gets worse before it gets better; calling when the work of breathing climbed kept this a planned move instead of a rescue.',
@@ -340,11 +340,11 @@ window.Shift = window.Shift || {};
         event: `STAT cesarean at ${A.clock(at)} for uterine rupture during a trial of labor after cesarean: sudden constant pain, contractions stopped, loss of station, fetal bradycardia${fast ? '' : `, ${dt} minutes from the rupture to the STAT call`}.`,
         extra: [{ label: 'Prior low transverse cesarean (operative report confirmed)', key: true }, { label: 'Fetal bradycardia 70 since the rupture', key: true }, { label: 'Two large-bore IVs, type and crossmatch', key: !!P.ivs }],
         course: fast ? [
-          { at: 0, st: 'crit', text: 'General anesthesia. Baby boy delivered from the abdomen 11 minutes after the rupture: APGARs 4 and 8, intubated briefly, extubated in the NICU.' },
+          { at: 0, st: 'crit', text: 'General anesthesia. Baby girl delivered from the abdomen 11 minutes after the rupture: APGARs 4 and 8, intubated briefly, extubated in the NICU.' },
           { at: 80, st: 'serious', text: 'Uterus repaired; 1,400 mL blood loss, two units given. Mother extubated, stable.' },
-          { at: 200, st: 'improving', text: 'Baby on room air, cooling not needed. Mother asking to see him.' },
+          { at: 200, st: 'improving', text: 'Baby on room air, cooling not needed. Mother asking to see her.' },
         ] : [
-          { at: 0, st: 'crit', text: 'General anesthesia. Baby boy delivered limp: APGARs 1 and 3, resuscitated, cord pH 6.91. Therapeutic hypothermia started in the NICU.' },
+          { at: 0, st: 'crit', text: 'General anesthesia. Baby girl delivered limp: APGARs 1 and 3, resuscitated, cord pH 6.91. Therapeutic hypothermia started in the NICU.' },
           { at: 90, st: 'crit', text: 'Hysterectomy for uncontrolled bleeding. Massive transfusion protocol, six units.' },
           { at: 220, st: 'serious', text: 'Mother in the ICU, stable. Baby cooling for 72 hours; the outcome will take weeks to know.' },
         ],
@@ -356,7 +356,7 @@ window.Shift = window.Shift || {};
       event: `Cesarean at ${A.clock(at)} for maternal sepsis from intraamniotic infection: temperature 39.4 °C, BP 88/46, fetal heart rate 180 with no variability. Ruptured 19 hours before arrival, GBS positive; fever since ${P.feverAt !== null ? A.clock(P.feverAt) : 'mid-morning'} without broad-spectrum antibiotics.`,
       extra: [{ label: 'No ampicillin or gentamicin given before sepsis', key: true }, { label: 'GBS positive; penicillin ' + (P.pcnAt !== null ? 'given' : 'never given'), key: true }],
       course: [
-        { at: 0, st: 'crit', text: 'Antibiotics and a fluid bolus in the OR. Baby boy, APGARs 5 and 7, to the NICU for a sepsis evaluation and antibiotics.' },
+        { at: 0, st: 'crit', text: 'Antibiotics and a fluid bolus in the OR. Baby girl, APGARs 5 and 7, to the NICU for a sepsis evaluation and antibiotics.' },
         { at: 90, st: 'crit', text: 'Mother on norepinephrine in the ICU after delivery, lactate 4.1.' },
         { at: 220, st: 'serious', text: 'Pressor off. Baby\'s blood culture pending, on antibiotics for at least 48 hours.' },
       ],
@@ -650,7 +650,7 @@ window.Shift = window.Shift || {};
           if (busy) A.judge(`${d.id}-bell-${b.at}`, 'priority', 0, `${k === 'psych' ? d.short + '\'s request' : d.room + '\'s call light'} waited 25 minutes while you handled an emergency.`, `Right priority. A request for ${b.id === 'pain' || b.id === 'pump' || b.id === 'anx' || b.id === 'talk' ? 'something only a nurse can do can still get a quick "I\'ll be there in ten" from your aide' : 'this is exactly what your aide can take while you stay with the sicker patient'}.`, d.id);
           else if (k === 'psych') A.judge(`${d.id}-bell-${b.at}`, 'priority', -1, `${d.short} waited 25 minutes at the station with no answer.`, 'A patient asking for help is also giving you a chance to assess. Answer it, or send someone who can.', d.id);
           else A.judge(`${d.id}-bell-${b.at}`, 'priority', -1, `${d.room}'s call light rang for 25 minutes with no answer.`, 'A call light is a patient asking for help. Answer it, or send someone who can. Patients who wait get up on their own, and falls start that way.', d.id);
-          P.bell = null; bellDone(s, d.id); P.touchAt = s.t; A.msg({ from: cnaKey(c), pid: d.id, text: `I finally got to ${k === 'psych' ? d.short : d.room + '\'s call light'}. ${d.short} had been waiting a long time.` });
+          P.bell = null; bellDone(s, d.id); P.touchAt = s.t; A.msg({ from: aideAway(s, c) ? 'nova' : cnaKey(c), pid: d.id, text: `I finally got to ${k === 'psych' ? d.short : d.room + '\'s call light'}. ${d.short} had been waiting a long time.` });
         }
         return;
       }
@@ -665,12 +665,14 @@ window.Shift = window.Shift || {};
       const who = (k === 'peds' || d.newborn) && d.family ? d.family.name : d.short;
       P.bell = { at: s.t, id: n.id, text: n.text, cna: n.cna, fix, who }; P.lastBell = s.t; s.lastBell = s.t;
       const text = k === 'psych' ? `${d.short} is at the nurses' station asking ${n.text}.` : `Call light in ${d.room}: ${who} ${n.text}.`;
-      const cn = (c.staff[cnaKey(c)] || {}).name || 'your aide';
-      A.msg({ from: cnaKey(c), pid: d.id, bell: true, text, replies: [{ label: `I'll go`, act: 'goto', pid: d.id }, { label: `${cn}, can you take it?`, act: 'bell-cna', pid: d.id }] });
+      const cn = (c.staff[cnaKey(c)] || {}).name || 'your aide', gone = aideAway(s, c);
+      A.msg({ from: gone ? 'nova' : cnaKey(c), pid: d.id, bell: true, text, replies: gone ? [{ label: `I'll go`, act: 'goto', pid: d.id }] : [{ label: `I'll go`, act: 'goto', pid: d.id }, { label: `${cn}, can you take it?`, act: 'bell-cna', pid: d.id }] });
     });
   }
 
   /* ---------- player actions ---------- */
+  const liveDef = (s, d) => { if (!d || !d.live || !s.p[d.id]) return d; const o = d.live(s, s.p[d.id]); return o ? Object.assign({}, d, o) : d; };
+  const aideAway = (s, c) => (c.delegation && c.delegation.away ? c.delegation.away(s) : null);
   function answerBell(s, A, pid) {
     const P = s.p[pid], b = P.bell; if (!b) return '';
     P.bell = null; P.touchAt = s.t; bellDone(s, pid);
@@ -679,6 +681,7 @@ window.Shift = window.Shift || {};
   function bellToCna(s, A, pid) {
     const c = A.c, P = s.p[pid], d = A.def(pid), b = P.bell, cn = (c.staff[cnaKey(c)] || {}).name || 'The aide';
     if (!b) return `${cn}: "Looks like someone already got it."`;
+    if (aideAway(s, c)) return `${cn} isn't on the unit: ${aideAway(s, c).charAt(0).toLowerCase() + aideAway(s, c).slice(1)}.`;
     if (!b.cna) {
       A.judge(`${pid}-bell-deleg-${b.id}`, 'deleg', -1, `You asked ${cn} to handle a call light that needed a nurse.`, b.id === 'pump' ? 'Troubleshooting an IV pump and assessing the site are nursing tasks. The aide can tell you it\'s alarming; the pump is yours.' : b.id === 'pain' || b.id === 'anx' ? 'Assessing pain or distress and deciding on a PRN are nursing work. The aide can tell them you\'re coming.' : 'Some requests are really an assessment. That part stays with the nurse.', pid);
       A.msg({ from: cnaKey(c), pid, text: `${kindOf(c) === 'psych' ? 'I checked' : 'I popped in'}, but ${b.who} ${kindOf(c) === 'psych' ? 'is asking ' : ''}${b.text}. That one's yours; I told them you're coming.` });
@@ -704,8 +707,8 @@ window.Shift = window.Shift || {};
   function handoffItems(s, A, d, P) {
     const o = P.out, sp = o.spec, items = [{ id: 'what', label: `What happened: ${sp.event}`, key: true }];
     if (!/No known/.test(d.allergies)) items.push({ id: 'allergy', label: `Allergy: ${d.allergies.split('.')[0]}`, key: true });
-    items.push({ id: 'code', label: `Code status: ${d.code.split(',')[0]}`, key: !/^Full code/.test(d.code) });
-    if (d.legal && !/^Interpreter/.test(d.legal)) items.push({ id: 'legal', label: `Legal status: ${d.legal}`, key: true });
+    items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: !/^Full code/.test(liveDef(s, d).code) });
+    if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     const recent = [];
     (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; const ts = m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []; ts.filter((t) => t >= o.at - 180 && t <= o.at).forEach((t) => recent.push([t, m.name])); });
     if (recent.length) items.push({ id: 'meds', label: `Last doses: ${recent.sort((a, b) => b[0] - a[0]).slice(0, 3).map(([t, n]) => `${n} at ${A.clock(t)}`).join(', ')}`, key: true });
@@ -879,11 +882,11 @@ window.Shift = window.Shift || {};
     const prn = [];
     (d.meds || []).filter((m) => m.prn).forEach((m) => { const g = s.meds[m.id].given; if (g.length && g[g.length - 1] >= s.t - 150) prn.push(`${m.name} at ${A.clock(g[g.length - 1])}`); });
     if (prn.length) items.push({ id: 'prn', label: `PRNs given: ${prn.join(', ')}`, key: true });
-    const next = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && s.meds[m.id].status === 'due' && m.due > s.t - 60).map((m) => `${m.name} ${A.clock(m.due)}`);
+    const next = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && s.meds[m.id].status === 'due' && m.due > s.t - 60 && (!m.available || m.available(s, s.p[d.id]))).map((m) => `${m.name} ${A.clock(m.due)}`);
     if (next.length) items.push({ id: 'next', label: `Meds still due: ${next.join(', ')}`, key: true });
     if (!/No known/.test(d.allergies)) items.push({ id: 'allergy', label: `Allergy: ${d.allergies.split('.')[0]}`, key: true });
-    if (!/^Full code/.test(d.code)) items.push({ id: 'code', label: `Code status: ${d.code.split(',')[0]}`, key: true });
-    if (d.legal && !/^Interpreter/.test(d.legal)) items.push({ id: 'legal', label: `Legal status: ${d.legal}`, key: true });
+    if (!/^Full code/.test(liveDef(s, d).code)) items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: true });
+    if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     if (P.bell) items.push({ id: 'bell', label: `Still waiting: ${P.bell.who} ${kindOf(A.c) === 'psych' ? 'asked ' : ''}${P.bell.text}`, key: true });
     items.push({ id: 'dx', label: `Here for: ${d.reason}`, key: false });
     const nz = NOISE[kindOf(A.c)], a = seed(d.id + 'r') % nz.length;

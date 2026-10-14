@@ -2,6 +2,27 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 20 — October 14, 2026 (branch `playtest-fixes`)
+
+Nick's ask: an AI playtester (Muse) played all 11 shifts end to end and wrote a report. Fix what it found and improve where it makes sense.
+
+### Done
+- **Hold-to-give.** One duration everywhere (0.6 s), a progress fill that survives the screen redrawing under your finger (a toast or the clock used to cancel the hold silently and hide its progress), sliding off cancels but jitter doesn't, and **tap twice** works as an alternative to holding. The button now says what it does: "Give Gentamicin", "Set the pump: Decrease to 1 g/h". It used to print the dose option's number as milligrams ("Hold to give 3 mg" on microgram drugs and on "stop the heparin").
+- **Discontinued orders aren't tasks.** The station list, the patient strip, the oncoming-nurse report and the "no late doses" goal now skip orders that were replaced or discontinued (Leo's 2.2× wrong-weight doses kept showing as due and late after the corrected orders). Transferred patients' scheduled meds and shift assessment leave the task list too (Baby Nguyen after the NICU). Spironolactone leaves the MAR once the provider discontinues it; heparin leaves once comfort orders are carried out (714).
+- **Stale replies and banners.** Choosing "I'll go see her" retires the other replies; placing the call a message asked for retires it; questions asked about a patient before they left the unit stop offering answers ("First day, babies sleep" after the NICU). Banners that need an answer (call lights, questions) stay up until answered or dismissed instead of vanishing after 7 seconds and then counting as missed.
+- **Patient headers follow the shift** (`d.live(s, P)` in a case, read through `liveDef()`): 714's code status after the family meeting (DNR, comfort care), lines and breathing-tube portrait after extubation, 222's problem after the birth, 301's legal status after the 5250. L&D 221 and 222 show "Looks settled" when they are.
+- **Floated CNA.** On nights, once Dee is floated the team bar says so, call lights come from Nova and don't offer "Dee, can you take it?"
+- **Debrief accuracy.** Floor calls say they were someone else's patient ("Floor call (bed 715, not your patient)"); floor-call characters and rooms no longer share names or room numbers with your patients (a "Kowalski" in 414 on a day with your own 414). Handoff-cue feedback lists which critical lines were missed and which flags weren't critical. Epilogue stories match the outcome that was scored (212, 214, 216, 605). Fixed: Jaylen's dystonia call not counting when the player asked for the anticholinergic directly; the advance directive "read before the meeting" when it wasn't; "no glucose check" when there was one; "sodium stopped falling" when it hadn't; Mateo's "RR down from the 70s" and "rapid response" when it was a phone call; baby girl/boy mix-ups in L&D transfers; `{cna}` in missed floor-call text.
+- **State-aware providers.** A second magnesium call answers from where things stand (already on 1 g/h with a level of 8.6 and oliguria: stop it) instead of repeating the first order. Peds repeat calls on Mateo and Zoe escalate on the second call with findings.
+- **Missing mechanics surfaced.** Stopping heparin for HIT now says to call and adds "call for a non-heparin anticoagulant" to the task list (the option used to say "stop and call" but only stopped). Kayla's disclosure adds "call the child abuse hotline yourself" to the task list. Noah's mandated report can still be made by phone after he goes to the PICU.
+- **Hold parameters.** Holding a dose "outside the hold parameter" when every check is inside it gets one warning first. An unjustified metoprolol hold on nights is scored, with the link to the BP and the thrombolytic threshold. Questionable holds can be reported on the SBAR's medication-error section.
+- **Readability.** Last-done text is shortened at a word ("Pain 9 out of 1…" was a cut-off "10"); the vitals strip and bedside monitor expose their numbers to screen readers.
+- New `tests/playtest.py`. v0.6.5-beta.
+
+### Not changed, on purpose
+- Prioritization scoring for clinically defensible choices (teen psych) and the PCA-by-proxy debrief ordering: design calls for the clinical reviewers.
+- ED handoff "left out what happened" for a checked box could not be reproduced (clicking every box gives a clean report); worth a look if a real tester sees it.
+
 ## Session 19 — October 12, 2026 (branch `email-polish`)
 
 Nick's ask: does the backend work (sign-up emails etc.)? The sign-in email he tried looked sketchy.
