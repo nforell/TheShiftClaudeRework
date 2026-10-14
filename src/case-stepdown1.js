@@ -71,7 +71,7 @@
     ],
     meds: [
       {
-        id: '601-dilt', name: 'Diltiazem infusion', dose: '10 mg/h', route: 'IV', freq: 'Continuous; titrate per order', prn: true, infusion: true,
+        id: '601-dilt', name: 'Diltiazem infusion', dose: '10 mg/h', doseNow: (s, P) => (!P.diltOn ? `stopped ${P.stoppedAt !== null ? clock(P.stoppedAt) : ''}`.trim() : `${P.dilt} mg/h`), route: 'IV', freq: 'Continuous; titrate per order', prn: true, infusion: true,
         block: (s, P) => (!P.diltOn ? `Stopped at ${clock(P.stoppedAt)}.` : null),
         param: 'Titrate by 2.5 mg/h every 15 min for HR over 110; hold for SBP under 90',
         checks: (s, P, A) => { const v = A.vitals('601'); return [{ label: 'Heart rate', value: `${v.HR}, AF`, ok: v.HR <= 110 }, { label: 'Blood pressure', value: `${v.SBP}/${v.DBP}`, ok: v.SBP >= 90 }, { label: 'Echo', value: P.echoSeen ? 'LVEF 25%: reduced-EF heart failure' : s.t >= 15 ? 'Resulted, not read' : 'Pending', ok: P.echoSeen ? false : null }, { label: 'Current rate', value: `${P.dilt} mg/h`, ok: null }]; },
@@ -322,7 +322,7 @@
     ],
     meds: [
       {
-        id: '605-hep', name: 'Heparin infusion', dose: '18 units/kg/h (1,260 units/h)', route: 'IV', freq: 'Continuous, per nomogram', prn: true, infusion: true,
+        id: '605-hep', name: 'Heparin infusion', dose: '18 units/kg/h (1,260 units/h)', doseNow: (s, P) => (P.stopped !== null ? `stopped ${clock(P.stopped)}` : P.holdUntil !== null && s.t < P.holdUntil ? `on hold until ${clock(P.holdUntil)}` : `${P.rate} units/kg/h`), route: 'IV', freq: 'Continuous, per nomogram', prn: true, infusion: true,
         block: (s, P) => (P.stopped !== null ? `Stopped at ${clock(P.stopped)}.` : P.holdUntil !== null && s.t < P.holdUntil ? `On hold until ${clock(P.holdUntil)}, then ${P.rate} units/kg/h.` : null),
         param: 'aPTT goal 60–85; adjust per nomogram',
         checks: (s, P) => [{ label: 'aPTT 06:00', value: '104 seconds (goal 60–85)', ok: false }, { label: 'Platelets', value: P.labsRead ? '98, down from 230: a 57% drop on day 5' : 'Not reviewed', ok: P.labsRead ? false : null }, { label: 'Current rate', value: `${P.rate} units/kg/h`, ok: null }, { label: 'Nomogram', value: 'aPTT over 100: hold 1 hour, then decrease 3 units/kg/h', ok: null }],
@@ -618,6 +618,7 @@
   }
 
   function endChecks(s, A) {
+    { const R = s.p['603']; if (R.upright && !s.judg.some((j) => j.key === '603-flat')) A.judge('603-flat', 'safety', -2, `Mr. Okoro sat up before 12:15, two hours after his sheath came out.`, `The order was flat (head of bed 30 or less) until 12:15. Hip flexion on a fresh femoral puncture can start a bleed, and a retroperitoneal bleed is silent at first.`, '603'); }
     A.c.patients.forEach((d) => {
       const P = s.p[d.id];
       if (P.seenAt === null && !P.icu && !P.gone) A.judge(d.id + '-unseen', 'assess', -3, `You never went into ${d.room} this shift.`, `Telemetry shows a rhythm, not a person. Every patient needs eyes on them early.`, d.id);

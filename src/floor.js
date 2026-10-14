@@ -461,7 +461,8 @@
     const o = it.opts[i]; x.done = 'answered'; x.pick = i; x.v = o.v; x.t = s.t;
     const m = s.inbox.find((mm) => mm.floor === id); if (m) { m.done = true; m.read = true; }
     const best = it.opts.find((z) => z.v === 2);
-    A.judge('floor-' + id, it.dom, DELTA[o.v], `Floor call${where(it)}, ${it.title.replace(/^./, (ch) => ch.toLowerCase())}: ${fill(c, o.t).replace(/^./, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^./, (ch) => ch.toLowerCase())}.` : ''));
+    A.judge('floor-' + id, it.dom, DELTA[o.v], `Floor call${where(it)}, ${it.title.replace(/^[A-Z](?![A-Z0-9])/, (ch) => ch.toLowerCase())}: ${fill(c, o.t).replace(/^[A-Z](?![A-Z0-9])/, (ch) => ch.toLowerCase())}.`, fill(c, o.fb) + (o.v < 2 ? ` Best: ${fill(c, best.t).replace(/^[A-Z](?![A-Z0-9])/, (ch) => ch.toLowerCase())}.` : ''));
+    if (it.after) A.msg({ from: 'nova', text: fill(c, it.after.replace(/^Nova:\s*/, '').replace(/^"|"$/g, '')) });   // say how a hypothetical resolved, so nothing seems to vanish
     return { v: o.v };
   }
   function open(s) { return s.floor ? s.floor.q.filter((x) => !x.done) : []; }

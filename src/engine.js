@@ -54,6 +54,8 @@ window.Shift = window.Shift || {};
       log(pid, text, kind) { s.log.push({ id: ++s.seq, t: s.t, pid, text, kind: kind || 'info' }); },
       judge(key, domain, delta, text, why, pid) {
         if (key && s.judg.some((j) => j.key === key)) return;
+        // A dose whose order was discontinued or replaced can't be "missed".
+        if (key && /-missed$/.test(key)) { const mid = key.slice(0, -7); for (const d of c.patients) { const m = (d.meds || []).find((x) => x.id === mid); if (m && m.available && !m.available(s, s.p[d.id])) return; } }
         if (key === 'brain') why = (why || '') + cueDetail(s, c);   // name the lines, so "4 that didn't matter" can be checked
         s.judg.push({ key, t: s.t, domain, delta, text, why, pid });
       },

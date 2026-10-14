@@ -166,7 +166,8 @@
           { label: 'Resp. rate and sedation', value: recent(s, P.k.vitalsAt, 60) ? 'Checked at ' + clock(P.k.vitalsAt) : 'Not checked in the last hour', ok: recent(s, P.k.vitalsAt, 60) },
         ],
         give(s, P, A) {
-          if (P.oxyAt === null || s.t - P.oxyAt < 45) A.judge('412-hm', 'meds', -1, 'You went to IV hydromorphone before the oral oxycodone had a chance to work.', 'The order reserves IV hydromorphone for pain the oral dose does not relieve, or when he cannot swallow. He can take PO. IV opioids peak faster and carry more sedation risk, especially with sleep apnea.', '412');
+          if (P.oxyAt === null && s.t < 90) A.judge('412-hm', 'meds', 0, 'You gave IV hydromorphone while his oral oxycodone wasn\'t due until 08:30.', 'Defensible for severe pain he can\'t wait out, but check the rest of the plan first: scheduled acetaminophen, splinting the incision, repositioning. And with sleep apnea, an IV opioid means a sedation and respiratory check at 15 minutes.', '412');
+          else if (P.oxyAt === null || s.t - P.oxyAt < 45) A.judge('412-hm', 'meds', -1, P.oxyAt === null ? 'You went to IV hydromorphone without trying the oral oxycodone first.' : 'You went to IV hydromorphone before the oral oxycodone had a chance to work.', 'The order reserves IV hydromorphone for pain the oral dose does not relieve, or when he cannot swallow. He can take PO. IV opioids peak faster and carry more sedation risk, especially with sleep apnea.', '412');
           P.hmAt = s.t; P.callLight = false;
           return 'Hydromorphone 0.5 mg IV given over 2 minutes. Recheck sedation and respiratory rate in 15 minutes.';
         },
@@ -523,7 +524,7 @@
         run(s, P, A) {
           P.rrt = true;
           if (P.sev >= 55) {
-            P.escalated = true; P.bundle = true; if (P.bolusAt === null) P.bolusAt = s.t;
+            P.escalated = true; P.bundle = true; if (P.bolusAt === null) P.bolusAt = s.t; if (P.culturesAt === null) P.culturesAt = s.t; if (P.lactAt === null) P.lactAt = s.t;   // the team did all three
             if (P.abxAt === null) { P.abxAvail = s.t; A.s.meds['416-cef'].status = 'due'; }
             A.judge('416-rrt', 'judgment', 2, 'You called a rapid response for Mrs. Whitfield.', 'Hypotension, tachycardia, fever and altered mentation meet rapid response criteria. Calling is the right move, and the earlier the better.', '416');
             return 'The rapid response team arrives in four minutes. Bolus started, cultures and lactate drawn, and the ICU resident overrides the antibiotic hold. "Good call. Let\'s see how she responds."';

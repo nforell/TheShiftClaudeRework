@@ -126,7 +126,7 @@
         id: '212-carbo', name: 'Carboprost (Hemabate)', dose: '250 mcg', route: 'IM', freq: 'PPH order set; every 15–90 min', prn: true,
         block: (s, P) => (P.carbo ? 'Given.' : null),
         checks: () => [{ label: 'Asthma', value: 'Yes: albuterol at home, ED visit 2 years ago', ok: false }, { label: 'Order set', value: 'Contraindicated in asthma', ok: false }],
-        give(s, P, A) { P.carbo = true; P.bronch = true; P.bronchAt = s.t; P.ut += 1; A.judge('212-carbo', 'meds', -3, `You gave carboprost to Ms. Brown, who has asthma.`, `Carboprost is a prostaglandin F2-alpha: it contracts bronchial smooth muscle as well as the uterus. In asthma it can cause severe bronchospasm.${P.carboAsked ? ' The provider suggested it because the call left out her asthma.' : ''} Methylergonovine or misoprostol were safe.`, '212'); return `Carboprost 250 mcg IM. Ten minutes later she starts to wheeze.`; },
+        give(s, P, A) { P.carbo = true; P.bronch = true; P.bronchAt = s.t; P.ut += 1; A.judge('212-carbo', 'meds', -3, `You gave carboprost to Ms. Brown, who has asthma.`, `Carboprost is a prostaglandin F2-alpha: it contracts bronchial smooth muscle as well as the uterus. In asthma it can cause severe bronchospasm.${P.carboAsked ? ' The provider suggested it because the call left out her asthma.' : ''} Methylergonovine or misoprostol were safe.`, '212'); return `Carboprost 250 mcg IM. Within minutes she starts to wheeze.`; },
         hold(s, P, A) { A.judge('212-carbo-hold', 'meds', 1, `You held carboprost for Ms. Brown's asthma.`, `Right drug class, wrong patient. Say so on the call so nobody orders it later.`, '212'); return 'Held: asthma.'; },
       },
       {
@@ -260,7 +260,7 @@
     ],
     meds: [
       {
-        id: '214-mag', name: 'Magnesium sulfate infusion', dose: '2 g/h', route: 'IV', freq: 'Continuous until 18:10', prn: true, infusion: true,
+        id: '214-mag', name: 'Magnesium sulfate infusion', dose: '2 g/h', doseNow: (s, P) => (P.stopped !== null ? `stopped ${clock(P.stopped)}` : `${P.rate} g/h`), route: 'IV', freq: 'Continuous until 18:10', prn: true, infusion: true,
         block: (s, P) => (P.stopped !== null ? `Stopped at ${clock(P.stopped)}.` : null),
         checks: (s, P) => [{ label: 'Reflexes', value: P.checkAt === null ? 'Not checked this shift' : dtr(P), ok: P.checkAt === null ? null : dtr(P) === '2+' }, { label: 'Respiratory rate', value: `${lRR(s, P)}`, ok: lRR(s, P) >= 12 }, { label: 'Urine output', value: P.uoSeen ? `${Math.round(P.uo)} mL/h, 3 hours under 30` : 'Not reviewed', ok: P.uoSeen ? P.uo >= 30 : null }, { label: 'Current rate', value: `${P.rate} g/h`, ok: null }],
         doses: [{ id: 1, label: 'Continue at the current rate' }, { id: 2, label: 'Decrease to 1 g/h' }, { id: 3, label: 'Stop the infusion (toxicity protocol)' }],
