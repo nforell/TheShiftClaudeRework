@@ -683,6 +683,7 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 .res-vit .ab b{color:var(--red)}
 .res-vit em{display:block;font-style:normal;font-size:.72rem;font-weight:700;color:var(--ink-2)}
 .res-vit em.up,.res-vit em.dn{color:var(--ink)}
+.res-vit em small{font-weight:400;font-size:inherit;color:var(--ink-2)}
 .res-since{font-size:.76rem;color:var(--ink-2);margin:.35rem 0 0}
 .res-cond{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:1rem;padding:.7rem .8rem;border-radius:var(--rc);background:var(--surface-2);border:1px solid var(--line)}
 .res-cl{font-size:0.89rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;font-family:var(--sign);color:var(--ink-2);margin-right:auto}

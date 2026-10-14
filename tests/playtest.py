@@ -92,6 +92,20 @@ with sync_playwright() as p:
     t = J("(Shift.ui._state().judg.find(j=>j.key==='floor-icu-aline')||{}).text||''")
     check(t.startswith('Floor call') and 'not your patient' in t, f'a missed floor call is labeled as one ({t[:70]}…)')
 
+    # 8. New-player audit: ordered bundle items are tasks, the allergy header learns, counts agree, reset works.
+    start('medsurg-4w-1'); J("(()=>{const s=Shift.ui._state(),P=s.p['416'];P.bundle=true;P.escalated=true;s.p['416'].orders.push({t:s.t,text:'Sepsis bundle',isNew:true});P.allergyInfo=true})()"); go('416')
+    pane = J("document.querySelector('.pane') ? document.querySelector('.pane').innerText : ''")
+    check('Draw blood cultures' in pane and 'Send lactate' in pane and 'normal saline bolus' in pane, 'the sepsis bundle orders show up as tasks')
+    chips = J("[...document.querySelectorAll('.chip, .ehr-tag')].map(c=>c.innerText).join('|')")
+    check('reaction unknown' not in J("document.body.innerText"), 'the allergy header updates once the reaction is known')
+    H('dock', id='assess'); H('assess', sys='vitals'); clr(); H('assess', sys='neuro'); clr()
+    n_tab = J("(()=>{const b=[...document.querySelectorAll('.rt')].find(x=>/Assess/.test(x.innerText));return b?b.innerText:''})()")
+    check('2 documented' in n_tab, f'the Assess tab counts vitals like the shift-assessment task does ({n_tab.replace(chr(10), " ")})')
+    H('settings') if 'settings' in J("Object.keys(Shift.ui._handlers)") else None
+    H('reset-ask'); check(J("Shift.ui._ui.ov") == 'confirm', 'reset asks first'); H('reset-yes')
+    prof = J("JSON.parse(localStorage.getItem('theshift.profile.v1'))")
+    check(not prof.get('runs') and not prof.get('seen') and prof.get('settings', {}).get('sound') == 'off' and prof.get('terms') == '9999', 'reset clears progress and keeps settings and terms')
+
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))
 sys.exit(1 if fails else 0)

@@ -706,7 +706,7 @@ window.Shift = window.Shift || {};
   /* Report to the receiving nurse: the essentials travel with the patient. */
   function handoffItems(s, A, d, P) {
     const o = P.out, sp = o.spec, items = [{ id: 'what', label: `What happened: ${sp.event}`, key: true }];
-    if (!/No known/.test(d.allergies)) items.push({ id: 'allergy', label: `Allergy: ${d.allergies.split('.')[0]}`, key: true });
+    if (!/No known/.test(liveDef(s, d).allergies)) items.push({ id: 'allergy', label: `Allergy: ${liveDef(s, d).allergies.split('.')[0]}`, key: true });
     items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: !/^Full code/.test(liveDef(s, d).code) });
     if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     const recent = [];
@@ -884,7 +884,7 @@ window.Shift = window.Shift || {};
     if (prn.length) items.push({ id: 'prn', label: `PRNs given: ${prn.join(', ')}`, key: true });
     const next = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && s.meds[m.id].status === 'due' && m.due > s.t - 60 && (!m.available || m.available(s, s.p[d.id]))).map((m) => `${m.name} ${A.clock(m.due)}`);
     if (next.length) items.push({ id: 'next', label: `Meds still due: ${next.join(', ')}`, key: true });
-    if (!/No known/.test(d.allergies)) items.push({ id: 'allergy', label: `Allergy: ${d.allergies.split('.')[0]}`, key: true });
+    if (!/No known/.test(liveDef(s, d).allergies)) items.push({ id: 'allergy', label: `Allergy: ${liveDef(s, d).allergies.split('.')[0]}`, key: true });
     if (!/^Full code/.test(liveDef(s, d).code)) items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: true });
     if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     if (P.bell) items.push({ id: 'bell', label: `Still waiting: ${P.bell.who} ${kindOf(A.c) === 'psych' ? 'asked ' : ''}${P.bell.text}`, key: true });
