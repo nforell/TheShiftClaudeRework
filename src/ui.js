@@ -83,6 +83,8 @@
   const A = () => (_As === s && _A ? _A : (_As = s, _A = E.api(s)));
   let RC = null;   // per-render cache: task rows computed once per patient per redraw
   const def = (id) => C().patients.find((p) => p.id === id);
+  // What changes about a patient as the shift goes on (code status after a family meeting, the problem after a birth): d.live(s, P) overrides.
+  const liveDef = (d) => { if (!d || !d.live || !s || !s.p[d.id]) return d; const o = d.live(s, s.p[d.id]); return o ? Object.assign({}, d, o) : d; };
   const staff = (k) => C().staff[k] || { name: k, role: '', look: null };
   /* Rig inputs for a patient: what their body is doing right now, not what was last charted. */
   function rigV(id) {
@@ -102,14 +104,17 @@
   const provKey = (pid) => ((pid && def(pid) && def(pid).provider) || C().provider || 'chen');
   const prov = (pid) => (pid === undefined && C().patients.some((x) => x.provider) ? { name: C().providerLabel || 'a provider', role: '', look: null } : staff(provKey(pid)));
   const cna = () => staff(C().cna || 'luis');
+  const cnaAway = () => (s && C().delegation && C().delegation.away ? C().delegation.away(s) : null);   // floated, on break: who isn't there now
   const unitS = () => esc(C().unitShort || '4 West');
   const sysL = (id, l) => (C().sysLabels && C().sysLabels[id]) || l;
-  const legal = (d) => (d.legal ? `<span class="chip legal">${esc(d.legal)}</span>` : '');
+  const legal = (d0) => { const d = liveDef(d0); return d.legal ? `<span class="chip legal">${esc(d.legal)}</span>` : ''; };
   /* Normal ranges are per patient: a heart rate of 150 is normal at four months and alarming at forty. */
   const NORM = { T: [36, 37.9], HR: [55, 100], RR: [12, 22], SBP: [100, 160], SpO2: [92, 101] };
   const norm = (d, k) => (d && d.norms && d.norms[k]) || NORM[k];
   const abn = (d, k, v) => { const [lo, hi] = norm(d, k); return v < lo || v > hi; };
   const ageSex = (d) => (typeof d.age === 'number' && String(d.sex).length === 1 ? `${d.age}${d.sex}` : `${d.age}, ${d.sex}`);
+  // Shorten text at a word boundary so a number is never cut in half ("Pain 9 out of 1…").
+  const clip = (t, n) => { t = String(t || ''); if (t.length <= n) return t; const c = t.slice(0, n + 1), i = c.lastIndexOf(' '); return (i > n * .6 ? c.slice(0, i) : t.slice(0, n)).replace(/[\s,;:.(]+$/, '') + '…'; };
   const fT = (t) => (typeof t === 'number' ? t.toFixed(1) : t);
   const fLab = (l) => (typeof l.val === 'number' && Number.isInteger(l.val) && /\d\.\d/.test(l.ref || '') ? l.val.toFixed(1) : l.val);
   const o2txt = (o) => (o === 'Room air' ? 'room air' : o);
@@ -189,7 +194,9 @@
       ui.toasts.push(m.id);
       // Routine messages step aside after a few seconds (they stay in the phone); urgent ones wait for the player.
     });
-    ui.toasts = ui.toasts.slice(-1);
+    // One banner at a time, but a message still waiting for an answer (a call light, a question) isn't pushed out by
+    // routine news: it stays until answered or dismissed, and the newest answer-needed one wins.
+    { const ask = (id) => { const m = s.inbox.find((x) => x.id === id); return m && (m.urgent || (m.replies && !m.done)); }; ui.toasts = ui.toasts.filter((id) => { const m = s.inbox.find((x) => x.id === id); return m && !(m.replies && m.done && !m.urgent); }); const keep = ui.toasts.filter(ask); ui.toasts = keep.length ? keep.slice(-1) : ui.toasts.slice(-1); }
     if (s.ended) { endShift(); return why; }
     save();
     return why;
@@ -269,7 +276,7 @@
     const busy = s.deleg.filter((x) => !x.done).length, sug = aideSuggest().length;
     return `<span class="helpers" role="group" aria-label="Your team">
       <button class="hb" data-act="nova" aria-label="Ask Nova, your charge nurse, for a tip. ${s.nova} tip${s.nova === 1 ? '' : 's'} left"><span class="hb-f">${face('nova')}<i class="hb-n">${s.nova}</i></span><span class="hb-t"><b>Ask Nova</b><small>${s.nova ? `Tips · ${s.nova} left` : 'No tips left'}</small></span></button>
-      <button class="hb" data-act="delegate" aria-label="Ask ${esc(cna().name)}, your ${esc(cna().role)}. ${busy ? `${busy} task${busy === 1 ? '' : 's'} in progress` : 'Free'}${sug ? `, ${sug} suggestion${sug === 1 ? '' : 's'}` : ''}"><span class="hb-f">${face(C().cna)}<i class="hb-n ${busy ? 'busy' : 'free'}">${busy || ''}</i></span><span class="hb-t"><b>Ask ${esc(cna().name)}</b><small>${busy ? `Busy · ${busy} task${busy === 1 ? '' : 's'}` : sug ? `Free · ${sug} idea${sug === 1 ? '' : 's'}` : 'Free'}</small></span></button>
+      <button class="hb" data-act="delegate" aria-label="${cnaAway() ? `${esc(cna().name)}: ${esc(cnaAway())}` : `Ask ${esc(cna().name)}, your ${esc(cna().role)}.`} ${busy ? `${busy} task${busy === 1 ? '' : 's'} in progress` : 'Free'}${sug ? `, ${sug} suggestion${sug === 1 ? '' : 's'}` : ''}"><span class="hb-f">${face(C().cna)}<i class="hb-n ${busy ? 'busy' : 'free'}">${busy || ''}</i></span><span class="hb-t"><b>${cnaAway() ? esc(cna().name) : `Ask ${esc(cna().name)}`}</b><small>${cnaAway() ? esc(cnaAway()) : busy ? `Busy · ${busy} task${busy === 1 ? '' : 's'}` : sug ? `Free · ${sug} idea${sug === 1 ? '' : 's'}` : 'Free'}</small></span></button>
     </span>`;
   }
   /* What the aide offers to take, the way a good aide would: things on the unit's due list that are theirs to do,
@@ -281,6 +288,7 @@
   const AIDE_ROUTINE = { walk: 'Up and walking', turn: 'Due every 2 hours', io: 'Diapers and intake this shift', bath: 'When there\'s time' };
   let aideCache = null;
   function aideSuggest() {
+    if (cnaAway()) return [];
     if (!s || s.ended || !C().delegation) return [];
     const key = [s.caseId, s.t, s.deleg.length, s.judg.length, s.seq, (s.prio || []).join()].join('|');
     if (aideCache && aideCache.key === key) return aideCache.out;
@@ -400,7 +408,7 @@
         </div>
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
-          ${initial.map((d) => `<figure class="tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust')}<figcaption><b>${d.room} ${esc(d.short)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(d.dx)}</figcaption></figure>`).join('')}
+          ${initial.map((d) => `<figure class="tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust')}<figcaption><b>${d.room} ${esc(d.short)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(liveDef(d).dx)}</figcaption></figure>`).join('')}
           ${adm.map((d) => `<figure class="adm tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust', '-232 -112 464 232')}<figcaption><b>${d.room} ${esc(d.short)}, arriving ${hhmm(c, d.arrives)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(admWord(d)) + ' from ' + esc(fromOf(d)) + ': ' + esc(d.reason.toLowerCase())}</figcaption></figure>`).join('')}
         </div>
       </section>
@@ -427,8 +435,8 @@
       <section class="report" aria-labelledby="rh">
         <div class="dana">${face(C().reportBy)}<span><b>${esc(rb.name)}</b>, ${esc(C().reportRole)}, is giving you report. <b class="flag-cue">Tap to flag</b> anything worth remembering. Some of it is noise.</span></div>
         <div class="report-head">${pface(d.id)}<div class="who"><h2 id="rh">${esc(d.name)} <small class="muted" style="font-weight:500">${ageSex(d)}, room ${d.room}</small></h2>
-          <div class="muted">${esc(d.dx)}</div>
-          <div class="meta">${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
+          <div class="muted">${esc(liveDef(d).dx)}</div>
+          <div class="meta">${legal(d)}<span class="chip">${esc(liveDef(d).code)}</span><span class="chip ${/No known/.test(liveDef(d).allergies) ? '' : 'alert'}">Allergy: ${esc(liveDef(d).allergies.split(',')[0].split('(')[0])}</span><span class="chip">${E.clock(nv.t)}: T ${fT(nv.T)}, HR ${nv.HR}, BP ${nv.SBP}/${nv.DBP}, SpO₂ ${nv.SpO2}%</span></div></div></div>
         <ul class="lines ${ui.hFresh ? 'fresh' : ''}">${d.report.map((r, i) => { const k = d.id + ':' + i; return `<li style="--i:${i}"><button class="line" data-act="flag" data-k="${k}" aria-pressed="${s.brain.includes(k)}"><i class="flag-ic" aria-hidden="true"></i><span>${esc(r.text)}</span></button></li>`; }).join('')}</ul>
         <div class="tabsrow" role="tablist" aria-label="Patients in report">
           ${pts.map((p, i) => `<button class="pt-tab rich" role="tab" data-act="h-go" data-i="${i}" aria-current="${i === ui.hIdx}">${pface(p.id)}<span><b>${p.room}</b><small>${esc(p.short)}</small></span></button>`).join('')}
@@ -452,6 +460,7 @@
       const P = s.p[d.id]; if (gone(P)) return;
       (d.meds || []).forEach((m) => {
         const st = s.meds[m.id];
+        if (m.available && !m.available(s, P)) return;   // a discontinued or replaced order is nobody's task
         if (m.due !== undefined && (st.status === 'due' || st.status === 'verify') && m.due <= s.t + 75) out.push({ pid: d.id, t: m.due, late: s.t > m.due + 60, text: `${d.room} ${m.name} ${m.dose}${st.status === 'verify' ? ', awaiting pharmacy' : ''}` });
       });
     });
@@ -465,8 +474,8 @@
   const prioN = (pid) => { if (!s.prio && !s.answers.rank) return null; const i = prioList().indexOf(pid); return i < 0 ? null : i + 1; };
   const ordinal = (n) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
   const flagsFor = (pid) => s.brain.filter((k) => k.startsWith(pid + ':')).map((k) => def(pid).report[+k.split(':')[1]].text);
-  const shortAllergy = (d) => (/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy: ${esc(d.allergies.split(',')[0].split('(')[0].trim())}</span>`);
-  const codeChip = (d) => (/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`);
+  const shortAllergy = (d) => (/No known/.test(liveDef(d).allergies) ? '' : `<span class="chip alert">Allergy: ${esc(liveDef(d).allergies.split(',')[0].split('(')[0].trim())}</span>`);
+  const codeChip = (d) => (/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`);
 
   /* The roster: who is who, why they're here, what you noted, where they sit on your list. */
   function ovRoster() {
@@ -476,10 +485,10 @@
       const d = def(pid), P = s.p[pid], g = gone(P), fl = flagsFor(pid), n = prioN(pid);
       const due = inShift && !g ? brainRows(d, P).filter((r) => !r.done && !r.prog && r.t !== null && (r.late || r.t <= s.t + 30)) : [];
       return `<article class="ro ${g ? 'gone' : ''}">
-        <div class="ro-h">${n ? `<span class="ro-n" title="Your priority">${n}<small>${ordinal(n)}</small></span>` : ''}${pface(pid)}<div class="ro-who"><b>${d.room} ${esc(d.name)}</b> <small>${ageSex(d)}</small><span>${esc(d.dx)}</span></div>
+        <div class="ro-h">${n ? `<span class="ro-n" title="Your priority">${n}<small>${ordinal(n)}</small></span>` : ''}${pface(pid)}<div class="ro-who"><b>${d.room} ${esc(d.name)}</b> <small>${ageSex(d)}</small><span>${esc(liveDef(d).dx)}</span></div>
           ${s.prio && inShift && !g ? `<span class="ro-mv"><button class="btn" data-act="prio" data-pid="${pid}" data-d="-1" aria-label="Move ${esc(d.short)} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="prio" data-pid="${pid}" data-d="1" aria-label="Move ${esc(d.short)} down" ${i === list.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>` : ''}</div>
         <p class="ro-why"><b>Here for</b> ${esc(d.reason)}</p>
-        <div class="facts">${legal(d)}<span class="chip">${esc(d.code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
+        <div class="facts">${legal(d)}<span class="chip">${esc(liveDef(d).code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
         ${fl.length ? `<ul class="ro-fl">${fl.map((f) => `<li><i class="flag-ic on" aria-hidden="true"></i>${esc(f)}</li>`).join('')}</ul>` : `<p class="ro-none">${ui.view === 'handoff' ? 'Nothing flagged yet.' : 'You flagged nothing from report.'}</p>`}
         ${inShift && g ? `<div class="ro-f"><button class="btn btn-primary" data-act="away" data-pid="${pid}">Follow up</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
         ${inShift && !g ? `<div class="ro-f"><button class="btn btn-primary" data-act="goto" data-pid="${pid}">Go to ${d.room}</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
@@ -500,7 +509,7 @@
         const rows = (g ? F.awayRows(s, A(), d, P) : brainRows(d, P)).filter((r) => !r.done && !r.prog && r.t !== null), late = rows.filter((r) => r.late).length, due = rows.filter((r) => !r.late && r.t <= s.t + 30).length;
         const tk = liveGhosts(d.id).length;
         const pn = prioN(d.id);
-        return `<button class="ps ${cur === d.id ? 'on' : ''} ${light ? 'alert' : ''} ${g ? 'gone' : ''} ${tk ? 'ticked' : ''}" data-act="${g ? 'away' : cur === d.id ? 'here' : 'goto'}" data-pid="${d.id}" ${cur === d.id ? 'aria-current="page"' : ''} aria-label="Room ${d.room}, ${esc(d.name)}${g ? ', ' + esc(goneText(P)) + ', follow up' : ''}${late ? `, ${late} overdue` : due ? `, ${due} due` : ''}${light ? ', needs attention' : ''}"><span class="ps-top">${pn ? `<span class="ps-n" title="Your priority">${pn}</span>` : ''}<b>${d.room}</b>${P.read && !g ? `<i class="dot st-${P.read.st}" aria-hidden="true"></i>` : ''}${late ? `<em class="late">${late}</em>` : due ? `<em>${due}</em>` : ''}${tk ? `<span class="ps-tick" aria-hidden="true">✓</span>` : ''}</span><small>${esc(d.short)}</small><small class="ps-dx">${g ? esc(awayShort(P)) : esc(d.dx)}</small></button>`;
+        return `<button class="ps ${cur === d.id ? 'on' : ''} ${light ? 'alert' : ''} ${g ? 'gone' : ''} ${tk ? 'ticked' : ''}" data-act="${g ? 'away' : cur === d.id ? 'here' : 'goto'}" data-pid="${d.id}" ${cur === d.id ? 'aria-current="page"' : ''} aria-label="Room ${d.room}, ${esc(d.name)}${g ? ', ' + esc(goneText(P)) + ', follow up' : ''}${late ? `, ${late} overdue` : due ? `, ${due} due` : ''}${light ? ', needs attention' : ''}"><span class="ps-top">${pn ? `<span class="ps-n" title="Your priority">${pn}</span>` : ''}<b>${d.room}</b>${P.read && !g ? `<i class="dot st-${P.read.st}" aria-hidden="true"></i>` : ''}${late ? `<em class="late">${late}</em>` : due ? `<em>${due}</em>` : ''}${tk ? `<span class="ps-tick" aria-hidden="true">✓</span>` : ''}</span><small>${esc(d.short)}</small><small class="ps-dx">${g ? esc(awayShort(P)) : esc(liveDef(d).dx)}</small></button>`;
       }).join('')}</div></div></nav>`;
   }
   function dueGroups(due) {
@@ -590,7 +599,7 @@
     const status = top ? `<div class="cmd-st busy ${lateN >= 3 ? 'behind' : ''}"><span class="cmd-n" aria-hidden="true">${now.length === 1 ? 1 : rooms}</span><div><b>${head}</b>${tail}<button class="cmd-go" data-act="${top.rp ? 'report' : top.away ? 'away' : 'goto'}" data-pid="${top.pid}">${top.late && !top.blocked ? '<em>Overdue</em> ' : ''}${esc(rowLabel(top))} <span aria-hidden="true">›</span></button></div></div>`
       : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
     const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
-    const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip">${ICON.ff}<span><b>Skip ahead</b><small>${nx ? `${E.clock(nx.t)} ${esc(nx.text)}` : 'Until something happens'}</small></span></button>`;
+    const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip" title="Moves the clock forward. It stops the moment a message, task or patient needs you.">${ICON.ff}<span><b>Skip ahead in time</b><small>${nx ? `Fast-forward to ${E.clock(nx.t)}: ${esc(nx.text)}` : 'Fast-forward up to 30 min; stops if anything needs you'}</small></span></button>`;
     return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
   }
   /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
@@ -647,8 +656,8 @@
           <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="min-height:36px;font-size:.85rem">Change order</button>` : ''}</div>
           ${prioList().map(def).map((d) => { const P = s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'away' : 'goto'}" data-pid="${d.id}">
             <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
-            <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(d.dx)}</div><div class="why">Here for ${esc(d.reason.charAt(0).toLowerCase() + d.reason.slice(1))}</div>
-            <div class="facts">${legal(d)}${/^Full code/.test(d.code) ? '' : `<span class="chip alert">${esc(d.code.split(',')[0])}</span>`}${/No known/.test(d.allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null && !gone(P) ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${v && !gone(P) ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
+            <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(liveDef(d).dx)}</div><div class="why">Here for ${esc(d.reason.charAt(0).toLowerCase() + d.reason.slice(1))}</div>
+            <div class="facts">${legal(d)}${/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`}${/No known/.test(liveDef(d).allergies) ? '' : `<span class="chip alert">Allergy</span>`}<span class="chip ${P.seenAt === null && !gone(P) ? 'warn' : ''}">${gone(P) ? esc(goneText(P)) : lastSeen(P)}</span>${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${v && !gone(P) ? `<span class="chip">Last vitals ${E.clock(v.t)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
             <div class="go">${gone(P) ? (() => { const n = F.awayRows(s, A(), d, P).filter((r) => !r.done).length; return `<button class="btn ${n ? 'btn-primary' : ''}" data-act="away" data-pid="${d.id}">Follow up${n ? ` (${n})` : ''}</button>`; })() : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
           </div>`; }).join('')}
           ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} ${esc(admWord(d))}</div><div class="dx">From ${esc(fromOf(d))}, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
@@ -658,7 +667,7 @@
         <aside class="side">
           ${phone(8)}
           <div class="tools">
-            ${(() => { const n = aideSuggest().length; return `<button class="btn ${n ? 'has-sug' : ''}" data-act="delegate"><b>Ask ${esc(cna().name)}</b><small>${n ? `${n} thing${n === 1 ? '' : 's'} ${esc(cna().name)} can take now` : `Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}`}</small></button>`; })()}
+            ${(() => { const n = aideSuggest().length; return `<button class="btn ${n ? 'has-sug' : ''}" data-act="delegate"><b>${cnaAway() ? esc(cna().name) : `Ask ${esc(cna().name)}`}</b><small>${cnaAway() ? esc(cnaAway()) : n ? `${n} thing${n === 1 ? '' : 's'} ${esc(cna().name)} can take now` : `Delegate to the ${esc(/^[A-Z]{2,}/.test(cna().role) ? cna().role : cna().role.toLowerCase())}`}</small></button>`; })()}
             <button class="btn" data-act="callpick"><b>Call ${esc(prov().name)}</b><small>SBAR, 6 min</small></button>
             ${s.t >= C().length - 60 ? (() => { const L = pts().filter((x) => !gone(s.p[x.id])), n = L.filter((x) => s.report && s.report[x.id]).length; if (!L.length) return ''; return `<button class="btn ${n < L.length ? 'btn-primary' : ''}" data-act="report" style="grid-column:1/-1"><b>${n < L.length ? `Give report to ${esc(oncoming().name)}` : `Report given to ${esc(oncoming().name)}`}</b><small>${n} of ${L.length} patients · 2 min each</small></button>`; })() : ''}
             ${s.t >= C().length - 30 ? `<button class="btn ${pts().filter((x) => !gone(s.p[x.id])).every((x) => s.report && s.report[x.id]) ? 'btn-primary' : ''}" data-act="endask" style="grid-column:1/-1"><b>End shift</b><small>Handoff at ${E.clock(C().length)}</small></button>` : ''}
@@ -749,6 +758,8 @@
     const n = Date.now();
     return `<div class="b-grp ghosts"><h4>Just completed<span>${gs.length}</span></h4><ul>${gs.map((g) => `<li class="ghost" style="--gd:-${n - g.born}ms"><div class="b-row gdone"><span class="b-tm">${E.clock(s.t)}</span><span class="b-tx"><b>${pid === null ? esc(g.pid) + ' · ' : ''}${esc(g.text)}</b><small>Done${g.by ? ' by ' + esc(g.by) : ''}</small></span><span class="gcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg></span><span></span></div></li>`).join('')}</ul></div>`;
   }
+  // Systems documented this shift, counted the same way everywhere: each body system, plus vitals you took yourself.
+  const sysCount = (P) => Object.keys(P.assessAt || {}).length + (P.vit.some((v) => v.by === 'You') ? 1 : 0);
   function brainRows(d, P) {
     if (RC && RC.has(d.id)) return RC.get(d.id);
     const out = brainRows0(d, P); if (RC) RC.set(d.id, out); return out;
@@ -756,11 +767,14 @@
   function brainRows0(d, P) {
     const rows = [];
     // Shift assessment: every patient needs one, early.
-    const sysDone = Object.keys(P.assessAt || {}).length + (P.vit.some((v) => v.by === 'You') ? 1 : 0);
+    const sysDone = sysCount(P);
     rows.push({ key: 'sa', t: 0, late: s.t > 90 && sysDone < 3, done: sysDone >= 3, sys: 'full', text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
+    const off = gone(P);   // transferred: their scheduled work went with them
+    if (off) rows.pop();
     (d.meds || []).forEach((m) => {
       const st = s.meds[m.id];
       if (m.available && !m.available(s, P)) return;
+      if (off && st.status !== 'given' && st.status !== 'held') return;
       if (m.later) { rows.push({ t: null, later: m.later, text: `${m.name} ${m.dose} ${m.route}`, sub: `Due at ${m.later}` }); return; }
       if (m.due === undefined || m.prn) return;
       if (st.status === 'given' || st.status === 'held') rows.push({ key: 'm:' + m.id, t: st.at, done: true, text: `${m.name} ${m.dose} ${m.route}`, sub: `${st.status === 'given' ? 'Given' : 'Held'} ${E.clock(st.at)}` });
@@ -768,6 +782,16 @@
       else rows.push({ key: 'm:' + m.id, t: m.due, late: s.t > m.due + 60, text: `${m.name} ${m.dose} ${m.route}`, sub: st.status === 'verify' ? 'Awaiting pharmacy: it can\'t be given until it\'s released' : m.freq, blocked: st.status === 'verify', go: { act: 'med', id: m.id } });
     });
     if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{2,3}(?=\s)/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{2,3}\s*/, ''); if (x.info) { rows.push({ key: 'x:' + tx, t: x.t, late: false, info: true, text: tx, sub: 'Heads-up: nothing to do yet' }); return; } const tab = x.tab || (x.sys ? 'assess' : paneFor(d, P, tx)); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, sys: x.sys, hl: x.hl, go: tab ? { act: 'dock', id: tab } : null }); });
+    // Anything a provider ordered that the nurse carries out ("Draw blood cultures × 2 (ordered)") is a task, not just a button.
+    if (!off) {
+      const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), have = rows.map((r) => norm(r.text || '')), Ax = A();
+      const ordT = (P.orders || []).filter((o) => o.isNew).reduce((m, o) => Math.max(m, o.t), -Infinity);
+      (d.interventions || []).filter((x) => /\(ordered\)$/.test(x.label) && (!x.avail || x.avail(s, P, Ax))).forEach((x) => {
+        const tx = x.label.replace(/\s*\(ordered\)$/, ''), n = norm(tx); if (have.some((h) => h === n || h.startsWith(n.slice(0, 14)) || n.startsWith(h.slice(0, 14)))) return;
+        const t = Number.isFinite(ordT) ? Math.max(0, ordT) : 0;
+        rows.push({ key: 'o:' + x.id, t, late: s.t > t + (x.urgent ? 10 : 30), text: tx, sub: 'Ordered: yours to do', hl: x.label, go: { act: 'dock', id: 'care' } });
+      });
+    }
     s.deleg.filter((x) => !x.done && x.pid === d.id).forEach((x) => rows.push({ key: 'd:' + x.id + ':' + x.at, at: x.at, t: x.due, prog: true, text: `${cna().name}: ${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()}`, sub: `In progress, back about ${E.clock(x.due)}` }));
     return rows.concat(flowRows(d, P));
   }
@@ -792,15 +816,15 @@
     const later = rows.filter((r) => r.t === null), prog = rows.filter((r) => r.prog);
     const doneLog = s.log.filter((l) => l.pid === d.id && (l.kind === 'find' || l.kind === 'act') && !/^You: "/.test(l.text)).slice().reverse();
     const shown = ui.brainAll ? doneLog : doneLog.slice(0, 5);
-    const row = (r, cls) => { const inner = `${cls === 'prog' ? `<span class="b-prog" aria-hidden="true"><i style="width:${Math.min(100, Math.max(4, (s.t - r.at) / Math.max(1, r.t - r.at) * 100)).toFixed(0)}%"></i></span>` : ''}<span class="b-tm">${r.t === null ? esc(r.later) : E.clock(Math.max(r.t, 0))}</span><span class="b-tx"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="b-st">${cls === 'over' ? 'Overdue' : cls === 'now' ? 'Due' : cls === 'soon' ? 'Upcoming' : cls === 'prog' ? 'In progress' : cls === 'later' ? 'Later' : ''}</span>${r.go ? '<span class="b-go" aria-hidden="true">›</span>' : '<span></span>'}`;
+    const row = (r, cls) => { const inner = `${cls === 'prog' ? `<span class="b-prog" aria-hidden="true"><i style="width:${Math.min(100, Math.max(4, (s.t - r.at) / Math.max(1, r.t - r.at) * 100)).toFixed(0)}%"></i></span>` : ''}<span class="b-tm">${r.t === null ? esc(r.later) : E.clock(Math.max(r.t, 0))}</span><span class="b-tx"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="b-st">${cls === 'over' ? 'Overdue' : cls === 'now' ? (r.t > s.t ? `In ${Math.round(r.t - s.t)} min` : 'Due') : cls === 'soon' ? 'Upcoming' : cls === 'prog' ? 'In progress' : cls === 'later' ? 'Later' : ''}</span>${r.go ? '<span class="b-go" aria-hidden="true">›</span>' : '<span></span>'}`;
       return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}"${r.go.act === 'dock' ? ` data-hl="${esc(r.hl || r.text)}"${r.sys ? ` data-sys="${esc(r.sys)}"` : ''}` : ''}>${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
     const grp = (title, list, cls) => (list.length ? `<div class="b-grp ${cls}"><h4>${title}<span>${list.length}</span></h4><ul>${list.map((r) => row(r, cls)).join('')}</ul></div>` : '');
     const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).map((k) => d.report[+k.split(':')[1]].text);
     let h = ghostList(d.id);
     if (!over.length && !now.length) h += '<p class="b-clear">Nothing overdue or due right now for this patient.</p>';
-    h += grp('Overdue', over, 'over') + grp('Due now', now, 'now') + grp('In progress', prog, 'prog') + grp('Coming up', soon, 'soon') + grp('Later today', later, 'later');
+    h += grp('Overdue', over, 'over') + grp(now.some((r) => r.t > s.t) ? 'Due now or in the next 30 min' : 'Due now', now, 'now') + grp('In progress', prog, 'prog') + grp('Coming up', soon, 'soon') + grp('Later today', later, 'later');
     if (flags.length) h += `<div class="b-grp flags"><h4>From report<span>${flags.length}</span></h4><ul>${flags.map((f) => `<li><div class="b-flag"><i class="flag-ic on" aria-hidden="true"></i><span>${esc(f)}</span></div></li>`).join('')}</ul></div>`;
-    h += `<div class="b-grp done"><h4>Done this shift<span>${doneLog.length}</span></h4>${doneLog.length ? `<ul>${shown.map((l) => `<li><div class="b-row done static"><span class="b-tm">${E.clock(l.t)}</span><span class="b-tx"><b>${esc(l.label || l.text.split(/[.:]/)[0].slice(0, 70))}</b>${l.label ? `<small>${esc(l.text.slice(0, 110))}${l.text.length > 110 ? '…' : ''}</small>` : ''}</span><span class="b-st">${ICON.tick}</span><span></span></div></li>`).join('')}</ul>${doneLog.length > 5 ? `<button class="btn btn-quiet b-more" data-act="brain-all">${ui.brainAll ? 'Show fewer' : `Show all ${doneLog.length}`}</button>` : ''}` : '<p class="b-empty">Nothing yet. Start with what you see.</p>'}</div>`;
+    h += `<div class="b-grp done"><h4>Done this shift<span>${doneLog.length}</span></h4>${doneLog.length ? `<ul>${shown.map((l) => `<li><div class="b-row done static"><span class="b-tm">${E.clock(l.t)}</span><span class="b-tx"><b>${esc(l.label || clip(l.text.split(/[.:](?=\s|$)/)[0], 70))}</b>${l.label ? `<small>${esc(clip(l.text, 110))}</small>` : ''}</span><span class="b-st">${ICON.tick}</span><span></span></div></li>`).join('')}</ul>${doneLog.length > 5 ? `<button class="btn btn-quiet b-more" data-act="brain-all">${ui.brainAll ? 'Show fewer' : `Show all ${doneLog.length}`}</button>` : ''}` : '<p class="b-empty">Nothing yet. Start with what you see.</p>'}</div>`;
     return h;
   }
   const stamped = (label) => !!(ui.stampRow && ui.stampRow.label === label && Date.now() - ui.stampRow.born < 2200);
@@ -809,7 +833,7 @@
     return `<ul class="fs">${SYS.map(([id, label, c]) => {
       const L = sysL(id, label), at = id === 'vitals' ? (P.vit.filter((v) => v.by === 'You').pop() || {}).t : id === 'full' ? null : P.assessAt[id];
       const lf = id === 'full' ? null : lastFind(d.id, id === 'vitals' ? 'Vital signs' : L);
-      return `<li><button class="fs-row ${at !== undefined && at !== null ? 'has' : ''} ${stamped(L) ? 'stamped' : ''}" style="${stamped(L) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="assess" data-sys="${id}"><span class="fs-l"><b>${esc(L)}</b>${lf ? `<small>${esc(lf.text.slice(0, 120))}${lf.text.length > 120 ? '…' : ''}</small>` : `<small>${id === 'full' ? 'Every system, one after another' : 'Not documented this shift'}</small>`}</span><span class="fs-t">${at !== undefined && at !== null ? `${ICON.tick}${E.clock(at)}` : ''}</span><span class="fs-c">${c} min</span></button></li>`;
+      return `<li><button class="fs-row ${at !== undefined && at !== null ? 'has' : ''} ${stamped(L) ? 'stamped' : ''}" style="${stamped(L) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="assess" data-sys="${id}"><span class="fs-l"><b>${esc(L)}</b>${lf ? `<small>${esc(clip(lf.text, 120))}</small>` : `<small>${id === 'full' ? 'Every system, one after another' : 'Not documented this shift'}</small>`}</span><span class="fs-t">${at !== undefined && at !== null ? `${ICON.tick}${E.clock(at)}` : ''}</span><span class="fs-c">${c} min</span></button></li>`;
     }).join('')}</ul>`;
   }
   const RISKY = /restrain|seclu|stop the (insulin|pca)|stop the infusion|straight cath|massage|search his room|1:1|pause the insulin|release/i;
@@ -818,7 +842,7 @@
     const Ax = A(), list = (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)), rd = ROUND[F.kindOf(C())], last = F.roundRow(s, Ax, d, P);
     const top = `${P.bell ? `<li><button class="fs-row urgent" data-act="bell" data-id="${d.id}"><span class="fs-l"><b>Answer the call light</b><small>${esc(P.bell.who)} ${F.kindOf(C()) === 'psych' ? 'is asking ' : ''}${esc(P.bell.text)} · since ${E.clock(P.bell.at)}</small></span><span class="fs-t"></span><span class="fs-c">2 min</span></button></li>` : ''}<li><button class="fs-row ${last && last.late ? 'due' : ''} ${stamped(rd[0]) ? 'stamped' : ''}" style="${stamped(rd[0]) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="round" data-id="${d.id}"><span class="fs-l"><b>${rd[0]}</b><small>${rd[1]}${P.roundAt !== undefined ? ` · last ${E.clock(P.roundAt)}` : ''}</small></span><span class="fs-t">${P.roundAt !== undefined ? `${ICON.tick}${E.clock(P.roundAt)}` : ''}</span><span class="fs-c">2 min</span></button></li>`;
     if (!list.length) return `<ul class="fs">${top}</ul>`;
-    return `<ul class="fs">${top}${list.map((x) => { const lf = lastFind(d.id, x.label), risky = RISKY.test(x.label + ' ' + x.id); return `<li><button ${risky ? 'data-hold="1"' : ''} class="${risky ? 'holdbtn ' : ''}fs-row ${x.urgent || /juice|d50|brady/.test(x.id) ? 'urgent' : ''} ${lf ? 'has' : ''} ${stamped(x.label) ? 'stamped' : ''}" style="${stamped(x.label) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="int" data-id="${x.id}"> ${risky ? '<i class="hold-fill" aria-hidden="true"></i>' : ''}<span class="fs-l"><b>${esc(x.label)}</b>${risky ? '<small class="hold-note">Press and hold to commit</small>' : ''}${lf ? `<small>Last: ${esc(lf.text.slice(0, 100))}${lf.text.length > 100 ? '…' : ''}</small>` : ''}</span><span class="fs-t">${lf ? `${ICON.tick}${E.clock(lf.t)}` : ''}</span><span class="fs-c">${x.cost} min</span></button></li>`; }).join('')}</ul>`;
+    return `<ul class="fs">${top}${list.map((x) => { const lf = lastFind(d.id, x.label), risky = RISKY.test(x.label + ' ' + x.id); return `<li><button ${risky ? `data-hold="1" data-hk="int:${x.id}"` : ''} class="${risky ? 'holdbtn ' : ''}fs-row ${x.urgent || /juice|d50|brady/.test(x.id) ? 'urgent' : ''} ${lf ? 'has' : ''} ${stamped(x.label) ? 'stamped' : ''}" style="${stamped(x.label) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="int" data-id="${x.id}"> ${risky ? '<i class="hold-fill" aria-hidden="true"></i>' : ''}<span class="fs-l"><b>${esc(x.label)}</b>${risky ? '<small class="hold-note">Press and hold, or tap twice, to commit</small>' : ''}${lf ? `<small>Last: ${esc(clip(lf.text, 100))}</small>` : ''}</span><span class="fs-t">${lf ? `${ICON.tick}${E.clock(lf.t)}` : ''}</span><span class="fs-c">${x.cost} min</span></button></li>`; }).join('')}</ul>`;
   }
   function paneMeds(d, P) {
     const meds = (d.meds || []).filter((m) => !m.available || m.available(s, P));
@@ -848,12 +872,12 @@
   function railCounts(d, P) {
     const rows = brainRows(d, P).filter((r) => !r.done && !r.prog && r.t !== null);
     const late = rows.filter((r) => r.late).length, due = rows.filter((r) => !r.late && r.t <= s.t + 30).length;
-    const meds = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && !m.later && s.meds[m.id].status === 'due' && m.initStatus !== 'given');
+    const meds = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && !m.later && s.meds[m.id].status === 'due' && m.initStatus !== 'given' && (!m.available || m.available(s, P)));
     const medLate = meds.filter((m) => s.t > m.due + 60).length, medDue = meds.filter((m) => m.due <= s.t + 30).length;
     const Ax = A(), ints = (d.interventions || []).filter((x) => !x.avail || x.avail(s, P, Ax)).length;
     return {
       brain: late ? [`${late} overdue`, 'late'] : due ? [`${due} due`, 'due'] : ['Up to date', ''],
-      assess: [Object.keys(P.assessAt || {}).length ? `${Object.keys(P.assessAt).length} documented` : 'Start here', Object.keys(P.assessAt || {}).length ? '' : 'due'],
+      assess: [sysCount(P) ? `${sysCount(P)} documented` : 'Start here', sysCount(P) ? '' : 'due'],
       care: P.bell ? ['Call light on', 'late'] : [`${ints + 1} option${ints === 0 ? '' : 's'}`, ''],
       meds: medLate ? [`${medLate} late`, 'late'] : medDue ? [`${medDue} due`, 'due'] : ['Nothing due', ''],
       talk: STY && STY.waiting(s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Patient, family, provider', ''],
@@ -879,6 +903,7 @@
     const node = C().dialogs[ui.dlg.id]; if (!node) return null;
     return { who: node.who, text: typeof node.text === 'function' ? node.text(s) : node.text, story: node.story || null };
   }
+  function sayNow(d) { const l = R.say(d.id, rigV(d.id)), q = liveDef(d).quiet; return l && l.quiet && q ? { quiet: true, text: q } : l; }
   function speech(d, P, fl) {
     const Ax = A();
     if (ui.ov === 'dialog' && ui.dlg) {
@@ -891,11 +916,11 @@
     }
     if (fl.empty || gone(P)) return '';
     const cid = d.talk(s, P, Ax), node = cid && C().dialogs[cid];
-    const line = ui.captionPoke && ui.caption ? { text: ui.captionRaw, quiet: ui.captionQuiet } : R.say(d.id, rigV(d.id));
+    const line = ui.captionPoke && ui.caption ? { text: ui.captionRaw, quiet: ui.captionQuiet } : sayNow(d);
     let h = '';
     if (cid || line) {
       const story = !!(STY && STY.waiting(s, C(), d, P, Ax)), fresh = !!(node && node.choices && !(s.seenDlg || {})[cid]);
-      const wants = cid && (story || fresh), label = wants && !d.newborn && !d.vented ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
+      const wants = cid && (story || fresh), label = wants && !d.newborn && !liveDef(d).vented ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
       h += `<div class="sb idle ${wants ? 'wants' : ''} ${ui.captionPoke ? 'fresh' : ''}" data-anchor="pt">${line ? `<p class="sb-tx">${speechHTML(line.text, !line.quiet)}</p>` : ''}${cid ? `<button class="sb-go" data-act="talk">${wants ? '<i class="ping" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span><small>3 min</small></button>` : ''}<i class="sb-tail" aria-hidden="true"></i></div>`;
     }
     if (d.family && fl.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<div class="sb idle fam" data-anchor="fam"><button class="sb-go" data-act="family"><span>Talk with ${esc(d.family.name)}</span><small>${d.family.cost} min</small></button><i class="sb-tail" aria-hidden="true"></i></div>`;
@@ -971,8 +996,8 @@
       <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''} ${talking ? 'talking' : ''}">
         ${sceneSvg}
         ${speech(d, P, fl)}
-        <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(d.dx)}</div>
-          <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(d.code)}</span><span class="chip ${/No known/.test(d.allergies) ? '' : 'alert'}">${esc(d.allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
+        <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(liveDef(d).dx)}</div>
+          <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(liveDef(d).code)}</span><span class="chip ${/No known/.test(liveDef(d).allergies) ? '' : 'alert'}">${esc(liveDef(d).allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
           <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
         ${ui.caption && !ui.captionPoke && !talking ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
       </div>
@@ -988,7 +1013,7 @@
           <div class="pane-b">${receiptHTML(d)}${body}</div>
         </section>
         <aside class="doc" aria-label="Vitals and documentation">
-          <div class="vstrip tap" aria-label="Last recorded vitals. Open the vitals flowsheet." data-act="chart" data-pid="${d.id}" data-tab="vitals" role="button" tabindex="0">
+          <div class="vstrip tap" aria-label="Last recorded vitals, ${E.clock(v.t)}: temperature ${fT(v.T)}, heart rate ${v.HR}, blood pressure ${v.SBP} over ${v.DBP}, respiratory rate ${v.RR}, SpO₂ ${v.SpO2}%${bg ? `, glucose ${bg.val}` : ''}. Open the vitals flowsheet." data-act="chart" data-pid="${d.id}" data-tab="vitals" role="button" tabindex="0">
             <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${fT(v.T)}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}"><span>SpO₂</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
           </div>
           <div class="vcap">Recorded ${E.clock(v.t)} by ${esc(v.by)}${s.t - v.t > 60 ? ', <b>over an hour ago</b>' : ''}</div>
@@ -1018,7 +1043,7 @@
   /* ------------ consequence card ------------ */
   function vitDelta(r, d) {
     const V = r.vNew, Vp = r.vPrev;
-    const dlt = (k, lab, fmt, hi, lo) => { const a = V[k], b = Vp ? Vp[k] : null; const diff = b === null || b === undefined ? 0 : a - b; const ab = a > hi || a < lo; return `<div class="${ab ? 'ab' : ''}"><span>${lab}</span><b>${fmt(a)}</b>${diff ? `<em class="${diff > 0 ? 'up' : 'dn'}">${diff > 0 ? '▲' : '▼'} ${fmt(Math.abs(diff))}</em>` : Vp ? '<em>no change</em>' : ''}</div>`; };
+    const dlt = (k, lab, fmt, hi, lo) => { const a = V[k], b = Vp ? Vp[k] : null; const diff = b === null || b === undefined ? 0 : a - b; const ab = a > hi || a < lo; return `<div class="${ab ? 'ab' : ''}"><span>${lab}</span><b>${fmt(a)}</b>${diff ? `<em class="${diff > 0 ? 'up' : 'dn'}" aria-label="${diff > 0 ? 'up' : 'down'} from ${fmt(b)}">${diff > 0 ? '▲' : '▼'} ${fmt(Math.abs(diff))} <small>from ${fmt(b)}</small></em>` : Vp ? `<em>same as before</em>` : ''}</div>`; };
     return V ? `<div class="res-vit">${dlt('T', 'Temp', (x) => (+x).toFixed(1), norm(d, 'T')[1], norm(d, 'T')[0])}${dlt('HR', 'HR', (x) => Math.round(x), norm(d, 'HR')[1], norm(d, 'HR')[0])}${dlt('SBP', 'Systolic', (x) => Math.round(x), norm(d, 'SBP')[1], norm(d, 'SBP')[0])}${dlt('RR', 'RR', (x) => Math.round(x), norm(d, 'RR')[1], norm(d, 'RR')[0])}${dlt('SpO2', 'SpO₂', (x) => Math.round(x) + '%', 101, norm(d, 'SpO2')[0] - 1)}</div>${Vp ? `<p class="res-since">Compared with ${E.clock(Vp.t)} (${esc(Vp.by)})</p>` : ''}` : '';
   }
   function ovResult() {
@@ -1665,7 +1690,7 @@
     const pid = ui.chart.pid, tab = ui.chart.tab, d = def(pid), P = s.p[pid];
     const tabs = [['overview', 'Overview'], ['vitals', 'Vitals'], ['labs', 'Labs'], ['orders', 'Orders'], ['mar', 'MAR'], ['notes', 'Notes'], ['io', 'Intake/output']];
     let b = '';
-    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(d.dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd>${/^(no known|nkda|none)/i.test(d.allergies || "") ? esc(d.allergies) : `<b style="color:var(--red)">${esc(d.allergies)}</b>`}</dd><dt>Code status</dt><dd>${esc(d.code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${d.lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
+    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(liveDef(d).dx)}</dd><dt>History</dt><dd>${d.hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd>${/^(no known|nkda|none)/i.test(liveDef(d).allergies || "") ? esc(liveDef(d).allergies) : `<b style="color:var(--red)">${esc(liveDef(d).allergies)}</b>`}</dd><dt>Code status</dt><dd>${esc(liveDef(d).code)}</dd><dt>Weight</dt><dd>${esc(d.weight)}</dd><dt>Lines and devices</dt><dd>${liveDef(d).lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
     if (tab === 'vitals') {
       const ab = (k, v) => abn(d, k, v);
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
@@ -1682,7 +1707,7 @@
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${n.t < -600 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
     return `<div class="scrim" data-act="close" data-scrim="1" style="padding:0;justify-content:flex-end"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Chart for ${esc(d.name)}">
-      <div class="chart-h"><div class="who"><b>${esc(ehrName(d.name))}</b> <span>${ageSex(d)}, Rm ${d.room}, MRN ${mrn(d)}</span><span class="ehr-tags"><span class="ehr-tag ${/No known/.test(d.allergies) ? '' : 'al'}">${/No known/.test(d.allergies) ? 'NKDA' : 'ALLERGY: ' + esc(d.allergies.split(',')[0].split('(')[0].trim())}</span><span class="ehr-tag ${/^Full code/.test(d.code) ? '' : 'cd'}">${esc(d.code.split(',')[0])}</span><span class="ehr-tag">Wt ${esc(String(d.weight).split(' (')[0])}</span></span></div>
+      <div class="chart-h"><div class="who"><b>${esc(ehrName(d.name))}</b> <span>${ageSex(d)}, Rm ${d.room}, MRN ${mrn(d)}</span><span class="ehr-tags"><span class="ehr-tag ${/No known/.test(liveDef(d).allergies) ? '' : 'al'}">${/No known/.test(liveDef(d).allergies) ? 'NKDA' : 'ALLERGY: ' + esc(liveDef(d).allergies.split(',')[0].split('(')[0].trim())}</span><span class="ehr-tag ${/^Full code/.test(liveDef(d).code) ? '' : 'cd'}">${esc(liveDef(d).code.split(',')[0])}</span><span class="ehr-tag">Wt ${esc(String(d.weight).split(' (')[0])}</span></span></div>
       <div class="seg" role="group" aria-label="Switch patient">${pts().map((p) => `<button data-act="chart" data-pid="${p.id}" data-tab="${tab}" aria-pressed="${p.id === pid}">${p.room}</button>`).join('')}</div>
       <button class="btn" data-act="close">${ICON.close}Close chart</button></div>
       <div class="chart-tabs" role="tablist">${tabs.map(([id, l]) => `<button role="tab" data-act="chart" data-pid="${pid}" data-tab="${id}" aria-selected="${tab === id}">${l}</button>`).join('')}</div>
@@ -1698,7 +1723,7 @@
     const verify = st.status === 'verify';
     const refuse = !done && !block && !verify && m.refuse ? m.refuse(s, P, Ax) : null;
     let body = `<div class="order"><b>${esc(m.name)} ${esc(m.dose)} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
-      <p class="muted" style="margin:.2rem 0">Allergies: ${esc(d.allergies)}</p>
+      <p class="muted" style="margin:.2rem 0">Allergies: ${esc(liveDef(d).allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
     if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => { const x = (def(s.loc).interventions || []).find((i) => i.id === p), lab = PREP[p] || (x ? [x.label, x.cost] : null); return lab ? `<button class="btn" data-act="prep" data-p="${p}">${esc(lab[0])} <span class="muted">${lab[1]} min</span></button>` : ''; }).join('')}</div>`;
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
@@ -1714,7 +1739,8 @@
       else {
         if (!m.prn) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
         if (refuse) foot += `<button class="btn btn-primary" data-act="med-declined">Offer again later <span style="font-weight:400;opacity:.8">2 min</span></button>`;
-        else foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${m.infusion ? 'Hold to set the pump' : `Hold to give${m.doses && ui.med.dose ? ' ' + ui.med.dose + ' mg' : ''}`}</span> <span style="font-weight:400;opacity:.8">${P.medPassAt !== undefined && s.t - P.medPassAt <= 6 ? '2 min, same med pass' : '5 min'}</span></button>`;
+        else { const dl = m.doses && ui.med.dose != null ? m.doses.find((x) => x.id == ui.med.dose) : null, dshort = dl ? dl.label.split(/ \(|: /)[0] : '', what = m.infusion ? (dshort ? `Set the pump: ${dshort}` : 'Set the pump') : `Give ${esc(m.name)}${dshort ? ' ' + dshort : ''}`;
+          foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" data-hk="med-give:${m.id}" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${esc(what)}<small class="hold-how">Press and hold, or tap twice</small></span> <span style="font-weight:400;opacity:.8">${P.medPassAt !== undefined && s.t - P.medPassAt <= 6 ? '2 min, same med pass' : '5 min'}</span></button>`; }
       }
     }
     return sheet(esc(m.name), body, foot, { label: 'Medication ' + m.name });
@@ -1757,16 +1783,16 @@
     const items = d.sbar.items(s, P, Ax);
     const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(s, s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
     const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
-      <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(d.dx)}. ${esc(d.hx[0])}. ${esc(d.code)}.</p></div>
-      ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)); if (!es.length && !gv.length) return '';
+      <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(liveDef(d).dx)}. ${esc(d.hx[0])}. ${esc(liveDef(d).code)}.</p></div>
+      ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)), hv = (d.meds || []).filter((m) => s.meds[m.id] && s.meds[m.id].status === 'held' && s.meds[m.id].at !== null); if (!es.length && !gv.length && !hv.length) return '';
         const box = (id, label) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="${id}" ${ui.sbar.picked.includes(id) ? 'checked' : ''}><span>${esc(label)}</span></label>`;
-        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}</details>`; })()}
+        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx|hd):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}${hv.map((m) => box(`hd:${m.id}`, `I held the ${m.name.charAt(0).toLowerCase() + m.name.slice(1)} due at ${E.clock(m.due !== undefined ? m.due : s.meds[m.id].at)} (held ${E.clock(s.meds[m.id].at)}). I'm not sure that was right.`)).join('')}</details>`; })()}
       ${(() => { const dn = doneFor(pid, items); return dn.length ? `<fieldset class="sbar-sec sbar-did" style="border:0;padding:0"><legend><h3><i>✓</i>What you've already done</h3></legend><p class="muted" style="margin:.2rem 0 .4rem">Tell the provider what's in place so the plan builds on it.</p>${dn.map((l) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="did:${l.id}" ${ui.sbar.picked.includes('did:' + l.id) ? 'checked' : ''}><span><span class="did-t">${E.clock(l.t)}</span>${esc(didText(l))}</span></label>`).join('')}</fieldset>` : ''; })()}
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
         ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
-    const errOnly = ui.sbar.picked.length && ui.sbar.picked.every((x) => /^(err|rx):/.test(x));
+    const errOnly = ui.sbar.picked.length && ui.sbar.picked.every((x) => /^(err|rx|hd):/.test(x));
     return sheet(`SBAR: ${esc(d.short)}`, body, `<button class="btn btn-primary" data-act="sbar-send" ${(ui.sbar.req || errOnly) && ui.sbar.picked.length ? '' : `disabled data-why="${ui.sbar.picked.length ? 'Choose a recommendation first.' : 'Pick at least one finding to report.'}"`}>Call ${esc(prov().name)} <span style="font-weight:400;opacity:.8">6 min</span></button>`, { face: face(provKey(pid)), wide: true });
   }
 
@@ -1869,7 +1895,7 @@
     const _d = d, P = s.p[r.pid], done = s.report && s.report[r.pid];
     const tabs = `<div class="seg rep-tabs" role="group" aria-label="Patient">${list.map((x) => `<button data-act="rep-go" data-pid="${x.id}" aria-pressed="${x.id === r.pid}">${s.report && s.report[x.id] ? '✓ ' : ''}${x.room}</button>`).join('')}</div>`;
     let body = `<p class="muted" style="margin-top:0">${esc(on.name)} is taking your patients. For each one, pick what ${esc(on.name)} needs to hear. Unfinished work is fine to hand off; unmentioned work isn't.</p>${tabs}
-      <div class="rep-who">${pface(d.id)}<div><b>${d.room} ${esc(d.name)}</b> <small class="muted">${ageSex(d)}</small><br><span class="muted">${esc(d.dx)}</span></div></div>`;
+      <div class="rep-who">${pface(d.id)}<div><b>${d.room} ${esc(d.name)}</b> <small class="muted">${ageSex(d)}</small><br><span class="muted">${esc(liveDef(d).dx)}</span></div></div>`;
     if (r.reply && r.replyPid === r.pid) body += `<div class="reply">${face(F.oncoming(C()))}<p class="voice" style="margin:0">${esc(r.reply)}</p></div>${reviewHTML(r.review, 'Your report, reviewed')}`;
     else if (done) body += `<div class="warnbox">Report given at ${E.clock(done.t)}.</div>`;
     else body += `<fieldset class="sbar-sec" style="border:0;padding:0"><legend class="sr">What goes in report</legend>${reportItems(d, P).map((it) => `<label class="opt"><input type="checkbox" data-act="rep-pick" data-id="${it.id}" ${r.picked.includes(it.id) ? 'checked' : ''}><span>${esc(it.label)}</span></label>`).join('')}</fieldset>`;
@@ -1912,7 +1938,7 @@
     const done = ui.rankDone;
     const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Drag them into order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
       ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p><p class="rank-how">Drag a card by its handle to move it. You can also use the arrows.</p>'}
-      <ol class="rank ${done ? 'done' : ''}" data-sort="rank" aria-describedby="rank-live">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" data-key="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}">${done ? '' : `<span class="grip" aria-hidden="true" title="Drag to reorder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`}<span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(d.dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol><p class="sr" id="rank-live" aria-live="polite"></p>`;
+      <ol class="rank ${done ? 'done' : ''}" data-sort="rank" aria-describedby="rank-live">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" data-key="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}">${done ? '' : `<span class="grip" aria-hidden="true" title="Drag to reorder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`}<span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(liveDef(d).dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol><p class="sr" id="rank-live" aria-live="polite"></p>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -1944,7 +1970,8 @@
       <div class="setrow"><span>Music</span>${seg('music', [['on', 'On'], ['off', 'Off']])}</div>
       <div class="setrow"><span>Sound effects and haptics</span>${seg('sound', [['on', 'On'], ['off', 'Off']])}</div>
       <div class="setrow"><span>Share anonymous usage<small class="set-sub">Which screens people reach and where they stop. No names, nothing you type. <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></small></span><div class="seg" role="group">${[['on', 'On'], ['off', 'Off']].map(([v, l]) => `<button data-act="tel" data-v="${v}" aria-pressed="${(TEL.optedOut() ? 'off' : 'on') === v}">${l}</button>`).join('')}</div></div>
-      <div class="setrow"><span>Intro and tips</span><button class="btn" data-act="reset-tips">${prof.seen && Object.keys(prof.seen).length ? 'Show them again' : 'On for your next shift'}</button></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
+      <div class="setrow"><span>Intro and tips</span><button class="btn" data-act="reset-tips">${prof.seen && Object.keys(prof.seen).length ? 'Show them again' : 'On for your next shift'}</button></div>
+      <div class="setrow"><span>Start over<small class="set-sub">Clears your shifts, stars, XP, badges and lessons on this device, and replays the first-time walkthrough. Settings stay.</small></span><button class="btn btn-danger" data-act="reset-ask">Reset progress</button></div>`, `<button class="btn btn-primary" data-act="close">Done</button>`);
   }
   function ovHelp() {
     return sheet('How it plays', `<div class="help">
@@ -2004,13 +2031,20 @@
     if (!ui.toasts.length || !s) return '';
     return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (ui.ov && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
       // Routine messages step aside after a few seconds of being seen (they stay in the phone); urgent ones wait for the player.
-      if (!m.urgent && !m.toastAt) { m.toastAt = Date.now(); setTimeout(() => { if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }, 7000); }
+      if (!m.urgent && !m.toastAt && !(m.replies && !m.done)) { m.toastAt = Date.now(); const expire = () => { if (ui.hold) { setTimeout(expire, 700); return; } if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }; setTimeout(expire, 7000); }
       const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast tap ${m.urgent ? 'urgent' : ''}" role="alert" data-act="msg" data-m="${m.id}">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${m.bell && go ? m.replies.map((r, i) => `<button class="btn sm" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.act === 'bell-cna' ? 'Ask ' + cna().name : r.label)}</button>`).join('') : go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
   }
 
   /* ------------ render ------------ */
   const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
+  /* A breathing tube that came out comes off the portrait too: look follows liveDef(d).vented. */
+  const lookNow = {};
+  function syncLooks() {
+    if (!s) return;
+    C().patients.forEach((d) => { if (!d.look || !(d.look.extras || []).includes('ett')) return; const off = liveDef(d).vented === false, k = d.id; if (!!lookNow[k] === off) return; lookNow[k] = off; R.define(k, off ? Object.assign({}, d.look, { extras: d.look.extras.filter((x) => x !== 'ett') }) : d.look); });
+  }
   function render(scrollTop) {
+    syncLooks();
     const T0 = performance.now();
     if (inGame() && caseId !== s.caseId && E.getCase(s.caseId)) { caseId = s.caseId; E.useCase(caseId); }
     applySettings();
@@ -2075,6 +2109,7 @@
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
+    if (ui.hold || ui.armed) root.querySelectorAll('[data-hold]').forEach((el) => { const k = el.dataset.hk || el.dataset.act; if (ui.hold && ui.hold.k === k) el.classList.add('holding'); if (ui.armed && ui.armed.k === k && Date.now() - ui.armed.at < 4000) el.classList.add('armed'); });
     R.setReduced(prof.settings.motion === 'reduced');
     R.hydrate(root);
     if (ui.view === 'room') placeBubbles(root);
@@ -2211,9 +2246,9 @@
 
   function onReply(m, r) {
     const Ax = A();
-    if (r.act === 'goto') return enterRoom(r.pid);
+    if (r.act === 'goto') { m.done = true; m.read = true; return enterRoom(r.pid); }   // the choice is made: the other replies are gone
     if (r.act === 'delegate') { ui.ov = 'deleg'; ui.delegMsg = null; m.done = true; }
-    if (r.act === 'sbar') { ui.ov = 'sbar'; ui.sbar = { pid: r.pid, picked: [], req: null, reply: null }; }
+    if (r.act === 'sbar') { ui.ov = 'sbar'; ui.sbar = { pid: r.pid, picked: [], req: null, reply: null, msg: m.id }; }
     if (r.act === 'chart') { ui.ov = 'chart'; ui.chart = { pid: r.pid, tab: r.tab || 'overview' }; }
     if (r.act === 'away') { m.read = true; return openAway(r.pid); }
     if (r.act === 'floor') { m.read = true; return openFloor(r.id); }
@@ -2279,11 +2314,11 @@
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${x.label.charAt(0).toLowerCase() + x.label.slice(1)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
-    poke() { const d = def(s.loc), line = R.say(d.id, rigV(d.id)); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
+    poke() { const d = def(s.loc), line = sayNow(d); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
     dose(el) { ui.med.dose = +el.dataset.v; render(); },
-    hreason(el) { ui.med.reason = +el.dataset.v; render(); },
+    hreason(el) { ui.med.reason = +el.dataset.v; ui.med.paramOk = false; if (ui.med.note && /outside the parameter/.test(ui.med.note)) ui.med.note = null; render(); },
     'med-holdask'() { ui.med.holding = true; render(); },
     'ngn-open'(el) { ngnStart(el.dataset.list || 'shift', +el.dataset.i || 0); ui.ov = 'ngn'; render(); },
     'ngn-go'(el) { const cs = ui.ngn && ui.ngn.cs; ngnStart(el.dataset.list || 'shift', +el.dataset.i, cs ? { cs } : null); ui.ov = 'ngn'; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
@@ -2350,6 +2385,8 @@
     'med-hold'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
       const reasons = ['Outside the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'];
+      // Check the reason against the numbers before accepting it: a hold "for the parameter" when every check is inside it gets one warning.
+      if (ui.med.reason === 0 && m.param && !ui.med.paramOk) { const ck = (m.checks ? m.checks(s, P, A()) : []).filter((c) => c.ok === true || c.ok === false); if (ck.length && ck.every((c) => c.ok === true)) { ui.med.paramOk = true; ui.med.note = `Nothing you checked is outside the parameter (${m.param.replace(/\.$/, '')}): ${ck.map((c) => `${c.label} ${c.value}`).join(', ')}. If you're holding for another reason, pick it; if you're sure, press Hold again.`; FX.play('nope'); return render(); } }
       const reason = ui.med.reason; ui.ov = null; ui.med = null;
       doAct(`${m.name} held`, 2, (Ax) => { let t; if (typeof m.hold === 'function') t = m.hold(s, P, Ax, reason); else { Ax.judge(m.id + '-hold', 'meds', -1, `You held ${d.short}'s ${m.name} without a clear clinical reason.`, 'Holding a scheduled dose is a decision with consequences. It needs a parameter or a change in condition behind it, and a notification.', d.id); t = 'Held.'; } st.status = 'held'; st.at = s.t; st.note = reasons[reason]; logHere(d.id, `${m.name} held (${reasons[reason].toLowerCase()}). ${t}`, 'act'); s.log[s.log.length - 1].label = `${m.name} held`; return `Held: ${reasons[reason].toLowerCase()}. ${t === 'Held.' ? '' : t}`.trim(); }); if (!s.ended) render();
     },
@@ -2387,17 +2424,20 @@
     'sbar-req'(el) { ui.sbar.req = el.dataset.id; render(); },
     'sbar-send'() {
       const pid = ui.sbar.pid, d = def(pid), P = s.p[pid]; let reply = ''; const j0 = s.judg.length;
+      // The call is placed: a message that asked for it no longer offers to make it.
+      s.inbox.forEach((m) => { if (m.replies && !m.done && (m.id === ui.sbar.msg || (m.pid === pid && m.replies.every((r) => ['sbar', 'goto', 'chart'].includes(r.act) && (!r.pid || r.pid === pid))))) { m.done = true; m.read = true; } });
       spend(6, (Ax) => {
         const rx = ui.sbar.picked.filter((id) => id.startsWith('rx:')).map((id) => { const [, mid, t] = id.split(':'); return { mid, t: +t, e: (s.errors || []).find((e) => e.pid === pid && e.medId === mid && e.t === +t) }; });
         const errs = ui.sbar.picked.filter((id) => id.startsWith('err:')).map((id) => (s.errors || []).find((e) => 'err:' + e.id === id)).concat(rx.map((r) => r.e)).filter(Boolean);
         const fine = rx.filter((r) => !r.e).map((r) => `The ${d.meds.find((m) => m.id === r.mid).name.toLowerCase()} at ${E.clock(r.t)} was ordered and appropriate. Thanks for double-checking.`);
-        const picked = ui.sbar.picked.filter((id) => !/^(err|rx|did):/.test(id));
+        const held = ui.sbar.picked.filter((id) => id.startsWith('hd:')).map((id) => d.meds.find((m) => m.id === id.slice(3))).filter(Boolean).map((m) => { const st = s.meds[m.id], hAt = st.at; if (m.param) { const ck = (m.checks ? m.checks(s, P, Ax) : []).filter((c) => c.ok === true || c.ok === false), inside = ck.length && ck.every((c) => c.ok === true); if (inside) { st.status = 'due'; st.at = null; st.note = ''; } return inside ? `The ${m.name.toLowerCase()} held at ${E.clock(hAt)}? ${ck.map((c) => `${c.label} ${c.value}`).join(', ')}: that's inside "${m.param}". Give it now, and thanks for flagging it.` : `Holding the ${m.name.toLowerCase()} was right: the numbers were outside "${m.param}". Recheck before the next dose.`; } return `Thanks for telling me about the ${m.name.toLowerCase()}. Hold it for now; I'll review it.`; });
+        const picked = ui.sbar.picked.filter((id) => !/^(err|rx|did|hd):/.test(id));
         const did = ui.sbar.picked.filter((id) => id.startsWith('did:')).map((id) => s.log.find((l) => 'did:' + l.id === id)).filter(Boolean);
         const noted = did.length ? `Good to know: ${did.slice(0, 3).map((l) => { const x = didText(l); return x.charAt(0).toLowerCase() + x.slice(1); }).join('; ')}${did.length > 3 ? `, and ${did.length - 3} more` : ''}.` : '';
         const items = d.sbar.items(s, P, Ax); const keys = picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
         const noise = picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
         const fix = errs.map((e) => F.tellMD(s, Ax, d, e, prov(pid).name));
-        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : '', noted].filter(Boolean).join(' ');
+        reply = [errs.length ? `Thank you for telling me. ${[...new Set(fix)].join(' ')}` : '', ...fine, ...held, picked.length && ui.sbar.req ? d.sbar.respond.call(d.sbar, s, P, Ax, picked, ui.sbar.req) : '', noted].filter(Boolean).join(' ');
         if (!keys.length && !errs.length && !fine.length && !did.length) Ax.judge(pid + '-sbar-empty-' + s.t, 'comm', -1, `Your call about ${d.short} had no clinically significant data in it.`, 'Providers act on findings. Lead with what changed and what you measured.', pid);
         if (noise.length >= 2) Ax.judge(pid + '-sbar-noise', 'comm', 0, `Your SBAR on ${d.short} included details that didn't change the picture.`, 'Keep it short. Include what the provider needs to make a decision.', pid);
         P.k.calledAt = s.t; Ax.log(pid, `Called ${prov(pid).name}. "${reply}"`, 'info');
@@ -2494,6 +2534,8 @@
     'les-f'(el) { ui.lesF = el.dataset.k; render(); },
     'aw-back'() { ui.view = ui.awFrom === 'debrief' && s && s.ended ? 'debrief' : 'home'; render(true); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
+    'reset-ask'() { const signed = CL && CL.user && CL.user(); ui.confirm = { title: 'Reset all progress?', text: `Every finished shift, star, XP point, badge, lesson and practice result on this device will be cleared, and any shift in progress ends. This can't be undone.${signed ? ' You\'re signed in: your account keeps its copy and will sync it back. Sign out first to start fresh here.' : ''}`, ok: 'Reset everything', act: 'reset-yes', danger: true }; ui.ov = 'confirm'; render(); },
+    'reset-yes'() { E.store.clear(); s = null; ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
     'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
     'res-close'() { const c = ui.res && ui.res.crit, lab = ui.res && ui.res.label; ui.ov = null; ui.res = null; ui.flash = null; if (c) ui.spot = s.loc; const n = Date.now(); if (ui.ghosts.some((g) => g.held)) setTimeout(() => FX.play('check'), 300); ui.ghosts.forEach((g) => { if (g.held) { g.held = false; g.born = n; } }); ui.stampRow = lab ? { label: lab, born: n } : null; render(); },
@@ -2544,7 +2586,7 @@
      None of it says whether the choice was right: that stays in the debrief. */
   const SELECT = new Set(['dtab', 'cj-go', 'ptab', 'pf', 'cs-tab', 'ngn-move', 'ref-card', 'meter', 'sc-why', 'aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
-  const COMMIT = new Set(['doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
+  const COMMIT = new Set(['reset-yes', 'doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit', 'away-fam-pick': 'select' };           // answers that advance the scene
   const JUST = new Set(['away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
@@ -2629,7 +2671,10 @@
     }
     if (el.dataset.hold) {
       if (ui.holdDone) { ui.holdDone = false; return; }
-      if (e.detail !== 0 && e.clientX !== undefined) { hint(el, 'Press and hold to confirm.', ''); FX.play('tap'); return; }
+      // A plain tap arms the button; a second tap within a few seconds commits. Keyboard activation commits at once.
+      const hk = el.dataset.hk || a;
+      if (e.detail !== 0 && e.clientX !== undefined && !(ui.armed && ui.armed.k === hk && Date.now() - ui.armed.at < 4000)) { ui.armed = { k: hk, at: Date.now() }; el.classList.add('armed'); hint(el, 'Tap again to confirm, or press and hold.', ''); FX.play('tap'); clearTimeout(ui.armT); ui.armT = setTimeout(() => { ui.armed = null; document.querySelectorAll('.holdbtn.armed').forEach((b) => b.classList.remove('armed')); }, 4000); return; }
+      ui.armed = null; cancelHold();
     }
     zap(el.tagName === 'INPUT' ? el.closest('.opt') || el : el, e, COMMIT.has(a) ? 'strong' : '');
     if (NAV.has(a)) {
@@ -2653,13 +2698,41 @@
     else if (TOGGLE.has(a)) FX.play((a === 'flag' ? s.brain.includes(el.dataset.k) : a === 'away-pick' ? ui.away.picked.includes(el.dataset.id) : a === 'rep-pick' ? ui.rep.picked.includes(el.dataset.id) : ui.sbar && ui.sbar.picked.includes(el.dataset.id)) ? 'select' : 'deselect');
     else FX.play(COMMIT.has(a) ? 'commit' : SELECT.has(a) ? 'select' : 'tap');
   }
-  /* Press-and-hold: a committing action takes a deliberate beat. */
+  /* Press-and-hold: a committing action takes a deliberate beat (HOLD_MS, the same everywhere).
+     The hold is tracked by key, not by element, so a re-render under the finger (a toast, the clock) doesn't
+     cancel it or hide its progress; only lifting the finger or sliding well off the button does. */
+  const HOLD_MS = 600;
+  function holdKey(el) { return el.dataset.hk || el.dataset.act; }
+  function holdEls(k) { return [...document.querySelectorAll('[data-hold]')].filter((x) => holdKey(x) === k); }
   function startHold(e) {
-    const el = e.target.closest('[data-hold]'); if (!el || el.getAttribute('aria-disabled') === 'true' || ui.busy) return;
-    cancelHold(); ui.holdEl = el; el.classList.add('holding'); el.addEventListener('pointerleave', cancelHold, { once: true }); FX.play('tap');
-    ui.holdT = setTimeout(() => { ui.holdT = null; el.classList.remove('holding'); ui.holdDone = true; setTimeout(() => { ui.holdDone = false; }, 600); zap(el, null, 'strong'); FX.play('commit'); const h = handlers[el.dataset.act]; if (h) safe(el.dataset.act, () => h(el)); }, 800);
+    if (e.button > 0) return;
+    const el = e.target.closest && e.target.closest('[data-hold]'); if (!el || el.getAttribute('aria-disabled') === 'true' || ui.busy) return;
+    cancelHold(); const k = holdKey(el);
+    ui.hold = { k, act: el.dataset.act, ds: Object.assign({}, el.dataset), t0: performance.now(), x: e.clientX, y: e.clientY, id: e.pointerId };
+    el.classList.add('holding'); FX.play('tap');
+    const step = () => {
+      const h = ui.hold; if (!h || h.k !== k) return;
+      const f = Math.min(1, (performance.now() - h.t0) / HOLD_MS);
+      holdEls(k).forEach((b) => { b.classList.add('holding'); b.style.setProperty('--hp', f.toFixed(3)); });
+      if (f < 1) { h.raf = requestAnimationFrame(step); return; }
+      ui.hold = null; holdEls(k).forEach((b) => { b.classList.remove('holding', 'armed'); b.style.removeProperty('--hp'); });
+      ui.holdDone = true; setTimeout(() => { ui.holdDone = false; }, 600); ui.armed = null;
+      const cur = holdEls(k)[0] || el; zap(cur, null, 'strong'); FX.play('commit');
+      const fn = handlers[h.act]; if (fn) safe(h.act, () => fn(cur.isConnected ? cur : { dataset: h.ds }));
+    };
+    ui.hold.raf = requestAnimationFrame(step);
   }
-  function cancelHold() { if (ui.holdT) { clearTimeout(ui.holdT); ui.holdT = null; } if (ui.holdEl) ui.holdEl.classList.remove('holding'); ui.holdEl = null; }
+  function moveHold(e) {
+    const h = ui.hold; if (!h || (h.id !== undefined && e.pointerId !== h.id)) return;
+    // Sliding off the button cancels; a jitter, or the button being redrawn underneath, doesn't.
+    const b = holdEls(h.k)[0], r = b && b.getBoundingClientRect();
+    const off = r ? (e.clientX < r.left - 16 || e.clientX > r.right + 16 || e.clientY < r.top - 16 || e.clientY > r.bottom + 16) : Math.hypot(e.clientX - h.x, e.clientY - h.y) > 40;
+    if (off) cancelHold();
+  }
+  function cancelHold() {
+    const h = ui.hold; ui.hold = null;
+    if (h) { cancelAnimationFrame(h.raf); holdEls(h.k).forEach((b) => { b.classList.remove('holding'); b.style.removeProperty('--hp'); }); }
+  }
   function onKey(e) {
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
@@ -2738,7 +2811,7 @@
     CASES.forEach((id) => { const k = E.getCase(id); if (k && STY) STY.install(k); });
     CASES.forEach((id) => { const k = E.getCase(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
     document.addEventListener('click', onClick);
-    document.addEventListener('pointerdown', startHold);
+    document.addEventListener('pointerdown', startHold); document.addEventListener('pointermove', moveHold);
     document.addEventListener('pointerdown', sortDown); document.addEventListener('pointermove', sortMove);
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, sortUp));
     ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, cancelHold, true));

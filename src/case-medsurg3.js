@@ -503,7 +503,10 @@
         block: (s, P) => { if (stroke(P) && (P.found === null || P.foundByMed === s.t)) { if (P.found === null) { P.found = s.t; P.foundByMed = s.t; } return 'As you hand him the cup, the right side of his mouth doesn\'t close around it. Water dribbles down his chin, and his right hand can\'t hold the pill cup. Something is wrong.'; } return null; },
         checks: (s, P, A) => { const v = A.lastVitals('437'); return [{ label: 'HR and BP', value: `${v.HR}, ${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.HR >= 60 && v.SBP >= 100 }, { label: 'Swallow', value: stroke(P) && P.found !== null ? 'New deficits: NPO' : 'Normal', ok: !(stroke(P) && P.found !== null) }]; },
         give(s, P, A) { if (stroke(P)) { P.poGiven = true; A.judge('437-po', 'safety', -2, 'You gave oral medication to a patient with new stroke symptoms.', 'NPO until a swallow screen. The stroke team will manage his BP IV.', '437'); return 'He chokes on the pill and coughs for a full minute.'; } return 'Metoprolol 25 mg given.'; },
-        hold(s, P, A) { if (stroke(P)) A.judge('437-hold-po', 'safety', 1, 'You held Mr. Delgado\'s oral meds after his stroke symptoms.', 'NPO until swallow screen.', '437'); return 'Held.'; },
+        hold(s, P, A, r) { if (stroke(P) && P.found !== null) { A.judge('437-hold-po', 'safety', 1, 'You held Mr. Delgado\'s oral meds after his stroke symptoms.', 'NPO until swallow screen.', '437'); return 'Held.'; }
+          const v = A.lastVitals('437'), inside = v.HR >= 60 && v.SBP >= 100; P.metoHeld = s.t;
+          if (inside) A.judge('437-meto-hold', 'meds', -1, `You held Mr. Delgado's metoprolol at ${clock(s.t)} with HR ${v.HR} and BP ${v.SBP}/${v.DBP}, inside the hold parameter.`, 'The parameter is HR under 60 or SBP under 100. Inside it, the order says give. A held beta-blocker in a man with AF and hypertension means a faster rate and a higher pressure overnight, and in a stroke, a pressure over 185/110 has to come down before any thrombolytic can start.', '437');
+          return inside ? 'Held. His numbers were inside the parameter.' : 'Held per parameter.'; },
       },
       {
         id: '437-labe', name: 'Labetalol', dose: '10 mg', route: 'IV', freq: 'For SBP > 185 or DBP > 110', prn: true, available: (s, P) => P.alert !== null, block: (s, P) => (P.labeAt !== null ? 'Given at ' + clock(P.labeAt) + '.' : null),
@@ -753,6 +756,7 @@
 
   /* ---------- delegation ---------- */
   const delegation = {
+    away: (s) => (s.t >= 120 ? 'Floated to the ED at 01:00' : null),
     note: (s) => (s.t >= 120 ? 'Dee was floated to the ED at 01:00. You\'re on your own for the rest of the night.' : 'Dee is with you until about 01:00, when she may be floated.'),
     tasks: [
       { id: 'vitals', label: 'Take a full set of vital signs', rooms: ['431', '433', '435', '437', '439'], mins: 12, avail: (s) => s.t < 120 },

@@ -31,7 +31,7 @@
         close: `Keisha went home on day two with Jalen. She told her seventh graders about weighing pads, and at the end of the year a student did a science fair project on why measuring beats guessing. She sent the unit a photo of the poster.`,
         warm: `Keisha went home on day two. Her hemoglobin was 10.1; she took the iron, mostly. Nia still calls the baby Pickle.`,
         distant: `Keisha Brown was discharged on postpartum day two. Her chart says "uterus firm, lochia moderate." It doesn't say she'd been dismissed before, or that this time she wasn't.`,
-        hard: (s, P) => (P.gone ? `Keisha spent the night in L&D with a balloon and two units of blood. When Desmond got back, she said, "I told them it felt wrong." He said, "I know you did."` : `Keisha's asthma attack after the carboprost frightened her more than the bleeding. She asked for "no more surprises" to be written in her chart.`),
+        hard: (s, P) => (P.gone ? `Keisha spent the night in L&D with a balloon and two units of blood. When Desmond got back, she said, "I told them it felt wrong." He said, "I know you did."` : P.carbo ? `Keisha's asthma attack after the carboprost frightened her more than the bleeding. She asked for "no more surprises" to be written in her chart.` : `Keisha was still bleeding when the afternoon nurse took over.${P.bladder ? ' The first thing that nurse did was empty her bladder.' : ''} It took two more medicines and a unit of blood to firm her uterus. She went home on day three, pale and tired, with a bottle of iron.`),
       },
     },
     '214': {
@@ -66,7 +66,7 @@
         close: (s, P) => `Lani went home on day four with a blood pressure cuff and a list on the fridge. ${P.taught ? 'On day nine her headache came back with a pressure of 162. She went to the ED and said "I just had a baby," and they treated it in twenty minutes.' : ''} By spring she was back in seat three.`,
         warm: `Lani went home on day four on nifedipine. Her pressure normalized by six weeks. Kainoa took Mālia to the canoe club in a carrier the week after.`,
         distant: `Lani Kealoha was discharged on day four, pressures controlled. Her follow-up was at one week.`,
-        hard: (s, P) => (P.icu ? `Lani doesn't remember the ICU. Kainoa does. He says the worst part was the hour before, when she wouldn't wake up and he didn't know if that was normal.` : `Lani's pressure stayed over 160 longer than it should have. She went home on day five with two medicines and a fear of headaches she says she'll never lose.`),
+        hard: (s, P) => (P.icu ? `Lani doesn't remember the ICU. Kainoa does. He says the worst part was the hour before, when she wouldn't wake up and he didn't know if that was normal.` : P.sevAt !== null && (P.firstBpMed === null || P.firstBpMed - P.sevAt > 60) ? `Lani's pressure stayed over 160 longer than it should have. She went home on day five with two medicines and a fear of headaches she says she'll never lose.` : `Lani's magnesium level kept climbing into the afternoon. The next nurse found her reflexes gone and turned the infusion off. She doesn't remember that day well; Kainoa remembers the drowsiness, and how everyone said it was the medicine doing its job.`),
       },
     },
     '216': {
@@ -101,7 +101,7 @@
         close: (s, P) => `Linh and the baby, who they named An, went home on day two, still breastfeeding. ${P.taught ? 'She had her glucose test at eight weeks. Normal. ' : ''}She sent the unit a photo at six months: An, enormous, asleep on her shoulder.`,
         warm: `An's glucose stayed over 45 from that morning on. They went home on day two. Linh still keeps a feeding log, though she says it's mostly for fun now.`,
         distant: `Baby Boy Nguyen was discharged on day two. Glucoses stable after the morning of day one.`,
-        hard: (s, P) => (P.nicu ? `An spent a week in the NICU. Linh pumped every three hours and brought the milk down in labeled syringes. She still asks, at every appointment, whether his development is on track.` : `An spent two nights in the NICU on IV dextrose. Linh breastfed him there. "It wasn't the plan," she said, "but it was okay."`),
+        hard: (s, P) => (P.nicu ? `An spent a week in the NICU. Linh pumped every three hours and brought the milk down in labeled syringes. She still asks, at every appointment, whether his development is on track.` : `Nobody checked An's glucose until the afternoon nurse did. It was 28. He spent two nights in the NICU on IV dextrose. Linh asks, at every appointment, whether a morning like that could have hurt him.`),
       },
     },
     '218': {

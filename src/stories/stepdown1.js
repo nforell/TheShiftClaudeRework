@@ -101,6 +101,7 @@
         close: (s, P) => `Dolores went home on apixaban once her platelets recovered, with heparin on her allergy list for life. ${P.asked ? 'Case management set up a daily phone check, which she calls "the warden."' : ''} In October she drove to Portland, stopping every hour to walk. Edith said she drove terribly.`,
         warm: `Dolores went home after nine days. Mendeleev ignored her for two days, then slept on her feet.`,
         distant: `Dolores Price was discharged on apixaban. Her chart says "HIT antibody positive." It doesn't say she noticed first.`,
+        mixed: (s, P) => (P.stopped !== null ? `Dolores's heparin was off by noon, and nothing replaced it until the afternoon team ${P.called ? 'got the argatroban running' : 'heard about her platelets'}. She still had a clot in her lung. She went home on apixaban after twelve days, with heparin on her allergy list for life.` : `Dolores's heparin kept running at the right rate for the wrong reason. The afternoon nurse read her CBC and stopped it. She went home after two weeks, with heparin on her allergy list for life.`),
         hard: (s, P) => (P.gone ? `Dolores kept her foot after a thrombectomy. She asked the vascular surgeon why the heparin was still running with platelets of 98. He didn't have a good answer.` : `Dolores was still on heparin at noon. The afternoon nurse read her CBC.`),
       },
     },

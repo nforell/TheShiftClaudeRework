@@ -319,7 +319,7 @@
   /* ---------- public API ---------- */
   const VB = { icon: '-78 -96 156 160', bust: '-110 -112 220 232' };
   const enc = (v) => (v ? encodeURIComponent(JSON.stringify(v)) : '');
-  function define(key, spec) { spec.__key = key; CH[key] = spec; }
+  function define(key, spec) { spec.__key = key; CH[key] = spec; Object.keys(stills).forEach((k) => { if (k.startsWith(key + '|')) delete stills[k]; }); }
   function has(key) { return !!CH[key]; }
   /* Placeholder markup; hydrate() turns it into a live character. */
   function icon(key, v, cls) {

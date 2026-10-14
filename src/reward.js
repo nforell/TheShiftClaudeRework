@@ -32,7 +32,7 @@
       if ((st.status === 'given' || st.status === 'held') && st.at > m.due + 60) late += 1;
       else if (st.status === 'due' && s.t > m.due + 60 && !out(P)) late += 1;
     }); });
-    const medsDone = !late && (s.ended || c.patients.every((d) => !here(d) || (d.meds || []).every((m) => m.prn || m.due === undefined || m.later || m.initStatus === 'given' || s.meds[m.id].status !== 'due' || out(s.p[d.id]))));
+    const medsDone = !late && (s.ended || c.patients.every((d) => !here(d) || (d.meds || []).every((m) => m.prn || m.due === undefined || m.later || m.initStatus === 'given' || s.meds[m.id].status !== 'due' || out(s.p[d.id]) || (m.available && !m.available(s, s.p[d.id])))));
     const meds = late || quit ? 'fail' : medsDone ? 'done' : 'open';
     // 3. Nobody left waiting: call lights and floor calls.
     const bellMiss = s.judg.filter((j) => /-bell-/.test(j.key || '') && j.delta < 0).length;
@@ -45,7 +45,7 @@
     return [
       { id: 'eyes', label: 'Everyone seen', sub: `Every patient seen by ${A.clock(seeBy)}`, st: eyes, n: seen, of: need.length },
       { id: 'meds', label: 'Meds on time', sub: 'No scheduled dose over an hour late', st: meds, n: late, of: tot, bad: true },
-      { id: 'calls', label: 'Call lights answered', sub: 'Every call light and floor call answered', st: calls, n: bellMiss + fl.missed, of: rang + fl.answered + fl.missed, bad: true },
+      { id: 'calls', label: 'Call lights and floor calls', sub: 'Every call light and every floor call answered', st: calls, n: bellMiss + fl.missed, of: rang + fl.answered + fl.missed, bad: true },
       { id: 'report', label: 'Report given', sub: `Report on every patient by ${A.clock(len)}`, st: report, n: rep, of: onUnit.length },
     ];
   }

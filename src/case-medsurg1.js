@@ -283,7 +283,7 @@
     ],
     io: { intake: 'PO 900 mL, IV 100 mL', output: 'Voiding, 3 times' },
     report: [
-      { text: 'Grace Okafor, 46, left foot cellulitis on IV cefazolin. Type 2 diabetes, A1c 9.8. Sulfa allergy, hives.', key: false },
+      { text: 'Grace Okafor, 46, left foot cellulitis on IV cefazolin. Type 2 diabetes, A1c 9.8. Allergic to sulfa drugs: she gets hives.', key: false },
       { text: 'Bedtime glucose was 212. She got 2 units of correction.', key: false },
       { text: 'Pre-breakfast glucose is due at 07:30. Mealtime lispro 6 units, but only if she eats at least half.', key: true },
       { text: 'She got nauseous after the midnight cefazolin. Next dose is at 08:00.', key: true },
@@ -434,7 +434,8 @@
     dx: 'Urinary tract infection with confusion', reason: 'UTI, acute confusion',
     hx: ['Hypertension', 'Hypothyroidism', 'Osteoarthritis, both knees'],
     allergies: 'Penicillin, reaction unknown', code: 'Full code', weight: '58 kg',
-    lines: ['PIV 20g right antecubital, normal saline at 75 mL/h'], mobility: 'Up with assist of 1. High fall risk (Morse 55).', diet: 'Regular',
+    live: (s, P) => (P.allergyInfo ? { allergies: 'Penicillin (childhood rash; tolerated cephalexin in 2024)' } : null),
+    lines: ['PIV 20g right antecubital, normal saline at 75 mL/h'], mobility: 'Up with assist of 1. High fall risk (Morse Fall Scale 55; 45 or more is high risk).', diet: 'Regular',
     init: { sev: 22, allergyInfo: false, baseline: false, abxAvail: null, abxAt: null, escalated: false, bundle: false, bundleLate: false, culturesAt: null, lactAt: null, lactResult: null, lactReported: false, bolusAt: null, fallPrec: false, rrt: false, icu: false, apapAt: null, lisinoprilAt: null, pharmAsked: false },
     nightVitals: { T: 37.9, HR: 98, SBP: 116, DBP: 68, RR: 20, SpO2: 95, O2: 'Room air', pain: 2 },
     labs: [
@@ -464,6 +465,7 @@
       { text: 'Her ceftriaxone hasn\'t gone in. Pharmacy is holding it for the penicillin allergy.', key: true },
       { text: 'Daughter Ruth is on the facesheet. I didn\'t get a chance to call her.', key: false },
       { text: 'She\'s sweet. Pretty sleepy. Probably just sundowning, honestly.', key: false },
+      { text: 'Her home lisinopril is due at nine. Hold parameter is a systolic under 100.', key: true },
     ],
     vitals(s, P) {
       const sv = P.sev, apap = P.apapAt !== null && s.t - P.apapAt > 30 && s.t - P.apapAt < 240 ? 0.6 : 0;
@@ -489,7 +491,7 @@
     interventions: [
       {
         id: 'fall', label: 'Start fall precautions (bed alarm, low bed, call light, socks)', cost: 3, avail: (s, P) => !P.fallPrec,
-        run(s, P, A) { P.fallPrec = true; A.judge('416-fall', 'safety', 1, 'You set up fall precautions for Mrs. Whitfield.', 'New confusion plus an IV, urgency from a UTI and a Morse of 55: she will try to get up. The alarm buys the seconds that prevent a hip fracture.', '416'); return 'Bed low and locked, alarm on, non-skid socks, call light clipped to her gown. "You\'re fussing," she says, not unkindly.'; },
+        run(s, P, A) { P.fallPrec = true; A.judge('416-fall', 'safety', 1, 'You set up fall precautions for Mrs. Whitfield.', 'New confusion plus an IV, urgency from a UTI and a Morse Fall Scale score of 55 (high risk is 45 or more): she will try to get up. The alarm buys the seconds that prevent a hip fracture.', '416'); return 'Bed low and locked, alarm on, non-skid socks, call light clipped to her gown. "You\'re fussing," she says, not unkindly.'; },
       },
       { id: 'reorient', label: 'Reorient her and offer fluids', cost: 3, run: (s, P) => P.sev < 55 ? 'You tell her where she is and why. She takes three sips of water. "Is Ruth coming?"' : 'She can\'t hold the cup. Her mouth is dry. She\'s too drowsy to drink safely.' },
       {
