@@ -76,6 +76,14 @@
     TEL.track('account_signed_in', {});
     return true;
   }
+  /* Deleting the account: the database removes the user and everything tied to it (supabase/schema.sql,
+     delete_my_account). Then this device forgets the session and anything still waiting to upload. Progress saved on
+     the device itself stays, as with signing out. */
+  async function deleteAccount() {
+    if (!(await fresh())) throw new Error('Sign in again first.');
+    await call('/rest/v1/rpc/delete_my_account', { method: 'POST', auth: true, body: {} });
+    put(OUTK, null); TEL.track('account_deleted', {}); signOut(true);
+  }
   function signOut(quiet) { sess = null; put(SK, null); meta = {}; put(SYNCK, null); put(OWNK, null); if (!quiet) TEL.track('account_signed_out', {}); changed(); }
 
   /* Merging two devices' progress: nothing earned on either is lost. Settings stay with this device. */
@@ -229,7 +237,7 @@
   })();
 
   S.cloud = {
-    on, ready, sendLink, why, sync: () => sync('manual'), signOut, onChange: (f) => listeners.push(f),
+    on, ready, sendLink, why, sync: () => sync('manual'), signOut, deleteAccount, onChange: (f) => listeners.push(f),
     user: () => (sess && sess.user) || null,
     linked: () => linked,   // this page load came from the emailed link
     status: () => (!on() ? null : !sess ? { state: 'out', err: meta.err || null } : { state: 'in', email: sess.user && sess.user.email, at: meta.at || null, err: meta.err || null, busy: !!busy }),

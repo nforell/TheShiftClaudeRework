@@ -78,6 +78,17 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 
+-- Same, limited to things the student did after joining that instructor's class: practice from before the class
+-- (or for another instructor's class) stays the student's own.
+create or replace function public.teaches_at(student uuid, at timestamptz) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from class_members m join classes c on c.id = m.class_id
+    where m.user_id = student and c.teacher = auth.uid() and at >= m.joined_at
+  );
+$$;
+grant execute on function public.teaches_at(uuid, timestamptz) to authenticated;
+
 -- Helpers that read memberships without going through row level security again (avoids policy recursion).
 create or replace function public.in_class(k uuid) returns boolean
 language sql stable security definer set search_path = public as $$
@@ -110,13 +121,14 @@ create policy "member leaves" on public.class_members for delete using (user_id 
 drop policy if exists "teacher removes" on public.class_members;
 create policy "teacher removes" on public.class_members for delete using (public.runs_class(class_id));
 
--- results and ngn_results: players write and read their own; instructors read their students'.
+-- results and ngn_results: players write and read their own; instructors read their students', from the day each
+-- student joined their class.
 drop policy if exists "own results" on public.results;
-create policy "own results" on public.results for select using (user_id = auth.uid() or public.teaches(user_id));
+create policy "own results" on public.results for select using (user_id = auth.uid() or public.teaches_at(user_id, played_at));
 drop policy if exists "write own results" on public.results;
 create policy "write own results" on public.results for insert with check (user_id = auth.uid());
 drop policy if exists "own ngn" on public.ngn_results;
-create policy "own ngn" on public.ngn_results for select using (user_id = auth.uid() or public.teaches(user_id));
+create policy "own ngn" on public.ngn_results for select using (user_id = auth.uid() or public.teaches_at(user_id, at));
 drop policy if exists "write own ngn" on public.ngn_results;
 create policy "write own ngn" on public.ngn_results for insert with check (user_id = auth.uid());
 

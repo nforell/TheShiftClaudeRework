@@ -2,6 +2,7 @@
 entitlements, and the two class RPCs), with the same row level security rules as supabase/*.sql, so browser tests
 can play students and instructors end to end. tests/sql/policies.mjs checks the real SQL; this checks the game."""
 import sys, json, pathlib, mimetypes, itertools, urllib.parse as up
+from datetime import datetime, timezone
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIST = ROOT / 'dist'
 SITE, SUPA, KEY = 'https://play.theshift.test', 'https://supa.theshift.test', 'sb_publishable_test'
@@ -25,14 +26,15 @@ class Supa:
     def user(self, token, uid, email): self.users[token] = (uid, email)
 
     # Row level security, as in classes-and-pack.sql.
-    def teaches(self, me, student):
+    def teaches(self, me, student, at=None):   # teaches_at: only what the student did after joining
         mine = {c['id'] for c in self.classes if c['teacher'] == me}
-        return any(m['user_id'] == student and m['class_id'] in mine for m in self.members)
+        t = lambda x: datetime.fromisoformat(str(x).replace('Z', '+00:00'))
+        return any(m['user_id'] == student and m['class_id'] in mine and (at is None or t(at) >= t(m['joined_at'])) for m in self.members)
     def visible(self, table, row, me):
         if table == 'saves': return row['user_id'] == me
         if table == 'classes': return row['teacher'] == me or any(m['class_id'] == row['id'] and m['user_id'] == me for m in self.members)
         if table == 'class_members': return row['user_id'] == me or any(c['id'] == row['class_id'] and c['teacher'] == me for c in self.classes)
-        if table in ('results', 'ngn_results'): return row['user_id'] == me or self.teaches(me, row['user_id'])
+        if table in ('results', 'ngn_results'): return row['user_id'] == me or self.teaches(me, row['user_id'], row.get('played_at') or row.get('at'))
         if table == 'entitlements': return row['user_id'] == me
         return False
     def table(self, t):
@@ -59,8 +61,16 @@ class Supa:
             b = json.loads(r.post_data); c = next((c for c in self.classes if c['code'] == b['p_code'].strip().upper()), None)
             if not c: return j(400, {'message': 'No class with that code'})
             self.members[:] = [m for m in self.members if not (m['class_id'] == c['id'] and m['user_id'] == me)]
-            self.members.append({'class_id': c['id'], 'user_id': me, 'display_name': b['p_name'][:60], 'joined_at': 'now'})
+            self.members.append({'class_id': c['id'], 'user_id': me, 'display_name': b['p_name'][:60], 'joined_at': datetime.now(timezone.utc).isoformat()})
             return j(200, {'id': c['id'], 'name': c['name'], 'code': c['code'], 'pack': c['pack']})
+        if u.path == '/rest/v1/rpc/delete_my_account':   # the auth user goes; everything referencing it cascades
+            self.saves.pop(me, None)
+            gone = {c['id'] for c in self.classes if c['teacher'] == me}
+            self.classes[:] = [c for c in self.classes if c['id'] not in gone]
+            for lst in (self.results, self.ngn, self.ent): lst[:] = [x for x in lst if x['user_id'] != me]
+            self.members[:] = [m for m in self.members if m['user_id'] != me and m['class_id'] not in gone]
+            self.users = {k: v for k, v in self.users.items() if v[0] != me}; self.deleted = getattr(self, 'deleted', []) + [me]
+            return route.fulfill(status=204, body='', headers=CORS)
         if u.path == '/rest/v1/saves':
             if r.method == 'GET':
                 want = q.get('user_id', [''])[0].replace('eq.', ''); row = self.saves.get(want) if want == me else None

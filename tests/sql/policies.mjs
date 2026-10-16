@@ -35,8 +35,19 @@ await as(S2, `insert into public.results (user_id, case_id, score) values ('${S2
 await as(X, `insert into public.results (user_id, case_id, score) values ('${X}', 'medsurg-4w-1', 99)`);
 e = null; try { await as(S1, `insert into public.results (user_id, case_id, score) values ('${S2}', 'medsurg-4w-1', 100)`); } catch (x) { e = x.message; }
 check(!!e, 'a student cannot write a result as someone else');
+await as(S1, `insert into public.results (user_id, case_id, score, played_at) values ('${S1}', 'psych-3e-1', 40, now() - interval '30 days')`);
+await as(S1, `insert into public.ngn_results (user_id, case_id, item_id, item_type, score, max, at) values ('${S1}', 'psych-3e-1', 'q1', 'matrix', 1, 3, now() - interval '30 days')`);
+await as(S1, `insert into public.ngn_results (user_id, case_id, item_id, item_type, score, max) values ('${S1}', 'medsurg-4w-1', 'q2', 'bowtie', 4, 5)`);
 check((await as(T, `select count(*)::int n from public.results`)).rows[0].n === 2, 'the instructor sees their two students\' results, not an outsider\'s');
-check((await as(S1, `select count(*)::int n from public.results`)).rows[0].n === 1, 'a student sees only their own results');
+check((await as(T, `select count(*)::int n from public.results where case_id = 'psych-3e-1'`)).rows[0].n === 0, 'the instructor does not see a result from before the student joined');
+check((await as(S1, `select count(*)::int n from public.results`)).rows[0].n === 2 && (await as(S1, `select count(*)::int n from public.ngn_results`)).rows[0].n === 2, 'the student still sees all of their own results');
+check((await as(T, `select count(*)::int n from public.ngn_results`)).rows[0].n === 1, 'the instructor sees practice results only from after joining');
+const T2 = '55555555-5555-5555-5555-555555555555'; await db.exec(`insert into auth.users values ('${T2}','t2@x')`);
+const k2 = (await as(T2, `select public.create_class('Other school') as j`)).rows[0].j;
+await db.exec(`update public.class_members set joined_at = now() - interval '60 days' where user_id = '${S2}'`);
+await as(S2, `select public.join_class('${k2.code}', 'Ben R.')`);
+check((await as(T2, `select count(*)::int n from public.results`)).rows[0].n === 0, 'a second instructor does not see what a student did before joining their class');
+check((await as(S2, `select count(*)::int n from public.results`)).rows[0].n === 1, 'a student sees only their own results');
 check((await as(T, `select count(*)::int n from public.class_members`)).rows[0].n === 2, 'the instructor sees the roster');
 check((await as(S1, `select count(*)::int n from public.class_members`)).rows[0].n === 1, 'a student sees only their own membership');
 check((await as(S1, `select count(*)::int n from public.classes`)).rows[0].n === 1, 'a student can read the class they joined');
@@ -47,5 +58,13 @@ await db.exec(`insert into public.entitlements (user_id, product, ref) values ('
 check((await as(S2, `select count(*)::int n from public.entitlements`)).rows[0].n === 1 && (await as(S1, `select count(*)::int n from public.entitlements`)).rows[0].n === 0, 'players read only their own purchases');
 await as(S1, `delete from public.class_members where user_id = '${S1}'`);
 check((await as(T, `select count(*)::int n from public.results`)).rows[0].n === 1, 'after a student leaves, the instructor stops seeing their results');
+e = null; try { await as(X, `select public.delete_my_account()`); } catch (x) { e = x.message; }
+check(!e, 'a player can delete their own account' + (e ? ' (' + e + ')' : ''));
+check((await q(`select count(*)::int n from auth.users where id = '${X}'`)).rows[0].n === 0 && (await q(`select count(*)::int n from public.results where user_id = '${X}'`)).rows[0].n === 0, 'deleting an account removes the user and their results');
+check((await q(`select count(*)::int n from auth.users`)).rows[0].n === 4, 'deleting one account leaves everyone else');
+await as(T2, `select public.delete_my_account()`);
+check((await q(`select count(*)::int n from public.classes where id = '${k2.id}'`)).rows[0].n === 0 && (await q(`select count(*)::int n from auth.users where id = '${S2}'`)).rows[0].n === 1, 'an instructor deleting their account removes their class, not their students');
+e = null; try { await db.exec(`set role authenticated; select set_config('request.uid','',false); select public.delete_my_account();`); } catch (x) { e = x.message; } finally { await db.exec('reset role'); }
+check(/sign in/.test(e || ''), 'deleting needs a signed-in player');
 console.log(bad ? 'SQL FAILED ' + bad : 'SQL CLEAN');
 process.exit(bad ? 1 : 0);

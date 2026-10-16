@@ -1527,7 +1527,8 @@
     if (st.state === 'in') {
       const ago = st.at ? Math.round((Date.now() - st.at) / 60000) : null;
       return sheet('Your account', `<p style="margin-top:0">Signed in as <b>${esc(st.email || '')}</b>. Your progress saves to your account and follows you to any device where you sign in.</p>
-        <p class="muted">${st.busy ? 'Syncing…' : st.err ? `Last sync didn't go through: ${esc(st.err)}. It will try again.` : ago === null ? 'Not synced yet.' : ago < 1 ? 'Synced just now.' : `Synced ${ago} minute${ago === 1 ? '' : 's'} ago.`}</p>`,
+        <p class="muted">${st.busy ? 'Syncing…' : st.err ? `Last sync didn't go through: ${esc(st.err)}. It will try again.` : ago === null ? 'Not synced yet.' : ago < 1 ? 'Synced just now.' : `Synced ${ago} minute${ago === 1 ? '' : 's'} ago.`}</p>
+        <p class="muted" style="margin-bottom:0">${a.delErr ? `Couldn't delete the account: ${esc(a.delErr)}` : 'Done with The Shift? <button class="acct-link" data-act="acct-del-ask">Delete your account</button> and everything saved to it.'}</p>`,
         `<button class="btn" data-act="acct-out">Sign out</button><button class="btn btn-primary" data-act="acct-sync">Sync now</button>`, { label: 'Your account' });
     }
     if (a.sent) return sheet('Check your email', `<p style="margin-top:0">We sent a sign-in link to <b>${esc(a.sent)}</b>. Open it on this device and you'll come back here signed in, with your progress saved.</p><p class="muted">No email in a few minutes? Check spam, or send it again.</p>`,
@@ -2513,6 +2514,10 @@
     },
     'acct-again'() { ui.acct = { email: '' }; render(); },
     'acct-sync'() { CL.sync().then(fromCloud).catch(() => {}); render(); },
+    'acct-del-ask'() { ui.confirm = { title: 'Delete your account?', text: 'Your account, your saved progress and results, your class memberships (your instructor stops seeing your results), any classes you run, and any shift pack you bought are deleted for good. Progress on this device stays until you reset it. This can\'t be undone.', ok: 'Delete my account', act: 'acct-del-yes', danger: true }; ui.ov = 'confirm'; render(); },
+    'acct-del-yes'() { const a = ui.acct || (ui.acct = {}); a.delErr = null; ui.ov = null; render();
+      CL.deleteAccount().then(() => { render(); hint(document.querySelector('.top .mark') || document.body, 'Account deleted. Progress on this device stays until you reset it.'); })
+        .catch((e) => { a.delErr = (e && e.message) || 'check your connection and try again'; ui.ov = 'account'; render(); }); },
     'acct-out'() { CL.signOut(); ui.ov = null; render(); hint(document.querySelector('.top .mark') || document.body, 'Signed out. Your progress stays on this device.'); },
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
