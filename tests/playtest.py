@@ -133,6 +133,9 @@ with sync_playwright() as p:
     # 11. Picking an answer doesn't look like a reload: the window stays put and keeps its scroll.
     pg.goto(GAME); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[{caseId:'medsurg-4w-1',score:70,at:1}],settings:{theme:'light',sound:'off',music:'off',motion:'full'},seen:{'coach:station':1,'coach:room':1,tour:1,orient:1}}))"); pg.reload(); pg.wait_for_timeout(250)
     H('practice'); H('pset'); pg.wait_for_timeout(200)
+    for _ in range(8):   # practice sets are drawn at random; some open on a format with no option buttons (numeric, drag)
+        if J("!!document.querySelector('.sheet [data-act=\"ngn-pick\"]')"): break
+        clr(); H('practice'); H('pset'); pg.wait_for_timeout(200)
     J("document.querySelector('.sheet-b').scrollTop = 9999"); y0 = J("document.querySelector('.sheet-b').scrollTop")
     btn = pg.locator('.sheet [data-act="ngn-pick"]').last; btn.scroll_into_view_if_needed(); y0 = J("document.querySelector('.sheet-b').scrollTop"); btn.click(); pg.wait_for_timeout(60)
     check(J("document.querySelector('.sheet-b').scrollTop") == y0, 'picking an answer keeps the question scrolled where it was')

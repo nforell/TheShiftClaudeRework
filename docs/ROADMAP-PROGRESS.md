@@ -2,6 +2,25 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 25 — October 17, 2026 (branch `pilot-prep`, built on `beta-audit`; landing changes pushed to `feature/shift-editorial-website`)
+
+Nick's ask: from the beta audit, do everything that doesn't need a person, a device or a live account.
+
+### Done
+- **Class codes can't be guessed.** `join_class` logs wrong codes (`join_attempts`, RLS on, no policies) and refuses after 10 in an hour per account. A wrong code returns `{error}` instead of raising so the attempt is kept. PGlite tests cover the limit, its reset after an hour, and that nobody can read or clear the log.
+- **Orientation:** practice patients are in rooms 101–107 on a "practice unit", not 4 West's 412–418. A reload or locked phone resumes at the same step with the same answers; finishing, skipping or reset forgets it. Nova's first line says Next always moves on and Skip ends it.
+- **Pain call lights:** answering one and making no pain-medicine decision in the next hour gets a zero-point debrief note naming what was ordered. Points left to the med-surg reviewer.
+- **Skip ahead near handoff:** when it stops in the last 10 minutes with report still owed, it says so and points to End shift. (The 11:58 stall itself didn't reproduce on any of the 11 shifts.)
+- **Deep links:** `/play/?shift=<id>` picks that shift on home. A shift in progress is never replaced; unknown ids are ignored.
+- **Honest signup:** `Shift.tel.signupSend` only resolves `sent` after PostHog answers; otherwise the signup is kept on the device and resent next visit. The PR #37 landing page uses it, says plainly when it couldn't reach the server, and offers a prefilled email.
+- **PR #37 landing:** cards say "Play this shift" and open their shift; chips, card links, nav, footer and dashboard link are 44 px.
+- `/play/?health` shows the version.
+- New docs: `docs/INSTRUCTOR-GUIDE.md` (one page for faculty) and `docs/PILOT-CHECKLIST.md` (everything left, with how to tell each step passed).
+- Tests: `tests/sql/policies.mjs`, `tests/orient.py`, `tests/playtest.py` section 13, `tests/telemetry.py` (on the landing branch).
+
+### Needs Nick
+Everything in `docs/PILOT-CHECKLIST.md`. Rerun `supabase/classes-and-pack.sql` after merging (adds `join_attempts`).
+
 ## Session 24 — October 17, 2026 (branch `beta-audit`)
 
 Nick's ask: a full beta audit as a first-time nursing student, in the real interface, before a school pilot. Played by real clicks in headless Chromium against a local build: orientation, one full med-surg shift (4 West days) start to debrief and home, then adult psych (3 East) and ICU, plus spot checks of every unit at phone, tablet and desktop widths. The live site and the PR #37 preview can't be reached from the build sandbox; PR #37 was checked from its branch.
