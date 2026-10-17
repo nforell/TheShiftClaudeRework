@@ -203,6 +203,14 @@ with sync_playwright() as p:
     ff = J("(document.querySelector('.ff-why')||{}).textContent||''")
     check(not J("Shift.ui._state().ended") and 'Report to the oncoming nurse is still waiting' in ff and 'End shift' in ff, 'when skipping stops a few minutes before handoff, it says report is still owed and how to finish')
 
+    # A landing-page link to one shift picks it on home, and never replaces a shift in progress.
+    pg.goto(GAME + '?shift=icu-3w-1'); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[],settings:{motion:'reduced',sound:'off',music:'off'},seen:{tour:1}}))"); pg.goto(GAME + '?shift=icu-3w-1'); pg.wait_for_timeout(400)
+    check(J("document.querySelector('.sc-pick[data-id=\"icu-3w-1\"]').getAttribute('aria-pressed')") == 'true' and 'shift=' not in J("location.href"), '?shift=icu-3w-1 picks the ICU on home and cleans the address')
+    H('new'); clr(); pg.goto(GAME + '?shift=peds-5s-1'); pg.wait_for_timeout(400)
+    check(J("Shift.ui._state() && Shift.ui._state().caseId") == 'icu-3w-1', 'a link to another shift does not replace the one in progress')
+    pg.goto(GAME + '?shift=nonsense'); pg.wait_for_timeout(300)
+    check(J("document.querySelectorAll('.sc-pick').length") > 5, 'an unknown shift in the link is ignored')
+
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))
 sys.exit(1 if fails else 0)

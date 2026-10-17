@@ -2884,7 +2884,13 @@
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
+    // A link to one shift (/play/?shift=icu-3w-1, from the landing page's shift cards) picks that shift on the home
+    // screen. A shift already in progress wins: the link never throws away someone's game.
+    { const want = new URLSearchParams(location.search).get('shift');
+      if (want && CASES.includes(want) && !(s && !s.ended)) { caseId = want; E.useCase(caseId); ui.deep = want; TEL.track('deep_link', { case: want }); }
+      if (want) { const q = new URLSearchParams(location.search); q.delete('shift'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } }
     ui.view = 'home'; safe('boot', () => render(true));
+    if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
     // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
     const wasOr = !seen('orient') && OR && orLoad();
     if (wasOr) safe('orient-resume', () => { if (!s && wasOr.caseId && E.getCase(wasOr.caseId)) caseId = wasOr.caseId; openOrient(wasOr.start); });
