@@ -544,8 +544,10 @@
         give(s, P, A) {
           P.abxAt = s.t;
           if (s.t <= 90) A.judge('416-abx-time', 'time', 1, 'You cleared the allergy hold and got Mrs. Whitfield\'s first antibiotic in early in the shift.', 'She had already waited five hours since arriving at 02:00 on an unanswered allergy question. Surviving Sepsis guidance wants the first dose within 1 hour when sepsis is probable or shock is present, and within 3 hours when it is only possible. The delay before your shift wasn\'t yours; every hour after it is.', '416');
-          else if (s.t <= 150) A.judge('416-abx-time', 'time', 0, 'Mrs. Whitfield\'s first antibiotic went in by mid-morning, about seven hours after she arrived.', 'Better than later, but she was already well past the 3-hour target. Clearing the allergy question is the first job of this shift, not the third.', '416');
-          else A.judge('416-abx-late', 'time', -1, 'Mrs. Whitfield\'s first antibiotic dose was delayed past 09:30.', 'She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality, and current guidance wants the first dose within 1 to 3 hours of recognition. The block was a phone call to her daughter.', '416');
+          // Say where the delay actually was: before pharmacy released it (the allergy question) or after (getting it hung).
+          else { const rel = P.abxAvail, sat = rel !== null && rel <= 75 && s.t - rel > 20, where = sat ? `Pharmacy released it at ${clock(rel)}; it went up at ${clock(s.t)}. Once a sepsis antibiotic is in the tube station, hanging it is the next thing you do.` : `The block was the allergy question: a phone call to her daughter, then pharmacy. That's the first job of this shift.`;
+            if (s.t <= 150) A.judge('416-abx-time', 'time', 0, `Mrs. Whitfield's first antibiotic went in at ${clock(s.t)}, about ${Math.round((s.t + 300) / 60)} hours after she arrived.`, `Better than later, but she was already past the 3-hour target. ${where}`, '416');
+            else A.judge('416-abx-late', 'time', -1, `Mrs. Whitfield's first antibiotic dose was delayed until ${clock(s.t)}.`, `She arrived at 02:00. Each hour of antibiotic delay in sepsis raises mortality, and current guidance wants the first dose within 1 to 3 hours of recognition. ${where}`, '416'); }
           return 'Ceftriaxone 1 g IV over 30 minutes. Watching for any reaction.';
         },
       },
@@ -553,8 +555,8 @@
         id: '416-lis', name: 'Lisinopril', dose: '10 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('416'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }, { label: 'Trend', value: `Admission 128/74, 06:35 116/68`, ok: null }]; },
         give(s, P, A) {
-          const v = A.vitals('416'); P.lisinoprilAt = s.t;
-          if (v.SBP < 100) { A.judge('416-lis', 'meds', -2, `You gave lisinopril with an SBP of ${v.SBP}.`, 'The hold parameter exists for exactly this. In early sepsis an ACE inhibitor worsens hypotension and kidney perfusion.', '416'); P.sev = Math.min(100, P.sev + 10); }
+          const v = A.seen('416'); P.lisinoprilAt = s.t;
+          if (v.SBP < 100) { A.judge('416-lis', 'meds', -2, v.seenAt !== null ? `You gave lisinopril with an SBP of ${v.SBP} (the ${clock(v.seenAt)} reading).` : `You gave lisinopril without a recent BP. It was ${v.SBP}.`, 'The hold parameter exists for exactly this. In early sepsis an ACE inhibitor worsens hypotension and kidney perfusion.', '416'); P.sev = Math.min(100, P.sev + 10); }
           else if (P.sev >= 38) { A.judge('416-lis', 'judgment', -1, 'You gave lisinopril to a patient whose BP was drifting down with an infection.', 'Within parameters is not the same as safe. Her BP had fallen since admission, her creatinine was rising, and she was likely early sepsis. Hold and clarify.', '416'); P.sev = Math.min(100, P.sev + 5); }
           return 'Lisinopril 10 mg given.';
         },
@@ -600,7 +602,7 @@
           P.escalated = true; P.bundle = true; A.addOrder('416', 'Sepsis bundle: blood cultures × 2, lactate, normal saline 1,000 mL bolus. Vitals every 15 min × 4. Hold lisinopril.');
           if (P.abxAt === null && s.meds['416-cef'].status === 'verify') { P.abxAvail = s.t + 20; }
           A.judge('416-sbar', 'comm', req === 'sepsis' ? 2 : 1, req === 'sepsis' ? 'Your SBAR on Mrs. Whitfield named sepsis and asked for specific orders.' : 'You gave Dr. Chen the right data on Mrs. Whitfield, but didn\'t say what you were worried about.', 'Assessment and Recommendation are where nurses change outcomes: say what you think is happening and what you need. The pattern (fever, tachycardia, falling BP, acute confusion, low urine output) is sepsis until proven otherwise.', '416');
-          return (req === 'sepsis' ? 'Agree. ' : 'That sounds like sepsis. ') + 'Cultures times two, lactate, a liter bolus now. I\'ll call pharmacy about the ceftriaxone myself. I\'m coming to see her.';
+          return (req === 'sepsis' ? 'Agree. ' : 'That sounds like sepsis. ') + 'Cultures times two, lactate, a liter bolus now. ' + (P.abxAt !== null ? 'Good that the ceftriaxone is in. ' : P.allergyInfo || s.meds['416-cef'].status === 'due' ? 'Hang the ceftriaxone the minute it\'s up from pharmacy. ' : 'I\'ll call pharmacy about the ceftriaxone myself. ') + 'I\'m coming to see her.';
         }
         if (req === 'sepsis') { A.judge('416-sbar-thin', 'comm', -1, 'You raised sepsis for Mrs. Whitfield without the data to back it.', 'Providers act on patterns. A concern plus current vitals, trend, mental status versus baseline and urine output makes a case. A concern alone gets a "watch her."', '416'); P.lactAt = P.lactAt === null ? s.t : P.lactAt; A.addOrder('416', 'Lactate now.'); return 'What\'s making you think sepsis? I\'ll order a lactate. Call me back with the result and a fresh set of vitals.'; }
         A.judge('416-sbar-miss', 'comm', -1, 'Your update on Mrs. Whitfield didn\'t give Dr. Chen enough to act on.', 'An update without a current assessment and a clear concern invites "keep an eye on her." Gather the cues first: vitals trend, mentation compared with baseline, urine output, labs.', '416');
@@ -714,18 +716,24 @@
       {
         id: '418-los', name: 'Losartan', dose: '25 mg', route: 'PO', freq: 'Daily', due: 120, param: 'Hold if SBP < 100',
         checks: (s, P, A) => { const v = A.lastVitals('418'); return [{ label: 'Latest BP', value: `${v.SBP}/${v.DBP} at ${clock(v.t)}`, ok: v.SBP >= 100 }]; },
-        give(s, P, A) { const v = A.vitals('418'); P.losAt = s.t; if (v.SBP < 100) A.judge('418-los', 'meds', -2, `You gave losartan with an SBP of ${v.SBP}.`, 'Hold parameters exist because layering vasodilators on a soft pressure causes symptomatic hypotension.', '418'); return 'Losartan 25 mg given.'; },
-        hold(s, P, A) { const v = A.vitals('418'); A.judge('418-los-hold', 'meds', v.SBP < 100 ? 1 : 0, v.SBP < 100 ? 'You held losartan for SBP under 100.' : 'You held losartan with an SBP above the parameter.', v.SBP < 100 ? 'Parameter met, dose held.' : 'His SBP was just above 100. Holding is defensible with a borderline pressure, but tell the provider.', '418'); return 'Held.'; },
+        give(s, P, A) { const v = A.seen('418'); P.losAt = s.t; if (v.SBP < 100) A.judge('418-los', 'meds', -2, v.seenAt !== null ? `You gave losartan with an SBP of ${v.SBP} (the ${clock(v.seenAt)} reading).` : `You gave losartan without a recent BP. It was ${v.SBP}.`, 'Hold parameters exist because layering vasodilators on a soft pressure causes symptomatic hypotension.', '418'); return 'Losartan 25 mg given.'; },
+        hold(s, P, A) { const v = A.seen('418'); A.judge('418-los-hold', 'meds', v.SBP < 100 ? 1 : 0, v.SBP < 100 ? 'You held losartan for SBP under 100.' : 'You held losartan with an SBP above the parameter.', v.SBP < 100 ? 'Parameter met, dose held.' : 'His SBP was just above 100. Holding is defensible with a borderline pressure, but tell the provider.', '418'); return 'Held.'; },
       },
       {
         id: '418-lasix', name: 'Furosemide', dose: '40 mg', route: 'IV', freq: 'Twice daily', due: 120,
-        checks: (s, P) => { P.kSeen = true; return [{ label: 'Potassium', value: '3.3 mmol/L (low) at 05:00', ok: false }, { label: 'KCl given?', value: P.kclAt !== null ? 'Yes, ' + clock(P.kclAt) : 'Not yet', ok: P.kclAt !== null }, { label: 'Lungs / weight', value: 'Crackles, weight up 0.6 kg', ok: null }]; },
+        checks: (s, P) => { P.kSeen = true; return [{ label: 'Potassium', value: P.kclAt !== null ? `3.3 mmol/L at 05:00; KCl given ${clock(P.kclAt)}` : '3.3 mmol/L (low) at 05:00: replace it with this dose', ok: P.kclAt !== null ? null : false }, { label: 'KCl given?', value: P.kclAt !== null ? 'Yes, ' + clock(P.kclAt) : 'Not yet', ok: P.kclAt !== null }, { label: 'Lungs / weight', value: 'Crackles, weight up 0.6 kg', ok: null }]; },
         give(s, P, A) {
           P.lasixAt = s.t;
           if (P.kclAt === null && !P.notifiedK) A.judge('418-lasix-k', 'meds', -1, 'You gave IV furosemide with a potassium of 3.3 and no replacement in.', 'Loop diuretics waste potassium. Going lower in a heart patient invites arrhythmia. Give the ordered KCl first and ask for more.', '418');
           else A.judge('418-lasix-k', 'meds', 1, 'You addressed Mr. Ortiz\'s low potassium around his diuretic.', 'Diurese, but protect the potassium.', '418');
           if (s.t > 180) A.judge('418-lasix-late', 'time', -1, 'Mr. Ortiz\'s 09:00 furosemide went in late.', 'While the diuretic waits, fluid keeps backing into his lungs.', '418');
           return 'Furosemide 40 mg IV push over 2 minutes. Urinal at the bedside. Strict I&O.';
+        },
+        hold(s, P, A) {
+          P.lasixHeld = s.t;
+          if (P.kclAt === null) A.judge('418-lasix-hold', 'meds', -1, `You held Mr. Ortiz's furosemide because of his potassium of 3.3.`, `Low potassium is a reason to replace it first, not to skip the diuretic. He has crackles and his weight is up: the fluid is the bigger danger. Give the ordered KCl, give the furosemide, and tell the provider about the potassium.`, '418');
+          else A.judge('418-lasix-hold', 'meds', -2, `You held Mr. Ortiz's furosemide after his potassium was replaced.`, `With the KCl in, nothing was left standing between him and the diuretic he needs: crackles, weight up, heart failure. A held diuretic in fluid overload needs a reason and a call.`, '418');
+          return 'Held. His lungs still have crackles.';
         },
       },
       { id: '418-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'PO', freq: 'Daily', due: 120, checks: () => [{ label: 'Potassium', value: '3.3 (low)', ok: true }, { label: 'Creatinine', value: '1.4, near baseline', ok: true }], give(s, P) { P.kclAt = s.t; return 'KCl 20 mEq given with water, upright.'; }, hold(s, P, A) { A.judge('418-kcl-hold', 'meds', -1, 'You held potassium from a patient with a potassium of 3.3 on a loop diuretic.', 'This is the dose that protects him.', '418'); return 'Held.'; } },

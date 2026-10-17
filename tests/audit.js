@@ -36,7 +36,11 @@
     if (el.classList && el.classList.contains('clue') && document.querySelector(`.lookaround .look[data-id="${el.dataset.id}"]`) && getComputedStyle(document.querySelector('.lookaround')).display !== 'none') return;   // reachable from the Look at chips   // messages pass by; they aren't layout
     if (hit && hit.closest('.top,.pstrip,.rail') && !el.closest('.top,.pstrip,.rail')) return;   // passing under the sticky header while scrolled
     if (hit && !(el === hit || el.contains(hit) || (hit.closest('[data-act]') === el))) { const hc = hit.closest('[data-act]'); if (!(hc && hc !== el && el.contains(hc))) out.covered.push(label(el) + ' under ' + label(hit)); }
-    if ((r.width < 32 || r.height < 28) && el.tagName !== 'INPUT' && !el.closest('svg')) out.small.push(label(el) + ` ${Math.round(r.width)}×${Math.round(r.height)}`);
+    // Target size. WCAG 2.5.8 (AA): every control at least 24×24. On phones (≤480px wide) a thumb needs a 44px-tall box (2.5.5)
+    // and at least 24px across. Documented exceptions: scene hotspots inside the room SVG (each one has a full-size "Look at" chip),
+    // a native input inside its label (the label is the target), and links inside running text (WCAG's inline exception).
+    const minH = W <= 480 ? 44 : 24, inlineLink = el.tagName === 'A' && !!el.closest('p, small, .set-sub');
+    if ((r.width < 23.5 || r.height < minH - 0.5) && el.tagName !== 'INPUT' && !el.closest('svg') && !inlineLink) out.small.push(label(el) + ` ${Math.round(r.width)}×${Math.round(r.height)}`);
   });
   // Clipped text without ellipsis
   all.forEach((el) => { if (!vis(el) || el.closest('.xpop')) return; const cs = getComputedStyle(el); if (cs.overflow !== 'hidden' && cs.overflowX !== 'hidden') return; if (el.scrollWidth > el.clientWidth + 2 && cs.textOverflow !== 'ellipsis' && el.textContent.trim() && el.clientWidth > 0 && !el.closest('.pstrip-in') && !/bar|ring|trk-bar|lv-bar|res-bar|shiftbar|meter/.test(el.className)) out.clipped.push(label(el) + ` ${el.scrollWidth}>${el.clientWidth}`); });
