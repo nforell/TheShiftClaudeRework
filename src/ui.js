@@ -2544,7 +2544,7 @@
       if (!name) { c.err = 'Add your name, so your instructor knows who you are.'; return render(); }
       c.err = null; c.busy = true; render();
       CL.join(code, name).then((k) => { c.busy = false; c.code = ''; c.list = null; c.ok = `You're in ${k && k.name ? k.name : 'the class'}.${k && k.pack ? ' Every shift is open to you.' : ''}`; render(); })
-        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : 'Couldn\'t join. Check your connection and try again.'; render(); });
+        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : /too many/i.test(e.message) ? e.message : 'Couldn\'t join. Check your connection and try again.'; render(); });
     },
     'cls-leave'(el) { const c = ui.cls || (ui.cls = {}); CL.leave(el.dataset.id).then(() => { c.list = null; c.ok = 'You left the class.'; render(); }).catch(() => { c.err = 'Couldn\'t leave the class. Try again.'; render(); }); },
     account() { ui.acct = { email: (ui.acct && ui.acct.email) || '' }; ui.ov = 'account'; render(); },

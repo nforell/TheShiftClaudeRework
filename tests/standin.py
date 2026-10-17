@@ -59,7 +59,7 @@ class Supa:
             self.classes.append(c); return j(200, {'id': c['id'], 'code': code, 'name': c['name']})
         if u.path == '/rest/v1/rpc/join_class':
             b = json.loads(r.post_data); c = next((c for c in self.classes if c['code'] == b['p_code'].strip().upper()), None)
-            if not c: return j(400, {'message': 'No class with that code'})
+            if not c: return j(200, {'error': 'No class with that code'})   # like join_class: an error object, so the attempt counts
             self.members[:] = [m for m in self.members if not (m['class_id'] == c['id'] and m['user_id'] == me)]
             self.members.append({'class_id': c['id'], 'user_id': me, 'display_name': b['p_name'][:60], 'joined_at': datetime.now(timezone.utc).isoformat()})
             return j(200, {'id': c['id'], 'name': c['name'], 'code': c['code'], 'pack': c['pack']})
