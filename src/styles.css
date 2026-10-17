@@ -366,7 +366,7 @@ td.wrap{white-space:normal;min-width:220px}
 /* an option that was just toggled on */
 .opt:has(input:checked){border-color:var(--teal);background:color-mix(in srgb,var(--teal) 7%,var(--surface))}
 .just{animation:just .34s ease-out}
-.opt.just:has(input:checked),.line.just[aria-pressed="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent)}
+.line.just[aria-pressed="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent)}
 @keyframes just{0%{transform:scale(.97)}45%{transform:scale(1.015)}}
 /* confirmation stamp after committing an action */
 .stamp{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top,0px));z-index:60;display:flex;align-items:center;gap:.65rem;padding:.55rem 1.1rem .55rem .6rem;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--teal) 45%,var(--line));box-shadow:0 14px 34px -14px rgba(0,0,0,.45);transform:translateX(-50%);animation:stampin .38s cubic-bezier(.2,1.4,.4,1);pointer-events:none;max-width:calc(100% - 2rem)}
@@ -2392,3 +2392,37 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .sbar-did .opt span{display:flex;gap:.6rem;align-items:baseline}
 .did-t{flex:none;font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
 .ngn-rpt{margin:1rem 0 0;text-align:right}
+
+/* ---------- Answer choices: a pick should feel like a press, not a page reload ----------
+   The overlay is redrawn on every pick, so .steady turns off its entrance animation, and .just (the element
+   you touched) gets the press response. Selected states are unmistakable: a thicker teal edge, a tint,
+   bolder text and an indicator that fills in. */
+.scrim.steady,.sheet.steady,.drawer.steady{animation:none}
+.nb-opt,.nb-chip,.nb-cell,.nb-hl,.opt{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s ease}
+.nb-opt:not(.off):not([aria-disabled="true"]):hover{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 4%,var(--surface))}
+.nb-opt:active:not(.off),.nb-chip:active:not(.off),.nb-cell:active:not(.off),.opt:active{transform:scale(.985)}
+.nb-opt.on{border-color:var(--teal);box-shadow:inset 0 0 0 2px var(--teal);background:color-mix(in srgb,var(--teal) 12%,var(--surface));font-weight:600}
+/* Square (select all) and round (single answer) indicators fill in with a check or a dot. */
+.nb-opt.sq::before,.nb-opt.rd::before{transition:background-color .16s ease,border-color .16s ease}
+.nb-opt.sq.on::before{border-color:var(--teal);background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.4l3 3 6-6.6' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;box-shadow:none}
+.nb-opt.rd.on::before{border-color:var(--teal);background:var(--paper);box-shadow:inset 0 0 0 4px var(--paper),inset 0 0 0 8px var(--teal)}
+/* Bowtie options have no box of their own: a check badge appears on the right. */
+.bt-col .nb-opt{position:relative;padding-right:2.2rem}
+.bt-col .nb-opt.on::after{content:"";position:absolute;right:.65rem;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.3l2.7 2.7 5.3-5.8' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.nb-opt.right.on,.nb-opt.wrong.on{font-weight:600}
+.nb-cell:not(.off):hover{border-color:var(--teal)}
+.nb-cell.on{border-color:var(--teal);background:var(--teal);color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 20%,transparent)}
+.nb-chip.on{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--teal);font-weight:600}
+.nb-hl.on{background:color-mix(in srgb,var(--band-yellow) 75%,transparent);box-shadow:0 1px 0 0 color-mix(in srgb,var(--ink) 55%,transparent)}
+.opt:has(input:checked){border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);background:color-mix(in srgb,var(--teal) 10%,var(--surface))}
+.opt:has(input:checked) > span > b,.opt:has(input:checked) > span:not(:has(b)){font-weight:600}
+/* The press response on the one you just touched: a quick pop, a soft ring, and the indicator stamping in. */
+.nb-opt.just,.nb-chip.just,.nb-hl.just,.opt.just{animation:pick .26s ease-out}
+.nb-cell.just{animation:cellpop .26s ease-out}
+.nb-opt.just.on,.nb-chip.just.on{animation:pick .26s ease-out,halo .6s ease-out}
+.opt.just:has(input:checked){animation:pick .26s ease-out,halo1 .6s ease-out}
+@keyframes halo{0%{box-shadow:inset 0 0 0 2px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 35%,transparent)}100%{box-shadow:inset 0 0 0 2px var(--teal),0 0 0 7px color-mix(in srgb,var(--teal) 0%,transparent)}}
+@keyframes halo1{0%{box-shadow:inset 0 0 0 1px var(--teal),0 0 0 0 color-mix(in srgb,var(--teal) 35%,transparent)}100%{box-shadow:inset 0 0 0 1px var(--teal),0 0 0 7px color-mix(in srgb,var(--teal) 0%,transparent)}}
+.nb-opt.just.on::before,.bt-col .nb-opt.just.on::after{animation:checkin .22s cubic-bezier(.3,1.6,.5,1)}
+.nb-cell.just.on{animation:cellpop .26s cubic-bezier(.3,1.6,.5,1)}
+@keyframes cellpop{0%{transform:scale(.8)}60%{transform:scale(1.12)}}

@@ -2,6 +2,17 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 23 — October 16, 2026 (branch `smooth-answers`)
+
+Nick's ask: clicking an answer in NCLEX review or the in-game questions gives little sign you picked it and feels like the game refreshed.
+
+### Done
+- **Why it felt like a reload:** every pick redraws the screen, and the redraw replayed the question window's entrance (backdrop fade, card sliding up) and reset its scroll to the top. Now a redraw of the same open window (same question, same call, same med) keeps it still and keeps every scrolled panel where it was. A new window or the next question still animates in.
+- **Clear selected states** for every NCLEX format: thicker teal edge, tint and bold text for options; checkboxes fill with a check, radio buttons fill with a dot; bowtie picks get a check badge; matrix cells fill solid; drop-down chips and highlights are stronger. In-game checklists (SBAR, report, holds) get the same treatment.
+- **Press response** on the item you tapped: a quick pop, the indicator stamping in, and a halo that fades. Select and deselect sounds for answer picks. Reduced-motion setting turns the motion off.
+- Matrix and drop-down cells are now told apart by row, so the right one gets the response and keeps focus.
+- `tests/playtest.py` checks scroll, steadiness and the selected state. v0.6.7-beta.
+
 ## Session 22 — October 14 to 16, 2026 (branch `playtest-round2`, rebased on `pilot-privacy`)
 
 Nick's ask: a second AI regression pass replayed all 11 shifts against the Session 20 fixes (about 77% verified fixed) and listed what's still broken plus new bugs.

@@ -2043,7 +2043,7 @@
   }
 
   /* ------------ render ------------ */
-  const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
+  const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v, el.dataset.row]);
   /* A breathing tube that came out comes off the portrait too: look follows liveDef(d).vented. */
   const lookNow = {};
   function syncLooks() {
@@ -2111,7 +2111,14 @@
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
+    // The same overlay redrawn (an answer picked, a box ticked) must not look like it reopened: no fade-in, no
+    // slide-up, and every scrolled panel stays where it was. Only a new overlay, or a new question, animates in.
+    const ovSig = ui.ov ? `${ui.ov}|${ui.ov === 'ngn' && ui.ngn ? `${ui.ngn.list}:${ui.ngn.cs || ''}:${ui.ngn.i}` : ui.ov === 'sbar' && ui.sbar ? ui.sbar.pid : ui.ov === 'med' && ui.med ? ui.med.id : ui.ov === 'chart' && ui.chart ? ui.chart.pid + ':' + ui.chart.tab : ''}` : '';
+    const steady = !!ovSig && ovSig === ui.lastOvSig, SCROLLERS = '.sheet-b, .chart-b, .rec-b, .or-body, .or-log, .msgs, .feed, .res, .crit';
+    const kept = steady ? [...root.querySelectorAll(SCROLLERS)].map((el) => el.scrollTop) : null;
+    ui.lastOvSig = ovSig;
     root.innerHTML = h;
+    if (steady) { root.querySelectorAll('.scrim, .sheet, .drawer').forEach((el) => el.classList.add('steady')); root.querySelectorAll(SCROLLERS).forEach((el, i) => { if (kept[i]) el.scrollTop = kept[i]; }); }
     const T2 = performance.now();
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;
@@ -2602,7 +2609,7 @@
   const COMMIT = new Set(['reset-yes', 'doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit', 'away-fam-pick': 'select' };           // answers that advance the scene
-  const JUST = new Set(['away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
+  const JUST = new Set(['ngn-pick', 'pf', 'away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
   const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Punch: a flash ring and a ripple from the tap point, drawn outside #app so it survives re-render. */
   function zap(el, e, kind) {
@@ -2708,6 +2715,7 @@
     if (JUST.has(a)) ui.justKey = keyOf(el);
     if (!safe(a, () => h(el))) return;
     if (a === 'rank-submit') { const pr = C().priority; FX.play(ui.rank.every((p, i) => pr.correct[i] === p) ? 'right' : 'commit'); }
+    else if (a === 'ngn-pick') { const now = [...document.querySelectorAll('[data-act="ngn-pick"]')].find((x) => keyOf(x) === keyOf(el)); FX.play(now && now.classList.contains('on') ? 'select' : 'deselect'); }
     else if (TOGGLE.has(a)) FX.play((a === 'flag' ? s.brain.includes(el.dataset.k) : a === 'away-pick' ? ui.away.picked.includes(el.dataset.id) : a === 'rep-pick' ? ui.rep.picked.includes(el.dataset.id) : ui.sbar && ui.sbar.picked.includes(el.dataset.id)) ? 'select' : 'deselect');
     else FX.play(COMMIT.has(a) ? 'commit' : SELECT.has(a) ? 'select' : 'tap');
   }
