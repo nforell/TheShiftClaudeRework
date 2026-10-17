@@ -633,7 +633,10 @@
       if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
       return null;
     });
-    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
+    // Near the end, say why the clock stopped short of handoff: report is still owed, and End shift is how to finish.
+    const owed = !s.ended && L - s.t <= 10 && nowRows().some((r) => r.rp);
+    const endWhy = owed ? ' Report to the oncoming nurse is still waiting. Give it, then End shift when you\'re done.' : '';
+    ui.ff = { t0, t1: s.t, why: endWhy ? Object.assign({}, why || { text: 'The clock stopped short of handoff.' }, { text: ((why && why.text) || 'The clock stopped short of handoff.') + endWhy, urgent: true }) : why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
     if (!s.ended) render();
     ffPlay();
   }

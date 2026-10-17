@@ -677,6 +677,7 @@ window.Shift = window.Shift || {};
   function answerBell(s, A, pid) {
     const P = s.p[pid], b = P.bell; if (!b) return '';
     P.bell = null; P.touchAt = s.t; bellDone(s, pid);
+    if (b.id === 'pain') P.painAsks = (P.painAsks || []).concat(s.t);   // checked at the end: did the ask become a pain decision?
     return kindOf(A.c) === 'psych' ? `Request: ${b.who} asked ${b.text}. ${b.fix}` : `Call light: ${b.who} ${b.text}. ${b.fix}`;
   }
   function bellToCna(s, A, pid) {
@@ -923,6 +924,15 @@ window.Shift = window.Shift || {};
       }
       // Ordered checks that were never finished.
       watchRows(s, A, d, P).filter((r) => !r.done && r.t <= s.t - 20).slice(0, 1).forEach((r) => A.judge(`${d.id}-watch-${r.key.split(':')[1]}`, 'assess', -1, `${d.short}'s ordered checks weren't finished: ${r.text.replace(/: \d+ of \d+$/, '').toLowerCase()}.`, 'An order for repeated checks is how the team finds out whether the treatment worked. Each one is a task with a time on it.', d.id));
+      // A pain call light the nurse answered but never turned into a decision about pain medicine. The game doesn't put
+      // a "give PRN" task on the list for this on purpose: noticing the ask is the skill. Worth no points either way
+      // (clinical reviewers to decide), but the debrief says so, so a student who missed it learns why.
+      const ask = (P.painAsks || []).find((at) => s.t - at >= 45);
+      const pain = (d.meds || []).filter((m) => m.prn && /morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|tylenol|tramadol|ketamine/i.test(m.name) && !/PCA/i.test(m.name));
+      if (ask !== undefined && pain.length && !s.judg.some((j) => j.pid === d.id && /pain/.test(j.key || ''))) {
+        const acted = pain.some((m) => { const st = s.meds[m.id]; return st && (st.given.some((g) => g >= ask && g <= ask + 60) || (st.at !== null && st.at >= ask && st.at <= ask + 60 && st.status !== 'prn')); });
+        if (!acted) A.judge(`${d.id}-pain-ask`, 'meds', 0, `${d.short} asked for something for pain at ${A.clock(ask)}, and no pain medicine was given or decided against afterward.`, `The call light is the task. The list won't add "give a PRN" for you: rate the pain, check what's ordered and when it was last given (${pain.slice(0, 2).map((m) => m.name).join(', ')}), then give it, hold it with a reason, or offer something else, and come back to see if it worked.`, d.id);
+      }
       // PRNs nobody went back to check.
       if (!s.judg.some((j) => j.pid === d.id && /reassess/.test(j.key || ''))) {
         const miss = prnRows(s, A, d, P).filter((r) => !r.done && r.t <= s.t - 15);

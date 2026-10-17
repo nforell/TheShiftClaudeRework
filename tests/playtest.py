@@ -186,6 +186,23 @@ with sync_playwright() as p:
     check(J("!!document.querySelector('[data-act=last-debrief]')"), 'after a reload, home offers the last debrief')
     H('last-debrief'); check(J("Shift.ui._ui.view") == 'debrief' and 'out of 100' in J("document.body.innerText"), 'the saved debrief opens')
 
+    # 13. Pilot prep (Oct 17): a pain call light left with no pain decision is named in the debrief; skipping ahead
+    # near the end says report is what's left.
+    BELL = "(()=>{const s=Shift.ui._state();s.p['412'].bell={at:s.t,id:'pain',text:'is asking for something for pain',cna:false,fix:'Rates pain 7 out of 10.',who:'Mr. Bell'};s.p['412'].lastBell=s.t})()"
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    pj = J("(Shift.ui._state().judg.find(j=>j.key==='412-pain-ask')||{})")
+    check(bool(pj) and pj.get('delta') == 0 and 'Oxycodone' in pj.get('why', ''), 'an answered pain call light with no pain decision after it is named in the debrief (no points), with what was ordered')
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr(); H('med', id='412-oxy')
+    if J("!!document.querySelector('[data-act=dose]')"): H('dose', v='1')
+    H('med-give'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    check(given('412-oxy') and not J("Shift.ui._state().judg.some(j=>j.key==='412-pain-ask')"), 'giving the PRN after the pain call light leaves no note')
+    start('medsurg-4w-1'); J("(()=>{const c=Shift.engine.getCase('medsurg-4w-1');c.events.push({id:'t-ping',when:(s)=>s.t>=c.length-5,run:(s,A)=>A.msg({from:'nova',text:'Pharmacy says the 12:00 meds are up.'})});Shift.ui._state().t=c.length-8})()")
+    H('skip'); pg.wait_for_timeout(100)
+    ff = J("(document.querySelector('.ff-why')||{}).textContent||''")
+    check(not J("Shift.ui._state().ended") and 'Report to the oncoming nurse is still waiting' in ff and 'End shift' in ff, 'when skipping stops a few minutes before handoff, it says report is still owed and how to finish')
+
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))
 sys.exit(1 if fails else 0)
