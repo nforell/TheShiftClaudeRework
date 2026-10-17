@@ -106,6 +106,30 @@ with sync_playwright() as p:
     prof = J("JSON.parse(localStorage.getItem('theshift.profile.v1'))")
     check(not prof.get('runs') and not prof.get('seen') and prof.get('settings', {}).get('sound') == 'off' and prof.get('terms') == '9999', 'reset clears progress and keeps settings and terms')
 
+    # 9. Round 2: hold teaching points the right way, a held dose can be un-held, floated aides are gone.
+    start('medsurg-4w-3'); go('437'); H('med', id='437-meto'); H('med-holdask'); H('hreason', v='0'); H('med-hold')
+    note = J("Shift.ui._ui.med && Shift.ui._ui.med.note || ''")
+    check('should be given' in note, 'a "meets the hold parameter" hold with normal numbers warns that the order says give')
+    H('med-hold'); clr(); H('sbar', pid='437'); H('sbar-pick', id='hd:437-meto'); H('sbar-send'); rep = J("Shift.ui._ui.sbar.reply || ''"); clr()
+    check('give it' in rep.lower() and 'was right' not in rep, f'the provider says to give a dose held inside the parameter ({rep[:80]}…)')
+    go('437'); H('med', id='437-meto'); H('med-holdask'); H('hreason', v='1'); H('med-hold'); clr(); H('med', id='437-meto')
+    check(J("!!document.querySelector('[data-act=med-unhold]')"), 'a held dose offers "Undo the hold"'); H('med-unhold')
+    check(J("Shift.ui._state().meds['437-meto'].status") == 'due', 'undoing the hold makes the dose due again'); clr()
+    J("Shift.ui._state().t=125"); H('catchup'); clr()
+    board = J("document.body.innerText")
+    check('Ask Dee' not in board, 'once Dee is floated, nothing offers to ask her')
+
+    # 10. Choice messages open the choices instead of answering for you; the magnesium MAR shows the live rate.
+    start('icu-3w-1'); J("(()=>{const s=Shift.ui._state();s.t=164})()"); H('catchup'); clr(); H('back') if J("Shift.ui._ui.view")=='room' else None
+    mid = J("(()=>{const m=Shift.ui._state().inbox.find(x=>x.replies&&x.replies.length>1&&!x.bell&&!x.done);return m?m.id:null})()")
+    if mid is not None:
+        J(f"Shift.ui._ui.toasts=[{mid}]"); J("Shift.ui._render()")
+        check(J(f"!document.querySelector('.toast [data-act=reply][data-m=\"{mid}\"]')"), 'a banner with several replies does not pick one for you')
+    start('ob-2n-1'); J("(()=>{const P=Shift.ui._state().p['214'];P.stopped=5;P.rate=0})()"); go('214'); H('dock', id='meds')
+    check('2 g/h' not in J("document.querySelector('.pane').innerText") and 'stopped' in J("document.querySelector('.pane').innerText"), 'the MAR shows a stopped drip as stopped')
+    start('icu-3w-1'); J("Shift.ui._state().t=206"); H('catchup'); clr()
+    check(any('Family meeting' in r for r in J("Shift.engine.getCase('icu-3w-1').dueExtras(Shift.ui._state()).map(x=>x.text)")), 'the family meeting is on the task list when it starts')
+
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))
 sys.exit(1 if fails else 0)

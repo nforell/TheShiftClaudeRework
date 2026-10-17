@@ -558,7 +558,7 @@ window.Shift = window.Shift || {};
     med: [
       { id: 'bath', text: 'needs help to the bathroom', cna: true, fix: 'Walked to the bathroom and back. Bed low, call light in reach.', ok: (d) => !/bed rest/i.test(d.mobility) },
       { id: 'water', text: 'wants fresh ice water', cna: true, fix: 'Fresh ice water at the bedside.', ok: (d) => !/NPO|restrict|clear/i.test(d.diet) },
-      { id: 'turn', text: 'is uncomfortable and wants help changing position', cna: true, fix: 'Repositioned with pillows; heels floated.' },
+      { id: 'turn', text: 'is uncomfortable and wants help changing position', cna: true, fix: (v, d) => (/flat/i.test(d.mobility) ? 'Log-rolled onto one side with a pillow, kept flat per the order; heels floated.' : 'Repositioned with pillows; heels floated.') },
       { id: 'cold', text: 'is cold and wants another blanket', cna: true, fix: 'Warm blanket on.', ok: (d, P, v) => v.T < 38 },
       { id: 'pump', text: 'says the IV pump is beeping', cna: false, fix: 'Pump alarm: occlusion. The tubing was kinked under the arm. Straightened it, the line flushes easily, infusion restarted.', ok: (d, P, v, f) => f.iv === 'running' },
       { id: 'pain', text: 'is asking for something for pain', cna: false, fix: (v) => `Rates pain ${v.pain} out of 10 and wants medicine. Check the MAR for what's ordered and when it was last given.`, ok: (d, P, v) => v.pain >= 4 },
@@ -596,9 +596,9 @@ window.Shift = window.Shift || {};
     peds: [
       { id: 'diaper', text: 'needs more diapers and wipes', cna: true, fix: 'Diapers and wipes at the bedside, and a scale to weigh diapers for output.', ok: (d) => ageNum(d) < 3 },
       { id: 'pump', text: 'says the IV pump is beeping', cna: false, fix: 'Pump alarm: occlusion. The tubing was pinched in the crib rail. Freed it, the site looks good, infusion restarted.', ok: (d, P, v, f) => f.iv === 'running' },
-      { id: 'pain', text: 'says their child needs something for pain', cna: false, fix: (v, d) => `Pain ${v.pain} out of 10 on the ${ageNum(d) >= 8 ? 'numeric' : 'faces'} scale. Check the MAR for what's ordered and when it was last given.`, ok: (d, P, v) => v.pain >= 4 && ageNum(d) >= 3 },
-      { id: 'play', text: 'says their child is bored and wants something to do', cna: true, fix: 'Games and a movie from child life.', ok: (d) => ageNum(d) >= 3 },
-      { id: 'break', text: 'asks if someone can sit with their child while they grab food', cna: true, fix: 'Sat in for fifteen minutes while the parent got something to eat.', ok: (d) => !!d.family && d.family.mode === 'bedside' },
+      { id: 'pain', text: 'says {kid} needs something for pain', cna: false, fix: (v, d) => `Pain ${v.pain} out of 10 on the ${ageNum(d) >= 8 ? 'numeric' : 'faces'} scale. Check the MAR for what's ordered and when it was last given.`, ok: (d, P, v) => v.pain >= 4 && ageNum(d) >= 3 },
+      { id: 'play', text: 'says {kid} is bored and wants something to do', cna: true, fix: 'Games and a movie from child life.', ok: (d) => ageNum(d) >= 3 },
+      { id: 'break', text: 'asks if someone can sit with {kid} while they grab food', cna: true, fix: 'Sat in for fifteen minutes while the parent got something to eat.', ok: (d) => !!d.family && d.family.mode === 'bedside' },
       { id: 'cold', text: 'wants a warm blanket', cna: true, fix: 'Warm blanket from the warmer.' },
     ],
   };
@@ -663,8 +663,9 @@ window.Shift = window.Shift || {};
       const n = opts[seed(d.id + ':' + Math.floor(s.t / 10)) % opts.length];
       const fix = typeof n.fix === 'function' ? n.fix(v, d) : n.fix;
       const who = (k === 'peds' || d.newborn) && d.family ? d.family.name : d.short;
-      P.bell = { at: s.t, id: n.id, text: n.text, cna: n.cna, fix, who }; P.lastBell = s.t; s.lastBell = s.t;
-      const text = k === 'psych' ? `${d.short} is at the nurses' station asking ${n.text}.` : `Call light in ${d.room}: ${who} ${n.text}.`;
+      const ntx = n.text.replace(/\{kid\}/g, d.short);
+      P.bell = { at: s.t, id: n.id, text: ntx, cna: n.cna, fix, who }; P.lastBell = s.t; s.lastBell = s.t;
+      const text = k === 'psych' ? `${d.short} is at the nurses' station asking ${ntx}.` : `Call light in ${d.room}: ${who} ${ntx}.`;
       const cn = (c.staff[cnaKey(c)] || {}).name || 'your aide', gone = aideAway(s, c);
       A.msg({ from: gone ? 'nova' : cnaKey(c), pid: d.id, bell: true, text, replies: gone ? [{ label: `I'll go`, act: 'goto', pid: d.id }] : [{ label: `I'll go`, act: 'goto', pid: d.id }, { label: `${cn}, can you take it?`, act: 'bell-cna', pid: d.id }] });
     });
@@ -710,7 +711,7 @@ window.Shift = window.Shift || {};
     items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: !/^Full code/.test(liveDef(s, d).code) });
     if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     const recent = [];
-    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; const ts = m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []; ts.filter((t) => t >= o.at - 180 && t <= o.at).forEach((t) => recent.push([t, m.name])); });
+    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; const ts = m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []; ts.filter((t) => t >= o.at - 180 && t <= o.at).forEach((t) => recent.push([t, m.infusion ? m.name + ' (pump changed)' : m.name])); });
     if (recent.length) items.push({ id: 'meds', label: `Last doses: ${recent.sort((a, b) => b[0] - a[0]).slice(0, 3).map(([t, n]) => `${n} at ${A.clock(t)}`).join(', ')}`, key: true });
     sp.extra.forEach((x, i) => items.push({ id: 'x' + i, label: x.label, key: !!x.key }));
     if (d.family) items.push({ id: 'fam', label: `Family: ${d.family.name} (${d.family.rel.toLowerCase()})`, key: false });
@@ -880,13 +881,14 @@ window.Shift = window.Shift || {};
     const nw = P.orders.filter((o) => o.isNew).slice(-2);
     if (nw.length) items.push({ id: 'orders', label: `New this shift: ${nw.map((o) => o.text.split('.')[0]).join('; ')}`, key: true });
     const prn = [];
-    (d.meds || []).filter((m) => m.prn).forEach((m) => { const g = s.meds[m.id].given; if (g.length && g[g.length - 1] >= s.t - 150) prn.push(`${m.name} at ${A.clock(g[g.length - 1])}`); });
-    if (prn.length) items.push({ id: 'prn', label: `PRNs given: ${prn.join(', ')}`, key: true });
+    (d.meds || []).filter((m) => m.prn).forEach((m) => { const g = s.meds[m.id].given; if (g.length && g[g.length - 1] >= s.t - 150) prn.push(m.infusion ? `${m.name} changed at ${A.clock(g[g.length - 1])}` : `${m.name} at ${A.clock(g[g.length - 1])}`); });
+    if (prn.length) items.push({ id: 'prn', label: `PRNs and drips this shift: ${prn.join(', ')}`, key: true });
     const next = (d.meds || []).filter((m) => !m.prn && m.due !== undefined && s.meds[m.id].status === 'due' && m.due > s.t - 60 && (!m.available || m.available(s, s.p[d.id]))).map((m) => `${m.name} ${A.clock(m.due)}`);
     if (next.length) items.push({ id: 'next', label: `Meds still due: ${next.join(', ')}`, key: true });
     if (!/No known/.test(liveDef(s, d).allergies)) items.push({ id: 'allergy', label: `Allergy: ${liveDef(s, d).allergies.split('.')[0]}`, key: true });
     if (!/^Full code/.test(liveDef(s, d).code)) items.push({ id: 'code', label: `Code status: ${liveDef(s, d).code.split(',')[0]}`, key: true });
     if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
+    if (d.reportExtra) (d.reportExtra(s, P, A) || []).forEach((x, i) => items.push(Object.assign({ id: 'rx' + i }, x)));   // case-specific lines the next nurse must hear
     if (P.bell) items.push({ id: 'bell', label: `Still waiting: ${P.bell.who} ${kindOf(A.c) === 'psych' ? 'asked ' : ''}${P.bell.text}`, key: true });
     items.push({ id: 'dx', label: `Here for: ${d.reason}`, key: false });
     const nz = NOISE[kindOf(A.c)], a = seed(d.id + 'r') % nz.length;

@@ -65,12 +65,13 @@
   "cost": 3,
   "exp": 20,
   "ping": "Pat: \"Nova says you're taking the next two admissions. Both are coming up now.\"",
+  "after": "Nova: \"I moved both admissions to the float nurse. Your assignment stays as it is.\"",
   "text": {
-   "med": "You already have five patients, one on a heparin drip and one fresh post-op. Two more makes seven, both admissions on new insulin drips. Two nurses called out and no one has been called in.",
-   "psych": "You already have eight patients, two on one-to-one observation covered by sitters who are due for breaks. Two more admissions, one coming in restrained from the ED. Two nurses called out.",
-   "peds": "You already have four patients, one an infant on hourly respiratory checks. Two more means six, both under two years old on IV fluids. Two nurses called out.",
-   "ob": "You already have four mother-baby couplets. Two more couplets means twelve patients, one mom with a postpartum hemorrhage earlier today. Two nurses called out.",
-   "ed": "You already have five beds, one patient on a titrating drip waiting for an ICU bed. Two more ambulances are about to roll into your section. Two nurses called out."
+   "med": "You already have a full assignment, and the hall has a heparin drip and a fresh post-op that aren't yours to hand off. Two more means two new insulin drips on top of it. Two nurses called out and no one has been called in.",
+   "psych": "You already have a full assignment, and the unit has two patients on one-to-one observation with sitters due for breaks. Two more admissions, one coming in restrained from the ED. Two nurses called out.",
+   "peds": "You already have a full assignment, including an infant on hourly respiratory checks. Two more means two more children under two on IV fluids. Two nurses called out.",
+   "ob": "You already have a full assignment. Two more couplets means four more patients, one mom with a postpartum hemorrhage earlier today. Two nurses called out.",
+   "ed": "Your beds are full, one patient on a titrating drip waiting for an ICU bed. Two more ambulances are about to roll into your section. Two nurses called out."
   },
   "q": "What do you do?",
   "opts": [
@@ -2355,7 +2356,7 @@
   "ping": "{rn}, coming on for night shift: \"Let's just do report at the station. I'm slammed.\"",
   "text": {
    "med": "Your patients: a heparin drip with a new rate, a PCA, a fresh post-op and a confused patient on a bed alarm.",
-   "psych": "Your patients: one on 15-minute checks for suicide risk, one new admission, one who refused meds and one waiting on a hold evaluation.",
+   "psych": "Your patients need a real handoff: one on 15-minute checks for suicide risk, one who refused meds, one waiting on a hold evaluation.",
    "peds": "Your patients: an infant on high-flow, a toddler with a fresh IV, a teen on a PCA and a new admission.",
    "ob": "Your patients: a mom on magnesium, a fresh cesarean with an epidural still in, and two couplets with babies due for bilirubin checks.",
    "ed": "Your beds: a patient on a nitroglycerin drip, a hip fracture going upstairs, a stroke alert back from CT and an intoxicated patient on a sitter."

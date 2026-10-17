@@ -32,7 +32,7 @@
      pulled down or broken, so they get a painted mural; med and peds get the patient whiteboard. */
   function wallArt(kind, s, tele) {
     if (kind === 'psych') return `<g opacity=".9" transform="translate(-20 44)"><rect x="808" y="64" width="190" height="104" rx="52" fill="#E8D7BC" opacity=".55"/><path d="M816 150 q40 -46 82 -18 q38 -40 92 -6 V168 H816 Z" fill="#9DBF9C" opacity=".7"/><circle cx="954" cy="96" r="14" fill="#F2C46B" opacity=".85"/><path d="M842 120 q8 -8 16 0 M872 108 q7 -7 14 0" stroke="#7A8C9A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/></g>`;
-    const k = S.engine.getCase(s.caseId) || {}, aide = ((k.staff || {})[k.cna] || {}).name || '', blue = '#2B4C8C', red = '#B83A2E', green = '#2E7B4E';
+    const k = S.engine.getCase(s.caseId) || {}, aide = k.delegation && k.delegation.away && k.delegation.away(s) ? '' : ((k.staff || {})[k.cna] || {}).name || '', blue = '#2B4C8C', red = '#B83A2E', green = '#2E7B4E';
     const H = 'font-family="Kalam, Segoe Print, cursive"';
     const head = kind === 'peds' ? `<text x="826" y="84" ${H} font-size="17" font-weight="700" fill="${red}">Hi! I'm your nurse</text><path d="M968 66 l5 10 11 2 -8 8 2 11 -10 -5 -10 5 2 -11 -8 -8 11 -2 Z" fill="none" stroke="#D9A21E" stroke-width="2"/>` : `<text x="826" y="84" ${H} font-size="16" font-weight="700" fill="${blue}">Your care team</text>`;
     return `<g transform="${tele ? 'translate(150 62) scale(.8)' : 'translate(-24 48) scale(.92)'}"><rect x="812" y="58" width="184" height="124" rx="3" fill="#FCFCFA" stroke="#B8BCC0" stroke-width="4"/><rect x="812" y="176" width="184" height="8" rx="2" fill="#9EA4AA"/><rect x="900" y="172" width="22" height="6" rx="2" fill="${blue}"/>

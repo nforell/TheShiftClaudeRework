@@ -293,6 +293,8 @@
           return `The reason is charted: he threw a chair at staff after verbal de-escalation and an oral PRN were refused. But the three-person hold isn't charted as a restraint. There's no face-to-face evaluation; for a 14:30 hold it's due by 15:30. And nothing says his mom was told.`; } },
       { id: 'ben', label: `Ask Ben (day RN) to chart the 14:30 hold as a restraint before he leaves`, cost: 2, avail: (s, P) => P.docRev !== null && P.benAsked === null && !P.selfCharted && s.t <= 45,
         run(s, P, A) { P.benAsked = s.t; A.judge('405-ben', 'comm', 1, `You asked Ben to chart the hold he was part of.`, `The restraint record comes from someone who was there: who held, how, for how long, any injury, and when it ended. Report gives you the story; it doesn't let you chart it as your own observation.`, '405'); A.note('405', 'Ben, day RN', `Late entry for 14:28. Three-person standing hold (Ben RN, Tasha MHW, security officer Dale) for haloperidol 5 mg IM, left thigh, after he threw a chair at staff; verbal de-escalation and oral PRN refused first. Hold about 90 seconds, ended when the injection was given. No injuries to patient or staff. Charted as a restraint episode.`); return `Ben groans, then nods. "You're right. It was a hold. I'll do it now, before I go." Five minutes later his late entry is in.`; } },
+      { id: 'benlate', label: 'Ask Nova to reach Ben so he charts the 14:30 hold as a late entry', cost: 2, avail: (s, P) => P.docRev !== null && P.benAsked === null && !P.selfCharted && s.t > 45,
+        run(s, P, A) { P.benAsked = s.t; A.judge('405-ben', 'comm', 1, `You got Ben to chart the hold he was part of, as a late entry.`, `The restraint record comes from someone who was there. When they've left, the charge nurse reaches them and they add a dated late entry. You don't write it for them.`, '405'); return `Nova calls Ben. He logs in from home and charts the hold as a late entry: three staff, about two minutes, no injury, released after the IM.`; } },
       { id: 'selfchart', label: 'Chart the 14:30 hold yourself, from report', cost: 4, avail: (s, P) => P.docRev !== null && P.benAsked === null && !P.selfCharted,
         run(s, P, A) { P.selfCharted = true; A.judge('405-selfchart', 'comm', -1, `You charted a restraint you didn't witness.`, `You weren't there. The nurse who was part of the hold documents it; you can make sure they do. If they've gone home, they call in a late entry.`, '405'); return 'You write it up from what Ben told you in report. It reads fine. It just isn\'t yours to write.'; } },
       { id: 'mom', label: 'Call his mom: tell her about the hold and the medication', cost: 5, avail: (s, P) => P.docRev !== null && P.momCalled === null,
@@ -434,6 +436,7 @@
     onClue(id, s, P) { if (id === 'letter') P.k.note = s.t; },
     rig: (s, P) => ({ anxious: P.shaken ? .9 : P.disclosed && !P.reported ? .6 : .4 }),
     status: (s, P) => (P.shaken ? 'urgent' : P.disclosed && !P.reported ? 'watch' : 'stable'),
+    reportExtra: (s, P) => (P.disclosed ? [{ label: P.reported ? `Disclosed abuse; mandated report made${P.reportAt != null ? ' at ' + clock(P.reportAt) : ''}. Rick Dawson is not to visit.` : 'Disclosed abuse; the mandated report has NOT been made yet', key: true }] : []),
     outcome(s, P) {
       if (P.rickIn && !P.disclosed) return { tone: 'bad', title: 'He visited. No one asked her why she was afraid.', text: `She came out of the visit shaking. The visitor list, the lock on her door and the hoodie were all in report.` };
       if (P.rickIn) return { tone: 'bad', title: 'He visited after she told you', text: `She disclosed, and he was on the unit two hours later. Her trust in adults just took the hit she was afraid of.` };
@@ -738,7 +741,7 @@
     else {
       if (M.f2fAt === null && !M.icu) A.judge('405-f2f-none', 'safety', -2, `Jaylen never had a face-to-face evaluation after his hold.`, `Every restraint for violent behavior needs an in-person provider evaluation within one hour. Late is better than never; never is a citation.`, '405');
       if (M.momCalled === null) A.judge('405-mom-none', 'comm', -1, `Jaylen's mom was never told about the hold or the emergency medication.`, `Parents of minors are notified promptly of restraint, seclusion or emergency medication.`, '405');
-      if (M.benAsked === null && !M.selfCharted) A.judge('405-hold-uncharted', 'comm', -1, `The 14:30 hold was never charted as a restraint.`, `A hold to give medication against someone's will is a restraint. The nurse who was there documents it.`, '405');
+      if (M.benAsked === null && !M.selfCharted) A.judge('405-hold-uncharted', 'comm', M.docRev === null ? -0.5 : -1, M.docRev === null ? `Nobody caught that the day shift's 14:30 hold was never charted as a restraint.` : `The 14:30 hold was never charted as a restraint.`, `It was the day nurse's to chart, but once you know it's missing it's yours to get fixed: review the chart early (Talk & call or Care), then ask the nurse who was there to document it, even as a late entry. A hold to give medication against someone's will is a restraint.`, '405');
     }
     if (!M.icu && M.dys > 0 && M.dphAt === null) A.judge('405-untreated', 'meds', -2, `Jaylen's dystonia was never treated.`, `The antidote was on his PRN list the whole shift.`, '405');
     if (M.dphAt !== null && !M.reported && !M.icu) A.judge('405-norep', 'comm', -1, `The psychiatrist never heard about Jaylen's dystonic reaction.`, `Haloperidol is still a PRN on his chart. The next nurse could give it again.`, '405');
@@ -794,6 +797,7 @@
       judge(r, A) {
         if (r[0] === '405') A.judge('rank-first', 'priority', 2, `You chose to see Jaylen first.`, `Emergency IM haloperidol 30 minutes ago, his first ever, in a 14-year-old boy: his post-IM checks are due, and young males are at the highest risk of acute dystonia. The newest, least known risk goes first.`, '405');
         else if (r[0] === '403') A.judge('rank-first', 'priority', 1, `You chose to see Jordan first.`, `A strong instinct: a missed skin check after a hard phone call is a real safety gap. Jaylen's post-IM checks were due first, though.`, '403');
+        else if (r[0] === '401') A.judge('rank-first', 'priority', 0, `You chose to see Ella first.`, `Defensible: refeeding with a heart rate in the 40s is high risk. But her risk is known and on a monitoring plan; Jaylen's first-ever IM haloperidol 30 minutes ago is the newest, least-known risk on the hall.`, '401');
         else A.judge('rank-first', 'priority', -1, `You put ${A.def(r[0]).short} first, ahead of Jaylen and Jordan.`, `Fresh emergency medication and a possible new self-harm come before known, monitored problems.`, '405');
       },
       correct: ['405', '403', '401', '407'],

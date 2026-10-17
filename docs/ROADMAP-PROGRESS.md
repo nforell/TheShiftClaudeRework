@@ -2,6 +2,32 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 22 — October 14 to 16, 2026 (branch `playtest-round2`, rebased on `pilot-privacy`)
+
+Nick's ask: a second AI regression pass replayed all 11 shifts against the Session 20 fixes (about 77% verified fixed) and listed what's still broken plus new bugs.
+
+### Done
+- **Backwards hold teaching (highest priority).** The SBAR reply to a reported hold said "holding was right: the numbers were outside the parameter" whenever any check was flagged, even when the flagged check wasn't the hold criterion. It now names exactly what supported the hold, or says the numbers don't meet the hold criteria and the order says give. The hold reason is now "Meets the hold parameter" (was "Outside the hold parameter"), and the warning says "None of these meet the hold criteria… this dose should be given."
+- **Held doses can be un-held** from the medication sheet.
+- **Discontinued doses aren't "missed."** The engine drops any "never given or held" finding for an order that was discontinued or replaced (the spironolactone contradiction).
+- **Drips:** stopping or adjusting an infusion is logged as "stopped" / "rate changed", not "given", in the record, SBAR and both handoffs. The MAR shows the live rate or "stopped 09:12" (magnesium, heparin, diltiazem).
+- **Choice messages:** a banner with several replies used to show one "Respond" button that silently sent the first reply (Kofi). It now opens the phone with the choices.
+- **Floated aide:** pending tasks are handed back with a message, the whiteboard, Talk & call and Ask buttons drop her, and tapping her explains she's gone.
+- **ICU family meeting** is on the task list (and the invite says it's joined from 714's Care tab).
+- **4 West sepsis bundle:** the rapid-response path now records the cultures and lactate it says it drew.
+- **Step-down:** a post-cath sit-up is always scored, whatever route led to it; a flat patient's "reposition" call light keeps them flat.
+- **Hypothetical floor call** ("Two more admissions"): no more patient counts that contradict your real census, and Nova tells you where the admissions went.
+- **Adult psych dayroom fight:** the alert has real choices (go separate them, or leave it to Andre) with feedback and a resolution message.
+- **Teen psych:** Ella-first triage is neutral, not a miss; a way to get the day nurse to chart the 14:30 hold as a late entry after he's gone home; the missed-hold ding is smaller if you never found it; mandated-report status is in the oncoming report for Kayla and Noah; the provider's role shows on the call button.
+- **Peds:** call lights name the child ("says Leo needs something for pain"); ages read "3 yr, M" instead of "3M"; Leo's weight, history and old orders update after the correction (old ones marked DISCONTINUED).
+- **Text:** loosened the line clamps that cut sentences in banners, speech bubbles, action notes and report headers; narration no longer says "twenty minutes later" for a 5-minute action; acronyms survive lowercasing ("UTI", not "uTI"); old labs say "Yesterday 07:40"; the debrief score count always lands on the final number.
+- **Fairer feedback:** IV hydromorphone before 08:30 (oral oxycodone not yet due) is a judgment call, not a miss.
+- v0.6.6-beta. `tests/playtest.py` extended.
+
+### Not changed
+- L&D "Concerning" tags: 223 (TOLAC) and 224 (GBS untreated) are meant to stay on watch; 221 and 222 were fixed in Session 20.
+- Peds "systolic from the RR value": couldn't reproduce; the comparison reads each vital from its own field.
+
 ## Session 21 — October 16, 2026 (branch `pilot-privacy`)
 
 Nick's ask: get the backend ready for a nursing-school pilot (Hopkins or another program).
