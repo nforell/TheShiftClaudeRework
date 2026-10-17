@@ -38,7 +38,9 @@ with sync_playwright() as p:
     pg.fill('#su-email', 'not-an-email'); pg.click('#signup button[type=submit]')
     check('err' in pg.get_attribute('#su-msg', 'class'), 'signup rejects a bad email')
     pg.fill('#su-email', 'student@example.com'); pg.select_option('#su-role', 'student'); pg.click('#signup button[type=submit]')
-    check('on the list' in pg.inner_text('#su-msg'), 'signup confirms')
+    pg.wait_for_function("/on the list|reach/.test(document.getElementById('su-msg').innerText)", timeout=10000)
+    check('on the list' in pg.inner_text('#su-msg'), 'signup confirms once PostHog has it')
+    check(pg.locator('.shift-card a[href="/play/?shift=icu-3w-1"]').count() == 1 and pg.locator('.shift-card a[href^="/play/?shift="]').count() == 11, 'every shift card links to its own shift')
     pg.evaluate("Shift.tel.flush()"); pg.wait_for_timeout(500)
     lv = next((e for e in sent if e['event'] == 'landing_view'), None)
     check(bool(lv) and lv['properties'].get('first_source') == 'tiktok' and lv['properties'].get('first_campaign') == 'launch', 'landing_view carries the campaign')
@@ -76,6 +78,19 @@ with sync_playwright() as p:
     check(len(ids) == 1 and all(len(i) > 10 for i in ids), 'one anonymous id per install')
     comp = next((e for e in sent if e['event'] == 'shift_complete'), {'properties': {}})['properties']
     check(comp.get('case') == 'medsurg-4w-1' and isinstance(comp.get('score'), int), 'shift_complete has case and score')
+    # A signup that can't reach PostHog doesn't claim success; it's kept and resent on the next visit.
+    c2 = b.new_context(viewport={'width': 390, 'height': 844}); c2.add_init_script(f"window.Shift={{config:{{posthogKey:'phc_test',posthogHost:'{PH}'}}}};")
+    c2.route(SITE + '/**', serve); c2.route(PH + '/**', lambda r: r.abort()); p2 = c2.new_page(); fontroute(p2)
+    p2.goto(SITE + '/'); p2.wait_for_timeout(200); p2.fill('#su-email', 'offline@example.com'); p2.click('#signup button[type=submit]')
+    p2.wait_for_function("/on the list|reach/.test(document.getElementById('su-msg').innerText)", timeout=12000)
+    msg = p2.inner_text('#su-msg')
+    check('on the list' not in msg and 'reach' in msg and p2.locator('#su-msg a[href^="mailto:"]').count() == 1, 'an unreachable signup says so and offers email instead')
+    check('offline@example.com' in (p2.evaluate("localStorage.getItem('theshift.tel.signups')") or ''), 'and keeps the signup on the device')
+    c2.unroute(PH + '/**'); late = []
+    c2.route(PH + '/**', lambda r: (late.extend(json.loads(r.request.post_data or '{}').get('batch', [])), r.fulfill(status=200, body='{}', headers={'Access-Control-Allow-Origin': '*'})))
+    p2.goto(SITE + '/'); p2.wait_for_timeout(2500)
+    check(any(e['event'] == 'beta_signup' and e['properties'].get('$set', {}).get('email') == 'offline@example.com' for e in late) and not p2.evaluate("localStorage.getItem('theshift.tel.signups')"), 'the next visit sends it and clears the copy')
+    c2.close()
     check(not any('@' in json.dumps(e) for e in sent if e['event'] not in ('feedback', 'beta_signup')), 'no email addresses in usage events')
     # Opt out: nothing more is sent, and the queue is dropped.
     n0 = len(sent)
