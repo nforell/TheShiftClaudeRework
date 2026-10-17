@@ -2,6 +2,20 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 21 — October 16, 2026 (branch `pilot-privacy`)
+
+Nick's ask: get the backend ready for a nursing-school pilot (Hopkins or another program).
+
+### Done
+- **Instructors see only what happened after a student joined.** New `teaches_at()` in `supabase/classes-and-pack.sql`: a student's shifts and practice questions are visible to an instructor only from the moment they joined that instructor's class. Practice from before, or done for another instructor's class, stays the student's own. The privacy page says so.
+- **Delete your account.** `delete_my_account()` in `supabase/schema.sql` removes the sign-in and, by cascade, saves, memberships, results, purchases and any classes the person runs. In the game: **Menu → Your account → Delete your account**, with a confirm that says what goes. Progress on the device stays until reset. The privacy page points to it.
+- Tests: `tests/sql/policies.mjs` checks both against real Postgres (PGlite); `tests/teach.py` and the stand-in mirror the new rules.
+
+### Needs Nick
+- **Run both SQL files again** in Supabase → SQL Editor (`schema.sql`, then `classes-and-pack.sql`). Both are safe to rerun; nothing is lost.
+- Finish `docs/EMAIL-SETUP.md` (domain, Resend, custom SMTP). Until then, students outside the Supabase team can't sign in.
+- Supabase Pro before the pilot (free projects pause when idle and have no backups).
+
 ## Session 20 — October 14, 2026 (branch `playtest-fixes`)
 
 Nick's ask: an AI playtester (Muse) played all 11 shifts end to end and wrote a report. Fix what it found and improve where it makes sense.

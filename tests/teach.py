@@ -63,6 +63,7 @@ with sync_playwright() as p:
     check(any(m['user_id'] == 'u-ana' and m['display_name'] == 'Ana Ruiz' for m in db.members), 'student joined with their name')
     check('You\'re in NURS 310 Tuesday' in A.content() and A.locator('.cls-list li').count() == 1, 'game confirms and lists the class')
     A.screenshot(path=str(OUT / 'class-join.png'))
+    play(A, 'medsurg-4w-2', ngn=True)   # after joining: this one is the instructor's to see
 
     # Student 2 joins first, then plays signed in: uploads right away.
     B2 = device(b, db, '/play/', 'ben', errs); signin(B2, 's2'); H(B2, 'cls'); B2.wait_for_timeout(300)
@@ -83,6 +84,9 @@ with sync_playwright() as p:
     T.click('[data-act=tab][data-v=students]'); T.wait_for_timeout(200)
     names = T.locator('tbody [data-act=student]').all_inner_texts()
     check(names == ['Ana Ruiz', 'Ben Okafor'], f'roster lists the class ({names})')
+    T.click('tbody [data-act=student] >> text=Ana Ruiz'); T.wait_for_timeout(200)
+    check(T.locator('.card h3').count() == 1 and 'Days on 4 West' not in T.inner_text('.card h3'), 'what a student played before joining stays private')
+    T.click('[data-act=back]')
     check('other@' not in T.content() and 'u-out' not in T.content(), 'someone outside the class never shows')
     T.screenshot(path=str(OUT / 'teach-students.png'), full_page=True)
     T.click('tbody [data-act=student] >> text=Ben Okafor'); T.wait_for_timeout(200)
@@ -106,6 +110,13 @@ with sync_playwright() as p:
     check(T.locator('tbody [data-act=student]').all_inner_texts() == ['Ben Okafor'], 'roster updates after leaving')
     T.on('dialog', lambda d: d.accept()); T.click('[data-act=remove]'); T.wait_for_timeout(800)
     check(not db.members and 'No students yet' in T.content(), 'instructor can remove a student')
+
+    # The outsider deletes their account from the game.
+    H(O, 'account'); O.wait_for_timeout(200); O.click('[data-act=acct-del-ask]'); O.wait_for_timeout(200)
+    check('Delete your account?' in O.content(), 'deleting asks first and says what goes')
+    O.click('[data-act=acct-del-yes]'); O.wait_for_timeout(700)
+    check('u-out' in getattr(db, 'deleted', []) and not any(r['user_id'] == 'u-out' for r in db.results), 'deleting removes the account and its results')
+    check(O.evaluate("Shift.cloud.user()") is None and 'Account deleted' in O.content(), 'the game signs out and says the account is gone')
 
     # Phone width and dark mode don't break the dashboard.
     M = device(b, db, '/teach/', 'teach-phone', errs, vw=390); signin(M, 'tt', '/teach/'); M.wait_for_timeout(500)
