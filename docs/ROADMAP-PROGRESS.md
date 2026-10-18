@@ -2,6 +2,28 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 24 — October 17, 2026 (branch `beta-audit`)
+
+Nick's ask: a full beta audit as a first-time nursing student, in the real interface, before a school pilot. Played by real clicks in headless Chromium against a local build: orientation, one full med-surg shift (4 West days) start to debrief and home, then adult psych (3 East) and ICU, plus spot checks of every unit at phone, tablet and desktop widths. The live site and the PR #37 preview can't be reached from the build sandbox; PR #37 was checked from its branch.
+
+### Done
+- **The pointer and task list now rank by acuity.** A new sepsis order (cultures, lactate, antibiotic) waited 80 minutes behind routine assessments. New provider orders and an urgent patient now come first; a row blocked on pharmacy no longer sits at the top.
+- **Urgent patients always have a task.** An ICU patient going bad showed "Nothing overdue". The brain sheet now shows "Needs you now" with where to go.
+- **Feedback uses what the nurse saw.** Lisinopril/losartan were judged on a blood pressure the player never took; they now quote the reading they saw and its time, or say there wasn't a recent one.
+- **Call light answered while you're in the room.** Doing anything at the bedside answers it, instead of scoring it "unanswered".
+- **Sepsis antibiotic delay explained correctly** (pharmacy release vs. the nurse's hang time) and Dr. Chen's reply follows what already happened.
+- **Furosemide held for K 3.3** now teaches: replace the potassium and give the diuretic, then tell the provider.
+- **PRN repeat limits.** About 40 PRN orders had no interval check, including "once" orders. Order frequency now blocks early repeats.
+- **The last debrief survives a reload.** Closing the tab on the debrief lost it; home now offers "See your last debrief".
+- Prep buttons on the med sheet show when they're done; acronyms keep their capitals in the log ("GI", not "gI").
+- **Touch targets:** 44 px at phone width across the game; `tests/audit.js` now fails on small targets, with exceptions documented in ARCHITECTURE.md.
+- `tests/playtest.py` section 12 covers all of the above. v0.6.8-beta.
+
+### Not changed (needs Nick)
+- Psych safety lessons (Daniel's suicide risk) live in conversation, not the task list; a guided student missed it. Design call.
+- Orientation's demo reuses room numbers 412–418 and restarts on refresh; Next is never disabled.
+- Specialty content flagged for RN review is listed in the audit report.
+
 ## Session 23 — October 16, 2026 (branch `smooth-answers`)
 
 Nick's ask: clicking an answer in NCLEX review or the in-game questions gives little sign you picked it and feels like the game refreshed.

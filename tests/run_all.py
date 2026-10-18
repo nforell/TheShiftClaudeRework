@@ -1,5 +1,5 @@
 """Build, then sweep all five shifts at phone and desktop widths, then a soak run, then the telemetry and app tests. Prints one line per run.
-Fails (exit 1) on any JS error, sideways overflow, overlapping text or covered button.
+Fails (exit 1) on any JS error, sideways overflow, overlapping text, covered button or undersized control (tests/audit.js: 24px minimum, 44px tall on phones).
 Usage: python tests/run_all.py   (needs: pip install playwright; playwright install chromium)"""
 import subprocess, sys, json, pathlib, concurrent.futures as cf
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -16,7 +16,7 @@ with cf.ThreadPoolExecutor(3) as ex:
         f = ROOT / 'tests' / 'out' / f'{j[0]}-{j[1]}-{j[2]}.json'
         if not f.exists(): bad += 1; print(f"::error title={j[0]} {j[1]}px {j[2]}::sweep crashed: {out[-280:]}"); continue
         d = json.loads(f.read_text())
-        probs = [f"JS error: {e}" for e in d['errs']] + [f"{r['state']}: {k} {x if k != 'overflow' else r['overflow']}" for r in d['res'] for k in ('overflow', 'overlap', 'covered') for x in (r[k] if isinstance(r[k], list) else ([r[k]] if r[k] else []))]
+        probs = [f"JS error: {e}" for e in d['errs']] + [f"{r['state']}: {k} {x if k != 'overflow' else r['overflow']}" for r in d['res'] for k in ('overflow', 'overlap', 'covered', 'small') for x in (r[k] if isinstance(r[k], list) else ([r[k]] if r[k] else []))]
         if probs:
             bad += 1
             for pr in probs[:4]: print(f"::error title={j[0]} {j[1]}px {j[2]}::{pr[:300]}")   # shows on the GitHub check

@@ -19,7 +19,12 @@ with sync_playwright() as p:
     # A first-time profile opens orientation, which blocks 'new'. Mark it seen; everything else stays first-run.
     pg.evaluate("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{sound:'off',music:'off'},seen:{orient:1}}))")
     pg.reload(); pg.wait_for_timeout(400)
-    H=lambda a,**kw: pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})",[a,kw])
+    def H(a, **kw):
+        # A handler that throws is a failure, but say which one and why (CI logs only show the last line otherwise).
+        try: return pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})",[a,kw])
+        except Exception as e:
+            msg=str(e).splitlines()[0][:200]; where=pg.evaluate("(()=>{const s=Shift.ui._state();return s.caseId+' '+s.t+' '+Shift.ui._ui.view+'/'+Shift.ui._ui.ov})()")
+            errs.append(f'handler {a} {kw} threw at {where}: {msg}'); print('::error title=soak::'+errs[-1], flush=True)
     st=lambda e: pg.evaluate('(()=>{const s=Shift.ui._state();return '+e+'})()')
     print('start', m())
     for case in ['medsurg-4w-1','psych-3e-1','peds-5s-1']:

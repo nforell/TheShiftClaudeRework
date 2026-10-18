@@ -88,6 +88,8 @@ python tests/perf.py medsurg-4w-1             # idle CPU and redraw cost per scr
 
 The sweep visits every screen and sheet (home, report, triage, station, every room and pane, chart tabs, meds, SBAR, delegation, floor calls, transfers, report, debrief, achievements). It checks JavaScript errors, sideways overflow, overlapping text, buttons hidden under something else, small tap targets and clipped text. Results land in `tests/out/`.
 
+**Tap targets fail the build.** At phone widths (≤480 px) every button, link and control must be at least 44 px tall and 24 px wide; wider screens need 24 × 24 (WCAG 2.5.5 / 2.5.8). Documented exceptions, in `tests/audit.js`: links inside running text (`p`, `small`, `.set-sub`), inputs that sit inside a larger label, and the hotspots drawn on the room SVG, which each have a full-size "Look at…" chip below the scene. Fix a failure by giving the control padding or `min-height`, never by shrinking the text.
+
 ## Options as the game grows
 
 In the order I would take them:

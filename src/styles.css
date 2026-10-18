@@ -1214,7 +1214,7 @@ svg.rs.on{fill:var(--gold-hi);stroke:var(--gold)}
 @media (prefers-reduced-motion:reduce){.xpop,.fcall,.reward.play *{animation:none!important}}
 :root[data-motion="reduced"] .reward.play *,:root[data-motion="reduced"] .fcall{animation:none!important}
 .xp .xp-k{display:none}
-@media (max-width:430px){.top .xp b{display:none}.top .xp .xp-k{display:inline}.top .xp.hot .xp-k,.top .xp.hot .xp-ic{display:none}.top .xp{min-height:34px;gap:.2rem}}
+@media (max-width:430px){.top .xp b{display:none}.top .xp .xp-k{display:inline}.top .xp.hot .xp-k,.top .xp.hot .xp-ic{display:none}.top .xp{min-height:44px;gap:.2rem}}
 .cmd-row > *,.goals > *{min-width:0}
 @media (max-width:760px){.cmd-row{grid-template-columns:minmax(0,1fr)}.skip{width:100%;justify-content:flex-start}}
 @media (max-width:400px){.top .roster-btn{display:none}}
@@ -2426,3 +2426,35 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .nb-opt.just.on::before,.bt-col .nb-opt.just.on::after{animation:checkin .22s cubic-bezier(.3,1.6,.5,1)}
 .nb-cell.just.on{animation:cellpop .26s cubic-bezier(.3,1.6,.5,1)}
 @keyframes cellpop{0%{transform:scale(.8)}60%{transform:scale(1.12)}}
+
+/* ---------- Touch targets (WCAG 2.5.5 / 2.5.8) ----------
+   Every control is at least 24px everywhere, and on phones the ones you tap with a thumb get a real 44px box.
+   The logo keeps its look: the dark pill is painted at its old height inside a taller, transparent button. */
+.mark{min-height:44px;display:inline-flex;align-items:center;background:linear-gradient(var(--ink),var(--ink)) center/100% 1.6em no-repeat;border-radius:0}
+.nb-chip{min-height:32px}
+@media (max-width:640px){
+  .cmd-go{min-height:44px;display:flex;align-items:center}
+  .toast .btn,.toast .tb .btn.sm{min-height:44px;min-width:44px;padding:.3em .8em}
+  .rk-peek,.rpt-btn,.acct-link{min-height:44px;display:inline-flex;align-items:center}
+  .rk-peek{display:flex}
+  .mv .btn,.ro-mv .btn{min-width:44px;min-height:44px}
+  .xp,.cr-les,.chip,.seg button,.prep .btn,.chart-tabs button,.sheet-f .btn,.ps-pts .ps{min-height:44px}
+  .nb-chip{min-height:44px;padding:.35rem .65rem;margin:.15rem 0}
+  .ngn-cloze{line-height:2.6}
+  .icon-btn{min-width:44px}
+  .sb-go{min-height:44px}
+  .setrow a,.set-sub a{display:inline-flex;align-items:center;min-height:44px}
+  .rank .mv .btn,.msg .rep .btn,.chart-h .btn,.look,.xp,.due li.tap,[data-act="roster"].btn{min-height:44px}
+  .rank .mv .btn{min-width:44px}
+  .due li.tap{display:flex;align-items:center}
+  .top .icon-btn{min-width:44px}
+  .tally{min-height:44px}
+  .ngn-note{line-height:2.4}.ngn-note .nb-hl{padding:.55em .15em}
+}
+
+.rw-more summary{min-height:28px;display:flex;align-items:center;cursor:pointer}
+@media (max-width:640px){.rw-more summary{min-height:44px}}
+@media (max-width:640px){
+  .ro-f .btn,.or-skip-m,.cv-away,.sw-btn,.gd-go,.intro-skip,.res-msgs,.line,.b-row,.btn{min-height:44px}
+}
+.prep .btn.prep-done{border-color:color-mix(in srgb,var(--good) 45%,var(--line));background:color-mix(in srgb,var(--good) 7%,var(--surface))}.prep .btn.prep-done .ico{width:16px;height:16px;color:var(--good)}
