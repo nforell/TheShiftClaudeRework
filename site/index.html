@@ -3,242 +3,153 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Shift — a nursing shift simulator (beta)</title>
-<meta name="description" content="A free nursing clinical-judgment simulator. Take report, walk the hall, decide who needs you first, and see in the debrief what your choices did.">
-<meta name="theme-color" content="#22406A">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<meta property="og:type" content="website">
-<meta property="og:title" content="The Shift — a nursing shift simulator">
-<meta property="og:description" content="Take report, decide who to see first, and work a nursing shift in about 20 minutes. Free, in your browser.">
-<meta property="og:image" content="/assets/room.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2322406A'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23FAF8F3' stroke-width='5'/%3E%3Cpath d='M32 32V18M32 32l-6.5 11' stroke='%23FAF8F3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#f5f2eb">
+<meta name="description" content="The Shift is a free, browser-based nursing simulation. Take report, prioritize your patients, make clinical decisions and see their consequences. Eleven playable shifts.">
+<meta property="og:type" content="website"><meta property="og:title" content="The Shift — Your patients are waiting."><meta property="og:description" content="Four patients. One shift. Every decision counts. A clinical judgment game built by a nurse.">
+<title>The Shift — Your patients are waiting.</title>
+<link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght,SOFT,WONK@9..144,600,0,0;9..144,700,0,0&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#ECE9E1;--surface:#FAF8F3;--paper:#FFFEF9;--ink:#1C2330;--ink-2:#59606B;--line:#D3CEC2;--navy:#22406A;--navy-ink:#fff;--red:#B8281F;--yellow:#F2C12E;--pen:#2B4C8C;--grid:#E4E8EE;
-  --sans:"Atkinson Hyperlegible Next",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"Atkinson Hyperlegible Mono",ui-monospace,Menlo,monospace;--sign:"Barlow Condensed","Arial Narrow",sans-serif;--hand:"Kalam","Segoe Print",cursive;--max:1120px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161C;--surface:#1A1F27;--paper:#1E242D;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--navy:#93B4E4;--navy-ink:#0F1B2C;--red:#F07A70;--pen:#9DB8EC;--grid:#262D38}}
-:root[data-theme="dark"]{--bg:#12161C;--surface:#1A1F27;--paper:#1E242D;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--navy:#93B4E4;--navy-ink:#0F1B2C;--red:#F07A70;--pen:#9DB8EC;--grid:#262D38}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-img{display:block;max-width:100%;height:auto}
-:focus-visible{outline:3px solid var(--navy);outline-offset:3px}
-.wrap{max-width:var(--max);margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
-.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:1rem;height:60px}
-.mark{font-family:var(--sign);font-weight:700;font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;background:var(--ink);color:var(--bg);padding:.28em .55em .22em;border-radius:2px;line-height:1}
-.beta{font-family:var(--hand);font-size:1rem;color:var(--red);transform:rotate(-6deg);display:inline-block;margin-left:.2rem}
-.top nav{margin-left:auto;display:flex;align-items:center;gap:.2rem}
-.top nav a.lnk{font-size:.95rem;color:var(--ink-2);text-decoration:none;padding:.5em .7em}
-.top nav a.lnk:hover{color:var(--ink);text-decoration:underline}
-@media (max-width:640px){.top nav a.lnk{display:none}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:46px;padding:.6em 1.2em;border-radius:3px;border:1px solid var(--ink);background:transparent;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;color:var(--ink)}
-.btn:hover{background:var(--surface)}
-.btn-primary{background:var(--navy);border-color:var(--navy);color:var(--navy-ink)}
-.btn-primary:hover{background:var(--navy);filter:brightness(1.1)}
-.btn-sm{min-height:38px;padding:.35em .9em;font-size:.95rem}
-h1,h2,h3{font-family:var(--sign);font-weight:600;letter-spacing:0;line-height:1.05;margin:0}
-h1{font-size:clamp(2.6rem,6.5vw,4.6rem)}
-h2{font-size:clamp(2rem,4vw,2.8rem)}
-h3{font-size:1.45rem}
-.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(1.5rem,4vw,3rem);align-items:center;padding-top:clamp(2.5rem,6vw,4.5rem)}
-.lede{font-size:1.12rem;color:var(--ink-2);margin:1.1rem 0 0;max-width:34rem}
-.cta{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.6rem;align-items:center}
-.meta{font-size:.92rem;color:var(--ink-2);margin:0}
-.shot{border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:3px;overflow:hidden;background:var(--surface);box-shadow:0 14px 30px -18px rgba(0,0,0,.45)}
-.cap{font-size:.92rem;color:var(--ink-2);margin:.7rem 0 0}
-.cap b{font-family:var(--mono);font-weight:600;color:var(--ink);font-size:.86rem}
-@media (max-width:860px){.hero{grid-template-columns:1fr}}
-section{padding:clamp(3.5rem,8vw,6rem) 0 0}
-.sec-h{max-width:40rem;margin-bottom:1.8rem}
-.sec-h p{color:var(--ink-2);margin:.7rem 0 0;font-size:1.05rem}
-/* the note from Nick, on a brain sheet */
-.note{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:2rem;align-items:start;background:var(--paper);border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);padding:clamp(1.4rem,4vw,2.4rem);box-shadow:0 10px 24px -18px rgba(0,0,0,.4)}
-.note h2{border-bottom:2px solid var(--ink);padding-bottom:.3rem;margin-bottom:1rem}
-.note p{margin:0 0 .9rem;font-size:1.06rem;line-height:1.75;max-width:40rem}
-.note .sig{font-family:var(--hand);font-size:1.6rem;color:var(--pen);margin:.4rem 0 0;line-height:1.2}
-.note .cred{font-size:.92rem;color:var(--ink-2)}
-.note img{width:200px;height:240px;object-fit:cover;border:6px solid #fff;box-shadow:0 8px 18px -10px rgba(0,0,0,.5);transform:rotate(2deg)}
-@media (max-width:700px){.note{grid-template-columns:1fr}.note img{width:160px;height:190px}}
-/* how a shift goes: a timeline, not cards */
-.tl{border-top:2px solid var(--ink)}
-.tl-row{display:grid;grid-template-columns:7.5rem minmax(0,.9fr) minmax(0,1.1fr);gap:1.6rem;padding:1.6rem 0;border-bottom:1px solid var(--line);align-items:start}
-.tl-row .t{font-family:var(--sign);font-size:1.9rem;font-weight:600;line-height:1}
-.tl-row .t small{display:block;font-family:var(--sans);font-size:.8rem;font-weight:400;color:var(--ink-2);margin-top:.3rem}
-.tl-row p{margin:.4rem 0 0;color:var(--ink-2)}
-.tl-row .shot img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top left}
-@media (max-width:860px){.tl-row{grid-template-columns:5rem minmax(0,1fr)}.tl-row .shot{grid-column:1/-1}}
-/* shifts: a schedule */
-.sched{border-top:2px solid var(--ink)}
-.sh{display:grid;grid-template-columns:5.5rem minmax(0,1fr) 9rem;gap:1.2rem;align-items:baseline;padding:1rem 0;border-bottom:1px solid var(--line)}
-.sh .tm{font-family:var(--sign);font-size:1.7rem;font-weight:600;line-height:1}
-.sh .tm small{display:block;font-family:var(--sans);font-size:.78rem;font-weight:400;color:var(--ink-2);margin-top:.25rem}
-.sh b{font-size:1.08rem}
-.sh p{margin:.15rem 0 0;color:var(--ink-2)}
-.sh .lv{font-size:.9rem;color:var(--ink-2)}
-@media (max-width:700px){.sh{grid-template-columns:4.4rem minmax(0,1fr)}.sh .lv{grid-column:2}}
-.plain{max-width:44rem;padding:0;margin:0;list-style:none}
-.plain li{padding:.7rem 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
-.plain li b{color:var(--ink)}
-.beta-box p{color:var(--ink-2);max-width:38rem}
-.signup{max-width:40rem;margin:2rem 0 0;padding:1.3rem clamp(1rem,4vw,1.6rem);border:1px solid var(--line);background:var(--surface)}
-.signup h3{font-size:1.4rem}
-.signup>p{margin:.3rem 0 0!important;font-size:.98rem}
-.su-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:.6rem;margin-top:1rem}
-.su-row input,.su-row select{min-height:46px;padding:.5em .8em;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink);font:inherit;min-width:0;width:100%}
-@media (max-width:640px){.su-row{grid-template-columns:minmax(0,1fr)}}
-.su-msg{min-height:1.4em;font-size:.95rem!important;margin:.7rem 0 0!important}
-.su-msg.ok{color:var(--navy)!important;font-weight:700}.su-msg.err{color:var(--red)!important}
-.signup.done .su-row{display:none}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.fine{font-size:.9rem;margin-top:1.2rem;color:var(--ink-2)}
-footer{margin-top:clamp(4rem,9vw,6rem);border-top:1px solid var(--line);padding:2rem 0 calc(2rem + env(safe-area-inset-bottom));font-size:.88rem;color:var(--ink-2)}
-footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:wrap}
+:root{--ink:#19332f;--ink2:#2b4843;--cream:#f6f3eb;--paper:#fffdf8;--fog:#e7e8df;--orange:#ed704e;--orange-dark:#d95735;--line:#d8dbd1;--muted:#63736b;--mint:#d3e4d8;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Fraunces',Georgia,serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:105px}body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}body::selection{background:var(--orange);color:#fff}
+a{color:inherit}button,input,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+img{max-width:100%;display:block}.wrap{width:min(1280px,calc(100% - 72px));margin:auto}.skip{position:absolute;top:-80px;left:20px;z-index:100;padding:12px;min-height:44px;background:#fff}.skip:focus{top:14px}
+.top{position:sticky;top:0;z-index:50;background:rgba(246,243,235,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);transition:box-shadow .25s}.top.scrolled{box-shadow:0 8px 28px rgba(25,51,47,.06)}.nav{display:flex;align-items:center;gap:34px;min-height:79px}.brand{text-decoration:none;display:flex;align-items:center;min-height:44px;gap:12px;font-size:21px;letter-spacing:-.06em;font-weight:800;white-space:nowrap}.brand-mark{width:35px;height:35px;border:2px solid var(--ink);border-radius:10px;display:grid;place-items:center;transform:rotate(-7deg);background:var(--mint);font-weight:800;font-size:24px;line-height:1}.brand-mark span{transform:rotate(7deg)}.brand em{font-style:normal;color:var(--orange)}.nav-links{margin-left:auto;display:flex;gap:30px;align-items:center}.nav-links a{font-size:13px;font-weight:700;text-decoration:none;color:var(--ink2);display:inline-flex;align-items:center;min-height:44px}.nav-links a:hover{color:var(--orange-dark)}.nav .nav-play{white-space:nowrap}.btn{display:inline-flex;justify-content:center;align-items:center;gap:12px;min-height:52px;border:1px solid transparent;border-radius:10px;text-decoration:none;font-weight:800;font-size:14px;letter-spacing:-.01em;padding:14px 22px;transition:transform .18s,background .18s,box-shadow .18s}.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(0)}.btn-primary{background:var(--orange);color:#1d2925;box-shadow:0 5px 0 #c95231}.btn-primary:hover{background:#fa815f;box-shadow:0 7px 0 #c95231}.btn-dark{background:var(--ink);color:#fff}.btn-dark:hover{background:#28483f}.btn-outline{border-color:var(--ink);background:transparent;color:var(--ink)}.btn-arrow{font-size:18px;font-weight:500;line-height:1}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px}.eyebrow:before{content:"";width:23px;height:2px;background:var(--orange)}.kicker{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hero{overflow:hidden}.hero-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);gap:45px;padding-top:69px;padding-bottom:62px;align-items:center}.hero-copy{padding:6px 0 0}.beta{display:inline-flex;align-items:center;gap:9px;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.09em;border:1px solid #c3d1c8;border-radius:100px;padding:10px 13px;background:#e7eee6}.pulse{height:8px;width:8px;background:#4d9976;border-radius:50%;box-shadow:0 0 0 4px rgba(77,153,118,.15)}h1{font-family:var(--display);font-size:clamp(51px,5.4vw,88px);line-height:1.045;letter-spacing:-.065em;margin:29px 0 22px;font-weight:700}h1 .highlight{color:var(--orange-dark);font-style:italic;white-space:nowrap}.hero-lead{font-size:18px;line-height:1.74;color:#4d6057;max-width:525px;margin:0 0 28px}.hero-cta{display:flex;align-items:center;gap:15px;flex-wrap:wrap}.hero-mini{display:flex;gap:18px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin:23px 0 0;font-weight:700}.hero-mini span{display:flex;gap:6px;align-items:center}.hero-mini b{color:#43866a}.hero-stage{position:relative;padding:30px 20px 27px 16px}.hero-stage:before{position:absolute;content:"";inset:0 0 8px 10px;background:#d4e4d7;border:1px solid #bdcec1;border-radius:22px;transform:rotate(4deg)}.scene-shell{position:relative;border-radius:18px;overflow:hidden;background:#192f2d;border:7px solid var(--ink);box-shadow:0 24px 36px rgba(25,51,47,.17);transform:rotate(-1.5deg)}.scene-shell img{height:390px;width:100%;object-fit:cover;object-position:center top;filter:saturate(.96)}.scene-shell:after{content:"";position:absolute;inset:40% 0 0;background:linear-gradient(transparent,rgba(12,29,27,.85));pointer-events:none}.game-top{position:absolute;z-index:2;top:16px;left:17px;right:17px;display:flex;justify-content:space-between;gap:12px}.hud{font:500 11px var(--mono);background:rgba(24,48,45,.89);border:1px solid rgba(255,255,255,.2);color:white;border-radius:7px;padding:9px 11px}.hud.live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#edb26f;margin-right:6px}.scene-caption{position:absolute;z-index:2;left:24px;right:20px;bottom:25px;color:white;display:flex;justify-content:space-between;align-items:end;gap:15px}.scene-caption p{margin:0 0 5px;color:#d7e4d7;font:10px var(--mono);letter-spacing:.11em;text-transform:uppercase}.scene-caption strong{font-size:23px;line-height:1.16;font-weight:800;letter-spacing:-.04em;max-width:280px;display:block}.play-orb{height:58px;width:58px;flex:0 0 58px;display:grid;place-items:center;background:var(--orange);color:var(--ink);border-radius:50%;text-decoration:none;font-size:26px;transition:transform .2s}.play-orb:hover{transform:scale(1.09)}.note-tag{position:absolute;z-index:3;left:-20px;bottom:-3px;border-radius:10px;background:var(--paper);box-shadow:0 14px 20px rgba(0,0,0,.1);padding:14px 17px;border:1px solid #e2e0d8;transform:rotate(3deg)}.note-tag small{display:block;font:500 9px var(--mono);color:var(--muted);margin-bottom:5px}.note-tag strong{font-size:15px}
+.ticker{border-top:1px solid #bfd1c4;border-bottom:1px solid #bfd1c4;background:#dce9df}.ticker-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;min-height:69px}.ticker strong{font-size:12px;letter-spacing:.04em}.ticker-list{display:flex;gap:33px;flex-wrap:wrap}.ticker-list span{font:500 11px var(--mono);display:flex;align-items:center;gap:8px}.ticker-list i{font-style:normal;color:#8c9f92}
+.section{padding:105px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:34px}.section-head h2,.split-copy h2,.cta-content h2{font-family:var(--display);font-weight:700;font-size:clamp(37px,4vw,58px);letter-spacing:-.055em;line-height:1.1;margin:12px 0 0}.section-head p{max-width:345px;line-height:1.7;color:var(--muted);font-size:14px;margin:0}.section-head .big-small{font-size:15px;color:var(--muted)}
+.process{background:#fffdf8}.process-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.process-card{background:var(--cream);border:1px solid var(--line);border-radius:14px;overflow:hidden}.process-card img{width:100%;height:172px;object-fit:cover;object-position:top}.process-copy{padding:24px}.step-num{font:500 11px var(--mono);color:var(--orange-dark)}.process-card h3{font-size:20px;letter-spacing:-.04em;margin:11px 0 10px}.process-card p{font-size:13px;line-height:1.7;color:var(--muted);margin:0}.process-foot{display:flex;align-items:center;gap:14px;padding-top:22px;font:500 12px var(--mono);color:var(--muted)}.process-foot:before{content:"";height:1px;width:42px;background:var(--orange)}
+.catalog{background:var(--cream)}.catalog .section-head{margin-bottom:28px}.filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 14px;margin-bottom:15px;scrollbar-width:thin}.filter{white-space:nowrap;border:1px solid #ccd3ca;color:var(--ink2);border-radius:100px;background:transparent;padding:11px 17px;min-height:44px;font-size:12px;font-weight:800}.filter[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}.shift-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.shift-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:25px;min-height:243px;display:flex;flex-direction:column;transition:transform .22s,box-shadow .22s,border-color .22s}.shift-card:hover{transform:translateY(-4px);border-color:#b6c8bb;box-shadow:0 13px 25px rgba(25,51,47,.07)}.shift-card[hidden]{display:none}.shift-card.featured{background:#e5eee5;border-color:#b4cbbc}.card-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:17px}.card-cat{font:500 10px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}.card-tag{font:500 10px var(--mono);border:1px solid #d0d9cf;border-radius:100px;padding:5px 9px;color:#4a6c59}.shift-card h3{font-size:22px;line-height:1.13;letter-spacing:-.05em;margin:0 0 11px}.shift-card p{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 19px}.shift-card a{font-size:13px;font-weight:800;text-decoration:none;margin-top:auto;display:flex;align-items:center;justify-content:space-between;color:var(--ink);border-top:1px solid var(--line);padding-top:17px;min-height:44px}.shift-card a span{font-size:21px;line-height:1}.catalog-note{font-size:13px;color:var(--muted);margin:23px 0 0}.catalog-note b{color:var(--ink)}
+.in-the-game{background:var(--ink);color:#fbf9f1;overflow:hidden}.in-game-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}.in-game-gallery{position:relative;padding:0 0 25px 30px}.in-game-gallery>img{height:440px;width:100%;object-fit:cover;object-position:top;border:8px solid #f1efe6;border-radius:14px;transform:rotate(-2deg);box-shadow:0 20px 40px rgba(0,0,0,.18)}.tiny-note{position:absolute;left:0;bottom:0;background:#e3e6d7;color:var(--ink);border-radius:10px;padding:17px 23px;box-shadow:0 8px 22px rgba(0,0,0,.2);transform:rotate(3deg);font-weight:800;font-size:14px}.tiny-note small{display:block;font:500 10px var(--mono);margin-bottom:5px;color:var(--muted)}.split-copy h2{font-size:clamp(38px,4vw,62px)}.split-copy .eyebrow{color:#d8e6dc}.split-copy>p{font-size:16px;line-height:1.8;color:#c1d2c5;margin:23px 0 27px}.benefits{list-style:none;padding:0;margin:0 0 29px}.benefits li{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.16);display:flex;gap:13px;align-items:start;font-size:14px}.benefits li:before{content:"↗";color:#f69b75;font-size:19px}
+.educators{background:#e2eade}.edu-panel{display:grid;grid-template-columns:1.2fr .8fr;gap:50px;align-items:center}.edu-panel .lede{max-width:670px;line-height:1.75;color:#556b5e;margin:21px 0 24px;font-size:16px}.edu-list{display:flex;gap:11px;flex-wrap:wrap}.edu-list span{padding:9px 12px;border-radius:6px;background:#f5f7f0;font:500 11px var(--mono)}.edu-side{background:#f6f8f0;border:1px solid #c8d7c7;border-radius:15px;padding:26px;transform:rotate(2deg);box-shadow:10px 12px 0 #cbdccc}.edu-side small{font:500 10px var(--mono);color:var(--muted);letter-spacing:.09em;text-transform:uppercase}.edu-side h3{font-size:25px;letter-spacing:-.05em;margin:17px 0 11px}.edu-side p{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 20px}.edu-side a{font-weight:800;text-decoration:none;font-size:13px}
+.about{background:var(--paper)}.about-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:100px;align-items:start}.about-quote{font-family:var(--display);font-size:clamp(28px,3.2vw,44px);letter-spacing:-.04em;line-height:1.25;margin:16px 0 26px}.about-quote em{color:var(--orange-dark)}.about-copy{border-left:2px solid var(--orange);padding-left:28px}.about-copy p{font-size:15px;line-height:1.9;color:#566b60;margin:0 0 19px}.sig{font-weight:800;font-size:17px;margin-top:17px}.sig small{display:block;margin-top:4px;font:500 11px var(--mono);color:var(--muted)}
+.questions{padding:78px 0;background:var(--cream)}.faq-grid{display:grid;grid-template-columns:.7fr 1.3fr;gap:85px}.faq-grid h2{font-family:var(--display);font-size:45px;letter-spacing:-.055em;margin:15px 0}.faq-item{border-bottom:1px solid var(--line)}.faq-item summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:21px 2px;font-weight:800;font-size:15px}.faq-item summary::-webkit-details-marker{display:none}.faq-item summary:after{content:"+";font:25px var(--sans);color:var(--orange-dark)}.faq-item[open] summary:after{content:"−"}.faq-item p{line-height:1.75;color:var(--muted);font-size:14px;margin:0 0 22px}
+.cta{background:var(--orange);color:var(--ink);padding:98px 0}.cta-layout{display:grid;grid-template-columns:1fr .9fr;gap:90px;align-items:center}.cta-content h2{font-size:clamp(40px,4.4vw,67px)}.cta-content p{font-size:16px;line-height:1.75;max-width:480px}.cta-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:27px}.signup{background:#fffaf0;padding:29px;border-radius:17px;border:2px solid rgba(25,51,47,.2);box-shadow:12px 12px 0 rgba(25,51,47,.12)}.signup h3{font-family:var(--display);font-size:29px;letter-spacing:-.04em;margin:0 0 6px}.signup>p{color:#66736c;font-size:13px;line-height:1.6;margin:0 0 22px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}.field label{font-size:12px;font-weight:800}.field input,.field select{height:49px;border-radius:7px;border:1px solid #c7cdc4;padding:0 14px;background:white;color:var(--ink);min-width:0}.signup .btn{width:100%;box-shadow:none}.su-msg{min-height:19px;font-size:12px;margin:11px 0 0;color:var(--ink)}.su-msg.err{color:#b13620}.su-msg.ok{font-weight:800}.signup.done input,.signup.done select{opacity:.65}.signup small{display:block;margin-top:11px;color:#64736a;line-height:1.6;font-size:11px}.signup small a{text-decoration:underline}
+footer{background:#132b27;color:#d2dfd3;padding:32px 0}.footer-row{display:flex;justify-content:space-between;gap:35px;align-items:center;flex-wrap:wrap}.footer-brand{gap:0;font-size:22px;font-weight:800;letter-spacing:-.05em;color:white}.footer-links{display:flex;gap:4px 23px;flex-wrap:wrap}.footer-links a{font-size:12px;text-decoration:none;color:#d2dfd3;display:inline-flex;align-items:center;min-height:44px}.footer-links a:hover{color:#fff}.footer-bottom{border-top:1px solid #37504a;padding-top:22px;margin-top:23px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:11px;line-height:1.6;color:#a3b9ac}
+@media(max-width:1100px){.hero-layout{gap:15px}.nav-links{gap:15px}.scene-shell img{height:335px}.shift-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.in-game-layout{gap:45px}.about-layout{gap:50px}.ticker-list{gap:16px}}
+@media(max-width:800px){.wrap{width:min(100% - 36px,650px)}.nav{min-height:70px;gap:10px}.nav-links{display:none}.nav .nav-play{margin-left:auto}.hero-layout{grid-template-columns:1fr;gap:5px;padding:50px 0 55px}.hero-stage{max-width:570px;margin:12px auto 0;width:100%}h1{font-size:clamp(55px,10vw,75px)}.hero-lead{max-width:590px}.ticker-inner{align-items:start;flex-direction:column;padding:18px 0}.ticker-list{gap:11px 17px}.section{padding:74px 0}.section-head{align-items:start;flex-direction:column}.process-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.in-game-layout,.edu-panel,.about-layout,.faq-grid,.cta-layout{grid-template-columns:1fr;gap:37px}.in-game-gallery{max-width:550px}.edu-side{max-width:470px}.faq-grid{gap:10px}.cta{padding:73px 0}.about-quote{max-width:600px}}
+@media(max-width:520px){.wrap{width:calc(100% - 32px)}.brand{font-size:19px;gap:8px}.brand-mark{width:32px;height:32px}.nav .nav-play{min-height:44px;padding:11px 13px;font-size:12px}.hero-layout{padding-top:33px}.beta{font-size:10px}h1{font-size:clamp(48px,12.3vw,66px)}.hero-lead{font-size:16px;line-height:1.65}.hero-cta .btn{width:100%}.hero-stage{padding:18px 7px 18px 6px}.scene-shell{border-width:5px}.scene-shell img{height:310px}.hud{font-size:9px;padding:7px}.scene-caption{left:13px;right:13px;bottom:14px}.scene-caption strong{font-size:19px}.scene-caption p{font-size:9px}.play-orb{width:48px;height:48px;flex-basis:48px}.note-tag{left:-5px;bottom:0;padding:10px}.note-tag strong{font-size:12px}.ticker strong{font-size:11px}.process-grid,.shift-grid{grid-template-columns:1fr}.process-card{display:grid;grid-template-columns:120px 1fr;min-height:166px}.process-card img{height:100%;min-height:166px}.process-copy{padding:20px}.process-card h3{font-size:18px}.process-card p{font-size:12px}.shift-card{min-height:210px}.in-game-gallery{padding:0 0 26px 14px}.in-game-gallery>img{height:315px}.edu-side{transform:none;box-shadow:6px 6px 0 #cbdccc}.cta-actions .btn{width:100%}.signup{padding:22px;box-shadow:7px 7px 0 rgba(25,51,47,.12)}.about-copy{padding-left:18px}.faq-grid h2{font-size:40px}.footer-row{align-items:start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-
-<header class="top" id="top">
-  <div class="wrap">
-    <a class="mark" href="/">The Shift</a><span class="beta">beta</span>
-    <nav>
-      <a class="lnk" href="#how">How a shift goes</a>
-      <a class="lnk" href="#shifts">Shifts</a>
-      <a class="lnk" href="#nick">Who made this</a>
-      <a class="btn btn-primary btn-sm" href="/play/">Play</a>
-    </nav>
+<a href="#content" class="skip">Skip to content</a>
+<header class="top" id="top"><div class="wrap nav">
+ <a href="/" class="brand" aria-label="The Shift home"><span class="brand-mark" aria-hidden="true"><span>+</span></span> THE <em>SHIFT</em></a>
+ <nav class="nav-links" aria-label="Main navigation"><a href="#experience">How it works</a><a href="#shifts">Explore shifts</a><a href="#educators">For educators</a><a href="#story">Our story</a></nav>
+ <a class="btn btn-dark nav-play" href="/play/">Play free <span aria-hidden="true">↗</span></a>
+</div></header>
+<main id="content">
+<section class="hero" aria-labelledby="hero-heading"><div class="wrap hero-layout">
+ <div class="hero-copy">
+  <span class="beta"><span class="pulse" aria-hidden="true"></span> Open beta · No account required</span>
+  <h1 id="hero-heading">Four patients.<br>One shift.<br><span class="highlight">Your call.</span></h1>
+  <p class="hero-lead">The patient in 412 is asking for pain meds. The call light in 418 won't stop. Someone down the hall is getting worse. <strong>Where do you start?</strong></p>
+  <div class="hero-cta"><a class="btn btn-primary" href="/play/">Start your shift <span class="btn-arrow" aria-hidden="true">↗</span></a><a class="btn btn-outline" href="#experience">See how it works <span aria-hidden="true">↓</span></a></div>
+  <div class="hero-mini"><span><b aria-hidden="true">✓</b> Free in your browser</span><span><b aria-hidden="true">✓</b> About 20 minutes</span><span><b aria-hidden="true">✓</b> Made by an RN</span></div>
+ </div>
+ <div class="hero-stage">
+  <div class="scene-shell">
+   <img src="/assets/room.jpg" width="1600" height="1000" alt="Actual game screen showing a hospital patient room and clinical actions" fetchpriority="high">
+   <div class="game-top"><span class="hud live">LIVE SIMULATION</span><span class="hud">07:16 · ROOM 412</span></div>
+   <div class="scene-caption"><div><p>FROM THE GAME · MED-SURG</p><strong>What would you do next?</strong></div><a href="/play/" class="play-orb" aria-label="Play The Shift">▶</a></div>
   </div>
-</header>
-
-<main>
-  <div class="hero wrap">
-    <div>
-      <h1>Work a nursing shift in about twenty minutes.</h1>
-      <p class="lede">Take report on four or five patients, decide who to see first, and work the hall: assessments, meds, calls to the provider. Patients change based on what you do and what you miss. At the end you see what happened to each of them, and why.</p>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Play a shift</a><p class="meta">Free, in your browser. No account needed.</p></div>
-    </div>
-    <figure style="margin:0">
-      <div class="shot"><img src="/assets/room.jpg" width="1600" height="1000" alt="A room in The Shift: a patient in bed, the IV pole, a whiteboard with the care team, and the nurse's actions below."></div>
-      <figcaption class="cap"><b>07:16, room 412.</b> Post-op day 1. Pain 6 out of 10, and he splints every time he takes a breath.</figcaption>
-    </figure>
-  </div>
-
-  <section id="nick">
-    <div class="wrap">
-      <div class="note">
-        <div>
-          <h2>Why I made this</h2>
-          <p>I'm Nick, a registered nurse. I got my MSN at Johns Hopkins and have worked inpatient psych at Johns Hopkins Hospital and in the Bay Area.</p>
-          <p>The Shift is practice for what a real assignment feels like: report from a tired night nurse, more patients than time, a phone that keeps buzzing, and one patient who is sicker than they look. The patients are made up. The situations are the ones that actually go wrong on a unit.</p>
-          <p>It's in beta. If something is clinically off, every decision in the debrief has a link to tell me, and I read all of them.</p>
-          <p class="sig">Nick</p>
-          <p class="cred">RN, MSN</p>
-        </div>
-        <img src="/assets/nick.jpg" alt="Nick" onerror="this.remove()">
-      </div>
-    </div>
-  </section>
-
-  <section id="how">
-    <div class="wrap">
-      <div class="sec-h"><h2>How a shift goes</h2><p>The clock only moves when you act. Every assessment, med pass and phone call costs minutes, and your other patients keep changing while you're busy.</p></div>
-      <div class="tl">
-        <div class="tl-row"><div class="t">06:58<small>Report</small></div><div><h3>Take report</h3><p>The off-going nurse talks through every patient. Flag what matters onto your brain sheet. Some of what you hear is noise.</p></div><div class="shot"><img src="/assets/report.jpg" width="1600" height="1000" loading="lazy" alt="Shift report with flagged lines written onto a brain sheet."></div></div>
-        <div class="tl-row"><div class="t">07:15<small>Prioritize</small></div><div><h3>Decide who's first</h3><p>Rank your patients before you move. Nova, the charge nurse, compares your order with hers and tells you why at the end.</p></div><div class="shot"><img src="/assets/triage.jpg" width="1600" height="1000" loading="lazy" alt="Ranking patients from first to last."></div></div>
-        <div class="tl-row"><div class="t">07:20<small>to the end of shift</small></div><div><h3>Work the hall</h3><p>Assess, give or hold meds, delegate to your aide, talk with patients and families, and call the provider with SBAR. Look around the room; the clues are in it.</p></div><div class="shot"><img src="/assets/psych.jpg" width="1600" height="1000" loading="lazy" alt="A room on the psych unit."></div></div>
-        <div class="tl-row"><div class="t">After<small>Debrief</small></div><div><h3>See what happened</h3><p>An outcome for every patient, the decision that mattered most, and each call you made with the reasoning behind it, scored by skill and by NCLEX clinical judgment step.</p></div><div class="shot"><img src="/assets/debrief.jpg" width="1600" height="1000" loading="lazy" alt="The debrief: score, outcomes and the decision that mattered most."></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="shifts">
-    <div class="wrap">
-      <div class="sec-h"><h2>Eleven shifts so far</h2><p>Start on days and work up to nights, step-down, the ICU, the ED, labor and delivery, mother-baby, psych and pediatrics. Then practice for the NCLEX with unfolding case studies and a question bank.</p></div>
-      <div class="sched">
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days on 4 West</b><p>Four med-surg patients: a fresh post-op, a diabetic with cellulitis, a confused 82-year-old, and heart failure. Start here.</p></div><span class="lv">Orientation</span></div>
-        <div class="sh"><div class="tm">15:00<small>to 20:00</small></div><div><b>Evenings on 4 West</b><p>Four patients and an ED admission: COPD, alcohol withdrawal, a GI bleed getting blood, and a critical potassium.</p></div><span class="lv">Beginner</span></div>
-        <div class="sh"><div class="tm">23:00<small>to 04:00</small></div><div><b>Nights on 4 West</b><p>Five patients, and your aide gets floated at 01:00. Delirium, a swollen calf, a DKA drip, a late stroke, and a PCA.</p></div><span class="lv">Intermediate</span></div>
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days on 6 East</b><p>Cardiac step-down: a diltiazem drip and a bad echo, a fresh stent, a heparin drip with falling platelets, and a long QT.</p></div><span class="lv">Step-down</span></div>
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days in the ICU</b><p>Critical care: septic shock on a vasopressor in the wrong vein, a ventilator alarm, a chest tube that goes quiet after bypass surgery, and a family meeting about stopping life support.</p></div><span class="lv">Critical care</span></div>
-        <div class="sh"><div class="tm">15:00<small>to 20:00</small></div><div><b>Evenings in the ED</b><p>Emergency, Pod B: a stroke alert with the wrong onset time, "indigestion" that becomes a STEMI, a positive pregnancy test with shoulder pain, and two more through the doors.</p></div><span class="lv">ED</span></div>
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days in Labor and Delivery</b><p>Labor and delivery: tachysystole on an oxytocin order that says go up, epidural hypotension, a uterine rupture during a trial of labor after cesarean, fever in labor, and a baby who arrives before the doctor does.</p></div><span class="lv">L&amp;D</span></div>
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days on 2 North</b><p>Mother-baby: a soft uterus behind a full bladder, magnesium that isn't clearing, a sleepy baby of a diabetic mother, and a depression screen nobody discussed.</p></div><span class="lv">Mother-baby</span></div>
-        <div class="sh"><div class="tm">07:00<small>to 12:00</small></div><div><b>Days on 3 East</b><p>Adult locked psych: mania, lithium toxicity, a med refusal, compulsive water drinking, and a man who is suddenly calm.</p></div><span class="lv">Psych</span></div>
-        <div class="sh"><div class="tm">15:00<small>to 20:00</small></div><div><b>Evenings on 4 North</b><p>Adolescent psych: refeeding labs, self-harm precautions, a dystonic reaction, a disclosure, and an ED admission.</p></div><span class="lv">Teen psych</span></div>
-        <div class="sh"><div class="tm">15:00<small>to 20:00</small></div><div><b>Evenings on 5 South</b><p>Pediatrics, four months to fifteen years: RSV on high flow, a sickle cell crisis, a dosing error, bruises that don't fit the story, and asthma.</p></div><span class="lv">Peds</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="sec-h"><h2>What it practices</h2><p>The clinical judgment the Next Generation NCLEX tests: noticing cues, prioritizing, acting, and checking whether it worked.</p></div>
-      <ul class="plain">
-        <li><b>You choose what to look at.</b> There are no multiple-choice questions during the shift. You decide what to assess, in what order, and what to do about it.</li>
-        <li><b>Mistakes play out.</b> Give the wrong med and the patient reacts. Hold the right one and the debrief explains why it mattered.</li>
-        <li><b>The traps are real ones.</b> An order that's active but unsafe. A helpful family member. A report that says "probably a stomach bug."</li>
-        <li><b>A charge nurse who helps a little.</b> Nova gives a few hints a shift. She'll point you somewhere; she won't do it for you.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section id="feedback" class="beta-box">
-    <div class="wrap">
-      <h2>Play a shift, then tell me what broke.</h2>
-      <p>Anything that felt clinically off, confusing, or too easy. Every decision in the debrief has a <b>Report a problem</b> link. Your progress saves in your browser as you play.</p>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Play a shift</a></div>
-      <form class="signup" id="signup" novalidate>
-        <h3>Get new shifts first</h3>
-        <p>One email when a new unit is ready. Nothing else, and you can unsubscribe anytime.</p>
-        <div class="su-row">
-          <label class="sr" for="su-email">Email</label>
-          <input id="su-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
-          <label class="sr" for="su-role">I am a</label>
-          <select id="su-role" name="role"><option value="">I am a…</option><option value="student">Nursing student</option><option value="newgrad">New grad</option><option value="rn">Working nurse</option><option value="educator">Nurse educator</option><option value="other">Something else</option></select>
-          <button class="btn btn-primary" type="submit">Join the list</button>
-        </div>
-        <p class="su-msg" id="su-msg" role="status" aria-live="polite"></p>
-      </form>
-      <p class="fine"><a href="/privacy/">How your data is used</a>. Or <a id="fb" href="mailto:nicholasforell@gmail.com?subject=The%20Shift%20beta%20feedback">email me directly</a>.</p>
-    </div>
-  </section>
+  <div class="note-tag"><small>YOUR ASSIGNMENT</small><strong>Every minute matters. ↗</strong></div>
+ </div>
+</div></section>
+<div class="ticker" aria-label="Game highlights"><div class="wrap ticker-inner"><strong>THE SHIFT, AT A GLANCE</strong><div class="ticker-list"><span><i>01 /</i> 11 playable shifts</span><span><i>02 /</i> 9 clinical specialties</span><span><i>03 /</i> Consequence-based decisions</span></div></div></div>
+<section class="section process" id="experience" aria-labelledby="experience-heading"><div class="wrap">
+ <div class="section-head"><div><span class="eyebrow">01 / The experience</span><h2 id="experience-heading">You don't just answer.<br>You take the shift.</h2></div><p>No endless multiple-choice interruptions. You make decisions as a working nurse, with the information you choose to gather.</p></div>
+ <div class="process-grid">
+  <article class="process-card"><img src="/assets/report.jpg" width="1600" height="1000" loading="lazy" alt="In-game handoff report and brain sheet"><div class="process-copy"><span class="step-num">06:58 / 01</span><h3>Take report.</h3><p>Listen to handoff. Flag what matters. The important clue might sound routine.</p></div></article>
+  <article class="process-card"><img src="/assets/triage.jpg" width="1600" height="1000" loading="lazy" alt="In-game patient-priority ranking"><div class="process-copy"><span class="step-num">07:15 / 02</span><h3>Choose who's first.</h3><p>Four patients, one nurse. Rank your assignment before the clock starts.</p></div></article>
+  <article class="process-card"><img src="/assets/room.jpg" width="1600" height="1000" loading="lazy" alt="In-game patient assessment and room scene"><div class="process-copy"><span class="step-num">07:20 / 03</span><h3>Work the floor.</h3><p>Assess. Medicate. Delegate. Call the provider. Your patients keep changing.</p></div></article>
+  <article class="process-card"><img src="/assets/debrief.jpg" width="1600" height="1000" loading="lazy" alt="In-game shift debrief with clinical decisions"><div class="process-copy"><span class="step-num">END OF SHIFT / 04</span><h3>Own the outcome.</h3><p>Learn what you caught, what you missed, and why it changed the outcome.</p></div></article>
+ </div>
+ <div class="process-foot">The clock moves when you act. The consequences don't wait.</div>
+</div></section>
+<section class="section catalog" id="shifts" aria-labelledby="shifts-heading"><div class="wrap">
+ <div class="section-head"><div><span class="eyebrow">02 / Choose your assignment</span><h2 id="shifts-heading">A new floor.<br>A new kind of pressure.</h2></div><p>Start on 4 West, then explore the specialties. Each shift has a different patient mix and a different set of traps.</p></div>
+ <div class="filters" role="group" aria-label="Filter shifts by specialty"><button class="filter" type="button" data-filter="all" aria-pressed="true">All shifts <span>11</span></button><button class="filter" type="button" data-filter="medsurg" aria-pressed="false">Med-surg</button><button class="filter" type="button" data-filter="acuity" aria-pressed="false">High acuity</button><button class="filter" type="button" data-filter="psych" aria-pressed="false">Behavioral health</button><button class="filter" type="button" data-filter="family" aria-pressed="false">Women's &amp; children's</button></div>
+ <div class="shift-grid" id="shift-grid">
+  <article class="shift-card featured" data-group="medsurg"><div class="card-meta"><span class="card-cat">MED-SURG · 07:00–12:00</span><span class="card-tag">START HERE</span></div><h3>Days on 4 West</h3><p>Fresh post-op, cellulitis, new confusion, and heart failure. Four patients and your first call.</p><a href="/play/?shift=medsurg-4w-1" aria-label="Play Days on 4 West">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="medsurg"><div class="card-meta"><span class="card-cat">MED-SURG · 15:00–20:00</span><span class="card-tag">BEGINNER</span></div><h3>Evenings on 4 West</h3><p>COPD, alcohol withdrawal, a GI bleed and critical potassium. Plus an admission from the ED.</p><a href="/play/?shift=medsurg-4w-2" aria-label="Play Evenings on 4 West">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="medsurg"><div class="card-meta"><span class="card-cat">MED-SURG · 23:00–04:00</span><span class="card-tag">INTERMEDIATE</span></div><h3>Nights on 4 West</h3><p>Delirium, DKA, a silent stroke, a swollen calf, and an aide who gets floated.</p><a href="/play/?shift=medsurg-4w-3" aria-label="Play Nights on 4 West">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="acuity"><div class="card-meta"><span class="card-cat">STEP-DOWN · 07:00–12:00</span><span class="card-tag">SPECIALTY</span></div><h3>Days on 6 East</h3><p>A diltiazem drip, a fresh stent, falling platelets and a long QT. Orders aren't always safe.</p><a href="/play/?shift=stepdown-6e-1" aria-label="Play Days on 6 East">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="acuity"><div class="card-meta"><span class="card-cat">ICU · 07:00–12:00</span><span class="card-tag">CRITICAL CARE</span></div><h3>Days in the ICU</h3><p>Septic shock, a ventilator alarm, a silent chest tube and a family facing a hard decision.</p><a href="/play/?shift=icu-3w-1" aria-label="Play Days in the ICU">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="acuity"><div class="card-meta"><span class="card-cat">EMERGENCY · 15:00–20:00</span><span class="card-tag">ED</span></div><h3>Evenings in the ED</h3><p>Stroke alert, STEMI, ectopic pregnancy and two more patients through the doors.</p><a href="/play/?shift=ed-podb-1" aria-label="Play Evenings in the ED">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="psych"><div class="card-meta"><span class="card-cat">INPATIENT PSYCH · 07:00–12:00</span><span class="card-tag">PSYCH</span></div><h3>Days on 3 East</h3><p>Lithium toxicity, mania, medication refusal and a patient who suddenly seems calm.</p><a href="/play/?shift=psych-3e-1" aria-label="Play Days on 3 East">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="psych"><div class="card-meta"><span class="card-cat">ADOLESCENT PSYCH · 15:00–20:00</span><span class="card-tag">TEEN PSYCH</span></div><h3>Evenings on 4 North</h3><p>Refeeding labs, self-harm precautions, a dystonic reaction and a difficult disclosure.</p><a href="/play/?shift=psych-4n-1" aria-label="Play Evenings on 4 North">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="family"><div class="card-meta"><span class="card-cat">LABOR &amp; DELIVERY · 07:00–12:00</span><span class="card-tag">L&amp;D</span></div><h3>Days in Labor &amp; Delivery</h3><p>Oxytocin tachysystole, epidural hypotension and the warning signs of uterine rupture.</p><a href="/play/?shift=ld-2s-1" aria-label="Play Days in Labor and Delivery">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="family"><div class="card-meta"><span class="card-cat">MOTHER-BABY · 07:00–12:00</span><span class="card-tag">POSTPARTUM</span></div><h3>Days on 2 North</h3><p>Postpartum hemorrhage, magnesium toxicity, infant hypoglycemia and a missed screen.</p><a href="/play/?shift=ob-2n-1" aria-label="Play Days on 2 North">Play this shift <span aria-hidden="true">↗</span></a></article>
+  <article class="shift-card" data-group="family"><div class="card-meta"><span class="card-cat">PEDIATRICS · 15:00–20:00</span><span class="card-tag">PEDS</span></div><h3>Evenings on 5 South</h3><p>RSV, acute chest syndrome, a pediatric dosing error and a concerning bruise.</p><a href="/play/?shift=peds-5s-1" aria-label="Play Evenings on 5 South">Play this shift <span aria-hidden="true">↗</span></a></article>
+ </div>
+ <p class="catalog-note" id="filter-count" aria-live="polite">Showing all <b>11 playable shifts.</b> Tap a shift to open it in the game.</p>
+</div></section>
+<section class="section in-the-game" aria-labelledby="details-heading"><div class="wrap in-game-layout">
+ <div class="in-game-gallery"><img src="/assets/psych.jpg" loading="lazy" width="1600" height="1000" alt="Actual in-game psychiatric nursing scene and actions"><div class="tiny-note"><small>NOT EVERY CLUE IS A VITAL SIGN</small>Look closer.</div></div>
+ <div class="split-copy"><span class="eyebrow">03 / The difference</span><h2 id="details-heading">The right answer isn't always obvious.</h2><p>Sometimes the medication is ordered but shouldn't be given. Sometimes the family knows something report missed. Sometimes the patient who seems fine is the one you should worry about.</p>
+  <ul class="benefits"><li>Patients change as time passes and care is delayed.</li><li>Ask Nova, your charge nurse, for a nudge when you're stuck.</li><li>Review consequences and clinical reasoning after every shift.</li></ul>
+  <a href="/play/" class="btn btn-primary">See what happens <span aria-hidden="true">↗</span></a>
+ </div>
+</div></section>
+<section class="section educators" id="educators" aria-labelledby="edu-heading"><div class="wrap edu-panel">
+ <div><span class="eyebrow">04 / Teaching &amp; practice</span><h2 id="edu-heading" style="font-family:var(--display);font-size:clamp(37px,4vw,58px);letter-spacing:-.055em;line-height:1.1;margin:14px 0">Made to think like a nurse.<br>Built to talk about why.</h2><p class="lede">Practice noticing cues, prioritizing, taking action, and evaluating the result. Instructors can create classes and review learning results by clinical judgment skill. The game also includes unfolding NCLEX-style case studies and practice questions.</p>
+ <div class="edu-list"><span>Clinical judgment</span><span>Patient prioritization</span><span>NCLEX practice</span><span>Educator dashboard</span></div></div>
+ <aside class="edu-side"><small>FOR NURSING EDUCATORS</small><h3>Take it into the classroom.</h3><p>Set up a class, share a code with students and see where clinical reasoning breaks down.</p><a href="/teach/" style="display:inline-flex;align-items:center;min-height:44px">Explore the instructor dashboard ↗</a></aside>
+</div></section>
+<section class="section about" id="story" aria-labelledby="about-heading"><div class="wrap about-layout">
+ <div><span class="eyebrow">05 / Why this exists</span><h2 id="about-heading" class="about-quote">The real test isn't knowing the answer.<br><em>It's knowing what to do next.</em></h2></div>
+ <div class="about-copy"><p>I'm Nick, a registered nurse with an MSN from Johns Hopkins. I've worked inpatient psychiatry at Johns Hopkins Hospital and in the Bay Area.</p><p>The Shift is my attempt to give nursing students and new nurses something a textbook can't: the weight of an assignment, interruptions, changing patients, and the decision that feels small until it isn't.</p><p>This is a beta, not a clinically validated training replacement. The patients are fictional. If something is inaccurate or unclear, I want to know — every in-game debrief lets you report a problem.</p><div class="sig">Nick <small>RN, MSN · CREATOR OF THE SHIFT</small></div></div>
+</div></section>
+<section class="questions" aria-labelledby="faq-heading"><div class="wrap faq-grid">
+ <div><span class="eyebrow">Quick answers</span><h2 id="faq-heading">Before you clock in.</h2></div>
+ <div>
+  <details class="faq-item"><summary>Do I need an account or to pay?</summary><p>No. The current beta is free to play in your browser without an account. Your progress saves locally in that browser.</p></details>
+  <details class="faq-item"><summary>Do I need to be a nurse to play?</summary><p>No, but the scenarios are written for nursing students and nurses. If you're new, start with the guided orientation and Days on 4 West.</p></details>
+  <details class="faq-item"><summary>Can I practice NCLEX questions too?</summary><p>Yes. The game includes unfolding Next Generation NCLEX-style cases, a question bank and rationales for your answers.</p></details>
+  <details class="faq-item"><summary>Is this suitable as clinical guidance?</summary><p>No. This is an educational simulation in beta, not clinical advice, a substitute for instruction, or guidance for real patient care. Follow your clinical instructor and facility protocols.</p></details>
+ </div>
+</div></section>
+<section class="cta" id="feedback" aria-labelledby="cta-heading"><div class="wrap cta-layout">
+ <div class="cta-content"><span class="eyebrow">Your next shift starts here</span><h2 id="cta-heading">Try it.<br>Break it.<br>Make it better.</h2><p>Play a shift and tell me where the clinical reasoning feels wrong, the interface gets in your way, or something doesn't make sense. That feedback is how this gets better.</p><div class="cta-actions"><a class="btn btn-dark" href="/play/">Clock in now <span aria-hidden="true">↗</span></a><a class="btn btn-outline" href="mailto:nicholasforell@gmail.com?subject=The%20Shift%20beta%20feedback">Send feedback ↗</a></div></div>
+ <form class="signup" id="signup" novalidate><h3>Get the next shift first.</h3><p>Occasional beta updates when a new floor goes live. No spam.</p>
+  <div class="field"><label for="su-email">Your email</label><input id="su-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>
+  <div class="field"><label for="su-role">I am a…</label><select id="su-role" name="role"><option value="">Choose one (optional)</option><option value="student">Nursing student</option><option value="newgrad">New graduate nurse</option><option value="rn">Registered nurse</option><option value="educator">Nursing educator</option><option value="other">Just curious</option></select></div>
+  <button class="btn btn-dark" type="submit">Join the beta list ↗</button><p class="su-msg" id="su-msg" role="status" aria-live="polite"></p><small>By signing up, you agree to receive beta updates. <a href="/privacy/">How your data is used.</a></small>
+ </form>
+</div></section>
 </main>
-
-<footer>
-  <div class="wrap">
-    <span>The Shift, beta. © 2026. An educational game, not clinical advice. <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></span>
-    <span>An educational simulation with original clinical content. Not a substitute for clinical instruction or your facility's policies.</span>
-  </div>
-</footer>
-
+<footer><div class="wrap"><div class="footer-row"><a class="brand footer-brand" href="/" aria-label="The Shift home">THE SHIFT<span style="color:var(--orange)">.</span></a><div class="footer-links"><a href="#experience">How it works</a><a href="#shifts">Shifts</a><a href="/teach/">For instructors</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></div></div><div class="footer-bottom"><span>© 2026 The Shift. Built for better clinical judgment.</span><span>Educational simulation in beta. Not medical advice or a substitute for clinical instruction.</span></div></div></footer>
 <script>
-(() => {
-  const top = document.getElementById('top');
-  const onScroll = () => top.classList.toggle('scrolled', scrollY > 8);
-  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+(function(){
+ var top=document.getElementById('top');var onScroll=function(){top.classList.toggle('scrolled',window.scrollY>8)};window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+ var filters=Array.from(document.querySelectorAll('[data-filter]'));var cards=Array.from(document.querySelectorAll('.shift-card'));var count=document.getElementById('filter-count');
+ filters.forEach(function(b){b.addEventListener('click',function(){var f=b.getAttribute('data-filter');var shown=0;filters.forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});cards.forEach(function(c){var show=f==='all'||c.getAttribute('data-group')===f;c.hidden=!show;if(show)shown++});count.textContent='Showing '+shown+' playable '+(shown===1?'shift':'shifts')+'. Tap a shift to open it in the game.'})});
 })();
 </script>
 <!--TELEMETRY-->
 <script>
-(() => {
-  const T = window.Shift && window.Shift.tel;
-  if (T) T.track('landing_view', { section: location.hash.slice(1) || '' });
-  const f = document.getElementById('signup'), m = document.getElementById('su-msg'), em = document.getElementById('su-email');
-  if (!f) return;
-  f.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = em.value.trim(), role = document.getElementById('su-role').value;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { m.className = 'su-msg err'; m.textContent = 'That email doesn\'t look right.'; em.focus(); return; }
-    const r = T ? T.signup(email, role) : 'email';
-    if (r === 'email' && !T) location.href = 'mailto:nicholasforell@gmail.com?subject=' + encodeURIComponent('Add me to The Shift beta list') + '&body=' + encodeURIComponent(email + (role ? '\n' + role : ''));
-    f.classList.add('done'); m.className = 'su-msg ok';
-    m.textContent = r === 'sent' ? 'You\'re on the list. Go play a shift.' : 'Your email app should open with this filled in. Hit send and you\'re on the list.';
-  });
+(function(){
+ var T=window.Shift&&window.Shift.tel;if(T)T.track('landing_view',{section:location.hash.slice(1)||''});
+ var f=document.getElementById('signup'),m=document.getElementById('su-msg'),em=document.getElementById('su-email');
+ if(!f)return;
+ f.addEventListener('submit',function(e){e.preventDefault();var email=em.value.trim(),role=document.getElementById('su-role').value;
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){m.className='su-msg err';m.textContent="That email doesn't look right.";em.focus();return;}
+ var btn=f.querySelector('button[type=submit]');
+ // Only say "on the list" once the signup actually reached us. If it can't (offline, a blocker), the address is
+ // kept in this browser and resent next visit, and the message says so, with an email fallback.
+ var show=function(r){btn.disabled=false;m.className='su-msg '+(r==='queued'?'err':'ok');
+  if(r==='sent'){f.classList.add('done');m.textContent="You're on the list. Go play a shift.";}
+  else if(r==='queued'){m.innerHTML='We couldn\u2019t reach our server just now. This browser will try again next time you visit, or <a href="mailto:nicholasforell@gmail.com?subject='+encodeURIComponent('Add me to The Shift beta list')+'&body='+encodeURIComponent(email+(role?'\n'+role:''))+'">email us instead</a>.';}
+  else{f.classList.add('done');m.textContent="Your email app should open with this filled in. Hit send and you're on the list.";}};
+ if(!T){location.href='mailto:nicholasforell@gmail.com?subject='+encodeURIComponent('Add me to The Shift beta list')+'&body='+encodeURIComponent(email+(role?'\n'+role:''));show('email');return;}
+ if(!T.signupSend){show(T.signup(email,role));return;}
+ btn.disabled=true;m.className='su-msg';m.textContent='Sending\u2026';
+ T.signupSend(email,role).then(show,function(){show('queued')});
+ });
 })();
 </script>
-</body>
-</html>
+</body></html>
