@@ -133,6 +133,9 @@ with sync_playwright() as p:
     # 11. Picking an answer doesn't look like a reload: the window stays put and keeps its scroll.
     pg.goto(GAME); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[{caseId:'medsurg-4w-1',score:70,at:1}],settings:{theme:'light',sound:'off',music:'off',motion:'full'},seen:{'coach:station':1,'coach:room':1,tour:1,orient:1}}))"); pg.reload(); pg.wait_for_timeout(250)
     H('practice'); H('pset'); pg.wait_for_timeout(200)
+    for _ in range(8):   # practice sets are drawn at random; some open on a format with no option buttons (numeric, drag)
+        if J("!!document.querySelector('.sheet [data-act=\"ngn-pick\"]')"): break
+        clr(); H('practice'); H('pset'); pg.wait_for_timeout(200)
     J("document.querySelector('.sheet-b').scrollTop = 9999"); y0 = J("document.querySelector('.sheet-b').scrollTop")
     btn = pg.locator('.sheet [data-act="ngn-pick"]').last; btn.scroll_into_view_if_needed(); y0 = J("document.querySelector('.sheet-b').scrollTop"); btn.click(); pg.wait_for_timeout(60)
     check(J("document.querySelector('.sheet-b').scrollTop") == y0, 'picking an answer keeps the question scrolled where it was')
@@ -185,6 +188,31 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(300)
     check(J("!!document.querySelector('[data-act=last-debrief]')"), 'after a reload, home offers the last debrief')
     H('last-debrief'); check(J("Shift.ui._ui.view") == 'debrief' and 'out of 100' in J("document.body.innerText"), 'the saved debrief opens')
+
+    # 13. Pilot prep (Oct 17): a pain call light left with no pain decision is named in the debrief; skipping ahead
+    # near the end says report is what's left.
+    BELL = "(()=>{const s=Shift.ui._state();s.p['412'].bell={at:s.t,id:'pain',text:'is asking for something for pain',cna:false,fix:'Rates pain 7 out of 10.',who:'Mr. Bell'};s.p['412'].lastBell=s.t})()"
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    pj = J("(Shift.ui._state().judg.find(j=>j.key==='412-pain-ask')||{})")
+    check(bool(pj) and pj.get('delta') == 0 and 'Oxycodone' in pj.get('why', ''), 'an answered pain call light with no pain decision after it is named in the debrief (no points), with what was ordered')
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr(); H('med', id='412-oxy')
+    if J("!!document.querySelector('[data-act=dose]')"): H('dose', v='1')
+    H('med-give'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    check(given('412-oxy') and not J("Shift.ui._state().judg.some(j=>j.key==='412-pain-ask')"), 'giving the PRN after the pain call light leaves no note')
+    start('medsurg-4w-1'); J("(()=>{const c=Shift.engine.getCase('medsurg-4w-1');c.events.push({id:'t-ping',when:(s)=>s.t>=c.length-5,run:(s,A)=>A.msg({from:'nova',text:'Pharmacy says the 12:00 meds are up.'})});Shift.ui._state().t=c.length-8})()")
+    H('skip'); pg.wait_for_timeout(100)
+    ff = J("(document.querySelector('.ff-why')||{}).textContent||''")
+    check(not J("Shift.ui._state().ended") and 'Report to the oncoming nurse is still waiting' in ff and 'End shift' in ff, 'when skipping stops a few minutes before handoff, it says report is still owed and how to finish')
+
+    # A landing-page link to one shift picks it on home, and never replaces a shift in progress.
+    pg.goto(GAME + '?shift=icu-3w-1'); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[],settings:{motion:'reduced',sound:'off',music:'off'},seen:{tour:1}}))"); pg.goto(GAME + '?shift=icu-3w-1'); pg.wait_for_timeout(400)
+    check(J("document.querySelector('.sc-pick[data-id=\"icu-3w-1\"]').getAttribute('aria-pressed')") == 'true' and 'shift=' not in J("location.href"), '?shift=icu-3w-1 picks the ICU on home and cleans the address')
+    H('new'); clr(); pg.goto(GAME + '?shift=peds-5s-1'); pg.wait_for_timeout(400)
+    check(J("Shift.ui._state() && Shift.ui._state().caseId") == 'icu-3w-1', 'a link to another shift does not replace the one in progress')
+    pg.goto(GAME + '?shift=nonsense'); pg.wait_for_timeout(300)
+    check(J("document.querySelectorAll('.sc-pick').length") > 5, 'an unknown shift in the link is ignored')
 
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))

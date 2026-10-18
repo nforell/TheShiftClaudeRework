@@ -94,9 +94,29 @@
     return mail('Add me to The Shift beta list', { email, role: role || '' });
   }
 
+  /* The same signup, but only says "sent" once PostHog answered OK. If it can't be reached (offline, blocked by a
+     content blocker, a server error), the signup is kept on this device and resent on the next visit, and the page
+     says so instead of "You're on the list". Resolves 'sent', 'queued' or 'email' (no analytics key: opened a
+     prefilled email). */
+  const KS = 'theshift.tel.signups';
+  const pending = () => { try { return JSON.parse(get(KS) || '[]') || []; } catch (e) { return []; } };
+  function postNow(events) {
+    const url = String(CFG.posthogHost || 'https://us.i.posthog.com').replace(/\/$/, '') + '/batch/';
+    let p; try { p = fetch(url, { method: 'POST', body: JSON.stringify({ api_key: CFG.posthogKey, batch: events }), keepalive: true, headers: { 'Content-Type': 'text/plain' } }).then((r) => r.ok); } catch (e) { p = Promise.resolve(false); }
+    return Promise.race([p.catch(() => false), new Promise((ok) => setTimeout(() => ok(false), 8000))]);
+  }
+  function signupSend(email, role) {
+    if (!canSend()) return Promise.resolve(mail('Add me to The Shift beta list', { email, role: role || '' }));
+    const e = { event: 'beta_signup', timestamp: new Date().toISOString(), properties: { distinct_id: id, session_id: session, app_version: CFG.version || '', screen: vw(), first_source: src.source, first_campaign: src.campaign, kind: 'signup', role: role || '', $set: { email, role: role || '' } } };
+    recent.push({ at: e.timestamp.slice(11, 19), event: e.event, p: { kind: 'signup' } }); if (recent.length > 25) recent.shift();
+    notify('signup', { email, role: role || '' });
+    return postNow([e]).then((ok) => { if (ok) return 'sent'; put(KS, JSON.stringify(pending().concat(e).slice(-5))); return 'queued'; });
+  }
+  if (canSend() && pending().length) setTimeout(() => { const p = pending(); postNow(p).then((ok) => { if (ok) del(KS); }); }, 1500);
+
   addEventListener('pagehide', () => flush(true));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(true); });
   setTimeout(() => flush(), 3000);   // anything left from last time
 
-  S.tel = { track, flush, feedback, signup, source: () => src, enabled, configured, status, optedOut, setOptOut, recent, id: () => id };
+  S.tel = { track, flush, feedback, signup, signupSend, source: () => src, enabled, configured, status, optedOut, setOptOut, recent, id: () => id };
 })(window.Shift);

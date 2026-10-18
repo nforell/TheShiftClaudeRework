@@ -154,9 +154,19 @@
   /* Orientation: offered automatically to a brand-new player the first time they start a shift; always available
      from How it plays. Finishing it from Start goes straight into that shift. */
   const firstTimer = () => !seen('orient') && !(prof.runs || []).length && !Object.keys(prof.seen || {}).length;
-  function openOrient(start) { if (!OR) return start ? startNew() : (ui.ov = 'help', render()); ui.or = OR.fresh(start); OR._o = ui.or; ui.ov = 'orient'; TEL.track('orient_open', { from: start ? 'start' : 'help' }); render(true); }
+  /* Where the player is in the orientation survives a reload or a closed tab (a phone that locks mid-walkthrough):
+     it reopens at the same step with the same answers, and is forgotten once finished, skipped or reset. */
+  const ORK = 'theshift.orient.v1';
+  const orSave = () => { try { if (ui.or) localStorage.setItem(ORK, JSON.stringify(Object.assign({}, ui.or, { caseId }))); else localStorage.removeItem(ORK); } catch (e) { /* storage off */ } };
+  const orLoad = () => { try { const o = JSON.parse(localStorage.getItem(ORK) || 'null'); return o && typeof o.i === 'number' && o.i >= 0 && OR && o.i < OR.CH.length ? o : null; } catch (e) { return null; } };
+  function openOrient(start) {
+    if (!OR) return start ? startNew() : (ui.ov = 'help', render());
+    const was = orLoad();
+    ui.or = was && was.start === !!start ? Object.assign(OR.fresh(start), was) : OR.fresh(start); delete ui.or.caseId;
+    OR._o = ui.or; ui.ov = 'orient'; orSave(); TEL.track('orient_open', { from: start ? 'start' : 'help', resumed: !!(was && ui.or.i) }); render(true);
+  }
   function closeOrient(finished) {
-    const o = ui.or; markSeen('orient'); TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
+    const o = ui.or; markSeen('orient'); try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
     ui.or = null; ui.ov = null;
     if (o && o.start) return startNew();
     render(true);
@@ -623,7 +633,10 @@
       if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
       return null;
     });
-    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
+    // Near the end, say why the clock stopped short of handoff: report is still owed, and End shift is how to finish.
+    const owed = !s.ended && L - s.t <= 10 && nowRows().some((r) => r.rp);
+    const endWhy = owed ? ' Report to the oncoming nurse is still waiting. Give it, then End shift when you\'re done.' : '';
+    ui.ff = { t0, t1: s.t, why: endWhy ? Object.assign({}, why || { text: 'The clock stopped short of handoff.' }, { text: ((why && why.text) || 'The clock stopped short of handoff.') + endWhy, urgent: true }) : why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
     if (!s.ended) render();
     ffPlay();
   }
@@ -2035,6 +2048,7 @@
     const nodes = document.getElementsByTagName('*').length, save = (() => { try { return Math.round(((localStorage.getItem('theshift.save.v1') || '').length + (localStorage.getItem('theshift.profile.v1') || '').length) / 1024); } catch (e) { return null; } })();
     const row = (k, v, ok) => `<tr><th>${k}</th><td class="${ok === false ? 'ab' : ''}">${v}</td></tr>`;
     const lines = [
+      row('Version', esc(String((S.config || {}).version || 'unknown'))),
       row('Frame rate', `${FM.fps} fps${FM.lite ? ' (auto lite)' : ''}`, FM.fps >= 30),
       row('Redraw, last', `${last.total || 0} ms (${last.view || ''}${last.ov ? '/' + last.ov : ''})`, (last.total || 0) < 50),
       row('Redraw, average / worst', `${PERF.avg.toFixed(1)} / ${PERF.worst.toFixed(0)} ms · ${PERF.slow} slow of ${PERF.n}`, PERF.n < 10 || PERF.avg < 30),
@@ -2309,7 +2323,7 @@
     restart() { ui.confirm = { title: 'Restart this shift?', text: `You'll go back to ${E.clock(0)} report. Progress in this shift is lost.`, ok: 'Restart', act: 'new-yes', danger: true }; ui.ov = 'confirm'; render(); },
     menu() { ui.ov = 'menu'; render(); }, help() { openOrient(false); }, 'help-ref'() { ui.ov = 'help'; render(); },
     'or-open'() { if (ui.or) { ui.ov = 'orient'; render(true); } else openOrient(false); },
-    or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
+    or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); orSave(); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
@@ -2544,7 +2558,7 @@
       if (!name) { c.err = 'Add your name, so your instructor knows who you are.'; return render(); }
       c.err = null; c.busy = true; render();
       CL.join(code, name).then((k) => { c.busy = false; c.code = ''; c.list = null; c.ok = `You're in ${k && k.name ? k.name : 'the class'}.${k && k.pack ? ' Every shift is open to you.' : ''}`; render(); })
-        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : 'Couldn\'t join. Check your connection and try again.'; render(); });
+        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : /too many/i.test(e.message) ? e.message : 'Couldn\'t join. Check your connection and try again.'; render(); });
     },
     'cls-leave'(el) { const c = ui.cls || (ui.cls = {}); CL.leave(el.dataset.id).then(() => { c.list = null; c.ok = 'You left the class.'; render(); }).catch(() => { c.err = 'Couldn\'t leave the class. Try again.'; render(); }); },
     account() { ui.acct = { email: (ui.acct && ui.acct.email) || '' }; ui.ov = 'account'; render(); },
@@ -2582,7 +2596,7 @@
     'aw-back'() { ui.view = ui.awFrom === 'debrief' && s && s.ended ? 'debrief' : 'home'; render(true); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
     'reset-ask'() { const signed = CL && CL.user && CL.user(); ui.confirm = { title: 'Reset all progress?', text: `Every finished shift, star, XP point, badge, lesson and practice result on this device will be cleared, and any shift in progress ends. This can't be undone.${signed ? ' You\'re signed in: your account keeps its copy and will sync it back. Sign out first to start fresh here.' : ''}`, ok: 'Reset everything', act: 'reset-yes', danger: true }; ui.ov = 'confirm'; render(); },
-    'reset-yes'() { E.store.clear(); E.store.clearLast(); s = null; ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
+    'reset-yes'() { E.store.clear(); E.store.clearLast(); s = null; ui.or = null; try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
     'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
     'res-close'() { const c = ui.res && ui.res.crit, lab = ui.res && ui.res.label; ui.ov = null; ui.res = null; ui.flash = null; if (c) ui.spot = s.loc; const n = Date.now(); if (ui.ghosts.some((g) => g.held)) setTimeout(() => FX.play('check'), 300); ui.ghosts.forEach((g) => { if (g.held) { g.held = false; g.born = n; } }); ui.stampRow = lab ? { label: lab, born: n } : null; render(); },
@@ -2871,7 +2885,16 @@
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
+    // A link to one shift (/play/?shift=icu-3w-1, from the landing page's shift cards) picks that shift on the home
+    // screen. A shift already in progress wins: the link never throws away someone's game.
+    { const want = new URLSearchParams(location.search).get('shift');
+      if (want && CASES.includes(want) && !(s && !s.ended)) { caseId = want; E.useCase(caseId); ui.deep = want; TEL.track('deep_link', { case: want }); }
+      if (want) { const q = new URLSearchParams(location.search); q.delete('shift'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } }
     ui.view = 'home'; safe('boot', () => render(true));
+    if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
+    // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
+    const wasOr = !seen('orient') && OR && orLoad();
+    if (wasOr) safe('orient-resume', () => { if (!s && wasOr.caseId && E.getCase(wasOr.caseId)) caseId = wasOr.caseId; openOrient(wasOr.start); });
     if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }).catch(() => {}); }
     addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
     addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });
