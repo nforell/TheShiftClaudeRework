@@ -1,9 +1,9 @@
-/* The Shift — orientation. A first-day walkthrough on 4 West with three practice patients, before the first real
+/* The Shift — orientation. A first-day walkthrough on a practice unit (rooms 101–107, so nothing collides with a real shift's rooms) with three practice patients, before the first real
    shift. Every chapter is something the player does: commit actions and watch the clock, highlight report, drag
    patients into order, answer the phone, hold a medication, build an SBAR call, delegate, and read a debrief.
    The wall clock is the throughline: it only moves by what each action costs.
    ui.js owns rendering and routing: it calls view(o) for the HTML, act(o, data) on taps (data-act="or"),
-   and sorted(...) when the practice board is dragged. State lives in ui.or and is never saved. */
+   and sorted(...) when the practice board is dragged. State lives in ui.or; ui.js keeps a copy so a reload resumes it. */
 (function (S) {
   const R = S.rig, ART = S.art, FX = S.fx || { play() {} };
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -11,11 +11,11 @@
 
   /* ---------- practice patients ---------- */
   const PT = {
-    'or-a': { name: 'Esther Alvarez', short: 'Mrs. Alvarez', room: '412', age: '82F', dx: 'Urinary tract infection, new confusion',
+    'or-a': { name: 'Esther Alvarez', short: 'Mrs. Alvarez', room: '101', age: '82F', dx: 'Urinary tract infection, new confusion',
       look: { skin: '#D6A684', shade: '#B88864', lip: '#A0594C', blush: '#DC8E74', iris: '#3A2616', head: { w: 55, h: 60, jaw: .2 }, eye: 9.2, hair: { style: 'bun', color: '#D9D2CB' }, brow: { w: 2.8, color: '#B8B0A8' }, body: { w: 78, cloth: 'gown' }, extras: ['wrinkles', 'gold'], smile: .1 } },
-    'or-b': { name: 'Henry Ostrowski', short: 'Mr. Ostrowski', room: '414', age: '71M', dx: 'Heart failure, metoprolol due',
+    'or-b': { name: 'Henry Ostrowski', short: 'Mr. Ostrowski', room: '103', age: '71M', dx: 'Heart failure, metoprolol due',
       look: { skin: '#EBC9AE', shade: '#CFA88C', lip: '#A9655B', blush: '#E2958A', iris: '#4E6E8E', head: { w: 57, h: 63, jaw: .55 }, eye: 9, hair: { style: 'balding', color: '#BDB6AE' }, brow: { w: 4, color: '#9E968E' }, body: { w: 84, cloth: 'gown' }, extras: ['glasses', 'wrinkles'], glasses: '#2E2A28', smile: .35 } },
-    'or-c': { name: 'Lorraine Abernathy', short: 'Ms. Abernathy', room: '416', age: '45F', dx: 'Day 2 after a knee replacement',
+    'or-c': { name: 'Lorraine Abernathy', short: 'Ms. Abernathy', room: '105', age: '45F', dx: 'Day 2 after a knee replacement',
       look: { skin: '#EBC6A2', shade: '#CFA582', lip: '#B06A5E', blush: '#E8977F', iris: '#1E140C', head: { w: 54, h: 60, jaw: .25 }, eye: 9.8, hair: { style: 'bob', color: '#1A1410' }, brow: { w: 3.2, color: '#140E0A' }, body: { w: 78, cloth: 'gown' }, extras: [], smile: .45 } },
   };
   Object.keys(PT).forEach((k) => R.define(k, PT[k].look));
@@ -61,7 +61,7 @@
     { id: 'chart', label: 'Read the chart', min: 2, out: 'Ceftriaxone ordered at 04:00. Not given yet.' },
     { id: 'med', label: 'Give a medication', min: 5, out: 'Ceftriaxone 1 g IV started.' },
     { id: 'call', label: 'Call the provider', min: 6, out: 'Dr. Chen is on her way, with orders for cultures and fluids.' },
-    { id: 'walk', label: 'Walk to another room', min: 1, out: 'You\'re in 414.' },
+    { id: 'walk', label: 'Walk to another room', min: 1, out: 'You\'re in 103.' },
   ];
   const REPORT = [
     { t: 'Esther Alvarez, 82, here for a UTI. Day 1 of antibiotics.', key: false },
@@ -79,8 +79,8 @@
   };
   const RIGHT = ['or-a', 'or-b', 'or-c'];
   const PHONE = [
-    { id: 'lab', from: 'Lab', who: null, text: 'Calling a critical value: 412 Alvarez, lactate 4.2.', opts: [{ id: 'read', t: 'Read it back: 412 Alvarez, lactate 4.2', v: 2, fb: 'Read-back closes the loop on a critical value. Now it\'s yours to act on: this one goes straight to the provider.' }, { id: 'later', t: 'Thanks, I\'ll look at it later', v: 0, fb: 'Critical values can\'t wait, and you never repeated it back. Read back, then act.' }] },
-    { id: 'aide', from: 'Luis (aide)', who: 'luis', text: '414 wants to walk to the bathroom. Okay to help him?', opts: [{ id: 'yes', t: 'Yes, he\'s stable. Thanks, Luis.', v: 2, fb: 'Walking a stable patient is a perfect aide task. You keep the assessments.' }, { id: 'wait', t: 'No, wait for me', v: 0, fb: 'He\'d have waited for nothing. Hand off what\'s safe to hand off.' }] },
+    { id: 'lab', from: 'Lab', who: null, text: 'Calling a critical value: 101 Alvarez, lactate 4.2.', opts: [{ id: 'read', t: 'Read it back: 101 Alvarez, lactate 4.2', v: 2, fb: 'Read-back closes the loop on a critical value. Now it\'s yours to act on: this one goes straight to the provider.' }, { id: 'later', t: 'Thanks, I\'ll look at it later', v: 0, fb: 'Critical values can\'t wait, and you never repeated it back. Read back, then act.' }] },
+    { id: 'aide', from: 'Luis (aide)', who: 'luis', text: '103 wants to walk to the bathroom. Okay to help him?', opts: [{ id: 'yes', t: 'Yes, he\'s stable. Thanks, Luis.', v: 2, fb: 'Walking a stable patient is a perfect aide task. You keep the assessments.' }, { id: 'wait', t: 'No, wait for me', v: 0, fb: 'He\'d have waited for nothing. Hand off what\'s safe to hand off.' }] },
   ];
   const TABS = {
     assess: { label: 'Assess', text: 'Vital signs and a body-system check, one system at a time. Each one shows its cost in minutes.', rows: [['Vital signs', 4], ['Heart and lungs', 2], ['Neuro', 2], ['Pain', 1]] },
@@ -112,7 +112,7 @@
     const c = CH[o.i];
     if (c.id === 'clock') {
       return `<div class="or-scene or-s-clock">
-        <div class="or-bed">${bust('or-a')}<p class="or-cap">412 Mrs. Alvarez</p></div>
+        <div class="or-bed">${bust('or-a')}<p class="or-cap">101 Mrs. Alvarez</p></div>
         <div class="or-acts" role="group" aria-label="Practice actions">${ACTIONS.map((a) => { const did = o.log.some((l) => l.id === a.id); return `<button class="or-act ${did ? 'did' : ''}" data-act="or" data-do="act" data-id="${a.id}"><span>${esc(a.label)}</span><b class="${a.min ? '' : 'free'}">${a.min ? a.min + ' min' : 'Free'}</b></button>`; }).join('')}</div>
         <ol class="or-log" aria-live="polite">${o.log.length ? o.log.slice().reverse().map((l) => `<li><time>${hhmm(l.at)}</time>${esc(l.out)}</li>`).join('') : '<li class="empty">Tap an action. Watch the clock.</li>'}</ol>
       </div>`;
@@ -120,7 +120,7 @@
     if (c.id === 'report') {
       const hits = REPORT.filter((r, k) => r.key && o.hl.includes(k)).length, keys = REPORT.filter((r) => r.key).length, noise = o.hl.filter((k) => !REPORT[k].key).length;
       return `<div class="or-scene or-s-report">
-        <div class="or-giver">${icon('dana')}<p><b>Dana</b>, night RN, giving report on 412</p></div>
+        <div class="or-giver">${icon('dana')}<p><b>Dana</b>, night RN, giving report on 101</p></div>
         <div class="or-brain" role="group" aria-label="Report lines">${REPORT.map((r, k) => { const on = o.hl.includes(k); const st = o.hlChecked ? (r.key ? (on ? 'hit' : 'miss') : on ? 'noise' : '') : ''; return `<button class="or-line ${on ? 'on' : ''} ${st}" data-act="or" data-do="hl" data-k="${k}" aria-pressed="${on}"><span class="mark" aria-hidden="true"></span><span class="txt">${esc(r.t)}</span>${o.hlChecked && (r.key || on) ? `<small class="why">${esc(r.why || '')}</small>` : ''}</button>`; }).join('')}</div>
         ${o.hlChecked ? `<p class="or-verdict ${hits === keys && !noise ? 'good' : ''}">You flagged ${hits} of ${keys} that matter${noise ? `, and ${noise} that don't` : ''}. ${hits === keys && !noise ? 'That\'s a sepsis picture, and you heard it in report.' : 'Together they add up to sepsis. Flag what would change your first hour.'}</p>` : `<button class="btn or-check" data-act="or" data-do="hlcheck" ${o.hl.length ? '' : 'disabled data-why="Tap a line or two first."'}>Check my highlights</button>`}
       </div>`;
@@ -128,7 +128,7 @@
     if (c.id === 'rank') {
       const right = o.order.every((k, i) => RIGHT[i] === k);
       return `<div class="or-scene or-s-rank">
-        <div class="or-wb"><p class="or-wb-h">Assignment, 4 West</p>
+        <div class="or-wb"><p class="or-wb-h">Assignment, practice unit</p>
           <ol class="or-board ${o.rankChecked ? 'done' : ''}" data-sort="or-board">${o.order.map((k, i) => `<li data-key="${k}" class="${o.rankChecked ? (RIGHT[i] === k ? 'hit' : 'miss') : ''}">${o.rankChecked ? '' : '<span class="grip" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>'}<span class="mag" aria-label="Number ${i + 1}">${i + 1}</span>${icon(k)}<span class="who"><b>${PT[k].room} ${esc(PT[k].short)}</b><small>${esc(BOARD[k])}</small></span>${o.rankChecked ? '' : `<span class="mv"><button class="btn" data-act="or" data-do="mv" data-k="${k}" data-d="-1" aria-label="Move ${esc(PT[k].short)} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}><svg class="ico" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button><button class="btn" data-act="or" data-do="mv" data-k="${k}" data-d="1" aria-label="Move ${esc(PT[k].short)} down" ${i === o.order.length - 1 ? 'disabled data-why="Already last."' : ''}><svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></span>`}</li>`).join('')}</ol>
         </div>
         ${o.rankChecked ? `<p class="or-verdict ${right ? 'good' : ''}">${right ? 'Same order as Nova.' : 'Nova\'s order: Mrs. Alvarez, Mr. Ostrowski, Ms. Abernathy.'} Unstable first, a time-sensitive decision second, stable last. In a real shift she tells you her order at the debrief, not before.</p>` : `<p class="or-hint">${o.dragged ? 'Good. Lock it in when you\'re happy.' : 'Drag a magnet by its handle, or use the arrows.'}</p><button class="btn or-check" data-act="or" data-do="rankcheck">Lock in my order</button>`}
@@ -136,7 +136,7 @@
     }
     if (c.id === 'station') {
       const hall = ART.hallway({ t: 15, caseId: 'medsurg-4w-1' }, [
-        { pid: 'or-a', room: '412', name: 'Mrs. Alvarez', light: false }, { pid: 'or-b', room: '414', name: 'Mr. Ostrowski', light: true }, { pid: 'or-c', room: '416', name: 'Ms. Abernathy', light: false }, { pid: 'x', room: '418', pending: true, eta: '09:30', label: 'Admission' },
+        { pid: 'or-a', room: '101', name: 'Mrs. Alvarez', light: false }, { pid: 'or-b', room: '103', name: 'Mr. Ostrowski', light: true }, { pid: 'or-c', room: '105', name: 'Ms. Abernathy', light: false }, { pid: 'x', room: '107', pending: true, eta: '09:30', label: 'Admission' },
       ]).replace(/data-act="goto"/g, 'data-act="or" data-do="door"');
       return `<div class="or-scene or-s-station">
         <div class="or-hall">${hall}${o.door ? `<p class="or-cap or-door-msg">${esc(o.door)}</p>` : ''}</div>
@@ -147,7 +147,7 @@
     if (c.id === 'room') {
       const T = TABS[o.tab];
       return `<div class="or-scene or-s-room">
-        <div class="or-roomtop">${bust('or-b')}<div class="or-plate"><b>Henry Ostrowski</b> 71M, 414<br><small>Heart failure</small><span class="chip">Full code</span> <span class="chip alert">Allergy: penicillin</span></div></div>
+        <div class="or-roomtop">${bust('or-b')}<div class="or-plate"><b>Henry Ostrowski</b> 71M, 103<br><small>Heart failure</small><span class="chip">Full code</span> <span class="chip alert">Allergy: penicillin</span></div></div>
         <div class="or-dock" role="tablist">${Object.entries(TABS).map(([k, t]) => `<button role="tab" aria-selected="${o.tab === k}" class="${o.tab === k ? 'on' : ''}" data-act="or" data-do="tab" data-k="${k}">${esc(t.label)}</button>`).join('')}</div>
         <div class="or-pane"><p>${esc(T.text)}</p><ul>${T.rows.map(([l, m]) => `<li><span>${esc(l)}</span><b>${m} min</b></li>`).join('')}</ul></div>
         <div class="or-med"><p class="or-med-h"><b>Metoprolol tartrate 25 mg PO</b>, due 09:00. <span class="or-param">Hold for apical pulse under 55.</span></p>
@@ -160,7 +160,7 @@
       const sb = o.sbar, keys = SB.filter((x) => x.key && sb.picked.includes(x.id)).length, noise = SB.filter((x) => !x.key && sb.picked.includes(x.id)).length;
       const reply = !sb.sent ? '' : sb.req === 'fyi' ? 'Okay, thanks. Call me if anything changes.' : keys >= 4 ? 'I\'m coming up. Cultures, 30 mL/kg of fluid, and hang the ceftriaxone now. Recheck the lactate in two hours.' : 'Septic? What are her vitals, and what\'s her lactate?';
       return `<div class="or-scene or-s-sbar">
-        <div class="or-sbar"><p class="or-sbar-h"><span>S</span><span>B</span><span>A</span><span>R</span> Calling Dr. Chen about 412</p>
+        <div class="or-sbar"><p class="or-sbar-h"><span>S</span><span>B</span><span>A</span><span>R</span> Calling Dr. Chen about 101</p>
           <p class="or-lab">Pick what she needs to hear:</p>
           <div class="or-chips">${SB.map((x) => { const on = sb.picked.includes(x.id); return `<button class="or-chip ${on ? 'on' : ''} ${sb.sent ? (x.key ? (on ? 'hit' : 'miss') : on ? 'noise' : '') : ''}" data-act="or" data-do="sb" data-k="${x.id}" aria-pressed="${on}" ${sb.sent ? 'disabled' : ''}>${esc(x.t)}</button>`; }).join('')}</div>
           <p class="or-lab">And what you want:</p>
@@ -187,7 +187,7 @@
 
   /* Nova's narration for each chapter. */
   const SAY = {
-    clock: (o) => `Welcome to 4 West. I'm Nova, your charge nurse. Before your first shift, let's walk through one together. First thing: the clock only moves when you do something. Looking is free. Everything else costs minutes, and you see the cost before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. Spend them on what matters most.' : ''}`,
+    clock: (o) => `Welcome. I'm Nova, your charge nurse. Before your first shift, let's walk through one together on the practice unit, with three made-up patients. Take your time: Next always moves on, Skip ends the walkthrough, and if you leave, it picks up where you stopped. First thing: the clock only moves when you do something. Looking is free. Everything else costs minutes, and you see the cost before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. Spend them on what matters most.' : ''}`,
     report: () => `Every shift starts with report from the nurse going home. It's long and most of it is noise. Tap the lines that would change what you do in your first hour. They go on your brain sheet in highlighter, and the game tracks what you caught.`,
     rank: () => `Before you leave report, decide who you'll see first. Ask yourself who could get hurt fastest. Unstable beats scheduled, and scheduled beats stable. Drag the magnets on the board into order.`,
     station: () => `This is your home base between rooms. Doors show who's waiting; a yellow light is a call light. The phone is how the lab, pharmacy, doctors and your aide reach you, and some messages need an answer. Try answering these two. You can also tap a door.`,
@@ -202,7 +202,7 @@
     return `<div class="orient" role="dialog" aria-modal="true" aria-label="Orientation: how to play">
       <aside class="or-clip" aria-label="Orientation checklist">
         <div class="or-clamp" aria-hidden="true"></div>
-        <p class="or-clip-h">Orientation<small>4 West, your first day</small></p>
+        <p class="or-clip-h">Orientation<small>Practice unit, your first day</small></p>
         <ol class="or-list">${CH.map((x, k) => `<li class="${k === o.i ? 'now' : ''} ${o.seen.includes(k) && k !== o.i ? 'done' : ''}"><button data-act="or" data-do="go" data-i="${k}" ${o.seen.includes(k) || k === o.i + 1 ? '' : 'disabled data-why="One step at a time."'}><span class="box" aria-hidden="true"></span><span class="t">${hhmm(x.t)}</span><span class="s">${esc(x.step)}</span></button></li>`).join('')}</ol>
         <button class="or-skipall" data-act="or" data-do="skip">${o.start ? 'Skip, I\'ve played before' : 'Close'}</button>
       </aside>

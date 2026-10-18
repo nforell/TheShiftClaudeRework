@@ -28,8 +28,24 @@ check(/^[A-Z2-9]{6}$/.test(k.code), 'create_class makes a 6-character code ' + k
 const j1 = (await as(S1, `select public.join_class('${k.code.toLowerCase()}', 'Ana P.') as j`)).rows[0].j;
 check(j1.name === 'NURS 310, Section 2', 'a student joins by code (any case)');
 await as(S2, `select public.join_class('${k.code}', 'Ben R.')`);
-let e = null; try { await as(S1, `select public.join_class('ZZZZZZ', 'x')`); } catch (x) { e = x.message; }
-check(/No class/.test(e || ''), 'a wrong code is refused');
+let e = null; const wrong = (await as(S1, `select public.join_class('ZZZZZZ', 'x') as j`)).rows[0].j;
+check(/No class/.test(wrong.error || ''), 'a wrong code is refused');
+check((await as(S1, `select count(*)::int n from public.class_members where display_name = 'x'`)).rows[0].n === 0, 'a wrong code joins nothing');
+for (let i = 0; i < 9; i++) await as(X, `select public.join_class('ZZZZZ${i}', 'x')`);
+const tenth = (await as(X, `select public.join_class('${k.code}', 'Xavier') as j`)).rows[0].j;
+check(!tenth.error && tenth.name === 'NURS 310, Section 2', 'nine wrong codes still let the right one through');
+await db.exec(`delete from public.class_members where user_id = '${X}'`);
+await as(X, `select public.join_class('ZZZZZZ', 'x')`);
+const locked = (await as(X, `select public.join_class('${k.code}', 'Xavier') as j`)).rows[0].j;
+check(/Too many/.test(locked.error || ''), 'after ten wrong codes in an hour, even the right code waits (no guessing)');
+check((await as(S1, `select public.join_class('${k.code}', 'Ana P.') as j`)).rows[0].j.name === 'NURS 310, Section 2', 'the limit is per account: another student still joins');
+await db.exec(`update public.join_attempts set at = now() - interval '61 minutes' where user_id = '${X}'`);
+check(!(await as(X, `select public.join_class('${k.code}', 'Xavier') as j`)).rows[0].j.error, 'an hour later the account can join again');
+await db.exec(`delete from public.class_members where user_id = '${X}'`);
+let seen = 0; try { seen = (await as(X, `select count(*)::int n from public.join_attempts`)).rows[0].n; } catch (x) { seen = 0; }
+check(seen === 0, 'nobody can read the attempt log directly, even their own rows');
+e = null; try { await as(X, `delete from public.join_attempts`); } catch (x) { e = x.message; }
+check((await db.query(`select count(*)::int n from public.join_attempts where user_id = '${X}'`)).rows[0].n > 0, 'and nobody can clear it to reset the limit');
 await as(S1, `insert into public.results (user_id, case_id, score, steps, misses) values ('${S1}', 'medsurg-4w-1', 72, '[{"id":"cues","score":80}]', '[{"key":"416-sbar","text":"x"}]')`);
 await as(S2, `insert into public.results (user_id, case_id, score) values ('${S2}', 'medsurg-4w-1', 55)`);
 await as(X, `insert into public.results (user_id, case_id, score) values ('${X}', 'medsurg-4w-1', 99)`);

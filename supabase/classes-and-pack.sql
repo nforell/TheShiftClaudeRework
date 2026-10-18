@@ -151,14 +151,33 @@ begin
   return json_build_object('id', k, 'code', c, 'name', left(trim(p_name), 80));
 end $$;
 
--- Joining a class by code, with the name the instructor will see.
+-- Wrong class codes tried, per account. Joining is limited to 10 wrong codes an hour so a code can't be guessed
+-- (31^6 codes, so about 90 million years at that rate). Only join_class writes here; nobody can read it.
+create table if not exists public.join_attempts (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  at      timestamptz not null default now()
+);
+create index if not exists join_attempts_user_at on public.join_attempts (user_id, at);
+alter table public.join_attempts enable row level security;
+revoke all on public.join_attempts from anon, authenticated;
+
+-- Joining a class by code, with the name the instructor will see. A wrong code returns {"error": ...} instead of
+-- raising, so the attempt is kept (a raise would roll it back) and counts toward the limit.
 create or replace function public.join_class(p_code text, p_name text) returns json
 language plpgsql security definer set search_path = public as $$
-declare k classes%rowtype;
+declare k classes%rowtype; tries int;
 begin
   if auth.uid() is null then raise exception 'sign in first'; end if;
+  select count(*) into tries from join_attempts where user_id = auth.uid() and at > now() - interval '1 hour';
+  if tries >= 10 then
+    return json_build_object('error', 'Too many wrong codes. Wait an hour, then try again.');
+  end if;
   select * into k from classes where code = upper(trim(p_code));
-  if not found then raise exception 'No class with that code'; end if;
+  if not found then
+    insert into join_attempts (user_id) values (auth.uid());
+    delete from join_attempts where at < now() - interval '1 day';
+    return json_build_object('error', 'No class with that code');
+  end if;
   insert into class_members (class_id, user_id, display_name) values (k.id, auth.uid(), left(trim(p_name), 60))
     on conflict (class_id, user_id) do update set display_name = excluded.display_name;
   return json_build_object('id', k.id, 'name', k.name, 'code', k.code, 'pack', k.pack);

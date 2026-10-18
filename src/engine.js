@@ -72,6 +72,9 @@ window.Shift = window.Shift || {};
         return v;
       },
       lastVitals(pid) { const v = s.p[pid].vit; return v[v.length - 1]; },
+      /* The vitals a dose decision is judged on: the set the nurse had in front of them (recorded in the last
+         `mins` minutes), so feedback never quotes a number the player never saw. Falls back to the live value. */
+      seen(pid, mins) { const v = s.p[pid].vit, l = v[v.length - 1]; if (l && s.t - l.t <= (mins || 30)) return Object.assign({ seenAt: l.t }, l); return Object.assign({ seenAt: null }, a.vitals(pid)); },
       addLab(pid, lab) { s.p[pid].labs.push(Object.assign({ t: s.t }, lab)); },
       addOrder(pid, text) { s.p[pid].orders.push({ t: s.t, text, isNew: true }); },
       /* An order that needs repeated nursing checks ("vitals every 15 min × 4"): puts each check on the task list until done.
@@ -193,7 +196,7 @@ window.Shift = window.Shift || {};
   }
 
   /* Persistence — local for now; same shape could post to a backend later. */
-  const KEY = 'theshift.save.v1', PROF = 'theshift.profile.v1';
+  const KEY = 'theshift.save.v1', PROF = 'theshift.profile.v1', LAST = 'theshift.last.v1';
   /* Whatever is in storage (an older version, a cloud copy, a half-written save), hand the game a profile whose
      fields have the types it expects, so a bad value can never stop the screen from drawing. */
   const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
@@ -216,6 +219,10 @@ window.Shift = window.Shift || {};
       return cleanProfile(p);
     },
     saveProfile(p) { try { localStorage.setItem(PROF, JSON.stringify(p)); } catch (e) {} },
+    /* The last finished shift, so its debrief (and the NCLEX questions waiting on it) survives a reload or a closed tab. */
+    saveLast(s) { try { localStorage.setItem(LAST, JSON.stringify(s)); } catch (e) {} },
+    loadLast() { try { const r = localStorage.getItem(LAST); const g = r ? JSON.parse(r) : null; return g && g.ended && g.reward && cases[g.caseId] ? g : null; } catch (e) { return null; } },
+    clearLast() { try { localStorage.removeItem(LAST); } catch (e) {} },
   };
 
   S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, tally, SCORE: { BASE, GOOD, BAD, BAD_AFTER, BAD_FULL }, clock, clamp, store, DOMAINS, cases };

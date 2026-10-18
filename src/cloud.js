@@ -181,6 +181,7 @@
   async function join(code, name) {
     await need();
     const k = await call('/rest/v1/rpc/join_class', { method: 'POST', auth: true, body: { p_code: String(code || '').trim().toUpperCase(), p_name: String(name || '').trim() } });
+    if (!k || k.error) throw new Error((k && k.error) || 'No class with that code');
     TEL.track('class_joined', {});
     await flush().catch(() => {}); await checkOwns().catch(() => {}); changed();
     return k;

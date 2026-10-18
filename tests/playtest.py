@@ -1,6 +1,6 @@
 """Regressions from the full-game playtest (Oct 14, 2026): the hold-to-give button, stale tasks and replies,
 live patient headers, state-aware providers and debrief wording. Usage: python tests/playtest.py"""
-import sys, pathlib
+import sys, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tests'))
 from fonts import fontroute
@@ -129,6 +129,90 @@ with sync_playwright() as p:
     check('2 g/h' not in J("document.querySelector('.pane').innerText") and 'stopped' in J("document.querySelector('.pane').innerText"), 'the MAR shows a stopped drip as stopped')
     start('icu-3w-1'); J("Shift.ui._state().t=206"); H('catchup'); clr()
     check(any('Family meeting' in r for r in J("Shift.engine.getCase('icu-3w-1').dueExtras(Shift.ui._state()).map(x=>x.text)")), 'the family meeting is on the task list when it starts')
+
+    # 11. Picking an answer doesn't look like a reload: the window stays put and keeps its scroll.
+    pg.goto(GAME); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[{caseId:'medsurg-4w-1',score:70,at:1}],settings:{theme:'light',sound:'off',music:'off',motion:'full'},seen:{'coach:station':1,'coach:room':1,tour:1,orient:1}}))"); pg.reload(); pg.wait_for_timeout(250)
+    H('practice'); H('pset'); pg.wait_for_timeout(200)
+    for _ in range(8):   # practice sets are drawn at random; some open on a format with no option buttons (numeric, drag)
+        if J("!!document.querySelector('.sheet [data-act=\"ngn-pick\"]')"): break
+        clr(); H('practice'); H('pset'); pg.wait_for_timeout(200)
+    J("document.querySelector('.sheet-b').scrollTop = 9999"); y0 = J("document.querySelector('.sheet-b').scrollTop")
+    btn = pg.locator('.sheet [data-act="ngn-pick"]').last; btn.scroll_into_view_if_needed(); y0 = J("document.querySelector('.sheet-b').scrollTop"); btn.click(); pg.wait_for_timeout(60)
+    check(J("document.querySelector('.sheet-b').scrollTop") == y0, 'picking an answer keeps the question scrolled where it was')
+    check(J("getComputedStyle(document.querySelector('.sheet')).animationName") == 'none' and J("getComputedStyle(document.querySelector('.scrim')).animationName") == 'none', 'picking an answer does not replay the window opening')
+    check(J("!!document.querySelector('.sheet [data-act=ngn-pick].on.just')"), 'the picked answer is marked selected and gets the press response')
+
+    # 12. Beta audit (Oct 17): priorities, scoring that matches the screen, and no lost debriefs.
+    start('medsurg-4w-1'); go('416')
+    J("(()=>{const s=Shift.ui._state(),P=s.p['416'];P.bundle=true;P.escalated=true;P.orders.push({t:s.t,text:'Sepsis bundle',isNew:true});P.assessAt={neuro:s.t,gi:s.t}})()")
+    H('dock', id='assess'); H('assess', sys='vitals'); clr(); H('back'); clr()
+    ptr = J("(()=>{const b=document.querySelector('.cmd-go');return b?b.innerText:''})()")
+    check('416' in ptr and re.search(r'cultures|lactate|bolus', ptr, re.I) is not None, f'a new sepsis order outranks routine assessments at the station ({ptr.strip()[:50]})')
+    go('416'); H('dock', id='brain'); first = J("(()=>{const r=document.querySelector('.pane .b-grp.now button.b-row, .pane .b-grp.over button.b-row');return r?r.innerText:''})()")
+    check('awaiting pharmacy' not in first.lower(), f'an order waiting on pharmacy is not the first thing to do ({first.splitlines()[1] if len(first.splitlines())>1 else first[:40]})')
+    # Lisinopril is judged on the blood pressure the nurse saw
+    J("(()=>{const s=Shift.ui._state();s.p['416'].vit.push({t:s.t,by:'You',T:38,HR:104,SBP:97,DBP:58,RR:22,SpO2:95,O2:'Room air',pain:3})})()")
+    H('med', id='416-lis'); H('med-give'); clr()
+    jt = J("(Shift.ui._state().judg.find(j=>j.key==='416-lis')||{}).text||''")
+    check('SBP of 97' in jt, f'lisinopril feedback quotes the reading the nurse saw, not a hidden one ({jt[:70]})')
+    # Chen doesn't offer to call pharmacy once the nurse already has
+    start('medsurg-4w-1'); J("(()=>{const P=Shift.ui._state().p['416'];P.allergyInfo=true})()"); go('416')
+    J("(()=>{const s=Shift.ui._state(),P=s.p['416'];P.sev=50;P.assessAt={neuro:s.t,gi:s.t}})()"); H('dock', id='assess'); H('assess', sys='vitals'); clr()
+    H('sbar', pid='416')
+    for i in J("[...document.querySelectorAll('.sheet input[data-act=sbar-pick]:not([aria-disabled=true])')].map(x=>x.dataset.id).filter(x=>!/^(did|rx|hd|err):/.test(x))"): H('sbar-pick', id=i)
+    H('sbar-req', id='sepsis'); H('sbar-send'); rep = J("Shift.ui._ui.sbar.reply||''"); clr()
+    check('call pharmacy about the ceftriaxone myself' not in rep, f'the provider reply reflects the pharmacy work already done ({rep[:70]})')
+    # In-room work answers a call light
+    start('medsurg-4w-1'); go('414'); J("(()=>{const s=Shift.ui._state();s.p['414'].bell={at:s.t,id:'water',text:'wants fresh ice water',cna:true,fix:'Fresh ice water.',who:'Mrs. Okafor'};s.p['414'].lastBell=s.t})()")
+    H('dock', id='assess'); H('assess', sys='vitals'); clr()
+    check(J("Shift.ui._state().p['414'].bell") is None, 'working at the bedside answers that patient\'s call light')
+    # Acronyms survive in the SBAR's "already done" list
+    H('assess', sys='gi'); clr(); H('sbar', pid='414'); did = J("(document.querySelector('.sbar-did')||{}).innerText||''"); clr()
+    check(' gI' not in did and 'GI' in did, 'the SBAR lists "GI, GU and intake/output" with its acronym intact')
+    # Prep steps show they're done
+    H('med', id='414-ins') if J("!!Shift.engine.getCase('medsurg-4w-1').patients.find(d=>d.id==='414').meds.find(m=>m.id==='414-ins')") else None
+    # Furosemide hold explains the potassium
+    start('medsurg-4w-1'); go('418'); H('med', id='418-lasix'); H('med-holdask'); H('hreason', v='1'); H('med-hold'); clr()
+    fj = J("(Shift.ui._state().judg.find(j=>j.key==='418-lasix-hold')||{}).why||''")
+    check('replace' in fj.lower() and 'diuretic' in fj.lower(), 'holding furosemide for a low potassium explains: replace the potassium, keep the diuretic')
+    # PRN repeat limits
+    start('stepdown-6e-1'); J("(()=>{const s=Shift.ui._state();s.p['603'].called=0})()"); go('603')
+    has = J("!!Shift.engine.getCase('stepdown-6e-1').patients.find(d=>d.id==='603').meds.find(m=>m.id==='603-morph')")
+    if has:
+        H('med', id='603-morph'); H('dose', v='1') if J("!!document.querySelector('[data-act=dose]')") else None; H('med-give'); clr()
+        n0 = J("Shift.ui._state().meds['603-morph'].given.length"); H('med', id='603-morph'); H('med-give'); clr()
+        check(J("Shift.ui._state().meds['603-morph'].given.length") == n0, 'a second PRN morphine dose inside its interval is blocked')
+    # The last debrief survives a reload
+    start('medsurg-4w-1'); J("Shift.ui._state().t=298"); H('catchup'); clr()
+    if J("Shift.ui._ui.view") != 'debrief': H('end-yes') if J("'end-yes' in Shift.ui._handlers") else None
+    pg.reload(); pg.wait_for_timeout(300)
+    check(J("!!document.querySelector('[data-act=last-debrief]')"), 'after a reload, home offers the last debrief')
+    H('last-debrief'); check(J("Shift.ui._ui.view") == 'debrief' and 'out of 100' in J("document.body.innerText"), 'the saved debrief opens')
+
+    # 13. Pilot prep (Oct 17): a pain call light left with no pain decision is named in the debrief; skipping ahead
+    # near the end says report is what's left.
+    BELL = "(()=>{const s=Shift.ui._state();s.p['412'].bell={at:s.t,id:'pain',text:'is asking for something for pain',cna:false,fix:'Rates pain 7 out of 10.',who:'Mr. Bell'};s.p['412'].lastBell=s.t})()"
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    pj = J("(Shift.ui._state().judg.find(j=>j.key==='412-pain-ask')||{})")
+    check(bool(pj) and pj.get('delta') == 0 and 'Oxycodone' in pj.get('why', ''), 'an answered pain call light with no pain decision after it is named in the debrief (no points), with what was ordered')
+    start('medsurg-4w-1'); go('412'); J(BELL); H('bell'); clr(); H('med', id='412-oxy')
+    if J("!!document.querySelector('[data-act=dose]')"): H('dose', v='1')
+    H('med-give'); clr()
+    J("Shift.ui._state().t=298"); H('catchup'); clr()
+    check(given('412-oxy') and not J("Shift.ui._state().judg.some(j=>j.key==='412-pain-ask')"), 'giving the PRN after the pain call light leaves no note')
+    start('medsurg-4w-1'); J("(()=>{const c=Shift.engine.getCase('medsurg-4w-1');c.events.push({id:'t-ping',when:(s)=>s.t>=c.length-5,run:(s,A)=>A.msg({from:'nova',text:'Pharmacy says the 12:00 meds are up.'})});Shift.ui._state().t=c.length-8})()")
+    H('skip'); pg.wait_for_timeout(100)
+    ff = J("(document.querySelector('.ff-why')||{}).textContent||''")
+    check(not J("Shift.ui._state().ended") and 'Report to the oncoming nurse is still waiting' in ff and 'End shift' in ff, 'when skipping stops a few minutes before handoff, it says report is still owed and how to finish')
+
+    # A landing-page link to one shift picks it on home, and never replaces a shift in progress.
+    pg.goto(GAME + '?shift=icu-3w-1'); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[],settings:{motion:'reduced',sound:'off',music:'off'},seen:{tour:1}}))"); pg.goto(GAME + '?shift=icu-3w-1'); pg.wait_for_timeout(400)
+    check(J("document.querySelector('.sc-pick[data-id=\"icu-3w-1\"]').getAttribute('aria-pressed')") == 'true' and 'shift=' not in J("location.href"), '?shift=icu-3w-1 picks the ICU on home and cleans the address')
+    H('new'); clr(); pg.goto(GAME + '?shift=peds-5s-1'); pg.wait_for_timeout(400)
+    check(J("Shift.ui._state() && Shift.ui._state().caseId") == 'icu-3w-1', 'a link to another shift does not replace the one in progress')
+    pg.goto(GAME + '?shift=nonsense'); pg.wait_for_timeout(300)
+    check(J("document.querySelectorAll('.sc-pick').length") > 5, 'an unknown shift in the link is ignored')
 
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))

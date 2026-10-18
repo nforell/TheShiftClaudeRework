@@ -154,9 +154,19 @@
   /* Orientation: offered automatically to a brand-new player the first time they start a shift; always available
      from How it plays. Finishing it from Start goes straight into that shift. */
   const firstTimer = () => !seen('orient') && !(prof.runs || []).length && !Object.keys(prof.seen || {}).length;
-  function openOrient(start) { if (!OR) return start ? startNew() : (ui.ov = 'help', render()); ui.or = OR.fresh(start); OR._o = ui.or; ui.ov = 'orient'; TEL.track('orient_open', { from: start ? 'start' : 'help' }); render(true); }
+  /* Where the player is in the orientation survives a reload or a closed tab (a phone that locks mid-walkthrough):
+     it reopens at the same step with the same answers, and is forgotten once finished, skipped or reset. */
+  const ORK = 'theshift.orient.v1';
+  const orSave = () => { try { if (ui.or) localStorage.setItem(ORK, JSON.stringify(Object.assign({}, ui.or, { caseId }))); else localStorage.removeItem(ORK); } catch (e) { /* storage off */ } };
+  const orLoad = () => { try { const o = JSON.parse(localStorage.getItem(ORK) || 'null'); return o && typeof o.i === 'number' && o.i >= 0 && OR && o.i < OR.CH.length ? o : null; } catch (e) { return null; } };
+  function openOrient(start) {
+    if (!OR) return start ? startNew() : (ui.ov = 'help', render());
+    const was = orLoad();
+    ui.or = was && was.start === !!start ? Object.assign(OR.fresh(start), was) : OR.fresh(start); delete ui.or.caseId;
+    OR._o = ui.or; ui.ov = 'orient'; orSave(); TEL.track('orient_open', { from: start ? 'start' : 'help', resumed: !!(was && ui.or.i) }); render(true);
+  }
   function closeOrient(finished) {
-    const o = ui.or; markSeen('orient'); TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
+    const o = ui.or; markSeen('orient'); try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
     ui.or = null; ui.ov = null;
     if (o && o.start) return startNew();
     render(true);
@@ -270,7 +280,7 @@
       steps: CJ.score(d.judg).filter((x) => x.score !== null).map((x) => ({ id: x.id, score: x.score })),
       misses: d.judg.filter((j) => j.delta < 0).map((j) => ({ key: j.key, text: j.text, step: CJ.step(j), pid: j.pid || null })),
       outcomes: d.outcomes.map((o) => ({ id: o.id, tone: o.tone })) });
-    prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear();
+    prof.runs = prof.runs.slice(0, 20); E.store.saveProfile(prof); E.store.clear(); E.store.saveLast(s);
     ui.view = 'debrief'; s.view = 'debrief'; ui.ov = null; ui.chart = null; ui.toasts = []; ui.debDone = false; ui.filter = 'all'; ui.dtab = 'shift'; ui.byCj = false; ui.reflected = false; ui.fb = {}; render(true);
   }
 
@@ -408,6 +418,7 @@
             ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : locked(caseId) ? `<button class="btn btn-primary btn-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>${saved ? `<button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : ''}` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
           </div>
           <p class="home-meta">${c.patients.length} patients, about ${c.minutes || 15} minutes to play. Your progress saves as you go.</p>
+          ${(() => { if (s && !s.ended) return ''; const L = E.store.loadLast(); if (!L) return ''; const k = E.getCase(L.caseId), d0 = E.debrief(L); return `<button class="btn btn-quiet last-deb" data-act="last-debrief">See your last debrief: ${esc(k.title)}, ${d0.overall} <span aria-hidden="true">→</span></button>`; })()}
         </div>
         <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
           <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
@@ -527,10 +538,12 @@
   /* ------------ the command bar: what needs you, what's next, and a way to let time pass ------------ */
   function nowRows() {
     const out = [];
-    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && !r.info && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked }); }); });
-    const pr = prioList();
-    // Something you can act on comes before something you're waiting on.
-    return out.sort((a, b) => a.blocked - b.blocked || b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
+    const acu = {};
+    pts().forEach((d) => { const P = s.p[d.id], aw = gone(P); acu[d.id] = aw ? 0 : stRank(d.status(s, P, A())); (aw ? F.awayRows(s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && !r.info && r.t !== null && r.t <= s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked, stat: !!r.stat }); }); });
+    const pr = prioList(), now = (r) => (r.stat || acu[r.pid] >= 2 ? 1 : 0);
+    // What the orientation teaches: something you can act on before something you're waiting on; new orders and
+    // a patient who needs you now before anything routine; then overdue work, then the sicker patient, then the clock.
+    return out.sort((a, b) => a.blocked - b.blocked || now(b) - now(a) || b.late - a.late || acu[b.pid] - acu[a.pid] || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
   }
   function nextKnown() {
     let best = null; const put = (t, text) => { if (t > s.t && (!best || t < best.t)) best = { t, text }; };
@@ -620,7 +633,10 @@
       if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
       return null;
     });
-    ui.ff = { t0, t1: s.t, why: why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
+    // Near the end, say why the clock stopped short of handoff: report is still owed, and End shift is how to finish.
+    const owed = !s.ended && L - s.t <= 10 && nowRows().some((r) => r.rp);
+    const endWhy = owed ? ' Report to the oncoming nurse is still waiting. Give it, then End shift when you\'re done.' : '';
+    ui.ff = { t0, t1: s.t, why: endWhy ? Object.assign({}, why || { text: 'The clock stopped short of handoff.' }, { text: ((why && why.text) || 'The clock stopped short of handoff.') + endWhy, urgent: true }) : why || (s.ended ? { text: 'That\'s the shift.' } : (nowRows().some((r) => r.late && !r.blocked) ? { text: 'Half an hour went by. The overdue work is still waiting for you.', urgent: true } : { text: 'A quiet half hour. Nothing new came up.' })) };
     if (!s.ended) render();
     ffPlay();
   }
@@ -656,7 +672,7 @@
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
         <section class="board" aria-labelledby="bh">
-          <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="min-height:36px;font-size:.85rem">Change order</button>` : ''}</div>
+          <div class="board-h"><h2 id="bh">Assignment</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="font-size:.85rem">Change order</button>` : ''}</div>
           ${prioList().map(def).map((d) => { const P = s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'away' : 'goto'}" data-pid="${d.id}">
             <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
             <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(liveDef(d).dx)}</div><div class="why">Here for ${esc(lcFirst(d.reason).slice(0, 1) + d.reason.slice(1))}</div>
@@ -774,6 +790,12 @@
     rows.push({ key: 'sa', t: 0, late: s.t > 90 && sysDone < 3, done: sysDone >= 3, sys: 'full', text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
     const off = gone(P);   // transferred: their scheduled work went with them
     if (off) rows.pop();
+    // A patient who needs you now always has something on the list, even when nothing is scheduled: look, then act.
+    if (!off && d.status(s, P, A()) === 'urgent') {
+      const mine = [P.vit.filter((v) => v.by === 'You').map((v) => v.t), Object.values(P.assessAt || {})].flat(), lastLook = mine.length ? Math.max(...mine) : -999;
+      const alert = s.inbox.find((m) => m.pid === d.id && m.urgent && s.t - m.t <= 60), fresh = s.t - lastLook <= 15;
+      rows.push({ key: 'urg', t: s.t, late: false, stat: true, text: fresh ? `Needs you now: you assessed at ${E.clock(lastLook)}. Act on it` : 'Needs you now: assess and act', sub: fresh ? 'Treat what you can at the bedside (Care), and call for what you can\'t (Talk & call).' : alert ? clip(alert.text, 110) : 'Look at the patient, take vital signs, then decide what to do and who to call.', ...(() => { if (!fresh) return { go: { act: 'dock', id: 'assess' }, sys: 'vitals', hl: 'Vital signs' }; const Ax = A(), u = (d.interventions || []).find((x) => (!x.avail || x.avail(s, P, Ax)) && (x.urgent || /juice|d50|brady/.test(x.id))); return u ? { go: { act: 'dock', id: 'care' }, hl: u.label } : { go: { act: 'dock', id: 'talk' }, hl: 'Call SBAR' }; })() });
+    }
     (d.meds || []).forEach((m) => {
       const st = s.meds[m.id];
       if (m.available && !m.available(s, P)) return;
@@ -792,7 +814,7 @@
       (d.interventions || []).filter((x) => /\(ordered\)$/.test(x.label) && (!x.avail || x.avail(s, P, Ax))).forEach((x) => {
         const tx = x.label.replace(/\s*\(ordered\)$/, ''), n = norm(tx); if (have.some((h) => h === n || h.startsWith(n.slice(0, 14)) || n.startsWith(h.slice(0, 14)))) return;
         const t = Number.isFinite(ordT) ? Math.max(0, ordT) : 0;
-        rows.push({ key: 'o:' + x.id, t, late: s.t > t + (x.urgent ? 10 : 30), text: tx, sub: 'Ordered: yours to do', hl: x.label, go: { act: 'dock', id: 'care' } });
+        rows.push({ key: 'o:' + x.id, t, stat: true, late: s.t > t + (x.urgent ? 10 : 30), text: tx, sub: 'Ordered: yours to do', hl: x.label, go: { act: 'dock', id: 'care' } });
       });
     }
     s.deleg.filter((x) => !x.done && x.pid === d.id).forEach((x) => rows.push({ key: 'd:' + x.id + ':' + x.at, at: x.at, t: x.due, prog: true, text: `${cna().name}: ${C().delegation.tasks.find((t) => t.id === x.id).label.toLowerCase()}`, sub: `In progress, back about ${E.clock(x.due)}` }));
@@ -815,7 +837,8 @@
   function paneBrain(d, P) {
     const rows = brainRows(d, P);
     const open = rows.filter((r) => !r.done && !r.prog && r.t !== null);
-    const over = open.filter((r) => r.late && !r.info), now = open.filter((r) => !r.late && !r.info && r.t <= s.t + 30), soon = open.filter((r) => r.info || (!r.late && r.t > s.t + 30));
+    const ord = (L) => L.sort((a, b) => !!a.blocked - !!b.blocked || !!b.stat - !!a.stat || a.t - b.t);
+    const over = ord(open.filter((r) => r.late && !r.info)), now = ord(open.filter((r) => !r.late && !r.info && r.t <= s.t + 30)), soon = open.filter((r) => r.info || (!r.late && r.t > s.t + 30));
     const later = rows.filter((r) => r.t === null), prog = rows.filter((r) => r.prog);
     const doneLog = s.log.filter((l) => l.pid === d.id && (l.kind === 'find' || l.kind === 'act') && !/^You: "/.test(l.text)).slice().reverse();
     const shown = ui.brainAll ? doneLog : doneLog.slice(0, 5);
@@ -1719,17 +1742,28 @@
   }
 
   const PREP = { vitals: ['Take vital signs', 4], apical: ['Count apical pulse and BP', 2], pain: ['Assess pain and sedation', 2], bg: ['Check glucose', 3], intake: ['Check breakfast tray', 1], ciwa: ['Score CIWA-Ar', 4], strip: ['Look at the monitor strip', 1], labs: ['Review the morning labs', 2] };
+  /* PRN safety net for orders that don't define their own limit: the frequency on the order is the limit, the way
+     a dispensing cabinet enforces it. "Every 6 h" waits 6 hours, "every 5 min ×3" stops after three, "Once" is once. */
+  function prnLimit(m, st) {
+    if (!m.prn || m.infusion || !st || !st.given || !st.given.length) return null;
+    const f = String(m.freq || ''), last = st.given[st.given.length - 1], n = st.given.length;
+    if (/^\s*once\b/i.test(f) || /\bonce,/i.test(f)) return `Given at ${E.clock(last)}. This is a one-time order.`;
+    const x = /(?:×|x)\s*(\d+)/i.exec(f); if (x && n >= +x[1]) return `Given ${n} times (last ${E.clock(last)}). The order allows ${x[1]}. Call the provider for more.`;
+    const e = /every\s+(\d+(?:\.\d+)?)(?:\s*(?:to|–|-)\s*\d+)?\s*(min|minutes|h|hr|hours?)\b/i.exec(f); if (!e) return null;
+    const gap = +e[1] * (/^m/i.test(e[2]) ? 1 : 60);
+    return s.t - last < gap ? `Given at ${E.clock(last)}. Next dose available at ${E.clock(last + gap)} (${f.split(/[,;]/)[0].toLowerCase()}).` : null;
+  }
   function ovMed() {
     const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id], Ax = A();
     const checks = m.checks ? m.checks(s, P, Ax) : [];
-    const block = m.block ? m.block(s, P, Ax) : null;
+    const block = m.block ? m.block(s, P, Ax) : prnLimit(m, st);
     const done = !m.prn && (st.status === 'given' || st.status === 'held');
     const verify = st.status === 'verify';
     const refuse = !done && !block && !verify && m.refuse ? m.refuse(s, P, Ax) : null;
     let body = `<div class="order"><b>${esc(m.name)} ${esc(medDose(m))} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
       <p class="muted" style="margin:.2rem 0">Allergies: ${esc(liveDef(d).allergies)}</p>
       <ul class="checks">${checks.map((c) => `<li><span class="g ${c.ok === true ? 'ok' : c.ok === false ? 'bad' : 'na'}" aria-hidden="true">${c.ok === true ? '✓' : c.ok === false ? '!' : '•'}</span><span>${esc(c.label)}<small>${esc(c.value)}</small></span></li>`).join('')}</ul>`;
-    if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => { const x = (def(s.loc).interventions || []).find((i) => i.id === p), lab = PREP[p] || (x ? [x.label, x.cost] : null); return lab ? `<button class="btn" data-act="prep" data-p="${p}">${esc(lab[0])} <span class="muted">${lab[1]} min</span></button>` : ''; }).join('')}</div>`;
+    if (m.prep && m.prep.length && !done) body += `<p class="muted" style="margin:.6rem 0 0;font-size:.88rem">Get what you need before deciding:</p><div class="prep">${m.prep.map((p) => { const x = (def(s.loc).interventions || []).find((i) => i.id === p), lab = PREP[p] || (x ? [x.label, x.cost] : null); if (!lab) return ''; const lf = s.log.slice().reverse().find((l) => l.pid === d.id && l.kind === 'find' && [lab[0], x && x.label, p === 'vitals' && 'Vital signs', p === 'pain' && sysL('pain', (SYS.find((y) => y[0] === 'pain') || [])[1] || '')].includes(l.label) && s.t - l.t <= 30); return lf ? `<button class="btn prep-done" data-act="prep" data-p="${p}" aria-label="${esc(lab[0])}: done at ${E.clock(lf.t)}. Again, ${lab[1]} minutes">${ICON.tick}${esc(lab[0])} <span class="muted">done ${E.clock(lf.t)} · again ${lab[1]} min</span></button>` : `<button class="btn" data-act="prep" data-p="${p}">${esc(lab[0])} <span class="muted">${lab[1]} min</span></button>`; }).join('')}</div>`;
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
     if (block) body += `<div class="warnbox">${esc(block)}</div>`;
     if (refuse) body += `<div class="warnbox">${esc(refuse)}</div>${m.prn ? '' : '<p class="muted" style="margin:.4rem 0 0;font-size:.88rem">You can come back and offer it again, or hold it and document the refusal.</p>'}`;
@@ -1754,7 +1788,7 @@
   // Medications given to this patient this shift, newest first: what the nurse could report as a possible error.
   function givenList(d) {
     const out = [];
-    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; (m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []).forEach((t) => out.push({ mid: m.id, t, name: m.name.charAt(0).toLowerCase() + m.name.slice(1) })); });
+    (d.meds || []).forEach((m) => { const st = s.meds[m.id]; if (!st) return; (m.prn ? st.given : st.status === 'given' && st.at !== null ? [st.at] : []).forEach((t) => out.push({ mid: m.id, t, name: lcFirst(m.name) })); });
     return out.sort((a, b) => b.t - a.t).slice(0, 8);
   }
   /* SBAR: what the nurse has already done for this patient, from the shift log, so a call always reflects the
@@ -1770,7 +1804,7 @@
     }).sort((a, b) => b.t - a.t).slice(0, 8);
   }
   function didText(l) {
-    const m = l.label.match(/^(.+?) (given|held|declined|offered, declined)$/), c = (x) => x.charAt(0).toLowerCase() + x.slice(1);
+    const m = l.label.match(/^(.+?) (given|held|declined|offered, declined)$/), c = lcFirst;
     const inf = l.label.match(/^(.+?) (stopped|rate changed|checked, no change)$/);
     if (inf) return inf[2] === 'stopped' ? `Stopped the ${c(inf[1])}` : inf[2] === 'rate changed' ? `Changed the ${c(inf[1])} rate` : `Checked the ${c(inf[1])}: no change`;
     if (m) return m[2] === 'given' ? `Gave ${c(m[1])}` : m[2] === 'held' ? `Held ${c(m[1])}` : `${m[1]}: offered, patient declined`;
@@ -1793,7 +1827,7 @@
       <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(liveDef(d).dx)}. ${esc(liveDef(d).hx[0])}. ${esc(liveDef(d).code)}.</p></div>
       ${(() => { const es = F.errsFor(s, pid, 'md'), gv = givenList(d).filter((g) => !es.some((e) => e.medId === g.mid && e.t === g.t)), hv = (d.meds || []).filter((m) => s.meds[m.id] && s.meds[m.id].status === 'held' && s.meds[m.id].at !== null); if (!es.length && !gv.length && !hv.length) return '';
         const box = (id, label) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="${id}" ${ui.sbar.picked.includes(id) ? 'checked' : ''}><span>${esc(label)}</span></label>`;
-        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx|hd):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}${hv.map((m) => box(`hd:${m.id}`, `I held the ${m.name.charAt(0).toLowerCase() + m.name.slice(1)} due at ${E.clock(m.due !== undefined ? m.due : s.meds[m.id].at)} (held ${E.clock(s.meds[m.id].at)}). I'm not sure that was right.`)).join('')}</details>`; })()}
+        return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx|hd):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}${hv.map((m) => box(`hd:${m.id}`, `I held the ${lcFirst(m.name)} due at ${E.clock(m.due !== undefined ? m.due : s.meds[m.id].at)} (held ${E.clock(s.meds[m.id].at)}). I'm not sure that was right.`)).join('')}</details>`; })()}
       ${(() => { const dn = doneFor(pid, items); return dn.length ? `<fieldset class="sbar-sec sbar-did" style="border:0;padding:0"><legend><h3><i>✓</i>What you've already done</h3></legend><p class="muted" style="margin:.2rem 0 .4rem">Tell the provider what's in place so the plan builds on it.</p>${dn.map((l) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="did:${l.id}" ${ui.sbar.picked.includes('did:' + l.id) ? 'checked' : ''}><span><span class="did-t">${E.clock(l.t)}</span>${esc(didText(l))}</span></label>`).join('')}</fieldset>` : ''; })()}
       <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
         ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
@@ -2014,6 +2048,7 @@
     const nodes = document.getElementsByTagName('*').length, save = (() => { try { return Math.round(((localStorage.getItem('theshift.save.v1') || '').length + (localStorage.getItem('theshift.profile.v1') || '').length) / 1024); } catch (e) { return null; } })();
     const row = (k, v, ok) => `<tr><th>${k}</th><td class="${ok === false ? 'ab' : ''}">${v}</td></tr>`;
     const lines = [
+      row('Version', esc(String((S.config || {}).version || 'unknown'))),
       row('Frame rate', `${FM.fps} fps${FM.lite ? ' (auto lite)' : ''}`, FM.fps >= 30),
       row('Redraw, last', `${last.total || 0} ms (${last.view || ''}${last.ov ? '/' + last.ov : ''})`, (last.total || 0) < 50),
       row('Redraw, average / worst', `${PERF.avg.toFixed(1)} / ${PERF.worst.toFixed(0)} ms · ${PERF.slow} slow of ${PERF.n}`, PERF.n < 10 || PERF.avg < 30),
@@ -2043,7 +2078,7 @@
   }
 
   /* ------------ render ------------ */
-  const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v]);
+  const keyOf = (el) => JSON.stringify([el.dataset.act, el.dataset.id, el.dataset.pid, el.dataset.i, el.dataset.k, el.dataset.tab, el.dataset.p, el.dataset.t, el.dataset.m, el.dataset.v, el.dataset.row]);
   /* A breathing tube that came out comes off the portrait too: look follows liveDef(d).vented. */
   const lookNow = {};
   function syncLooks() {
@@ -2111,7 +2146,14 @@
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
+    // The same overlay redrawn (an answer picked, a box ticked) must not look like it reopened: no fade-in, no
+    // slide-up, and every scrolled panel stays where it was. Only a new overlay, or a new question, animates in.
+    const ovSig = ui.ov ? `${ui.ov}|${ui.ov === 'ngn' && ui.ngn ? `${ui.ngn.list}:${ui.ngn.cs || ''}:${ui.ngn.i}` : ui.ov === 'sbar' && ui.sbar ? ui.sbar.pid : ui.ov === 'med' && ui.med ? ui.med.id : ui.ov === 'chart' && ui.chart ? ui.chart.pid + ':' + ui.chart.tab : ''}` : '';
+    const steady = !!ovSig && ovSig === ui.lastOvSig, SCROLLERS = '.sheet-b, .chart-b, .rec-b, .or-body, .or-log, .msgs, .feed, .res, .crit';
+    const kept = steady ? [...root.querySelectorAll(SCROLLERS)].map((el) => el.scrollTop) : null;
+    ui.lastOvSig = ovSig;
     root.innerHTML = h;
+    if (steady) { root.querySelectorAll('.scrim, .sheet, .drawer').forEach((el) => el.classList.add('steady')); root.querySelectorAll(SCROLLERS).forEach((el, i) => { if (kept[i]) el.scrollTop = kept[i]; }); }
     const T2 = performance.now();
     if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;
@@ -2227,7 +2269,12 @@
     const lateKey = () => { const o = new Set(); pts().forEach((dd) => { if (dd.id === d.id || gone(s.p[dd.id])) return; brainRows(dd, s.p[dd.id]).forEach((r) => { if (r.late && !r.done && !r.prog && r.key) o.add(dd.id + '|' + r.key + '|' + r.text); }); }); return o; };
     const late0 = lateKey(), j0 = s.judg.length;
     const g0 = ui.ghosts.length; ui.actPid = d.id;
+    // Working at the bedside answers a call light: you're in the room, and they ask you. Only the bell's own
+    // action skips this (it already answers), and only when the light's need is something a nurse in the room meets.
+    let bellTx = '';
+    if (P && P.bell && s.loc === d.id && label !== 'Answered the call light' && !gone(P)) { const Ax1 = A(); bellTx = F.answerBell(s, Ax1, d.id); if (bellTx) { logHere(d.id, bellTx, 'find'); s.log[s.log.length - 1].label = 'Call light'; } }
     spend(mins, (Ax) => { text = fn(Ax) || ''; });
+    if (bellTx) text = `${text}${text ? ' ' : ''}(While you were in the room: ${bellTx.replace(/^Call light: /, '').replace(/^Request: /, '')})`;
     ui.actPid = null; if (s.p[d.id]) s.p[d.id].touchAt = s.t;
     if (s.ended) return;
     const doneNow = ui.ghosts.slice(g0).filter((g) => g.pid === d.id); doneNow.forEach((g) => { g.held = true; });
@@ -2271,11 +2318,12 @@
     'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'home'; ui.ov = null; render(); },
     new() { if (locked(caseId)) return startNew(); if (firstTimer()) { openOrient(true); return; } if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
     'new-yes'() { E.store.clear(); startNew(); },
+    'last-debrief'() { const L = E.store.loadLast(); if (!L) return render(); s = L; caseId = L.caseId; E.useCase(caseId); ui.view = 'debrief'; ui.ov = null; ui.debDone = true; ui.filter = 'all'; ui.dtab = 'shift'; render(true); },
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
     restart() { ui.confirm = { title: 'Restart this shift?', text: `You'll go back to ${E.clock(0)} report. Progress in this shift is lost.`, ok: 'Restart', act: 'new-yes', danger: true }; ui.ov = 'confirm'; render(); },
     menu() { ui.ov = 'menu'; render(); }, help() { openOrient(false); }, 'help-ref'() { ui.ov = 'help'; render(); },
     'or-open'() { if (ui.or) { ui.ov = 'orient'; render(true); } else openOrient(false); },
-    or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
+    or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); orSave(); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
     terms() { ui.ov = 'terms'; render(); },
     'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
@@ -2320,7 +2368,7 @@
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
-    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${x.label.charAt(0).toLowerCase() + x.label.slice(1)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
+    int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${lcFirst(x.label)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
     poke() { const d = def(s.loc), line = sayNow(d); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
     med(el) { ui.med = { id: el.dataset.id, dose: null, holding: false, reason: null, note: null }; ui.ov = 'med'; ui.chart = null; render(); },
@@ -2380,6 +2428,7 @@
     },
     'med-give'() {
       const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id];
+      if (!m.block && prnLimit(m, st)) return render();
       const dose = ui.med.dose; ui.ov = null; ui.med = null;
       // A med pass: once you're at the bedside with the cart, each further dose for the same patient takes less time.
       const pass = P.medPassAt !== undefined && s.t - P.medPassAt <= 6 && s.loc === d.id; P.medPassAt = s.t;
@@ -2441,7 +2490,7 @@
         const held = ui.sbar.picked.filter((id) => id.startsWith('hd:')).map((id) => d.meds.find((m) => m.id === id.slice(3))).filter(Boolean).map((m) => { const st = s.meds[m.id], hAt = st.at, nm = m.name.toLowerCase(); if (m.param) { const ck = (m.checks ? m.checks(s, P, Ax) : []).filter((c) => c.ok === true || c.ok === false), bad = ck.filter((c) => c.ok === false); if (ck.length && !bad.length) { st.status = 'due'; st.at = null; st.note = ''; return `You held the ${nm} at ${E.clock(hAt)}? ${ck.map((c) => `${c.label} ${c.value}`).join(', ')}. None of that meets "${m.param}", so the order says give it. Give it now, and thanks for flagging it.`; } return `Holding the ${nm} was right: ${bad.map((c) => `${c.label.toLowerCase()} ${c.value}`).join(', ')}. Keep it held and recheck before the next dose.`; } return `Thanks for telling me about the ${nm}. Hold it for now; I'll review it.`; });
         const picked = ui.sbar.picked.filter((id) => !/^(err|rx|did|hd):/.test(id));
         const did = ui.sbar.picked.filter((id) => id.startsWith('did:')).map((id) => s.log.find((l) => 'did:' + l.id === id)).filter(Boolean);
-        const noted = did.length ? `Good to know: ${did.slice(0, 3).map((l) => { const x = didText(l); return x.charAt(0).toLowerCase() + x.slice(1); }).join('; ')}${did.length > 3 ? `, and ${did.length - 3} more` : ''}.` : '';
+        const noted = did.length ? `Good to know: ${did.slice(0, 3).map((l) => { const x = didText(l); return lcFirst(x); }).join('; ')}${did.length > 3 ? `, and ${did.length - 3} more` : ''}.` : '';
         const items = d.sbar.items(s, P, Ax); const keys = picked.filter((id) => (items.find((i) => i.id === id) || {}).key);
         const noise = picked.filter((id) => { const it = items.find((i) => i.id === id); return it && !it.key; });
         const fix = errs.map((e) => F.tellMD(s, Ax, d, e, prov(pid).name));
@@ -2509,7 +2558,7 @@
       if (!name) { c.err = 'Add your name, so your instructor knows who you are.'; return render(); }
       c.err = null; c.busy = true; render();
       CL.join(code, name).then((k) => { c.busy = false; c.code = ''; c.list = null; c.ok = `You're in ${k && k.name ? k.name : 'the class'}.${k && k.pack ? ' Every shift is open to you.' : ''}`; render(); })
-        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : 'Couldn\'t join. Check your connection and try again.'; render(); });
+        .catch((e) => { c.busy = false; c.err = /no class/i.test(e.message) ? 'No class with that code. Check it with your instructor.' : /too many/i.test(e.message) ? e.message : 'Couldn\'t join. Check your connection and try again.'; render(); });
     },
     'cls-leave'(el) { const c = ui.cls || (ui.cls = {}); CL.leave(el.dataset.id).then(() => { c.list = null; c.ok = 'You left the class.'; render(); }).catch(() => { c.err = 'Couldn\'t leave the class. Try again.'; render(); }); },
     account() { ui.acct = { email: (ui.acct && ui.acct.email) || '' }; ui.ov = 'account'; render(); },
@@ -2547,7 +2596,7 @@
     'aw-back'() { ui.view = ui.awFrom === 'debrief' && s && s.ended ? 'debrief' : 'home'; render(true); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
     'reset-ask'() { const signed = CL && CL.user && CL.user(); ui.confirm = { title: 'Reset all progress?', text: `Every finished shift, star, XP point, badge, lesson and practice result on this device will be cleared, and any shift in progress ends. This can't be undone.${signed ? ' You\'re signed in: your account keeps its copy and will sync it back. Sign out first to start fresh here.' : ''}`, ok: 'Reset everything', act: 'reset-yes', danger: true }; ui.ov = 'confirm'; render(); },
-    'reset-yes'() { E.store.clear(); s = null; ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
+    'reset-yes'() { E.store.clear(); E.store.clearLast(); s = null; ui.or = null; try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
     'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
     'res-close'() { const c = ui.res && ui.res.crit, lab = ui.res && ui.res.label; ui.ov = null; ui.res = null; ui.flash = null; if (c) ui.spot = s.loc; const n = Date.now(); if (ui.ghosts.some((g) => g.held)) setTimeout(() => FX.play('check'), 300); ui.ghosts.forEach((g) => { if (g.held) { g.held = false; g.born = n; } }); ui.stampRow = lab ? { label: lab, born: n } : null; render(); },
@@ -2602,7 +2651,7 @@
   const COMMIT = new Set(['reset-yes', 'doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
   const CHOOSE = { dlg: 'select', reply: 'select', deleg: 'commit', 'away-fam-pick': 'select' };           // answers that advance the scene
-  const JUST = new Set(['away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
+  const JUST = new Set(['ngn-pick', 'pf', 'away-pick', 'rep-pick', 'rep-go', 'sbar-req', 'dose', 'hreason', 'pick-case', 'sbar-pick', 'flag', 'set', 'filter', 'h-go', 'dock', 'chart']);
   const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Punch: a flash ring and a ripple from the tap point, drawn outside #app so it survives re-render. */
   function zap(el, e, kind) {
@@ -2708,6 +2757,7 @@
     if (JUST.has(a)) ui.justKey = keyOf(el);
     if (!safe(a, () => h(el))) return;
     if (a === 'rank-submit') { const pr = C().priority; FX.play(ui.rank.every((p, i) => pr.correct[i] === p) ? 'right' : 'commit'); }
+    else if (a === 'ngn-pick') { const now = [...document.querySelectorAll('[data-act="ngn-pick"]')].find((x) => keyOf(x) === keyOf(el)); FX.play(now && now.classList.contains('on') ? 'select' : 'deselect'); }
     else if (TOGGLE.has(a)) FX.play((a === 'flag' ? s.brain.includes(el.dataset.k) : a === 'away-pick' ? ui.away.picked.includes(el.dataset.id) : a === 'rep-pick' ? ui.rep.picked.includes(el.dataset.id) : ui.sbar && ui.sbar.picked.includes(el.dataset.id)) ? 'select' : 'deselect');
     else FX.play(COMMIT.has(a) ? 'commit' : SELECT.has(a) ? 'select' : 'tap');
   }
@@ -2835,7 +2885,16 @@
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
+    // A link to one shift (/play/?shift=icu-3w-1, from the landing page's shift cards) picks that shift on the home
+    // screen. A shift already in progress wins: the link never throws away someone's game.
+    { const want = new URLSearchParams(location.search).get('shift');
+      if (want && CASES.includes(want) && !(s && !s.ended)) { caseId = want; E.useCase(caseId); ui.deep = want; TEL.track('deep_link', { case: want }); }
+      if (want) { const q = new URLSearchParams(location.search); q.delete('shift'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } }
     ui.view = 'home'; safe('boot', () => render(true));
+    if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
+    // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
+    const wasOr = !seen('orient') && OR && orLoad();
+    if (wasOr) safe('orient-resume', () => { if (!s && wasOr.caseId && E.getCase(wasOr.caseId)) caseId = wasOr.caseId; openOrient(wasOr.start); });
     if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }).catch(() => {}); }
     addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
     addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });

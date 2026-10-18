@@ -2,6 +2,58 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 25 — October 17, 2026 (branch `pilot-prep`, built on `beta-audit`; landing changes pushed to `feature/shift-editorial-website`)
+
+Nick's ask: from the beta audit, do everything that doesn't need a person, a device or a live account.
+
+### Done
+- **Class codes can't be guessed.** `join_class` logs wrong codes (`join_attempts`, RLS on, no policies) and refuses after 10 in an hour per account. A wrong code returns `{error}` instead of raising so the attempt is kept. PGlite tests cover the limit, its reset after an hour, and that nobody can read or clear the log.
+- **Orientation:** practice patients are in rooms 101–107 on a "practice unit", not 4 West's 412–418. A reload or locked phone resumes at the same step with the same answers; finishing, skipping or reset forgets it. Nova's first line says Next always moves on and Skip ends it.
+- **Pain call lights:** answering one and making no pain-medicine decision in the next hour gets a zero-point debrief note naming what was ordered. Points left to the med-surg reviewer.
+- **Skip ahead near handoff:** when it stops in the last 10 minutes with report still owed, it says so and points to End shift. (The 11:58 stall itself didn't reproduce on any of the 11 shifts.)
+- **Deep links:** `/play/?shift=<id>` picks that shift on home. A shift in progress is never replaced; unknown ids are ignored.
+- **Honest signup:** `Shift.tel.signupSend` only resolves `sent` after PostHog answers; otherwise the signup is kept on the device and resent next visit. The PR #37 landing page uses it, says plainly when it couldn't reach the server, and offers a prefilled email.
+- **PR #37 landing:** cards say "Play this shift" and open their shift; chips, card links, nav, footer and dashboard link are 44 px.
+- `/play/?health` shows the version.
+- New docs: `docs/INSTRUCTOR-GUIDE.md` (one page for faculty) and `docs/PILOT-CHECKLIST.md` (everything left, with how to tell each step passed).
+- Tests: `tests/sql/policies.mjs`, `tests/orient.py`, `tests/playtest.py` section 13, `tests/telemetry.py` (on the landing branch).
+
+### Needs Nick
+Everything in `docs/PILOT-CHECKLIST.md`. Rerun `supabase/classes-and-pack.sql` after merging (adds `join_attempts`).
+
+## Session 24 — October 17, 2026 (branch `beta-audit`)
+
+Nick's ask: a full beta audit as a first-time nursing student, in the real interface, before a school pilot. Played by real clicks in headless Chromium against a local build: orientation, one full med-surg shift (4 West days) start to debrief and home, then adult psych (3 East) and ICU, plus spot checks of every unit at phone, tablet and desktop widths. The live site and the PR #37 preview can't be reached from the build sandbox; PR #37 was checked from its branch.
+
+### Done
+- **The pointer and task list now rank by acuity.** A new sepsis order (cultures, lactate, antibiotic) waited 80 minutes behind routine assessments. New provider orders and an urgent patient now come first; a row blocked on pharmacy no longer sits at the top.
+- **Urgent patients always have a task.** An ICU patient going bad showed "Nothing overdue". The brain sheet now shows "Needs you now" with where to go.
+- **Feedback uses what the nurse saw.** Lisinopril/losartan were judged on a blood pressure the player never took; they now quote the reading they saw and its time, or say there wasn't a recent one.
+- **Call light answered while you're in the room.** Doing anything at the bedside answers it, instead of scoring it "unanswered".
+- **Sepsis antibiotic delay explained correctly** (pharmacy release vs. the nurse's hang time) and Dr. Chen's reply follows what already happened.
+- **Furosemide held for K 3.3** now teaches: replace the potassium and give the diuretic, then tell the provider.
+- **PRN repeat limits.** About 40 PRN orders had no interval check, including "once" orders. Order frequency now blocks early repeats.
+- **The last debrief survives a reload.** Closing the tab on the debrief lost it; home now offers "See your last debrief".
+- Prep buttons on the med sheet show when they're done; acronyms keep their capitals in the log ("GI", not "gI").
+- **Touch targets:** 44 px at phone width across the game; `tests/audit.js` now fails on small targets, with exceptions documented in ARCHITECTURE.md.
+- `tests/playtest.py` section 12 covers all of the above. v0.6.8-beta.
+
+### Not changed (needs Nick)
+- Psych safety lessons (Daniel's suicide risk) live in conversation, not the task list; a guided student missed it. Design call.
+- Orientation's demo reuses room numbers 412–418 and restarts on refresh; Next is never disabled.
+- Specialty content flagged for RN review is listed in the audit report.
+
+## Session 23 — October 16, 2026 (branch `smooth-answers`)
+
+Nick's ask: clicking an answer in NCLEX review or the in-game questions gives little sign you picked it and feels like the game refreshed.
+
+### Done
+- **Why it felt like a reload:** every pick redraws the screen, and the redraw replayed the question window's entrance (backdrop fade, card sliding up) and reset its scroll to the top. Now a redraw of the same open window (same question, same call, same med) keeps it still and keeps every scrolled panel where it was. A new window or the next question still animates in.
+- **Clear selected states** for every NCLEX format: thicker teal edge, tint and bold text for options; checkboxes fill with a check, radio buttons fill with a dot; bowtie picks get a check badge; matrix cells fill solid; drop-down chips and highlights are stronger. In-game checklists (SBAR, report, holds) get the same treatment.
+- **Press response** on the item you tapped: a quick pop, the indicator stamping in, and a halo that fades. Select and deselect sounds for answer picks. Reduced-motion setting turns the motion off.
+- Matrix and drop-down cells are now told apart by row, so the right one gets the response and keeps focus.
+- `tests/playtest.py` checks scroll, steadiness and the selected state. v0.6.7-beta.
+
 ## Session 22 — October 14 to 16, 2026 (branch `playtest-round2`, rebased on `pilot-privacy`)
 
 Nick's ask: a second AI regression pass replayed all 11 shifts against the Session 20 fixes (about 77% verified fixed) and listed what's still broken plus new bugs.
