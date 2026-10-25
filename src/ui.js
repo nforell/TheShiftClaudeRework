@@ -1,6 +1,6 @@
 /* The Shift — UI. Renders from game state; every control routes through act(). */
 (function (S) {
-  const E = S.engine, OR = S.orient, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, CL = S.cloud && S.cloud.on() ? S.cloud : null;
+  const E = S.engine, OR = S.orient, A_ = S.art, R = S.rig, FX = S.fx, F = S.flow, FL = S.floor, RW = S.reward, STY = S.story, CJ = S.cjmm, NG = S.ngn, RV = S.review, DR = S.drill, CL = S.cloud && S.cloud.on() ? S.cloud : null;
   const TEL = S.tel || { track() { return false; }, flush() {}, feedback() { return 'email'; }, status: () => 'Not loaded', recent: [], optedOut: () => false, setOptOut() {} };
   const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'icu-3w-1', 'ed-podb-1', 'ld-2s-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
   let caseId = CASES[0];
@@ -43,7 +43,7 @@
      with another's case. */
   const GAMEVIEW = { handoff: 1, station: 1, room: 1, debrief: 1 };
   const inGame = () => !!(s && GAMEVIEW[ui.view]);
-  const C = () => E.getCase(s && ui.view !== 'home' && E.getCase(s.caseId) ? s.caseId : caseId);
+  const C = () => E.getCase(s && ui.view !== 'home' && ui.view !== 'shifts' && E.getCase(s.caseId) ? s.caseId : caseId);
   /* Shift picker: which specialty each shift belongs to and how hard it is (1–5), with the reason in one line. */
   const SPEC = {
     ms: { name: 'Medical-surgical', unit: '4 West', blurb: 'Adult general floor: post-op care, diabetes, infection, heart failure. Start here.' },
@@ -364,7 +364,49 @@
   /* ------------ home ------------ */
   function specHead(sp) { const x = SPEC[sp]; return `<div class="spec-h sp-${sp}"><b>${esc(x.name)}</b><span class="spec-u">${esc(x.unit)}</span><span class="spec-b">${esc(x.blurb)}</span></div>`; }
   function diffKey() { return `<span class="diff-scale" aria-hidden="true">${[1, 2, 3, 4, 5].map((d) => `<span class="dk diff d${d}"><span class="pips">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= d ? 'on' : ''}"></i>`).join('')}</span>${DIFF[d]}</span>`).join('')}</span>`; }
+  /* ------------ home ------------
+     The front door. Keep it simple: one big Play, four skills, then the deeper modes. Everything else is in the menu. */
+  const DICON = {
+    med: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="11" width="22" height="10" rx="5" transform="rotate(-35 16 16)"/><path d="M12.2 10.6l7.6 10.8" /></svg>',
+    first: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="9" r="4"/><circle cx="23" cy="9" r="4"/><circle cx="9" cy="23" r="4"/><circle cx="23" cy="23" r="4" class="hi"/></svg>',
+    sbar: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 4.5h4l2 6-3 2a15 15 0 0 0 7.5 7.5l2-3 6 2v4a2.5 2.5 0 0 1-2.5 2.5C14.5 25.5 6.5 17.5 6.5 7A2.5 2.5 0 0 1 9 4.5z"/></svg>',
+    calm: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 13c3-4 6-4 9 0s6 4 9 0 6-4 8-1"/><path d="M3 21c3-3 6-3 9 0s6 3 9 0 6-3 8-1" class="hi"/></svg>',
+    shift: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11.5"/><path d="M16 16V8.5M16 16l5 4"/></svg>',
+    ngn: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="4.5" width="20" height="23" rx="2.5"/><path d="M11 11.5l2 2 4-4M11 20h10"/></svg>',
+    ref: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 5.5h14a4 4 0 0 1 4 4v17H11a4 4 0 0 1-4-4z"/><path d="M7 22.5a4 4 0 0 1 4-4h14"/></svg>',
+  };
   function vHome() {
+    const DS = DR ? DR.summary() : null, g = E.store.load(), saved = g && !g.ended ? E.getCase(g.caseId) : null;
+    const newbie = DS && !DS.rounds && !prof.runs.length;
+    const tile = (x) => `<button class="h2-tile k-${x.color}" data-act="dr-start" data-k="${x.k}">
+        <span class="h2-ic">${DICON[x.k]}</span><span class="h2-tt"><b>${esc(x.name)}</b><small>${esc(x.verb)}</small></span>
+        <span class="h2-m" aria-label="${x.got} of ${x.all} cards mastered"><i style="--p:${x.all ? x.got / x.all : 0}"></i></span><small class="h2-mt">${x.got ? `${x.got} of ${x.all} mastered` : `${x.all} cards`}</small></button>`;
+    const row = (act, ic, title, sub, cls) => `<button class="h2-row ${cls || ''}" data-act="${act}"><span class="h2-ic">${DICON[ic]}</span><span><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>`;
+    return `<div class="home h2">
+      <header class="h2-top"><span class="mark" style="cursor:default">The Shift</span><span class="sp"></span>
+        ${DS && DS.streak ? `<span class="h2-streak ${DS.today ? 'lit' : ''}" title="${DS.streak} day${DS.streak === 1 ? '' : 's'} in a row">${ICON.flame}<b>${DS.streak}</b><span class="sr"> day${DS.streak === 1 ? '' : 's'} in a row${DS.today ? ', played today' : ', play today to keep it'}</span></span>` : ''}
+        <button class="btn btn-quiet hn-menu" data-act="menu" aria-label="Menu: settings, how it plays and more">${ICON.menu}</button></header>
+      ${DS ? `<section class="h2-hero">
+        <div class="h2-cast" aria-hidden="true">${DR.cast()}</div>
+        <div class="h2-copy">
+          <p class="h2-k">${newbie ? 'Nursing judgment, one decision at a time' : DS.today ? 'Today\'s round: done' : 'Today\'s round is ready'}</p>
+          <h1>${newbie ? 'A patient needs you. What do you do?' : DS.today ? 'One more?' : 'Think like a nurse.'}</h1>
+          <p class="lede">One patient, one decision, every answer explained. About three minutes.</p>
+          <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><span><b>${DS.today ? 'Play another round' : newbie ? 'Start playing' : 'Play today\'s round'}</b><small>5 patients: a med, two priorities, a call, a hard conversation</small></span></button>
+        </div>
+      </section>` : ''}
+      ${saved ? `<button class="h2-resume" data-act="resume"><span class="h2-ic">${DICON.shift}</span><span><b>Resume your shift</b><small>${esc(saved.title)}, at ${hhmm(saved, g.t)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>` : ''}
+      ${DS ? `<section class="h2-sec"><h2>Practice one skill</h2><div class="h2-grid">${DS.kinds.map(tile).join('')}</div></section>` : ''}
+      <section class="h2-sec"><h2>Go deeper</h2><div class="h2-deep">
+        ${row('shifts', 'shift', 'Full shifts', `${CASES.length} shifts on ${new Set(CASES.map((id) => meta(id).sp)).size} units: report, triage, meds, calls and a debrief`)}
+        ${NG && NG.bank ? row('practice', 'ngn', 'NCLEX practice', `${NG.count.cases()} case studies and ${NG.count.bank()} questions, every answer explained`, 'hn-px') : ''}
+        ${S.ref ? row('ref', 'ref', 'Pocket reference', 'Quick cards for the floor and the exam') : ''}
+      </div></section>
+      <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : ''}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div>
+    </div>`;
+  }
+  /* ------------ full shifts: the shift picker ------------ */
+  function vShifts() {
     E.useCase(caseId);
     const g = E.store.load(), c = C(), done = (id) => prof.runs.filter((r) => r.caseId === id);
     const start = hhmm(c, 0), initial = c.patients.filter((d) => !d.arrives), adm = c.patients.filter((d) => d.arrives);
@@ -404,29 +446,15 @@
         ${on ? `<div class="sc-cta">${cta}</div>` : ''}
       </article>`;
     };
-    return `<div class="home">
-      <div style="display:flex;justify-content:space-between;align-items:center"><span class="mark" style="cursor:default">The Shift</span>
-      <span class="home-nav"><button class="btn btn-quiet hn-px" data-act="practice">NCLEX practice</button><button class="btn btn-quiet" data-act="ref">Pocket reference</button><button class="btn btn-quiet" data-act="help">How it plays</button><button class="btn btn-quiet" data-act="settings">Settings</button><button class="btn btn-quiet hn-menu" data-act="menu" aria-label="Menu: settings, how it plays, pocket reference and more">Menu</button></span></div>
-      <section class="home-hero">
-        <div>
-          <p class="big-clock" aria-label="${start}">${start.slice(0, 2)}<span>:</span>${start.slice(3)}</p>
-          <p class="home-tags"><span class="spec-chip sp-${meta(caseId).sp}">${esc(specOf(caseId).name)} · ${esc(specOf(caseId).unit)}</span>${diffPips(caseId, 'big')}</p>
-          <h1>${esc(c.hero.head)}</h1>
-          <p class="lede">${esc(c.hero.lede)}</p>
-          <p class="home-why"><b>Why it's rated ${esc(diffLabel(caseId).toLowerCase())}:</b> ${esc(meta(caseId).why)}</p>
-          <div class="cta">
-            ${saved && g.caseId === caseId ? `<button class="btn btn-primary btn-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Start over</button>` : locked(caseId) ? `<button class="btn btn-primary btn-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>${saved ? `<button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : ''}` : saved ? `<button class="btn btn-primary btn-go" data-act="new">Start ${esc(c.title)} <span aria-hidden="true">→</span></button><button class="btn" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)}</button>` : `<button class="btn btn-primary btn-go" data-act="new">Start your shift <span aria-hidden="true">→</span></button>`}
-          </div>
-          <p class="home-meta">${c.patients.length} patients, about ${c.minutes || 15} minutes to play. Your progress saves as you go.</p>
-          ${(() => { if (s && !s.ended) return ''; const L = E.store.loadLast(); if (!L) return ''; const k = E.getCase(L.caseId), d0 = E.debrief(L); return `<button class="btn btn-quiet last-deb" data-act="last-debrief">See your last debrief: ${esc(k.title)}, ${d0.overall} <span aria-hidden="true">→</span></button>`; })()}
-        </div>
-        <div class="home-cast" style="grid-template-columns:1.25fr repeat(${Math.max(2, cols)},1fr)" aria-label="Your charge nurse and your patients">
-          <figure class="lead tap" data-act="cast" data-id="nova" role="button" tabindex="0" aria-label="Nova Reyes">${R.bust('nova', null, 'bust', '-104 -150 208 330')}<figcaption><b>Nova Reyes</b>${ui.castSay && ui.castSay.id === 'nova' ? `<q>${esc(ui.castSay.text)}</q>` : `Charge nurse. ${c.novaCredits || 3} hints per shift.`}</figcaption></figure>
-          ${initial.map((d) => `<figure class="tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust')}<figcaption><b>${d.room} ${esc(d.short)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(liveDef(d).dx)}</figcaption></figure>`).join('')}
-          ${adm.map((d) => `<figure class="adm tap" data-act="cast" data-id="${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}">${R.bust(d.id, null, 'bust', '-232 -112 464 232')}<figcaption><b>${d.room} ${esc(d.short)}, arriving ${hhmm(c, d.arrives)}</b>${ui.castSay && ui.castSay.id === d.id ? `<q>${esc(ui.castSay.text)}</q>` : esc(admWord(d)) + ' from ' + esc(fromOf(d)) + ': ' + esc(d.reason.toLowerCase())}</figcaption></figure>`).join('')}
-        </div>
+    return `<div class="home shifts">
+      <header class="sh-top"><button class="btn btn-quiet sh-back" data-act="home">${ICON.back}<span>Home</span></button><span class="mark" style="cursor:default">The Shift</span><button class="btn btn-quiet hn-menu" data-act="menu" aria-label="Menu">${ICON.menu}</button></header>
+      <section class="sh-intro">
+        <p class="h2-k">Full shifts</p>
+        <h1>Put it all together.</h1>
+        <p class="lede">A whole shift on one unit: take report, decide who's first, give and hold meds, call the provider, and see what happened in the debrief. ${CASES.length} shifts, 15 to 25 minutes each.</p>
+        ${saved ? `<div class="cta"><button class="btn btn-primary btn-go" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button></div>` : ''}
+        ${(() => { if (s && !s.ended) return ''; const L = E.store.loadLast(); if (!L) return ''; const k = E.getCase(L.caseId), d0 = E.debrief(L); return `<button class="btn btn-quiet last-deb" data-act="last-debrief">See your last debrief: ${esc(k.title)}, ${d0.overall} <span aria-hidden="true">→</span></button>`; })()}
       </section>
-      ${NG && NG.bank ? `<section class="px-band"><div><p class="pr-k">NCLEX practice</p><h2>${NG.count.cases()} unfolding case studies. ${NG.count.bank()} questions. Every answer explained.</h2><p>NGN-style cases where the chart grows as the client changes, questions in all eight NCLEX-RN Client Needs categories, calculations, and a readiness view that shows what to study next.</p></div><div class="px-go"><button class="btn btn-primary btn-go" data-act="practice">Open NCLEX practice <span aria-hidden="true">→</span></button><button class="btn" data-act="ref">Pocket reference</button></div></section>` : ''}
       <div>
         <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
         <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
@@ -667,7 +695,7 @@
     const pending = C().patients.filter((d) => !here(d));
     const due = dueList();
     return `<main>
-      <div class="st-intro"><h1>Nurses' station</h1><p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>Tap a door or a patient to walk to their room.</b></p></div>
+      <div class="st-intro"><h1>Nurses' station</h1>${prof.runs.length ? '' : `<p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>Tap a door or a patient to walk to their room.</b></p>`}</div>
       ${cmdBar()}
       <div class="hall-wrap">${A_.hallway(s, doors)}</div>
       <div class="station">
@@ -1995,6 +2023,7 @@
       ${ui.installEvt ? '<button class="btn" data-act="install">Install The Shift on this device</button>' : iosInstallable() ? '<button class="btn" data-act="install-ios">Add The Shift to your home screen</button>' : ''}
       ${inShift && s.t >= 15 ? '<button class="btn" data-act="endask">End the shift early and see debrief</button>' : ''}
       ${inShift ? '<button class="btn btn-danger" data-act="restart">Restart this shift</button>' : ''}
+      ${ui.view !== 'shifts' && !inShift ? '<button class="btn" data-act="shifts">Full shifts</button>' : ''}
       <button class="btn" data-act="home">Home${inShift ? ' (your shift is saved)' : ''}</button></div>`, '');
   }
   function ovSettings() {
@@ -2071,7 +2100,9 @@
 
   function toasts() {
     if (!ui.toasts.length || !s) return '';
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (ui.ov && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
+    // One thing at a time: while a tour tip is up, routine messages wait in the phone. Urgent ones still interrupt.
+    const touring = (ui.view === 'station' && !seen('coach:station')) || (ui.view === 'room' && !seen('coach:room'));
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || ((ui.ov || touring) && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
       // Routine messages step aside after a few seconds of being seen (they stay in the phone); urgent ones wait for the player.
       if (!m.urgent && !m.toastAt && !(m.replies && !m.done)) { m.toastAt = Date.now(); const expire = () => { if (ui.hold) { setTimeout(expire, 700); return; } if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }; setTimeout(expire, 7000); }
       const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast tap ${m.urgent ? 'urgent' : ''}" role="alert" data-act="msg" data-m="${m.id}">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${m.bell && go ? m.replies.map((r, i) => `<button class="btn sm" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.act === 'bell-cna' ? 'Ask ' + cna().name : r.label)}</button>`).join('') : go && m.replies.length > 1 ? `<button class="btn" data-act="msg" data-m="${m.id}">See replies</button>` : go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
@@ -2098,6 +2129,8 @@
     let h = '';
     if (ui.view === 'awards') h = vAwards();
     else if (ui.view === 'practice' && NG && NG.bank) h = vPractice();
+    else if (ui.view === 'drill' && DR && ui.dr) h = DR.view();
+    else if (ui.view === 'shifts') h = vShifts();
     else if (ui.view === 'home' || !s) h = vHome();
     else {
       h = (ui.view === 'debrief' ? '' : header());
@@ -2142,7 +2175,7 @@
     else if (ov === 'pack') h += ovPack();
     else if (ov === 'review' && RV) h += ovReviewInfo();
     else if (ov === 'terms' && TERMS) h += ovTerms(false);
-    if (!ov && TERMS && !termsOk() && (ui.view === 'home' || !s)) h += ovTerms(true);
+    if (!ov && TERMS && !termsOk() && (ui.view === 'home' || ui.view === 'shifts' || ui.view === 'drill' || !s)) h += ovTerms(true);
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
@@ -2155,7 +2188,7 @@
     root.innerHTML = h;
     if (steady) { root.querySelectorAll('.scrim, .sheet, .drawer').forEach((el) => el.classList.add('steady')); root.querySelectorAll(SCROLLERS).forEach((el, i) => { if (kept[i]) el.scrollTop = kept[i]; }); }
     const T2 = performance.now();
-    if (ui.view !== ui.lastView) { const v = root.querySelector('main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
+    if (ui.view !== ui.lastView) { const v = root.querySelector('.dr, main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
     ui.hFresh = false;
     root.querySelectorAll('[disabled]').forEach((el) => { el.removeAttribute('disabled'); el.setAttribute('aria-disabled', 'true'); el.classList.add('off'); });
     if (ui.hold || ui.armed) root.querySelectorAll('[data-hold]').forEach((el) => { const k = el.dataset.hk || el.dataset.act; if (ui.hold && ui.hold.k === k) el.classList.add('holding'); if (ui.armed && ui.armed.k === k && Date.now() - ui.armed.at < 4000) el.classList.add('armed'); });
@@ -2179,6 +2212,7 @@
     if (ui.stamp && !ui.stamp.shown) { ui.stamp.shown = true; const st = ui.stamp; setTimeout(() => { if (ui.stamp === st) { ui.stamp = null; const n = root.querySelector('.stamp'); if (n) { n.classList.add('out'); setTimeout(() => n.remove(), 250); } } }, 1500); }
     if (ui.justKey) { const jk = ui.justKey; ui.justKey = null; const el = [...root.querySelectorAll('[data-act]')].find((x) => keyOf(x) === jk && !x.dataset.scrim); if (el) { const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el; tgt.classList.add('just'); } }
     if (scrollTop) window.scrollTo(0, 0); else window.scrollTo(0, y);
+    if (ui.view === 'drill' && DR) DR.after(root);
     // restore focus
     let target = null;
     if (focusKey) {
@@ -2198,6 +2232,7 @@
   }
   /* What the score should feel like right now: the scene, how many patients are in danger, day or night. */
   function musicMood() {
+    if (ui.view === 'drill' && DR && ui.dr) return DR.mood();
     if (!s || !GAMEVIEW[ui.view]) return { scene: 'home', tension: 0, night: false };
     if (ui.view === 'debrief' || s.ended) return { scene: 'debrief', tension: 0, night: false };
     const Ax = A(); let t = 0;
@@ -2315,8 +2350,9 @@
 
   const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(s.t - mins)} · ${mins} min` : E.clock(s.t) }; };
   const handlers = {
-    'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'home'; ui.ov = null; render(); },
-    new() { if (locked(caseId)) return startNew(); if (firstTimer()) { openOrient(true); return; } if (E.store.load() && ui.view === 'home') { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
+    'pick-case'(el) { caseId = el.dataset.id; E.useCase(caseId); if (s && s.ended) s = null; ui.view = 'shifts'; ui.ov = null; render(); },
+    shifts() { if (s && !s.ended && GAMEVIEW[ui.view]) save(); ui.view = 'shifts'; ui.ov = null; TEL.track('shifts_open', {}); render(true); },
+    new() { if (locked(caseId)) return startNew(); if (firstTimer()) { openOrient(true); return; } if (E.store.load() && (ui.view === 'home' || ui.view === 'shifts')) { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
     'new-yes'() { E.store.clear(); startNew(); },
     'last-debrief'() { const L = E.store.loadLast(); if (!L) return render(); s = L; caseId = L.caseId; E.useCase(caseId); ui.view = 'debrief'; ui.ov = null; ui.debDone = true; ui.filter = 'all'; ui.dtab = 'shift'; render(true); },
     resume, home() { if (s && !s.ended) save(); if (s) caseId = s.caseId; ui.view = 'home'; ui.ov = null; render(true); },
@@ -2596,7 +2632,7 @@
     'aw-back'() { ui.view = ui.awFrom === 'debrief' && s && s.ended ? 'debrief' : 'home'; render(true); },
     'next-case'(el) { caseId = el.dataset.id; E.useCase(caseId); E.store.clear(); startNew(); },
     'reset-ask'() { const signed = CL && CL.user && CL.user(); ui.confirm = { title: 'Reset all progress?', text: `Every finished shift, star, XP point, badge, lesson and practice result on this device will be cleared, and any shift in progress ends. This can't be undone.${signed ? ' You\'re signed in: your account keeps its copy and will sync it back. Sign out first to start fresh here.' : ''}`, ok: 'Reset everything', act: 'reset-yes', danger: true }; ui.ov = 'confirm'; render(); },
-    'reset-yes'() { E.store.clear(); E.store.clearLast(); s = null; ui.or = null; try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
+    'reset-yes'() { E.store.clear(); E.store.clearLast(); s = null; ui.or = null; try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } ['runs', 'seen', 'ngn', 'stars', 'best', 'done', 'badges', 'floorSeen', 'lessons', 'life', 'badOut', 'reflect', 'xp', 'drills'].forEach((k) => { delete prof[k]; }); Object.assign(prof, { runs: [], seen: {} }); E.store.saveProfile(prof); prof = E.store.profile(); ui.coachStep = {}; ui.ov = null; ui.view = 'home'; TEL.track('progress_reset', {}); render(true); hint(document.querySelector('.top .mark') || document.body, 'Progress reset. Your next shift starts with the walkthrough.'); },
     'reset-tips'(el) { prof.seen = {}; E.store.saveProfile(prof); ui.coachStep = {}; render(); hint(document.querySelector('[data-act="reset-tips"]') || el, 'The intro and tips will show again.'); },
     'lastfind-x'() { ui.lastFind = null; render(); },
     'res-close'() { const c = ui.res && ui.res.crit, lab = ui.res && ui.res.label; ui.ov = null; ui.res = null; ui.flash = null; if (c) ui.spot = s.loc; const n = Date.now(); if (ui.ghosts.some((g) => g.held)) setTimeout(() => FX.play('check'), 300); ui.ghosts.forEach((g) => { if (g.held) { g.held = false; g.born = n; } }); ui.stampRow = lab ? { label: lab, born: n } : null; render(); },
@@ -2738,7 +2774,7 @@
       if (e.detail !== 0 && e.clientX !== undefined && !(ui.armed && ui.armed.k === hk && Date.now() - ui.armed.at < 4000)) { ui.armed = { k: hk, at: Date.now() }; el.classList.add('armed'); hint(el, 'Tap again to confirm, or press and hold.', ''); FX.play('tap'); clearTimeout(ui.armT); ui.armT = setTimeout(() => { ui.armed = null; document.querySelectorAll('.holdbtn.armed').forEach((b) => b.classList.remove('armed')); }, 4000); return; }
       ui.armed = null; cancelHold();
     }
-    zap(el.tagName === 'INPUT' ? el.closest('.opt') || el : el, e, COMMIT.has(a) ? 'strong' : '');
+    if (!a.startsWith('dr-') || a === 'dr-start') zap(el.tagName === 'INPUT' ? el.closest('.opt') || el : el, e, COMMIT.has(a) ? 'strong' : '');   // drills animate their own answers
     if (NAV.has(a)) {
       // Screen changes: show the press first, then move.
       ui.busy = true; FX.play(COMMIT.has(a) ? 'commit' : a === 'msg' ? 'select' : 'tap');
@@ -2797,6 +2833,7 @@
     if (h) { cancelAnimationFrame(h.raf); holdEls(h.k).forEach((b) => { b.classList.remove('holding'); b.style.removeProperty('--hp'); }); }
   }
   function onKey(e) {
+    if (ui.view === 'drill' && DR && !ui.ov && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '') && DR.key(e)) return;
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }
     if (ui.ov === 'orient' && ui.or && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) { if (e.key === 'Escape') { closeOrient(false); return; } if (e.key === 'ArrowRight' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: ui.or.i === OR.CH.length - 1 ? 'done' : 'next' } }); return; } if (e.key === 'ArrowLeft' && !(e.target.closest && e.target.closest('.or-board'))) { handlers.or({ dataset: { do: 'back' } }); return; } }
@@ -2890,7 +2927,7 @@
     { const want = new URLSearchParams(location.search).get('shift');
       if (want && CASES.includes(want) && !(s && !s.ended)) { caseId = want; E.useCase(caseId); ui.deep = want; TEL.track('deep_link', { case: want }); }
       if (want) { const q = new URLSearchParams(location.search); q.delete('shift'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } }
-    ui.view = 'home'; safe('boot', () => render(true));
+    ui.view = ui.deep ? 'shifts' : 'home'; safe('boot', () => render(true));
     if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
     // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
     const wasOr = !seen('orient') && OR && orLoad();
@@ -2902,6 +2939,8 @@
     // Where people stop: the last screen of an unfinished shift when the page goes away.
     addEventListener('pagehide', () => { if (s && !s.ended && ui.view !== 'home') TEL.track('shift_left', { case: s.caseId, game_min: Math.round(s.t), view: ui.view, ov: ui.ov || '', wall_min: s.wall0 ? Math.round((Date.now() - s.wall0) / 60000) : null }); TEL.flush(true); });
   }
+  /* Drills plug in with their own handlers (all dr-) and read the profile through these. */
+  if (DR) { Object.assign(handlers, DR.handlers); DR.init({ ui, esc, render: (t) => render(t), prof: () => prof, saveProf: () => E.store.saveProfile(prof), R, FX, TEL, ICON, reduced: () => reduced() }); }
   S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF, _law: lawText };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.Shift);

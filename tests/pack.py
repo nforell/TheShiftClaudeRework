@@ -16,22 +16,23 @@ BUY = 'https://buy.stripe.test/test_abc'
 PACK = {'pack': {'on': True, 'free': ['medsurg-4w-1', 'medsurg-4w-2', 'psych-3e-1'], 'price': '$12', 'checkoutUrl': BUY}}
 db = Supa(); db.user('p1', 'u-pat', 'pat@example.com'); db.user('s1', 'u-sam', 'sam@school.edu'); db.user('tt', 'u-teach', 'prof@school.edu')
 def H(pg, a, **kw): return pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})", [a, kw])
-lockedN = lambda pg: pg.locator('.sc-pick.in-pack').count()
+lockedN = lambda pg: (H(pg, 'shifts'), pg.locator('.sc-pick.in-pack').count())[1]   # counted on the Full shifts screen
 
 with sync_playwright() as p:
     b = p.chromium.launch(); errs = []
     went = []
     A = device(b, db, '/play/', 'pat', errs, extra=PACK)
     A.context.route('https://buy.stripe.test/**', lambda r: (went.append(r.request.url), r.fulfill(status=200, body='<h1>Stripe stand-in</h1>', content_type='text/html')))
+    H(A, 'shifts'); A.wait_for_timeout(150)   # the shift cards live on the Full shifts screen
     NPACK = A.locator('.sc-pick[data-id]').count() - 3
     check(NPACK >= 4 and lockedN(A) == NPACK, f'every shift but the free three is in the pack ({lockedN(A)} of {NPACK})')
     check(A.locator('.sc-pick[data-id]:not(.in-pack)').count() == 3, 'three shifts are free')
     H(A, 'pick-case', id='medsurg-4w-1'); H(A, 'new')
     check(A.evaluate("Shift.ui._ui.view") == 'handoff', 'a free shift starts')
     H(A, 'home'); H(A, 'pick-case', id='stepdown-6e-1')
-    check('Unlock with the shift pack' in A.inner_text('.cta'), 'a pack shift can be previewed, and offers the pack')
+    check('Unlock with the shift pack' in A.inner_text('.sc.on .sc-cta'), 'a pack shift can be previewed, and offers the pack')
     H(A, 'new'); A.wait_for_timeout(150)
-    check(A.evaluate("Shift.ui._ui.ov") == 'pack' and A.evaluate("Shift.ui._ui.view") == 'home', 'starting a pack shift opens the pack instead')
+    check(A.evaluate("Shift.ui._ui.ov") == 'pack' and A.evaluate("Shift.ui._ui.view") == 'shifts', 'starting a pack shift opens the pack instead')
     txt = A.inner_text('.sheet')
     check('3 shifts are free' in txt and f'other {NPACK}' in txt and '$12' in txt and 'Days on 6 East' in txt, 'the pack says what it opens and the price')
     check('Sign in to buy' in txt, 'buying asks to sign in first')
