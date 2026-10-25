@@ -2678,3 +2678,77 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .dr-sk,.dr-sbar-steps li.on,.dr-opt.right kbd,.dr-pt.right kbd,.dr-opt.wrong kbd,.dr-pt.wrong kbd,.dr-fi{color:var(--paper)}
 .dr-up{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.1rem .6rem;width:100%;margin-top:.9rem;padding:.8rem 1rem;border:1.5px dashed color-mix(in srgb,var(--teal) 50%,var(--line));border-radius:var(--rc);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .dr-up b{font-family:var(--sign);font-size:1.25rem}.dr-up span:not(.h2-chev){grid-column:1;color:var(--ink-2);font-size:.88rem}.dr-up .h2-chev{grid-row:1 / span 2;grid-column:2}
+
+/* ================= Shifts, simplified: one next step at the station and in every room ================= */
+.cmd-st.nx{display:block;padding:.75rem .9rem .85rem}
+.nx-h{display:flex;align-items:center;gap:.5rem;margin:0 0 .55rem;flex-wrap:wrap}
+.nx-h .cmd-n{width:26px;height:26px;font-size:.85rem}
+.nx-h b{display:inline;font-size:.95rem}
+.nx-h small{color:var(--ink-2);font-size:.82rem}
+.nx-h small em,.cmd-go small em{font-style:normal;color:var(--red);font-weight:700}
+.cmd-st.nx .cmd-go{display:flex;align-items:center;gap:.75rem;width:100%;max-width:none;margin:0;padding:.65rem .8rem;min-height:64px;border-radius:var(--rc);background:var(--teal);color:var(--teal-ink);white-space:normal;text-decoration:none;box-shadow:0 12px 22px -14px color-mix(in srgb,var(--teal) 90%,transparent);transition:transform .1s}
+.cmd-st.nx .cmd-go:hover{text-decoration:none;filter:brightness(1.07)}
+.cmd-st.nx .cmd-go:active{transform:scale(.99)}
+.cmd-go .portrait{flex:none;width:46px;height:46px;border-radius:50%;background:color-mix(in srgb,var(--teal-ink) 20%,transparent)}
+.nx-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.nx-t small{font-size:.78rem;font-weight:600;opacity:.85;color:inherit}
+.nx-t small em{color:#FFD2CC}
+.nx-t b{font-size:1.06rem;line-height:1.25;font-weight:700}
+.nx-go{flex:none;font-family:var(--sign);font-size:1.3rem;font-weight:700;letter-spacing:.02em}
+.pt-next{margin-top:.3rem;font-size:.88rem;line-height:1.35;color:var(--ink)}
+.pt-next span{display:inline-block;margin-right:.4rem;padding:0 .35rem;border-radius:3px;background:var(--surface-2);color:var(--ink-2);font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+.pt-next.late span{background:var(--red-bg);color:var(--red)}
+.pt-next.stat span{background:var(--red);color:#fff}
+.pt-next.ok{color:var(--ink-2)}.pt-next.ok span{background:var(--good-bg);color:var(--good)}
+.timeline{border-top:1px solid var(--line)}
+.timeline>summary{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.8rem 1.1rem;cursor:pointer;list-style:none;min-height:44px}
+.timeline>summary::-webkit-details-marker{display:none}
+.timeline>summary b{font-weight:700}
+.timeline>summary b::before{content:"▸";display:inline-block;margin-right:.45rem;color:var(--ink-2);transition:transform .15s}
+.timeline[open]>summary b::before{transform:rotate(90deg)}
+.timeline>summary span{color:var(--ink-2);font-size:.85rem}
+/* room: the next step, right under the patient */
+.nh{display:grid;gap:.25rem;margin:.6rem 0 .2rem}
+.nh-k{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal)}
+.nh.late .nh-k,.nh.stat .nh-k{color:var(--red)}
+.nh.ok .nh-k{color:var(--good)}
+.nh-go{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.05rem .8rem;width:100%;padding:.7rem .9rem;min-height:56px;border:1.5px solid var(--teal);border-radius:var(--rc);background:color-mix(in srgb,var(--teal) 8%,var(--surface));color:inherit;font:inherit;text-align:left;cursor:pointer;margin:0}
+.nh-go:hover{background:color-mix(in srgb,var(--teal) 14%,var(--surface))}
+.nh-go b{font-size:1.02rem;line-height:1.3}
+.nh-go small{grid-column:1;color:var(--ink-2);font-size:.85rem;line-height:1.35}
+.nh-go>span{grid-row:1 / span 2;grid-column:2;font-size:1.6rem;line-height:1;color:var(--teal)}
+.nh.late .nh-go,.nh.stat .nh-go{border-color:var(--red);background:color-mix(in srgb,var(--red) 7%,var(--surface))}
+.nh.late .nh-go>span,.nh.stat .nh-go>span{color:var(--red)}
+.nh.ok .nh-go{border-color:color-mix(in srgb,var(--good) 60%,var(--line));background:var(--surface)}
+.nh-go.static{cursor:default}
+.vmini{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;margin:.35rem 0 0;padding:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;text-align:left;font-variant-numeric:tabular-nums}
+.vmini span{font-weight:700;font-size:.9rem}
+.vmini i{font-style:normal;font-weight:600;font-size:.7rem;color:var(--ink-2);margin-right:.2rem}
+.vmini span.ab{color:var(--red)}
+.vmini small{font-size:.72rem;color:var(--ink-2)}
+@media (min-width:1101px){.vmini{display:none}}
+/* phones: the hallway picture and the reward chrome step back; the next step leads */
+@media (max-width:700px){
+  .hall-wrap{display:none}
+  .top .mark{display:none}
+  .top .xp{display:none}
+  .goals{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .goal small{display:none}
+  .goal b{font-size:.72rem}
+  .goal{padding:.35rem .3rem;gap:.3rem}
+  .goal i{width:16px;height:16px;font-size:.65rem}
+  .pt-row .go .btn:not(.btn-primary){display:none}
+  .st-intro p{font-size:.88rem}
+}
+.nx-h .cmd-n{background:var(--amber-bg);color:var(--amber)}
+@media (max-width:700px){
+  .pt-row{grid-template-columns:auto 48px minmax(0,1fr) 14px;gap:.7rem;padding:.75rem .8rem;cursor:pointer}
+  .pt-row .portrait{width:48px;height:48px}
+  .pt-row .go{display:none}
+  .pt-row:not(.pending)::after{content:"›";font-size:1.5rem;color:var(--ink-2);align-self:center}
+  .pt-row.gone .go{display:flex;grid-column:2 / -1}
+  .pt-row.gone::after{content:none}
+}
+@media (min-width:701px){svg.hall{max-height:170px}}
+.vmini{min-height:44px;align-items:center}
+@media (max-width:700px){.rc-x{min-width:44px;min-height:44px}}
