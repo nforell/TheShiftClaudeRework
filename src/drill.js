@@ -79,9 +79,9 @@
     if (x === 'sbar') return { step: 0, said: [], miss: null, oo: k.steps.map((st) => order(st.o.length)), done: false };
     return { turn: 0, m: k.m, log: [], oo: k.turns.map((t) => order(t.o.length)), done: false, crisis: false };
   }
-  function start(kind) {
-    const d = deck(kind);
-    X.ui.dr = { kind, deck: d, i: 0, c: fresh(d[0]), right: 0, total: d.reduce((a, c) => a + steps(c.kind, card(c.kind, c.id)), 0), combo: 0, best: 0, res: [], done: false, t0: Date.now(), vi: 0 };
+  function start(kind, only) {
+    const d = only && only.length ? only.map((c) => ({ kind: c.kind, id: c.id })) : deck(kind);
+    X.ui.dr = { kind, retry: !!(only && only.length), deck: d, i: 0, c: fresh(d[0]), right: 0, total: d.reduce((a, c) => a + steps(c.kind, card(c.kind, c.id)), 0), combo: 0, best: 0, res: [], done: false, t0: Date.now(), vi: 0 };
     X.ui.view = 'drill'; X.ui.ov = null;
     X.TEL.track('drill_start', { kind, streak: streak() });
   }
@@ -111,8 +111,8 @@
   function finishRound() {
     const r = X.ui.dr, d = P(), t = today(); r.done = true; r.pop = 0;
     if (d.days[d.days.length - 1] !== t) { d.days.push(t); d.days = d.days.slice(-120); }
-    d.rounds[r.kind] = (d.rounds[r.kind] || 0) + 1;
-    const pct = Math.round(100 * r.right / Math.max(1, r.total)); r.pct = pct; r.newBest = pct > (d.best[r.kind] || 0) && (d.rounds[r.kind] || 0) > 1; d.best[r.kind] = Math.max(d.best[r.kind] || 0, pct);
+    if (!r.retry) d.rounds[r.kind] = (d.rounds[r.kind] || 0) + 1;
+    const pct = Math.round(100 * r.right / Math.max(1, r.total)); r.pct = pct; r.newBest = !r.retry && pct > (d.best[r.kind] || 0) && (d.rounds[r.kind] || 0) > 1; if (!r.retry) d.best[r.kind] = Math.max(d.best[r.kind] || 0, pct);
     r.streak = streak();
     X.saveProf();
     X.FX.play(pct === 100 ? 'levelup' : pct >= 70 ? 'star' : 'better');
@@ -124,6 +124,7 @@
     'dr-start'(el) { start(el.dataset.k || 'mix'); X.render(true); },
     'dr-quit'() { X.TEL.track('drill_quit', { kind: X.ui.dr && X.ui.dr.kind, at: X.ui.dr && X.ui.dr.i }); X.ui.dr = null; X.ui.view = 'home'; X.render(true); },
     'dr-again'() { start(X.ui.dr ? X.ui.dr.kind : 'mix'); X.render(true); },
+    'dr-retry'() { const r = X.ui.dr; if (!r) return; const miss = r.res.filter((x) => !x.ok); X.TEL.track('drill_retry', { kind: r.kind, n: miss.length }); start(r.kind, miss); X.render(true); },
     'dr-next'() { next(); X.render(true); },
     'dr-check'(el) {   // Med Pass, step 1: what do you check?
       const st = X.ui.dr.c, k = cur(); if (st.stage !== 'check') return;
@@ -281,9 +282,10 @@
         <ul>${r.res.map((x) => `<li class="${x.ok ? 'ok' : 'no'}"><span class="dr-fi" aria-hidden="true">${x.ok ? '✓' : '!'}</span><span><b>${E(x.name)}</b> <small>${E(KINDS[x.kind].name)}</small><br>${E(x.line)}</span></li>`).join('')}</ul>
       </section>
       ${take ? `<p class="dr-pearl big"><b>Take this with you</b>${E(take)}</p>` : ''}
-      ${miss ? '<p class="dr-back">The ones you missed come back in a later round.</p>' : ''}
+      ${miss && !r.retry ? '<p class="dr-back">Missed cards also come back in later rounds.</p>' : ''}
       <div class="dr-again">
-        <button class="btn btn-primary btn-go" data-act="dr-again">Play again <span aria-hidden="true">→</span></button>
+        ${miss ? (() => { const n = r.res.filter((x) => !x.ok).length; return `<button class="btn btn-primary btn-go dr-retry" data-act="dr-retry">Retry the ${n === 1 ? 'one' : n} you missed <span aria-hidden="true">→</span></button>`; })() : ''}
+        <button class="btn ${miss ? '' : 'btn-primary btn-go'}" data-act="dr-again">${miss ? 'New round' : 'Play again'}${miss ? '' : ' <span aria-hidden="true">→</span>'}</button>
         <button class="btn" data-act="dr-quit">Home</button>
       </div>
       ${!X.prof().runs.length && Object.values(P().rounds).reduce((x, y) => x + y, 0) >= 2 ? `<button class="dr-up" data-act="shifts"><b>Ready to put it together?</b><span>Work a whole shift: four patients, report to debrief, about 15 minutes.</span><span class="h2-chev" aria-hidden="true">›</span></button>` : ''}
