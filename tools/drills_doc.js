@@ -1,7 +1,7 @@
 // Writes docs/DRILLS-REVIEW.md from src/drills-content.js: every card, its right answer and its teaching, for clinical
 // review. Run: node tools/drills_doc.js
 const fs = require('fs'), path = require('path');
-global.window = {}; require(path.join(__dirname, '..', 'src', 'drills-content.js'));
+global.window = {}; ['drills-content.js', 'drills-more-1.js', 'drills-more-2.js'].forEach((f) => require(path.join(__dirname, '..', 'src', f)));
 const D = window.Shift.drillData, ok = (L) => (L.find((o) => o.ok) || {}).t, rest = (L) => L.filter((o) => !o.ok).map((o) => o.t);
 let md = `# Drill content: clinical review checklist\n\nGenerated from \`src/drills-content.js\` by \`node tools/drills_doc.js\`. Do not edit by hand; edit the content and regenerate.\n\nFor each card: is the right answer right, is every wrong answer clearly wrong (not just less good), are the numbers current, and is the pearl safe to remember as a rule? Tick the box and initial it.\n\nCards: ${D.med.length} Med Pass, ${D.first.length} Who's First, ${D.sbar.length} SBAR, ${D.calm.length} De-escalation.\n`;
 md += `\n## Med Pass\n`;

@@ -2752,3 +2752,9 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 @media (min-width:701px){svg.hall{max-height:170px}}
 .vmini{min-height:44px;align-items:center}
 @media (max-width:700px){.rc-x{min-width:44px;min-height:44px}}
+.deb-acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;margin:1.2rem 0 1.6rem}
+.deb-acts .btn{justify-content:center;min-height:52px}
+.deb-acts .btn-go,.deb-acts .btn-next.btn-primary{grid-column:1 / -1}
+@media (max-width:700px){.deb-acts{grid-template-columns:minmax(0,1fr)}}
+.dr-again:has(.dr-retry){grid-template-columns:minmax(0,1fr)}
+.dr-again .dr-retry{grid-column:1 / -1}
