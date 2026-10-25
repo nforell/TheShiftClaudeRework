@@ -186,7 +186,7 @@ with sync_playwright() as p:
     start('medsurg-4w-1'); J("Shift.ui._state().t=298"); H('catchup'); clr()
     if J("Shift.ui._ui.view") != 'debrief': H('end-yes') if J("'end-yes' in Shift.ui._handlers") else None
     pg.reload(); pg.wait_for_timeout(300)
-    check(J("!!document.querySelector('[data-act=last-debrief]')"), 'after a reload, home offers the last debrief')
+    H('shifts'); check(J("!!document.querySelector('[data-act=last-debrief]')"), 'after a reload, the shift picker offers the last debrief')
     H('last-debrief'); check(J("Shift.ui._ui.view") == 'debrief' and 'out of 100' in J("document.body.innerText"), 'the saved debrief opens')
 
     # 13. Pilot prep (Oct 17): a pain call light left with no pain decision is named in the debrief; skipping ahead
@@ -208,11 +208,11 @@ with sync_playwright() as p:
 
     # A landing-page link to one shift picks it on home, and never replaces a shift in progress.
     pg.goto(GAME + '?shift=icu-3w-1'); J("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({terms:'9999',runs:[],settings:{motion:'reduced',sound:'off',music:'off'},seen:{tour:1}}))"); pg.goto(GAME + '?shift=icu-3w-1'); pg.wait_for_timeout(400)
-    check(J("document.querySelector('.sc-pick[data-id=\"icu-3w-1\"]').getAttribute('aria-pressed')") == 'true' and 'shift=' not in J("location.href"), '?shift=icu-3w-1 picks the ICU on home and cleans the address')
+    check(J("document.querySelector('.sc-pick[data-id=\"icu-3w-1\"]').getAttribute('aria-pressed')") == 'true' and 'shift=' not in J("location.href"), '?shift=icu-3w-1 opens the shift picker with the ICU picked and cleans the address')
     H('new'); clr(); pg.goto(GAME + '?shift=peds-5s-1'); pg.wait_for_timeout(400)
     check(J("Shift.ui._state() && Shift.ui._state().caseId") == 'icu-3w-1', 'a link to another shift does not replace the one in progress')
     pg.goto(GAME + '?shift=nonsense'); pg.wait_for_timeout(300)
-    check(J("document.querySelectorAll('.sc-pick').length") > 5, 'an unknown shift in the link is ignored')
+    check(J("Shift.ui._ui.view") == 'home' and J("!!document.querySelector('.h2-play')"), 'an unknown shift in the link is ignored (home, with Play)')
 
     check(not errs, 'no page errors' + (': ' + errs[0] if errs else ''))
 print('PLAYTEST ' + ('CLEAN' if not fails else 'FAILED'))

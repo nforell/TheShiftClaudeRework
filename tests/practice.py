@@ -36,7 +36,7 @@ with sync_playwright() as p:
     H = lambda a, **kw: pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})", [a, kw])
     for W in (1280, 390):
         pg.set_viewport_size({'width': W, 'height': 900 if W > 600 else 844}); pg.evaluate(PROF); pg.reload(); pg.wait_for_timeout(300)
-        pg.locator('.home-nav .hn-px').click(); pg.wait_for_timeout(200)
+        pg.locator('.hn-px').first.click(); pg.wait_for_timeout(200)
         check(pg.locator('.pc').count() >= 15, f'{W}px: the hub lists the case studies')
         pg.locator('.pc[data-id="cs-tbi"]').click(); pg.wait_for_timeout(200)
         n0 = pg.locator('.rec-e').count(); check(pg.locator('.cs-rec').count() == 1 and n0 >= 1, f'{W}px: a case study opens with its chart')

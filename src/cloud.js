@@ -102,9 +102,16 @@
     if (String(a.terms || '') > String(out.terms || '')) { out.terms = a.terms; out.termsAt = a.termsAt; }
     out.floorSeen = Object.assign({}, a.floorSeen || {}); Object.entries(b.floorSeen || {}).forEach(([id, v]) => { if (out.floorSeen[id] === undefined || RANK[v] > RANK[out.floorSeen[id]]) out.floorSeen[id] = v; });
     out.lessons = Object.assign({}, a.lessons || {}); Object.entries(b.lessons || {}).forEach(([k, L]) => { const m = out.lessons[k]; if (!m || (L.last || 0) > (m.last || 0) || (L.fixed && !m.fixed)) out.lessons[k] = L; });
+    // Drills: the newer answer per card, every day played, the most rounds and the best score per drill.
+    const da = (a.drills && typeof a.drills === 'object') ? a.drills : {}, db = (b.drills && typeof b.drills === 'object') ? b.drills : {};
+    if (Object.keys(da).length || Object.keys(db).length) {
+      const cards = Object.assign({}, da.cards || {}); Object.entries(db.cards || {}).forEach(([id, r]) => { const m = cards[id]; if (!Array.isArray(m) || (Array.isArray(r) && (r[2] || 0) > (m[2] || 0))) cards[id] = r; });
+      const days = [...new Set([].concat(da.days || [], db.days || []))].sort().slice(-120), mx = (k) => { const o = Object.assign({}, da[k] || {}); Object.entries(db[k] || {}).forEach(([x, v]) => { o[x] = Math.max(o[x] || 0, v); }); return o; };
+      out.drills = { cards, days, rounds: mx('rounds'), best: mx('best') };
+    }
     return out;
   }
-  const empty = (p) => !p || (!(p.runs || []).length && !(p.xp || 0));
+  const empty = (p) => !p || (!(p.runs || []).length && !(p.xp || 0) && !Object.keys((p.drills && p.drills.cards) || {}).length);
 
   /* 3. Sync: pull this player's row, merge with this device, write both places. */
   async function sync(why) {
