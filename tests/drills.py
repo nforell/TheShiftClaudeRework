@@ -80,6 +80,18 @@ with sync_playwright() as p:
                 if not best and kind == 'calm': check('Better' in J("document.body.innerText") or True, 'calm misses show better lines')
                 H('dr-quit')
 
+        # 3b. Retry: a round with misses offers them straight back, and only them.
+        H('dr-start', k='first'); n = 0
+        while not J("Shift.ui._ui.dr.done") and n < 30:
+            n += 1
+            if pg.locator('.dr-next').count(): pg.locator('.dr-next').click(); pg.wait_for_timeout(30); continue
+            a, i = J(f"({PICK})(false)"); pg.locator(f'[data-act="{a}"][data-i="{i}"]').first.click(); pg.wait_for_timeout(30)
+        missed = J("Shift.ui._ui.dr.res.filter((x) => !x.ok).map((x) => x.id)")
+        check(pg.locator('.dr-retry').count() == 1, f'{tag}: a round with misses offers a retry')
+        pg.locator('.dr-retry').click(); pg.wait_for_timeout(80)
+        check(J("Shift.ui._ui.dr.deck.map((c) => c.id)") == missed and J("Shift.ui._ui.dr.retry"), f'{tag}: the retry round is exactly the missed cards')
+        H('dr-quit')
+
         # 4. Progress: saved, mastery shows on home, the day streak lights, misses come back first.
         d = J("JSON.parse(localStorage.getItem('theshift.profile.v1')).drills")
         check(d and len(d['days']) == 1 and d['rounds'].get('mix') == 2 and d['best'].get('med') == 100, f'{tag}: rounds, days and bests are saved')
