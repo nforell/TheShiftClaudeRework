@@ -40,7 +40,7 @@ lazy = ('window.Shift.ngnMeta = ' + json.dumps(meta) + ';\n'
   "(function (S) { ['ngnWhy', 'ngnFocus', 'ngnBank', 'ngnCases'].forEach(function (k) { var v; Object.defineProperty(S, k, { configurable: true, enumerable: true, "
   "get: function () { if (v === undefined) { var el = document.getElementById('sd-' + k); try { v = el ? JSON.parse(el.textContent) : undefined; (S.dataParsed = S.dataParsed || []).push(k); } catch (e) { v = undefined; } if (v === undefined) v = k === 'ngnWhy' ? {} : []; } return v; }, "
   "set: function (x) { v = x; } }); }); })(window.Shift);\n")
-js=minjs(pre+lazy+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui.js']))
+js=minjs(pre+lazy+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui.js']))
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -84,7 +84,7 @@ for cid in CF:
     (dist/'review'/cid).mkdir(exist_ok=True)
     (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
 # Instructor dashboard: the shifts' logic (titles, skills, NCLEX steps), accounts, and the practice questions.
-TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js','drills-content.js','drills-more-1.js','drills-more-2.js']+[f for f in LOGIC if f.startswith('case-')]
+TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js']+[f for f in LOGIC if f.startswith('case-')]
 (dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+minjs(''.join((src/f).read_text()+'\n' for f in TEACH))+'</script>'))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 import html as _h

@@ -393,6 +393,7 @@
           <h1>${newbie ? 'A patient needs you. What do you do?' : DS.today ? 'One more?' : 'Think like a nurse.'}</h1>
           <p class="lede">One patient, one decision, every answer explained. About three minutes.</p>
           <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><span><b>${DS.today ? 'Play another round' : newbie ? 'Start playing' : 'Play today\'s round'}</b><small>5 patients: a med, two priorities, a call, a hard conversation</small></span></button>
+          ${newbie ? '' : `<button class="h2-hard" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>${DS.hard} cards where every option is plausible. No gimmes.</span><span class="h2-chev" aria-hidden="true">›</span></button>`}
         </div>
       </section>` : ''}
       ${saved ? `<button class="h2-resume" data-act="resume"><span class="h2-ic">${DICON.shift}</span><span><b>Resume your shift</b><small>${esc(saved.title)}, at ${hhmm(saved, g.t)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>` : ''}
