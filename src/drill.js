@@ -96,6 +96,7 @@
     r.res.push({ kind: c.kind, id: c.id, ok, name: k.p ? k.p.n : (k.pts.find((x) => x.ok) || {}).p.n, line: outcomeLine(c.kind, k, r.c, ok), pearl: k.pearl });
     X.saveProf();
     X.TEL.track('drill_card', { kind: c.kind, id: c.id, ok: ok ? 1 : 0 });
+    const CL = S.cloud; if (CL && CL.on && CL.on() && CL.recordDrill) CL.recordDrill(c.kind, c.id, ok, !!r.retry);   // for a class's instructor
   }
   function outcomeLine(kind, k, st, ok) {
     if (kind === 'med') return ok ? k.goodLine : k.badLine;

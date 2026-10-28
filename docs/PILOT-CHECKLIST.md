@@ -12,7 +12,7 @@ Work top to bottom. Each step says how to tell it passed.
 
 ## 2. Backend (45 min, once)
 
-- [ ] **Supabase → SQL Editor:** run `supabase/schema.sql`, then `supabase/classes-and-pack.sql`. Both are safe to rerun. Passed when both say "Success. No rows returned".
+- [ ] **Supabase → SQL Editor:** run `supabase/schema.sql`, then `supabase/classes-and-pack.sql`. Both are safe to rerun. Passed when both say "Success. No rows returned". **Rerun `classes-and-pack.sql` after v0.7.0**: it adds `drill_results`. Until then, drill results wait on each student's device and nothing else breaks.
 - [ ] **Supabase Pro** ($25/month). Free projects pause after a week idle and have no backups. Do this before students have data in it.
 - [ ] **Sign-in email:** follow `docs/EMAIL-SETUP.md` (domain, Resend, custom SMTP, both templates, Site URL and Redirect URLs). Passed when a sign-in link to an address outside the Supabase team arrives within a minute, from your domain, and opens the game signed in.
 - [ ] Optional: deploy `supabase/functions/notify`, then set `notify: true` in `src/config.js` so signups and problem reports reach your inbox.

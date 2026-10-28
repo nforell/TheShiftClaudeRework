@@ -4,7 +4,7 @@ One page for faculty running The Shift with a class. Send it with the link to th
 
 ## What it is
 
-The Shift is a nursing clinical-judgment simulation. A student works a hospital shift with four or five patients: takes report, decides who to see first, assesses, gives and holds medications, delegates to an aide, calls providers with SBAR, and gives report to the oncoming nurse. The clock only moves when they act. At the end, a debrief explains every scored decision and maps it to the six NCSBN clinical judgment steps, followed by NCLEX-style practice questions.
+The Shift is a nursing clinical-judgment simulation in two parts. **Drills** are three-minute rounds of single decisions: Med Pass (what to check before a dose, then give, hold or call), Who's First (four patients, one nurse), SBAR (build a call to a provider) and De-escalation (talk an agitated patient or family member down). In a **full shift**, a student works a hospital shift with four or five patients: takes report, decides who to see first, assesses, gives and holds medications, delegates to an aide, calls providers with SBAR, and gives report to the oncoming nurse. The clock only moves when they act. At the end, a debrief explains every scored decision and maps it to the six NCSBN clinical judgment steps, followed by NCLEX-style practice questions.
 
 It is in beta. The clinical content is being reviewed by specialty nurses and is **not yet clinically validated**. Treat it as practice and discussion material, not as assessment.
 
@@ -18,21 +18,22 @@ It is in beta. The clinical content is being reviewed by specialty nurses and is
 
 1. Open the game (**/play/**) on a phone, tablet or computer. No install needed.
 2. **Menu → Your class**, sign in with their email, enter the code and the name you'll see.
-3. Play. Suggested first shift: **Days on 4 West** (it starts with a short walkthrough the first time).
+3. Play. The home screen's **Play** button runs a daily round of drills. For a full shift, go to **Full shifts**; suggested first shift: **Days on 4 West** (it starts with a short walkthrough the first time).
 
 Students who enter a wrong code 10 times in an hour are asked to wait an hour, so codes can't be guessed. If a student is stuck, check the code with them.
 
 ## What you see
 
-- **Overview:** class scores by NCLEX clinical judgment step and by skill.
+- **Overview:** drill totals, and class shift scores by NCLEX clinical judgment step and by skill.
+- **Drills:** how the class does on each drill (first tries only), the cards most students miss with the teaching point for each, and each student's drill results. A card most of the class misses is a ready-made five-minute teaching moment.
 - **Students:** each student's finished shifts, with their scores and the decisions to rethink.
 - **Most missed:** the decisions most of the class got wrong. A good place to start a debrief discussion.
 - **Practice questions:** results on the NCLEX-style items, by format and step.
-- **CSV:** export everything for your gradebook or records.
+- **CSV:** export shift results and drill results for your gradebook or records.
 
 ## What you don't see, and privacy
 
-- You see the name a student entered and results from shifts and practice questions they **finish after joining your class**. Anything they played before joining stays private to them.
+- You see the name a student entered and results from drills, shifts and practice questions they **play after joining your class**. Anything they played before joining stays private to them.
 - You can't see their email, a shift in progress, or anything outside your class. Students can't see each other's results.
 - A student can leave the class (**Menu → Your class**), and you can remove a student (**Students → Remove**). Either way, you stop seeing their results. They can rejoin with the code.
 - A student can delete their account from the game (**Menu → Your account**), which deletes their results everywhere.
@@ -40,7 +41,7 @@ Students who enter a wrong code 10 times in an hour are asked to wait an hour, s
 
 ## Using it in a course
 
-- One shift takes 30 to 60 minutes of real time. Replaying a shift is encouraged: the lesson log tracks what a student fixed.
+- A drill round takes about three minutes; assigning a daily round between classes works well. One shift takes 30 to 60 minutes of real time. Replaying a shift is encouraged: the lesson log tracks what a student fixed.
 - Good discussion prompts come straight from the debrief: "Who did you see first, and why?" and "What would you have said differently on the SBAR call?"
 - Scores are a learning signal, not a grade. Students who explore and make mistakes learn the most.
 

@@ -20,7 +20,7 @@ def serve(route):
 class Supa:
     def __init__(self):
         self.users = {}          # token → (uid, email)
-        self.saves, self.classes, self.members, self.results, self.ngn, self.ent = {}, [], [], [], [], []
+        self.saves, self.classes, self.members, self.results, self.ngn, self.ent, self.drills = {}, [], [], [], [], [], []
         self.otp, self.log, self.n = [], [], itertools.count(1)
 
     def user(self, token, uid, email): self.users[token] = (uid, email)
@@ -34,11 +34,11 @@ class Supa:
         if table == 'saves': return row['user_id'] == me
         if table == 'classes': return row['teacher'] == me or any(m['class_id'] == row['id'] and m['user_id'] == me for m in self.members)
         if table == 'class_members': return row['user_id'] == me or any(c['id'] == row['class_id'] and c['teacher'] == me for c in self.classes)
-        if table in ('results', 'ngn_results'): return row['user_id'] == me or self.teaches(me, row['user_id'], row.get('played_at') or row.get('at'))
+        if table in ('results', 'ngn_results', 'drill_results'): return row['user_id'] == me or self.teaches(me, row['user_id'], row.get('played_at') or row.get('at'))
         if table == 'entitlements': return row['user_id'] == me
         return False
     def table(self, t):
-        return {'classes': self.classes, 'class_members': self.members, 'results': self.results, 'ngn_results': self.ngn, 'entitlements': self.ent}[t]
+        return {'classes': self.classes, 'class_members': self.members, 'results': self.results, 'ngn_results': self.ngn, 'drill_results': self.drills, 'entitlements': self.ent}[t]
 
     def route(self, route):
         r = route.request
@@ -67,7 +67,7 @@ class Supa:
             self.saves.pop(me, None)
             gone = {c['id'] for c in self.classes if c['teacher'] == me}
             self.classes[:] = [c for c in self.classes if c['id'] not in gone]
-            for lst in (self.results, self.ngn, self.ent): lst[:] = [x for x in lst if x['user_id'] != me]
+            for lst in (self.results, self.ngn, self.drills, self.ent): lst[:] = [x for x in lst if x['user_id'] != me]
             self.members[:] = [m for m in self.members if m['user_id'] != me and m['class_id'] not in gone]
             self.users = {k: v for k, v in self.users.items() if v[0] != me}; self.deleted = getattr(self, 'deleted', []) + [me]
             return route.fulfill(status=204, body='', headers=CORS)
@@ -79,7 +79,7 @@ class Supa:
             if body.get('user_id') != me: return j(403, {'message': 'row level security'})
             self.saves[me] = body; return route.fulfill(status=201, body='', headers=CORS)
         t = u.path.replace('/rest/v1/', '')
-        if t not in ('classes', 'class_members', 'results', 'ngn_results', 'entitlements'): return j(404, {'message': 'not found'})
+        if t not in ('classes', 'class_members', 'results', 'ngn_results', 'drill_results', 'entitlements'): return j(404, {'message': 'not found'})
         rows = self.table(t)
         def match(row):
             for k, v in q.items():
@@ -89,7 +89,7 @@ class Supa:
                 if v.startswith('in.(') and str(row.get(k)) not in v[4:-1].split(','): return False
             return True
         if r.method == 'POST':
-            if t not in ('results', 'ngn_results'): return j(403, {'message': 'row level security'})   # entitlements: service role only
+            if t not in ('results', 'ngn_results', 'drill_results'): return j(403, {'message': 'row level security'})   # entitlements: service role only
             body = json.loads(r.post_data); body = body if isinstance(body, list) else [body]
             if any(x.get('user_id') != me for x in body): return j(403, {'message': 'row level security'})
             for x in body: rows.append(dict(x, id=next(self.n)))
@@ -103,7 +103,7 @@ class Supa:
             for x in out:
                 c = next((c for c in self.classes if c['id'] == x['class_id']), None)
                 x['classes'] = {k: c[k] for k in ('name', 'code', 'pack')} if c and self.visible('classes', c, me) else None
-        if t in ('results', 'ngn_results', 'classes'): out.reverse()   # newest first
+        if t in ('results', 'ngn_results', 'drill_results', 'classes'): out.reverse()   # newest first
         return j(200, out)
 
 

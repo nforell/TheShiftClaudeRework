@@ -58,6 +58,16 @@ check((await as(T, `select count(*)::int n from public.results`)).rows[0].n === 
 check((await as(T, `select count(*)::int n from public.results where case_id = 'psych-3e-1'`)).rows[0].n === 0, 'the instructor does not see a result from before the student joined');
 check((await as(S1, `select count(*)::int n from public.results`)).rows[0].n === 2 && (await as(S1, `select count(*)::int n from public.ngn_results`)).rows[0].n === 2, 'the student still sees all of their own results');
 check((await as(T, `select count(*)::int n from public.ngn_results`)).rows[0].n === 1, 'the instructor sees practice results only from after joining');
+// Drill results: same rules as shift results.
+await as(S1, `insert into public.drill_results (user_id, kind, card_id, ok) values ('${S1}', 'med', 'mp-digoxin', false)`);
+await as(S1, `insert into public.drill_results (user_id, kind, card_id, ok, at) values ('${S1}', 'first', 'wf-sepsis', true, now() - interval '30 days')`);
+await as(X, `insert into public.drill_results (user_id, kind, card_id, ok) values ('${X}', 'sbar', 'sb-hf', true)`);
+e = null; try { await as(S1, `insert into public.drill_results (user_id, kind, card_id, ok) values ('${S2}', 'med', 'mp-digoxin', true)`); } catch (x) { e = x.message; }
+check(!!e, 'a student cannot write a drill result as someone else');
+e = null; try { await as(S1, `insert into public.drill_results (user_id, kind, card_id, ok) values ('${S1}', 'nonsense', 'x', true)`); } catch (x) { e = x.message; }
+check(!!e, 'drill results only take the four drill kinds');
+check((await as(T, `select count(*)::int n from public.drill_results`)).rows[0].n === 1, 'the instructor sees a student\'s drills from after joining, not before, and not an outsider\'s');
+check((await as(S1, `select count(*)::int n from public.drill_results`)).rows[0].n === 2, 'a student sees all of their own drills');
 const T2 = '55555555-5555-5555-5555-555555555555'; await db.exec(`insert into auth.users values ('${T2}','t2@x')`);
 const k2 = (await as(T2, `select public.create_class('Other school') as j`)).rows[0].j;
 await db.exec(`update public.class_members set joined_at = now() - interval '60 days' where user_id = '${S2}'`);
