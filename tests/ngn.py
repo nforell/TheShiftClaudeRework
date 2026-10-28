@@ -14,7 +14,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={'width': 1280, 'height': 900}); fontroute(pg); pg.on('pageerror', lambda e: errs.append(str(e)[:300]))
     pg.goto(GAME); pg.evaluate("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{theme:'light',sound:'off',music:'off',motion:'reduced'},seen:{'coach:station':1,'coach:room':1,tour:1}}))"); pg.reload(); pg.wait_for_timeout(300)
     res = pg.evaluate("""()=>{const N=Shift.ngn,out=[];const cases=Object.keys(Shift.engine.cases);
-      for(const c of cases){const its=N.items(c);out.push(['count',c,its.length]);
+      for(const c of cases){const its=N.items(c);out.push(['count',c,its.length]);out.push(['ch',c,its.slice(3).length===2&&its.slice(3).every(x=>x.ch)&&its.slice(0,3).every(x=>!x.ch)]);
         for(const it of its){let key={};
           if(it.type==='bowtie')key={c:it.cond.ans,a:it.actions.ans.slice(),p:it.params.ans.slice()};
           if(it.type==='matrix')key={r:it.rows.map(r=>r.ans)};
@@ -27,7 +27,7 @@ with sync_playwright() as p:
           if(it.type==='bowtie')out.push(['bt',it.id,it.actions.ans.length===2&&it.params.ans.length===2&&it.cond.opts.length>=4]);}}
       return out}""")
     for r in res:
-        if r[0] == 'count': check(r[2] == 3, f'{r[1]} has three items')
+        if r[0] == 'count': check(r[2] == 5, f'{r[1]} has five items (three plus two NCLEX challenge items)')
         elif not r[2]: check(False, f'{r[0]} {r[1]}')
     check(all(r[2] for r in res if r[0] != 'count'), 'every item is well-formed and the key scores full marks')
     H = lambda a, **kw: pg.evaluate("([a,kw])=>Shift.ui._handlers[a]({dataset:kw})", [a, kw])
@@ -43,7 +43,8 @@ with sync_playwright() as p:
     H('cj-go', v='act'); H('cj-go', v=wk); check(pg.locator('.nx-steps .meter.open').count() == 1, 'tapping a step opens just that step')
     H('dtab', v='shift'); check(pg.locator('.nx-tab').count() == 0 and pg.locator('.outs').count() == 1, 'back to the shift tab')
     H('ngn-open', i='0'); check(pg.locator('.bowtie').count() == 1, 'question 1 is a bowtie')
-    for k, v in (('c', 0), ('a', 0), ('a', 1), ('p', 0), ('p', 1)): H('ngn-pick', k=k, v=str(v))
+    bw = pg.evaluate("Shift.ngn.items('stepdown-6e-1')[0]")   # the key, wherever the shuffle put it
+    for k, v in [('c', bw['cond']['ans'])] + [('a', x) for x in bw['actions']['ans']] + [('p', x) for x in bw['params']['ans']]: H('ngn-pick', k=k, v=str(v))
     H('ngn-check'); check('5 of 5' in pg.inner_text('.ngn-res'), 'a correct bowtie scores 5 of 5')
     H('ngn-go', i='1'); check(pg.locator('.ngn-mx').count() == 1, 'question 2 is a matrix')
     for ri in range(6): H('ngn-pick', k='r', row=str(ri), v='1')
@@ -63,6 +64,8 @@ with sync_playwright() as p:
         if(it.type==='cloze')it.parts.filter(x=>typeof x!=='string').forEach((x,b)=>x.opts.forEach((o,i)=>chk((w.blanks[b]||[])[i],i===x.ans,'blank'+b+'.'+i)));
         if(it.type==='matrix')it.rows.forEach((r,i)=>{if(!r.why)bad.push(it.id+' row'+i)});}
       return bad}""")
+    pos = pg.evaluate("""(()=>{const N=Shift.ngn;let first=0,n=0;for(const it of N.all()){if(it.type==='mc'||it.type==='sata'){n++;if(it.opts[0].ok)first++;}if(it.type==='bowtie'){n++;if(it.cond.ans===0)first++;}if(it.type==='cloze')it.parts.filter(x=>typeof x!=='string').forEach(x=>{n++;if(x.ans===0)first++;});}return [first,n]})()""")
+    check(pos[0] / pos[1] < .5, f'the key is no longer usually the first option ({pos[0]} of {pos[1]} first)')
     check(not bad, 'every option of every practice item has a rationale that agrees with the key' + (': ' + ', '.join(bad[:5]) if bad else ''))
     nfx = pg.evaluate("Shift.ngn.all().filter(x=>/^fx-/.test(x.id)).length"); steps = pg.evaluate("[...new Set(Shift.ngn.all().map(x=>x.step))].sort().join(',')")
     check(nfx >= 18 and steps == 'act,analyze,cues,eval,hypo,solve', f'focus items cover all six steps ({nfx} items; steps {steps})')
