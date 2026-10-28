@@ -10,24 +10,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Doris Moss. I think she\'s having a transfusion reaction: chills, back pain, fever 38.6, BP 96/58. I\'ve stopped the blood.', ok: 1 },
-          { t: 'Hi, Mrs. Moss has a bit of a fever. Can I give acetaminophen?' },
-          { t: 'Just letting you know her transfusion is running a little behind.' }] },
+          { t: 'This is the nurse for Doris Moss. She has a fever of 38.6 during her transfusion.', w: 'Missing the back pain and low pressure, and that you\'ve stopped the blood.' },
+          { t: 'This is the nurse for Doris Moss. She has chills and back pain.', w: 'Add the numbers and that the blood is off.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Leukemia, hemoglobin 6.9 this morning. This is her first unit today. Bedside check was done with two nurses.', ok: 1 },
-          { t: 'She\'s had a lot of transfusions. She\'s used to them.' },
-          { t: 'Her daughter is visiting from Ohio.' }] },
+          { t: 'Leukemia. She\'s had many transfusions before without problems.', w: 'Previous transfusions don\'t protect against this one; give the unit and the bedside check.' },
+          { t: 'Leukemia, on chemotherapy, port in place.', w: 'Missing the hemoglobin, which unit this is, and that the bedside check was done.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Fever, back pain and a falling pressure this early make me worried about a hemolytic reaction.', ok: 1 },
-          { t: 'Probably just a mild allergic reaction.' },
-          { t: 'She might have an infection from her line.' }] },
+          { t: 'I think it\'s a febrile non-hemolytic reaction.', w: 'Possible, but back pain and a falling pressure this early point to hemolysis. Assume the worst until ruled out.' },
+          { t: 'She might have a line infection.', w: 'Timing with the transfusion makes the blood the cause until proven otherwise.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'d like you to see her now. I\'ll send the bag and tubing to the blood bank with blood and urine samples. Do you want a fluid bolus?', ok: 1 },
-          { t: 'Can I restart the blood slower?' },
-          { t: 'Should I just watch her?' }] },
+          { t: 'Can I restart the transfusion at a slower rate?', w: 'The blood stays off until a reaction is ruled out.' },
+          { t: 'Should I give acetaminophen and watch her?', w: 'Treats the fever, not the reaction. Send the workup and get her evaluated.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Keep the blood off. Normal saline 500 mL bolus. Send the transfusion reaction workup. I\'m coming up."', o: [
           { t: 'Read back: blood stays off, normal saline 500 mL bolus, transfusion reaction workup sent. You\'re on your way.', ok: 1 },
-          { t: 'Okay, I\'ll restart it when she\'s settled.' },
-          { t: 'Got it.' }] },
+          { t: 'Read back: blood stays off, normal saline 250 mL bolus, workup sent.', w: 'He said 500 mL.' },
+          { t: 'Okay, saline and the workup.', w: 'No volume repeated.' }] },
       ],
       win: 'The blood bank finds a mislabelled sample. Her kidneys stay safe and her pressure recovers.', lose: 'By the time anyone acts her urine is dark red.',
       pearl: 'Act, then call: stop the transfusion, keep the vein open with saline through new tubing, then SBAR. Send the bag back; it\'s evidence.' },
@@ -38,24 +38,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Leon Carter on 3 East. I\'m worried about neuroleptic malignant syndrome: T 39.4, rigid, confused, BP 168/98.', ok: 1 },
-          { t: 'Leon isn\'t joining groups today and seems off.' },
-          { t: 'Can you renew his PRN orders?' }] },
+          { t: 'This is the nurse for Leon Carter. He has a fever of 39.4.', w: 'Add rigidity, confusion and the new antipsychotic: name NMS.' },
+          { t: 'This is the nurse for Leon Carter. He\'s stiff and confused today.', w: 'Missing the vital signs.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'First-episode psychosis. Haloperidol started three days ago and increased yesterday. He\'s barely drinking.', ok: 1 },
-          { t: 'He has been on the unit three days and is usually pleasant.' },
-          { t: 'His mother called twice today.' }] },
+          { t: 'First-episode psychosis, admitted three days ago.', w: 'Missing the haloperidol start and dose increase.' },
+          { t: 'First-episode psychosis. On haloperidol and lorazepam as needed.', w: 'Say when the haloperidol started and that it went up yesterday.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Fever, rigidity and confusion after a new antipsychotic. I think this is NMS and he needs medical care.', ok: 1 },
-          { t: 'He\'s probably catatonic.' },
-          { t: 'Maybe a virus.' }] },
+          { t: 'This could be catatonia.', w: 'Catatonia can look similar, but fever and unstable vitals after a new antipsychotic are NMS until proven otherwise.' },
+          { t: 'He may have an infection.', w: 'Possible, but rigidity with fever after haloperidol is a medical emergency in its own right.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'d like to hold the haloperidol, get a CK and labs, start cooling and fluids, and transfer him to medicine.', ok: 1 },
-          { t: 'Should I give him more haloperidol for the agitation?' },
-          { t: 'Can we check him again tomorrow?' }] },
+          { t: 'Should I give lorazepam for the rigidity?', w: 'Lorazepam may be part of NMS treatment, but the antipsychotic must stop and he needs medical care first.' },
+          { t: 'Can we check a CK in the morning?', w: 'He needs labs and cooling now.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Hold all antipsychotics. CK, basic panel, IV fluids. I\'m calling medicine for transfer now."', o: [
           { t: 'Read back: hold all antipsychotics, CK and basic panel, IV fluids. You\'re calling medicine for transfer.', ok: 1 },
-          { t: 'Hold the haloperidol. Got it.' },
-          { t: 'Okay.' }] },
+          { t: 'Read back: hold the haloperidol, CK and basic panel, IV fluids.', w: 'She said hold all antipsychotics, not just haloperidol.' },
+          { t: 'Okay, labs and fluids.', w: 'No details repeated.' }] },
       ],
       win: 'His CK is in the thousands. He goes to the ICU early, and a week later he\'s back, stable on a different plan.', lose: 'By evening his temperature is 40.6 and his kidneys are failing.',
       pearl: 'Psych units see medical emergencies too. Say the diagnosis you\'re worried about, by name, in the first sentence.' },
@@ -66,24 +66,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Ana Reyes in 214. She\'s hemorrhaging: boggy uterus, a pad soaked in 15 minutes, HR 118, BP 92/58.', ok: 1 },
-          { t: 'Ana is bleeding a bit more than I\'d like.' },
-          { t: 'Can you stop by 214 when you\'re free?' }] },
+          { t: 'This is the nurse for Ana Reyes in 214. Her bleeding is heavier than expected.', w: 'Say "hemorrhage" and give the numbers: a pad in 15 minutes, HR 118, BP 92/58.' },
+          { t: 'This is the nurse for Ana Reyes. Her fundus is boggy.', w: 'Add how fast she\'s bleeding and her vitals.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Vaginal birth at 09:00 after a 20-hour induction on oxytocin. Baby 4.2 kg. Asthma, so no carboprost.', ok: 1 },
-          { t: 'It\'s her second baby. A girl.' },
-          { t: 'She wants to breastfeed.' }] },
+          { t: 'Vaginal birth at 09:00. Second baby. Breastfeeding.', w: 'Missing the long oxytocin induction, the big baby and the asthma.' },
+          { t: 'Vaginal birth at 09:00 after a 20-hour induction. Baby 4.2 kg.', w: 'Missing her asthma, which rules out carboprost.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Uterine atony with hemorrhage. Her bladder is empty. She\'s getting tachycardic.', ok: 1 },
-          { t: 'Normal lochia, just heavy.' },
-          { t: 'I think she\'s anxious.' }] },
+          { t: 'I think she may have a vaginal tear.', w: 'A boggy uterus points to atony. Tears bleed with a firm fundus.' },
+          { t: 'She may have a full bladder causing the bleeding.', w: 'Good thought, but her bladder is empty, and that\'s part of your assessment.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'m massaging and I\'ve called for help. I\'d like uterotonics, a second IV, type and cross, and you at the bedside.', ok: 1 },
-          { t: 'Should I recheck in an hour?' },
-          { t: 'Can I give her something for the cramping?' }] },
+          { t: 'Can I keep massaging and recheck in 15 minutes?', w: 'Keep massaging, yes, but she needs uterotonics and the provider now.' },
+          { t: 'Can I give her ibuprofen for the cramping?', w: 'Pain isn\'t the problem. Hemorrhage is.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Oxytocin 40 units in a liter, wide open. Methylergonovine 0.2 mg IM. TXA 1 gram IV. Type and cross 2 units. I\'m on my way."', o: [
           { t: 'Read back: oxytocin 40 units in a liter wide open, methylergonovine 0.2 mg IM, TXA 1 g IV, type and cross 2 units.', ok: 1 },
-          { t: 'Okay, methylergonovine. Got it.' },
-          { t: 'Thanks, see you soon.' }] },
+          { t: 'Read back: oxytocin 40 units wide open, methylergonovine 0.2 mg IV, TXA 1 g.', w: 'Methylergonovine is given IM, not IV: IV can cause severe hypertension and stroke.' },
+          { t: 'Okay, oxytocin, methylergonovine and TXA.', w: 'No doses or routes repeated.' }] },
       ],
       win: 'Her uterus firms up. By noon she\'s holding her daughter skin to skin.', lose: 'She loses 2 liters before the team gets ahead of it.',
       pearl: 'In hemorrhage, say the numbers that show it: how fast she\'s bleeding, heart rate, blood pressure. Mention allergies and conditions that rule out drugs.' },
@@ -94,24 +94,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Kenji Sato. I\'m worried about compartment syndrome in his left leg: pain 10 despite morphine, worse on passive stretch.', ok: 1 },
-          { t: 'Sorry to wake you. He just needs more pain medicine.' },
-          { t: 'His pain is a little high tonight.' }] },
+          { t: 'This is the nurse for Kenji Sato. His pain is 10 out of 10 after morphine.', w: 'Say what you\'re worried about: compartment syndrome, and pain on passive stretch.' },
+          { t: 'This is the nurse for Kenji Sato. His toes are tingling under the cast.', w: 'Add pain out of proportion and pain on stretch.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Closed tibia fracture from a motorcycle crash, casted at 16:00. Morphine 4 mg IV at 01:30 didn\'t touch it.', ok: 1 },
-          { t: 'He\'s a delivery driver.' },
-          { t: 'He was in a lot of pain in the ED too.' }] },
+          { t: 'Closed tibia fracture, casted yesterday.', w: 'Missing that the morphine didn\'t help.' },
+          { t: 'Tibia fracture. He had a lot of pain in the ED too.', w: 'Earlier pain doesn\'t explain pain that\'s worse now despite morphine.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Toes pale and cool, tingling, pulses still there. Pain out of proportion. I think pressure is building in the leg.', ok: 1 },
-          { t: 'He seems to have a low pain tolerance.' },
-          { t: 'His pulses are fine, so it\'s probably okay.' }] },
+          { t: 'He\'s anxious, which makes the pain worse.', w: 'Pain out of proportion and on passive stretch is a physical sign, not a personality.' },
+          { t: 'His pulses are present, so circulation is fine.', w: 'Pulses are a late sign. Pain on stretch is the early one.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'ve kept the leg at heart level. I\'d like you to see him now and decide about splitting the cast and pressure measurements.', ok: 1 },
-          { t: 'Can I raise his leg higher and give more morphine?' },
-          { t: 'Can we reassess at morning rounds?' }] },
+          { t: 'Can I elevate his leg higher and give more morphine?', w: 'Raising it above the heart lowers blood flow into the compartment.' },
+          { t: 'Can we reassess in an hour?', w: 'Muscle can die within hours.' }] },
         { k: '✓', q: 'Close the loop.', say: '"I\'m coming in. Bivalve the cast now, keep it at heart level, NPO in case we go to the OR."', o: [
           { t: 'Read back: split the cast now, leg at heart level, NPO in case of surgery. You\'re coming in.', ok: 1 },
-          { t: 'Okay, elevate it high.' },
-          { t: 'Okay, thanks.' }] },
+          { t: 'Read back: split the cast now, elevate the leg high, NPO.', w: 'He said heart level, not elevated.' },
+          { t: 'Okay, I\'ll split the cast.', w: 'Missing heart level and NPO.' }] },
       ],
       win: 'He\'s in the OR by 03:30 for fasciotomy. He keeps his leg and its function.', lose: 'By morning the muscle has died. He\'ll need more surgery and may never run again.',
       pearl: 'Pulses are a late sign. Pain out of proportion and pain on passive stretch are the early ones. Say them first.' },
@@ -122,24 +122,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Harriet Lowe. She hit her head in a fall an hour ago and now has a headache and vomiting. She\'s on warfarin.', ok: 1 },
-          { t: 'Just reporting a fall. She seems fine.' },
-          { t: 'She\'s asking for something for nausea.' }] },
+          { t: 'This is the nurse for Harriet Lowe. She fell in the bathroom an hour ago.', w: 'Add the head strike, symptoms, and warfarin.' },
+          { t: 'This is the nurse for Harriet Lowe. She has a headache and is vomiting.', w: 'Missing the fall and the warfarin.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Atrial fibrillation on warfarin, INR 2.8 this morning. Admitted for pneumonia. She was oriented this afternoon.', ok: 1 },
-          { t: 'She lives alone and is very independent.' },
-          { t: 'She\'s had falls before at home.' }] },
+          { t: 'Admitted for pneumonia. History of atrial fibrillation and hypertension.', w: 'Say she\'s on warfarin and her INR.' },
+          { t: 'On warfarin for atrial fibrillation.', w: 'Add the INR and that she was oriented this afternoon.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'GCS 14, now slower to answer, pupils equal. I\'m worried about a bleed in her head.', ok: 1 },
-          { t: 'Probably just a bump.' },
-          { t: 'She\'s tired and it\'s late.' }] },
+          { t: 'She has a bump on her head but is talking.', w: 'Talking now doesn\'t rule out a growing bleed, especially on warfarin.' },
+          { t: 'She\'s sleepy, but it\'s late.', w: 'New sleepiness after a head strike is a warning sign.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'d like a head CT now, neuro checks every 15 minutes, and to hold her warfarin. Will you come see her?', ok: 1 },
-          { t: 'Can I give her ondansetron and let her sleep?' },
-          { t: 'Should I check her in the morning?' }] },
+          { t: 'Can I give ondansetron for the vomiting?', w: 'Treats a symptom of a possible bleed. CT first.' },
+          { t: 'Can we do neuro checks every 4 hours?', w: 'Too infrequent for a possible bleed on warfarin.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Stat head CT, INR now, hold warfarin, neuro checks every 15 minutes. If there\'s a bleed we reverse it. I\'m coming."', o: [
           { t: 'Read back: stat head CT, INR now, hold warfarin, neuro checks every 15 minutes. You\'re coming.', ok: 1 },
-          { t: 'Okay, hold the warfarin.' },
-          { t: 'Okay, thanks.' }] },
+          { t: 'Read back: head CT in the morning, hold warfarin, neuro checks every 15 minutes.', w: 'He said stat CT.' },
+          { t: 'Okay, CT and neuro checks.', w: 'Missing stat, the INR, and the warfarin hold.' }] },
       ],
       win: 'The CT shows a small bleed. It\'s reversed within the hour and doesn\'t grow.', lose: 'At 02:00 she doesn\'t wake up. The bleed has grown.',
       pearl: 'Head strike plus an anticoagulant is high risk even if they look fine. Say both in the first sentence; it gets a CT ordered.' },
@@ -150,24 +150,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Noah Bailey, 9 months. He\'s severely dehydrated and lethargic: HR 178, cap refill 4 seconds, no wet diaper in 12 hours.', ok: 1 },
-          { t: 'Noah\'s parents are worried about him.' },
-          { t: 'He\'s still not eating much.' }] },
+          { t: 'This is the nurse for Noah Bailey, 9 months. He hasn\'t had a wet diaper in 12 hours.', w: 'Add the heart rate, cap refill and lethargy that make it shock.' },
+          { t: 'This is the nurse for Noah Bailey. His heart rate is 178.', w: 'Give the whole picture: lethargic, slow cap refill, no wet diapers.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Gastroenteritis, admitted yesterday for fluids. His IV came out at 18:00. Weight 8.5 kg.', ok: 1 },
-          { t: 'He goes to daycare, where a lot of kids are sick.' },
-          { t: 'He had his shots last month.' }] },
+          { t: 'Gastroenteritis, admitted yesterday for fluids.', w: 'Missing that his IV came out and his weight.' },
+          { t: 'His IV came out at 18:00.', w: 'Add his weight so the resident can dose fluids.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Sunken fontanelle, dry mouth, hard to wake. I think he\'s in shock from fluid loss.', ok: 1 },
-          { t: 'Babies sleep a lot.' },
-          { t: 'He\'s probably teething.' }] },
+          { t: 'He\'s tired from being sick.', w: 'Hard to wake with a fast heart rate is shock, not tiredness.' },
+          { t: 'He\'s mildly dehydrated.', w: 'Sunken fontanelle, no tears, slow refill and lethargy are severe.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'He needs IV access now and a fluid bolus. I\'d like a glucose check and you at the bedside.', ok: 1 },
-          { t: 'Should we try more Pedialyte?' },
-          { t: 'Can I wait for the morning team to place the IV?' }] },
+          { t: 'Should we try oral rehydration first?', w: 'He\'s too lethargic to drink safely.' },
+          { t: 'Can we call IV team in the morning?', w: 'He needs access now; an IO if needed.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Normal saline 20 mL per kilo, so 170 mL, over 15 minutes. Check a glucose. If no IV in two tries, call me for an IO. I\'m coming."', o: [
           { t: 'Read back: normal saline 20 mL/kg, 170 mL over 15 minutes, glucose now, and an IO if two IV attempts fail.', ok: 1 },
-          { t: '170 mL over an hour. Okay.' },
-          { t: 'Okay.' }] },
+          { t: 'Read back: normal saline 170 mL over an hour, glucose now.', w: 'She said over 15 minutes, and an IO after two failed IV attempts.' },
+          { t: 'Okay, a bolus and a glucose.', w: 'No volume or rate repeated.' }] },
       ],
       win: 'After two boluses he wets a diaper and reaches for his mom\'s hair.', lose: 'He gets the fluid late, after his blood pressure has already started to fall.',
       pearl: 'Babies hide shock until late: a fast heart rate and slow cap refill are early signs. Low blood pressure is late. Weight-based fluids, read back the math.' },
@@ -178,24 +178,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Tom Brennan. He just told me he plans to hang himself tonight with his shoelaces, and he had them on. I\'ve removed them and I\'m with him.', ok: 1 },
-          { t: 'Tom is having a hard day.' },
-          { t: 'Can you see Tom at rounds tomorrow?' }] },
+          { t: 'This is the nurse for Tom Brennan. He\'s talking about wanting to die.', w: 'Give the plan, the means and the time, and what you\'ve already done.' },
+          { t: 'This is the nurse for Tom Brennan. I\'m worried he\'s suicidal.', w: 'Say what he told you: a plan, a method, tonight.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Admitted two days ago after an overdose. On 15-minute checks. His divorce was finalized today.', ok: 1 },
-          { t: 'He likes fishing.' },
-          { t: 'He seemed fine at lunch.' }] },
+          { t: 'Admitted two days ago for depression.', w: 'Missing the overdose and today\'s divorce.' },
+          { t: 'Admitted two days ago after an overdose.', w: 'Add today\'s divorce and that he\'s on 15-minute checks.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'He has a plan, a method and a time. He\'s at high risk of suicide right now.', ok: 1 },
-          { t: 'He\'s probably seeking attention.' },
-          { t: 'He\'s just upset about the divorce.' }] },
+          { t: 'He\'s upset about his divorce today.', w: 'True, but the plan, method and timing are what make this high risk.' },
+          { t: 'He\'s at moderate risk; he\'s talking about it.', w: 'A specific plan with access and a time is high risk.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'d like him on 1:1 observation, a room and belongings search, and you to evaluate him today.', ok: 1 },
-          { t: 'Can we give him something to help him sleep?' },
-          { t: 'Should I keep the 15-minute checks?' }] },
+          { t: 'Can we increase his checks to every 5 minutes?', w: 'Even 5-minute checks leave gaps. With a plan and means, ask for 1:1.' },
+          { t: 'Should I keep 15-minute checks and remove the laces?', w: 'Removing the laces is right, but 15-minute checks aren\'t enough.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Start 1:1 observation now. Search the room and his belongings. I\'ll see him within the hour."', o: [
           { t: 'Read back: 1:1 now, room and belongings search, you\'ll see him within the hour.', ok: 1 },
-          { t: 'Okay, keep checks every 15.' },
-          { t: 'Okay.' }] },
+          { t: 'Read back: 1:1 now, you\'ll see him tomorrow.', w: 'She said within the hour, and a room and belongings search.' },
+          { t: 'Okay, 1:1.', w: 'Missing the search and the time she\'ll see him.' }] },
       ],
       win: 'The search finds a second pair of laces and a belt. He stays on 1:1, and a week later he says thank you.', lose: 'His 15-minute check finds him in the bathroom.',
       pearl: 'Plan, means, timing: say all three. 15-minute checks are too far apart for a patient with a plan and access. Ask for 1:1.' },
@@ -206,24 +206,24 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Earl Watts. He has chest pain and the ECG shows ST elevation in II, III and aVF. I think he\'s having a STEMI.', ok: 1 },
-          { t: 'He has some chest discomfort, maybe gas.' },
-          { t: 'Can I give him more oxycodone?' }] },
+          { t: 'This is the nurse for Earl Watts. He has crushing chest pain and he\'s sweating.', w: 'Add the ECG: ST elevation in II, III and aVF.' },
+          { t: 'This is the nurse for Earl Watts. His ECG looks abnormal.', w: 'Say what\'s abnormal and that you think it\'s a STEMI.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Hip replacement two days ago, on enoxaparin. Diabetic, smoker. No cardiac history.', ok: 1 },
-          { t: 'He\'s been walking well with PT.' },
-          { t: 'He\'s anxious about going home.' }] },
+          { t: 'Hip replacement two days ago.', w: 'Missing the enoxaparin and his cardiac risk factors.' },
+          { t: 'Diabetic and a smoker, no cardiac history.', w: 'Add the recent surgery and the enoxaparin; they affect the cath plan.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'BP 110/64, HR 58, sweaty. Inferior changes. I\'m holding nitroglycerin until we check the right side.', ok: 1 },
-          { t: 'Pain\'s probably from his hip.' },
-          { t: 'I think it\'s heartburn.' }] },
+          { t: 'I think it could be a PE given his surgery.', w: 'Possible after surgery, but ST elevation in a coronary pattern points to an MI.' },
+          { t: 'I think he\'s having an MI. Should I give nitro?', w: 'With inferior changes, ask about a right-sided ECG before nitrates.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'d like the cath lab activated and you here now. Do you want aspirin and a right-sided ECG?', ok: 1 },
-          { t: 'Should I recheck an ECG in an hour?' },
-          { t: 'Can I give him antacids?' }] },
+          { t: 'Should I repeat the ECG in 15 minutes?', w: 'ST elevation already means activate the cath lab.' },
+          { t: 'Can I give him nitroglycerin for the pain?', w: 'Possible right ventricular involvement: nitrates can drop his pressure.' }] },
         { k: '✓', q: 'Close the loop.', say: '"Activating the cath lab. Aspirin 324 chewed. Right-sided ECG. No nitro for now. I\'m on my way."', o: [
           { t: 'Read back: cath lab activated, aspirin 324 mg chewed, right-sided ECG, no nitro for now. You\'re coming.', ok: 1 },
-          { t: 'Okay, nitro and aspirin.' },
-          { t: 'Got it.' }] },
+          { t: 'Read back: cath lab activated, aspirin 81 mg, right-sided ECG.', w: 'He said 324 mg chewed, and no nitro.' },
+          { t: 'Okay, aspirin and ECG.', w: 'No doses repeated.' }] },
       ],
       win: 'He\'s in the cath lab 52 minutes after the pain started. His heart muscle is saved.', lose: 'He gets nitro first. His pressure falls to 82 and the delay costs heart muscle.',
       pearl: 'Read the ECG out loud: "ST elevation in II, III, aVF" gets a STEMI response. With an inferior MI, ask about a right-sided ECG before nitrates.' }

@@ -393,6 +393,7 @@
           <h1>${newbie ? 'A patient needs you. What do you do?' : DS.today ? 'One more?' : 'Think like a nurse.'}</h1>
           <p class="lede">One patient, one decision, every answer explained. About three minutes.</p>
           <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><span><b>${DS.today ? 'Play another round' : newbie ? 'Start playing' : 'Play today\'s round'}</b><small>5 patients: a med, two priorities, a call, a hard conversation</small></span></button>
+          ${newbie ? '' : `<button class="h2-hard" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>${DS.hard} cards where every option is plausible. No gimmes.</span><span class="h2-chev" aria-hidden="true">›</span></button>`}
         </div>
       </section>` : ''}
       ${saved ? `<button class="h2-resume" data-act="resume"><span class="h2-ic">${DICON.shift}</span><span><b>Resume your shift</b><small>${esc(saved.title)}, at ${hhmm(saved, g.t)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>` : ''}
@@ -1374,7 +1375,7 @@
   function nclexTab(d, cj, nx, next, nextId) {
     const done = prof.ngn || {}, fx = ui.fx;
     const why = fx && fx.weak.length ? (fx.stretch ? `None of your steps fell below ${STARS_AT()[1]}. These stretch questions aim at your lowest, <b>${esc(fx.weak[0].label)}</b> (${fx.weak[0].score}).` : `Aimed at ${fx.weak.map((w) => `<b>${esc(w.label)}</b> (${w.score})`).join(' and ')}, using clients from other units so you practice the thinking, not the patient.`) : '';
-    const qcard = (it, i, list) => { const r = done[it.id]; return `<li><button class="nq ${r ? (lastOf(r) === r.max ? 'full' : 'part') : ''}" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="nq-n">${i + 1}</span><span class="nq-t"><b>${esc(NG.TYPE[it.type])}</b><small>Tests ${esc(STEPNAME(it.step))}${it.cn && NG.CN ? ` · ${esc((NG.CN.find((c) => c[0] === it.cn) || [])[1] || '')}` : ''}</small></span><span class="nq-s">${r ? `${lastOf(r)} of ${r.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`; };
+    const qcard = (it, i, list) => { const r = done[it.id]; return `<li><button class="nq ${r ? (lastOf(r) === r.max ? 'full' : 'part') : ''}" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="nq-n">${i + 1}</span><span class="nq-t"><b>${esc(NG.TYPE[it.type])}${it.ch ? ' <span class="ng-ch">NCLEX challenge</span>' : ''}</b><small>Tests ${esc(STEPNAME(it.step))}${it.cn && NG.CN ? ` · ${esc((NG.CN.find((c) => c[0] === it.cn) || [])[1] || '')}` : ''}</small></span><span class="nq-s">${r ? `${lastOf(r)} of ${r.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`; };
     const pct = nx.mx ? Math.round(nx.got / nx.mx * 100) : 0, answered = nx.all.length - nx.left;
     const misses = nx.tested.filter((x) => x.bad).slice(0, 3);
     const cs = nx.cases.map((c) => ({ c, a: c.items.filter((x) => done[x.id]).length })).sort((a, b) => (a.a === 6) - (b.a === 6) || b.a - a.a).slice(0, 3);
@@ -1406,7 +1407,7 @@
   const STEPNAME = (id) => (CJ ? (CJ.STEPS.find((x) => x[0] === id) || [])[1] : '') || '';
   function ngnRow(it, i, list) {
     const dn = (prof.ngn || {})[it.id];
-    return `<li><button class="ngn-row" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${dn ? '' : 'ngn-go'}">${dn ? `${dn.score} of ${dn.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`;
+    return `<li><button class="ngn-row" data-act="ngn-open" data-list="${list}" data-i="${i}"><span class="ngn-n">${i + 1}</span><span class="ngn-t"><b>${esc(NG.TYPE[it.type])}${it.ch ? ' <span class="ng-ch">NCLEX challenge</span>' : ''}</b><small>${esc(STEPNAME(it.step))}</small></span><span class="ngn-sc ${dn ? '' : 'ngn-go'}">${dn ? `${dn.score} of ${dn.max}` : 'Start'} <span aria-hidden="true">›</span></span></button></li>`;
   }
   function ngnHTML() {
     if (!NG || !s) return ''; const its = NG.items(s.caseId); if (!its.length) return '';
@@ -1424,7 +1425,7 @@
     const rw = (txt, ok, on) => (!ck || !txt ? '' : `<small class="nb-why ${ok ? 'y' : 'n'}${on ? ' you' : ''}">${on ? '<i>Your choice</i>' : ok ? '<i>You missed this</i>' : ''}${esc(txt.replace(/^(Yes|No):\s*/, '').replace(/^[a-z]/, (c) => c.toUpperCase()))}</small>`);
     const stp = CJ ? CJ.STEPS.find((x) => x[0] === it.step) : null;
     const cnl = it.cn && NG.CN ? (NG.CN.find((x) => x[0] === it.cn) || [])[1] : '';
-    let body = `<p class="ngn-tag">${esc(NG.TYPE[it.type])}${stp ? ` · Tests <b>${esc(stp[1])}</b>` : ''}${cnl ? ` · ${esc(cnl)}` : ''}${q.list === 'focus' ? ' · Focus practice' : ''}</p>${it.update ? `<p class="cs-up">${esc(it.update)}</p>` : ''}<p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
+    let body = `<p class="ngn-tag">${it.ch ? '<span class="ng-ch">NCLEX challenge</span> ' : ''}${esc(NG.TYPE[it.type])}${stp ? ` · Tests <b>${esc(stp[1])}</b>` : ''}${cnl ? ` · ${esc(cnl)}` : ''}${q.list === 'focus' ? ' · Focus practice' : ''}</p>${it.update ? `<p class="cs-up">${esc(it.update)}</p>` : ''}<p class="ngn-stem">${esc(it.stem)}</p><p class="ngn-q"><b>${esc(it.q)}</b></p>`;
     if (it.type === 'mc') {
       body += `<div class="ngn-opts" role="radiogroup">${it.opts.map((o, i) => { const on = a.m === i; return `<div class="nb-w"><button class="nb-opt rd${on ? ' on' : ''}${mark(o.ok, on)}" data-act="ngn-pick" data-k="m" data-v="${i}" role="radio" aria-checked="${on}" ${ck ? 'disabled' : ''}>${esc(o.t)}</button>${rw(W.opts[i], o.ok, on)}</div>`; }).join('')}</div>`;
     } else if (it.type === 'order') {

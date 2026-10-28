@@ -14,6 +14,7 @@
     sbar: { name: 'SBAR', verb: 'Make the call.', blurb: 'Build the call to the provider, line by line.', n: 2, color: 'sb' },
     calm: { name: 'De-escalation', verb: 'Talk them down.', blurb: 'Every word moves the room.', n: 2, color: 'de' },
     mix: { name: 'Daily round', verb: 'One of everything.', blurb: 'A med, two priorities, a call, and a hard conversation.', n: 5, color: 'mix' },
+    hard: { name: 'NCLEX-level round', verb: 'No gimmes.', blurb: 'Five of the hardest cards: every option is plausible.', n: 5, color: 'mix' },
   };
   const ORDER = ['med', 'first', 'sbar', 'calm'];
   const RIGHT = ['Good catch.', 'That\'s the one.', 'Nice call.', 'Exactly right.', 'Spot on.', 'Sharp.'];
@@ -60,16 +61,28 @@
   const playedToday = () => { const d = P().days; return d.length && d[d.length - 1] === today(); };
   function mastery(kind) { const all = D()[kind], c = P().cards; const got = all.filter((x) => c[x.id] && c[x.id][1]).length; return { got, all: all.length, seen: all.filter((x) => c[x.id]).length }; }
   // Never seen first, then missed last time, then the longest ago.
-  function draw(kind, n, not) {
-    const c = P().cards, pool = D()[kind].filter((x) => !(not || []).includes(x.id));
+  /* lv: 'core' (lv 1 only), 'hard' (NCLEX level only) or anything else for both. */
+  function draw(kind, n, not, lv) {
+    const c = P().cards, pool = D()[kind].filter((x) => !(not || []).includes(x.id) && (lv === 'core' ? !(x.lv >= 2) : lv === 'hard' ? x.lv >= 2 : true));
     const rank = (x) => { const r = c[x.id]; return !r ? 0 : !r[1] ? 1 : 2; };
     return shuffle(pool).sort((a, b) => rank(a) - rank(b) || ((c[a.id] || [0, 0, 0])[2] - (c[b.id] || [0, 0, 0])[2])).slice(0, n).map((x) => ({ kind, id: x.id }));
   }
+  /* New players get core cards for their first two rounds. After that, about 40% of a drill round is NCLEX level,
+     and every daily round has at least one. The NCLEX-level round is all hard cards. */
+  const played = () => Object.values(P().rounds).reduce((a, b) => a + b, 0);
   function deck(kind) {
-    if (kind !== 'mix') return draw(kind, KINDS[kind].n);
-    const f = draw('first', 2);
-    return [f[0], ...draw('med', 1), ...draw('sbar', 1), f[1], ...draw('calm', 1)].filter(Boolean);
+    if (kind === 'hard') { const f = draw('first', 2, null, 'hard'); return [f[0], ...draw('med', 1, null, 'hard'), ...draw('sbar', 1, null, 'hard'), f[1], ...draw('calm', 1, null, 'hard')].filter(Boolean); }
+    const ramp = played() >= 2;
+    if (kind !== 'mix') {
+      const n = KINDS[kind].n; if (!ramp) return draw(kind, n, null, 'core');
+      const h = draw(kind, Math.ceil(n * .4), null, 'hard'), rest = draw(kind, n - h.length, h.map((x) => x.id));
+      return shuffle(h.concat(rest));
+    }
+    const f = draw('first', 2, null, ramp ? null : 'core'), L = [f[0], ...draw('med', 1, null, ramp ? null : 'core'), ...draw('sbar', 1, null, ramp ? null : 'core'), f[1], ...draw('calm', 1, null, ramp ? null : 'core')].filter(Boolean);
+    if (ramp && !L.some((x) => isHard(x))) { const hk = pick1(['first', 'med']), i = L.findIndex((x) => x.kind === hk), h = draw(hk, 1, L.map((x) => x.id), 'hard')[0]; if (h && i >= 0) L[i] = h; }
+    return L;
   }
+  const isHard = (c) => { const k = card(c.kind, c.id); return !!(k && k.lv >= 2); };
 
   /* ---------- round state ---------- */
   function fresh(c) {
@@ -175,7 +188,8 @@
     const r = X.ui.dr, last = r.i >= r.deck.length - 1;
     return `<footer class="dr-foot ${ok ? 'ok' : 'no'}" role="status">
       <div class="dr-vd"><span class="dr-vi" aria-hidden="true">${ok ? X.ICON.tick : '<svg class="tick" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M8 8l8 8M16 8l-8 8"/></svg>'}</span><b>${E(ok ? RIGHT[r.vi % RIGHT.length] : WRONG[r.vi % WRONG.length])}</b></div>
-      ${extra || ''}
+      ${extra && extra.html ? extra.html : ''}
+      ${extra && extra.not ? `<p class="dr-not"><b>Why not "${E(extra.not.t)}"?</b> ${E(extra.not.w)}</p>` : ''}
       ${why ? `<p class="dr-why">${E(why)}</p>` : ''}
       ${pearl ? `<p class="dr-pearl"><b>Remember</b>${E(pearl)}</p>` : ''}
       <button class="btn btn-primary btn-go dr-next" data-act="dr-next">${last ? 'See your round' : 'Next'} <span aria-hidden="true">→</span></button>
@@ -183,8 +197,9 @@
   }
   // Adults read like a chart (58M). Children get their age in words, so "2M" is never mistaken for two months.
   const age = (p) => typeof p.a === 'string' ? p.a : p.k || p.a < 18 ? `${p.a} yr${p.a === 1 ? '' : 's'}` : `${p.a}${p.x || ''}`;
+  const notOf = (o) => (o && !o.ok && o.w ? { not: o } : null);
   const who = (p) => `${E(p.n)}<small>${E(age(p))}</small>`;
-  const chip = (kind) => `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>`;
+  const chip = (kind) => { const r = X.ui.dr, c = r && !r.done && r.deck[r.i]; return `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>${c && isHard(c) ? '<span class="dr-lv" title="Every option here is plausible. Think it through.">NCLEX level</span>' : ''}`; };
 
   function vMed(k, st) {
     const key = face('dr-' + k.id, k.p), v = st.stage !== 'done' ? k.v : k.pick[st.pick].ok ? Object.assign({}, k.v, k.good) : Object.assign({}, k.v, k.bad);
@@ -206,7 +221,7 @@
       </section>
       ${st.stage === 'check' ? `<h3 class="dr-q">Before you give it, what do you check first?</h3>${opts(k.check, st.co, 'dr-check', null, false)}` : found}
       ${st.stage !== 'check' ? `<h3 class="dr-q">${done ? 'Your call' : 'Give, hold, or call?'}</h3>${opts(k.pick, st.po, 'dr-pick', st.pick, done)}` : ''}
-    </main>${done ? verdict(ok, k.why, k.pearl) : ''}`;
+    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pick[st.pick])) : ''}`;
   }
 
   function vFirst(k, st) {
@@ -217,7 +232,7 @@
       <h3 class="dr-q big">${E(k.q)}</h3>
       <div class="dr-four">${st.po.map((i, n) => { const x = k.pts[i], key = face(`dr-${k.id}-${i}`, x.p), cls = done ? (x.ok ? 'right' : i === st.pick ? 'wrong' : 'dim') : '';
         return `<button class="dr-pt ${cls}" data-act="dr-pick" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd>${X.R.bust(key, done && x.ok && !ok ? { pain: 6, anxious: .6, pale: .4 } : null, 'dr-pface')}<span class="dr-pt-t"><b>${who(x.p)}</b><span>${E(x.line)}</span></span></button>`; }).join('')}</div>
-    </main>${done ? verdict(ok, k.why, k.pearl) : ''}`;
+    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pts[st.pick] && { t: k.pts[st.pick].p.n, w: k.pts[st.pick].w, ok: k.pts[st.pick].ok })) : ''}`;
   }
 
   function vSbar(k, st) {
@@ -238,7 +253,7 @@
       </section>
       <ol class="dr-sbar-steps" aria-label="SBAR progress">${k.steps.map((x, i) => `<li class="${i < st.step || fin ? 'on' : i === st.step ? 'now' : ''}"><b>${E(x.k)}</b><span>${E(NAMES[x.k] || '')}</span></li>`).join('')}</ol>
       <ul class="dr-log">${said}${prompt}${reply}</ul>
-      ${s ? (st.miss !== null ? `<div class="dr-miss"><p class="dr-wrongline"><span>You said</span>${E(s.o[st.miss].t)}</p><p class="dr-betterline"><span>Say this instead</span>${E(s.o.find((o) => o.ok).t)}</p><button class="btn btn-primary btn-go" data-act="dr-fix">Say it this way <span aria-hidden="true">→</span></button></div>`
+      ${s ? (st.miss !== null ? `<div class="dr-miss"><p class="dr-wrongline"><span>You said</span>${E(s.o[st.miss].t)}</p>${s.o[st.miss].w ? `<p class="dr-whynot">${E(s.o[st.miss].w)}</p>` : ''}<p class="dr-betterline"><span>Say this instead</span>${E(s.o.find((o) => o.ok).t)}</p><button class="btn btn-primary btn-go" data-act="dr-fix">Say it this way <span aria-hidden="true">→</span></button></div>`
         : `<h3 class="dr-q"><span class="dr-sk">${E(s.k)}</span>${E(s.q)}</h3><div class="dr-opts">${st.oo[st.step].map((i, n) => `<button class="dr-opt" data-act="dr-say" data-i="${i}"><kbd>${n + 1}</kbd><span>${E(s.o[i].t)}</span></button>`).join('')}</div>`) : ''}
     </main>${fin ? verdict(ok, ok ? (st.wrong ? 'One line needed fixing, but the call landed.' : 'Clean call: every line earned its place.') : `${st.wrong} lines needed fixing. Read the call above: that's the model.`, k.pearl) : ''}`;
   }
@@ -333,7 +348,7 @@
     return ['mp-lispro-low', 'mp-metoprolol', 'mp-morphine-sed'].map((id, i) => { const k = card('med', id); return k ? `<span class="h2-p p${i}">${X.R.bust(face('dr-' + id, k.p), i === 1 ? { pale: .2 } : null, 'dr-face')}</span>` : ''; }).join('');
   }
   /* What the home screen needs. */
-  function summary() { return { kinds: ORDER.map((k) => Object.assign({ k }, KINDS[k], mastery(k), { rounds: P().rounds[k] || 0, best: P().best[k] || 0 })), streak: streak(), today: playedToday(), rounds: Object.values(P().rounds).reduce((a, b) => a + b, 0), mix: KINDS.mix }; }
+  function summary() { return { kinds: ORDER.map((k) => Object.assign({ k }, KINDS[k], mastery(k), { rounds: P().rounds[k] || 0, best: P().best[k] || 0 })), streak: streak(), today: playedToday(), rounds: Object.values(P().rounds).reduce((a, b) => a + b, 0), mix: KINDS.mix, hard: ORDER.reduce((n, k) => n + D()[k].filter((x) => x.lv >= 2).length, 0) }; }
 
   S.drill = { init(ctx) { X = ctx; }, handlers: H, view, after, key, summary, start, cast, mood, KINDS, _lookOf: lookOf };
 })(window.Shift = window.Shift || {});

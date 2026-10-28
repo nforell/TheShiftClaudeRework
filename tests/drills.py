@@ -33,6 +33,17 @@ with sync_playwright() as p:
     check(not bad, f'drill content is well formed ({len(bad)} problems{": " + "; ".join(bad[:4]) if bad else ""})')
     counts = pg.evaluate("Object.fromEntries(Object.entries(Shift.drillData).map(([k, v]) => [k, v.length]))")
     check(counts['med'] >= 20 and counts['first'] >= 12 and counts['sbar'] >= 8 and counts['calm'] >= 8, f'enough cards to replay ({counts})')
+    # No gimmes: every wrong answer says why it's wrong, and every drill has NCLEX-level cards.
+    nowhy = pg.evaluate("""(() => { const D = Shift.drillData, bad = [];
+      D.med.forEach((c) => c.pick.forEach((o) => { if (!o.ok && !o.w) bad.push(c.id); }));
+      D.first.forEach((c) => c.pts.forEach((o) => { if (!o.ok && !o.w) bad.push(c.id); }));
+      D.sbar.forEach((c) => c.steps.forEach((st) => st.o.forEach((o) => { if (!o.ok && !o.w) bad.push(c.id + ' ' + st.k); })));
+      return bad; })()""")
+    check(not nowhy, f'every wrong answer in Med Pass, Who\'s First and SBAR explains itself ({nowhy[:4]})')
+    hard = pg.evaluate("Object.fromEntries(Object.entries(Shift.drillData).map(([k, v]) => [k, v.filter((x) => x.lv >= 2).length]))")
+    check(hard['med'] >= 8 and hard['first'] >= 8 and hard['sbar'] >= 3 and hard['calm'] >= 4, f'every drill has NCLEX-level cards ({hard})')
+    gives = pg.evaluate("Shift.drillData.med.filter((c) => /^Give/.test(c.pick.find((o) => o.ok).t)).length")
+    check(gives >= 10, f'Med Pass isn\'t always "hold": {gives} cards where giving is right')
     # The landing page quotes these counts; keep it honest.
     land = (ROOT / 'site' / 'index.html').read_text()
     for kind, word in (('med', 'cards'), ('first', 'sets'), ('sbar', 'calls'), ('calm', 'scenarios')):
@@ -94,6 +105,14 @@ with sync_playwright() as p:
         check(pg.locator('.dr-retry').count() == 1, f'{tag}: a round with misses offers a retry')
         pg.locator('.dr-retry').click(); pg.wait_for_timeout(80)
         check(J("Shift.ui._ui.dr.deck.map((c) => c.id)") == missed and J("Shift.ui._ui.dr.retry"), f'{tag}: the retry round is exactly the missed cards')
+        H('dr-quit')
+
+        # 3c. Difficulty: the NCLEX-level round is all hard cards, and drill rounds now mix some in.
+        H('dr-start', k='hard'); deckhard = J("Shift.ui._ui.dr.deck.map((c) => (Shift.drillData[c.kind].find((x) => x.id === c.id) || {}).lv || 1)")
+        check(len(deckhard) == 5 and all(x >= 2 for x in deckhard), f'{tag}: the NCLEX-level round deals only hard cards ({deckhard})')
+        check(pg.locator('.dr-lv').count() == 1, f'{tag}: a hard card is labeled NCLEX level')
+        H('dr-quit'); H('dr-start', k='first')
+        check(J("Shift.ui._ui.dr.deck.filter((c) => (Shift.drillData.first.find((x) => x.id === c.id) || {}).lv >= 2).length") >= 1, f'{tag}: after a few rounds, Who\'s First mixes in NCLEX-level cards')
         H('dr-quit')
 
         # 4. Progress: saved, mastery shows on home, the day streak lights, misses come back first.

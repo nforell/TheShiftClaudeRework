@@ -4,7 +4,7 @@ Generated from `src/drills-content.js` by `node tools/drills_doc.js`. Do not edi
 
 For each card: is the right answer right, is every wrong answer clearly wrong (not just less good), are the numbers current, and is the pearl safe to remember as a rule? Tick the box and initial it.
 
-Cards: 40 Med Pass, 26 Who's First, 16 SBAR, 16 De-escalation.
+Cards: 50 Med Pass, 36 Who's First, 20 SBAR, 22 De-escalation.
 
 ## Med Pass
 
@@ -12,9 +12,11 @@ Cards: 40 Med Pass, 26 Who's First, 16 SBAR, 16 De-escalation.
 His 09:00 dose. He says he feels "a little floaty" this morning.
 
 - **Check first:** Apical pulse and blood pressure → Apical 52. BP 94/58.
-- Other checks: Potassium (K 4.0. Normal.); Fingerstick glucose (118. Fine.)
+- Other checks: Potassium (K 4.0. Normal.); Daily weight (Down 0.5 kg since yesterday.)
 - **Decision:** Hold it and tell the provider
-- Wrong: Give it. He takes it every day; Give it, then recheck in an hour
+- Wrong:
+  - Give it, then recheck his pulse in an hour _(why not: By then the dose is already working. The parameter is checked before the dose, not after.)_
+  - Hold it now and give it at noon if his pulse is over 60 _(why not: Holding is right, but choosing a new time yourself is a new order. The provider needs to know he's bradycardic and hypotensive.)_
 - Why: A pulse of 52 and a systolic of 94 are under the usual hold lines. Another dose slows him further.
 - Pearl: Beta blocker: pulse and pressure first. Under 60 or a systolic under 100, hold and report.
 
@@ -22,9 +24,11 @@ His 09:00 dose. He says he feels "a little floaty" this morning.
 She skipped breakfast. "My stomach is off, and the lights look fuzzy."
 
 - **Check first:** Apical pulse for a full minute → Apical 54, irregular.
-- Other checks: Blood pressure (BP 128/76.); Temperature (36.8. Normal.)
+- Other checks: Blood pressure (BP 128/76.); Potassium level (K 3.9.)
 - **Decision:** Hold it and report possible toxicity
-- Wrong: Give it. 54 is close enough to 60; Give it with crackers for the nausea
+- Wrong:
+  - Hold it, recount in an hour, and give it if the pulse is over 60 _(why not: Nausea and vision changes point to toxicity whatever the next pulse is. She needs a level and the provider, not a delayed dose.)_
+  - Give it and ask for a digoxin level with the morning labs _(why not: If she's toxic, this dose adds to it. The level comes before the next dose, not after.)_
 - Why: Slow pulse, nausea and blurry or halo vision together point to digoxin toxicity, which is common in frail older adults.
 - Pearl: Digoxin: count the apical pulse for a full minute. Under 60, or nausea and vision changes, hold and ask for a level and a potassium.
 
@@ -34,7 +38,9 @@ Her ankles are still swollen. Morning labs just posted.
 - **Check first:** Potassium → K 3.1. Low.
 - Other checks: Daily weight (Down 0.6 kg since yesterday.); Heart rate (HR 84, regular.)
 - **Decision:** Call the provider about the potassium before the dose
-- Wrong: Give it. She is still swollen; Skip it today and recheck tomorrow
+- Wrong:
+  - Give it and recheck her potassium in the morning _(why not: The furosemide will push 3.1 lower tonight. Waiting for morning labs leaves her open to an arrhythmia overnight.)_
+  - Hold it and recheck the potassium in 4 hours _(why not: Holding without telling anyone leaves her overloaded and her potassium untreated. The provider has to adjust both.)_
 - Why: Furosemide pulls potassium out with the water. At 3.1 another dose can tip her into an arrhythmia. The provider may replace potassium and still diurese.
 - Pearl: Loop diuretics waste potassium. A low K gets reported before the dose, not after the run of PVCs.
 
@@ -42,9 +48,11 @@ Her ankles are still swollen. Morning labs just posted.
 Her tray is here. She says she feels shaky and a bit sweaty.
 
 - **Check first:** Fingerstick glucose → Glucose 64.
-- Other checks: Last A1c (A1c 9.8% last month.); Blood pressure (BP 132/80.)
+- Other checks: Last A1c (A1c 9.8% last month.); Her carbohydrate count for breakfast (About 60 g on the tray.)
 - **Decision:** Hold it, give 15 g of fast sugar, recheck in 15 minutes
-- Wrong: Give it now. She is about to eat; Give half the dose
+- Wrong:
+  - Give 15 g of fast sugar, then give the insulin once she starts eating _(why not: Treat the low, then recheck in 15 minutes. Mealtime insulin waits until she's back in range, and the provider should know she went low.)_
+  - Hold the insulin and have her eat her breakfast tray _(why not: Holding is right, but a meal tray is slow sugar. With symptoms at 64 she needs 15 g of fast sugar now and a recheck in 15 minutes.)_
 - Why: She is already low and has symptoms. Rapid-acting insulin on top of 64 drives her lower before the food absorbs.
 - Pearl: Rule of 15: 15 grams of fast sugar, recheck in 15 minutes. No mealtime insulin into a low. Tell the provider.
 
@@ -52,9 +60,11 @@ Her tray is here. She says she feels shaky and a bit sweaty.
 He mentions his gums bled when he brushed this morning.
 
 - **Check first:** INR → INR 4.6.
-- Other checks: Platelets (Platelets 210,000.); Blood pressure (BP 136/82.)
+- Other checks: Platelets (Platelets 210,000.); Hemoglobin (12.8, stable.)
 - **Decision:** Hold it and tell the provider
-- Wrong: Give it. Bleeding gums are common; Give it with vitamin K
+- Wrong:
+  - Give half the dose and recheck the INR tomorrow _(why not: Changing a warfarin dose is the prescriber's call. At 4.6 with new bleeding, hold and report.)_
+  - Hold it and recheck the INR tomorrow _(why not: Holding is right, but a high INR with new bleeding needs the provider today. They may want vitamin K or a bleeding workup.)_
 - Why: For atrial fibrillation the target INR is 2 to 3. At 4.6 with new bleeding, another dose raises his risk of a serious bleed.
 - Pearl: Warfarin: check the INR every time. Above range, hold and report. Vitamin K is the provider's call, not a nursing add-on.
 
@@ -62,9 +72,11 @@ He mentions his gums bled when he brushed this morning.
 Day 6. He was on a heparin drip before surgery. His left calf is new and sore.
 
 - **Check first:** Platelets, compared with admission → 82,000. It was 230,000 on admission.
-- Other checks: Creatinine (Creatinine 0.9. Normal.); Pain score (Pain 3 of 10.)
+- Other checks: Creatinine (Creatinine 0.9. Normal.); Calf circumference (Left calf 2 cm bigger than the right.)
 - **Decision:** Hold it, stop all heparin, call now
-- Wrong: Give it. He needs clot prevention more than ever; Give it and order a leg ultrasound
+- Wrong:
+  - Hold the enoxaparin but keep the heparin flushes in his IV _(why not: Even small heparin flushes keep HIT going. All heparin stops, flushes included.)_
+  - Hold it and ask for a leg ultrasound before deciding _(why not: The ultrasound is reasonable, but a halved platelet count after heparin is HIT until proven otherwise. He needs a non-heparin anticoagulant now; waiting leaves the clot untreated.)_
 - Why: A platelet drop of more than half, 5 to 10 days after heparin, with a new clot, is heparin-induced thrombocytopenia until proven otherwise.
 - Pearl: HIT: platelets fall and clots form. Stop all heparin, including flushes and enoxaparin, and call. He needs a non-heparin anticoagulant.
 
@@ -72,9 +84,11 @@ Day 6. He was on a heparin drip before surgery. His left calf is new and sore.
 She started it yesterday. She sounds a little thick when she says good morning.
 
 - **Check first:** Look at her face and mouth → Her lips and tongue are swollen.
-- Other checks: Blood pressure (BP 144/88.); Potassium (K 4.4.)
+- Other checks: Blood pressure (BP 144/88.); When she last took it (Yesterday at 09:00, her first dose.)
 - **Decision:** Hold it, stay with her, call rapid response
-- Wrong: Give it with diphenhydramine; Give it. Her pressure is still high
+- Wrong:
+  - Hold it, give the PRN diphenhydramine, and recheck in 30 minutes _(why not: ACE-inhibitor angioedema comes from bradykinin, not histamine, so antihistamines don't reliably help. A swelling tongue needs the team now.)_
+  - Hold it and ask the prescriber to switch her to an ARB _(why not: Switching drugs is a later question. Right now her airway is the problem.)_
 - Why: Lip and tongue swelling on an ACE inhibitor is angioedema. It can close the airway, and antihistamines don't reliably stop it.
 - Pearl: ACE inhibitor plus facial or tongue swelling: never the next dose. Airway first, get help, and list it as an allergy.
 
@@ -82,9 +96,11 @@ She started it yesterday. She sounds a little thick when she says good morning.
 His wife says he asked for pain medicine. He has sleep apnea.
 
 - **Check first:** Sedation and breathing → Drifts off mid-sentence. RR 9. SpO₂ 89%.
-- Other checks: Pain score (He mumbles "eight" and closes his eyes.); Blood pressure (BP 118/70.)
+- Other checks: Pain score (He mumbles "eight" and closes his eyes.); Time of his last opioid dose (Oxycodone 10 mg at 04:30.)
 - **Decision:** Hold it, rouse him, CPAP on, tell the provider
-- Wrong: Give it. He said eight; Give half
+- Wrong:
+  - Give half the dose and recheck his sedation in 30 minutes _(why not: He's already falling asleep mid-sentence. Any opioid now deepens it.)_
+  - Hold it and give naloxone right away _(why not: He rouses to voice. Wake him, get his CPAP on and call; naloxone is for a patient you can't rouse or whose breathing stays slow, and it takes away all his pain control.)_
 - Why: Drifting off mid-sentence is sedation level 3. Sedation comes before the breathing stops, and sleep apnea makes it worse.
 - Pearl: Sedation comes before respiratory depression. A sleepy patient on opioids gets assessed, not dosed.
 
@@ -92,9 +108,11 @@ His wife says he asked for pain medicine. He has sleep apnea.
 A small premixed bag. Pharmacy sent it up. She's been vomiting for two days.
 
 - **Check first:** Urine output → 240 mL over the last 6 hours.
-- Other checks: Glucose (96.); Temperature (37.1.)
+- Other checks: Glucose (96.); Magnesium level (Mg 2.0.)
 - **Decision:** Run it on a pump, no faster than 10 mEq an hour
-- Wrong: Push it slowly over 5 minutes; Hold it. 3.2 is close to normal
+- Wrong:
+  - Run it over 30 minutes so it's in before her next lab draw _(why not: That's 20 mEq an hour, double the usual limit through a peripheral IV on a regular floor. Faster potassium risks arrhythmia and burns the vein.)_
+  - Hold it until her vomiting stops _(why not: Vomiting is why she's losing potassium. With urine flowing, replace it now.)_
 - Why: Her kidneys are making urine, so it's safe to replace. IV potassium is never pushed: a bolus can stop the heart.
 - Pearl: Never push potassium. Check that urine is flowing, then pump it, usually 10 mEq an hour or slower on a regular floor.
 
@@ -102,9 +120,11 @@ A small premixed bag. Pharmacy sent it up. She's been vomiting for two days.
 He calls it a stomach bug: two days of diarrhea. His hand shakes holding the cup.
 
 - **Check first:** Lithium level and how he looks → Level 1.8. Coarse tremor. Slow to answer.
-- Other checks: Blood pressure (BP 118/74.); Weight (Down 1 kg.)
+- Other checks: Blood pressure (BP 118/74.); Sodium level (Na 134.)
 - **Decision:** Hold it and call for a medical evaluation
-- Wrong: Give it with extra fluids; Give it. Diarrhea is a common side effect
+- Wrong:
+  - Hold this dose, push fluids, and give it tonight _(why not: Fluids alone won't fix a level of 1.8 with neuro signs. He needs a medical evaluation, and the next dose waits for the prescriber.)_
+  - Give it and recheck the level in the morning _(why not: At 1.8 with a coarse tremor and slowed thinking, another dose can push him toward seizures.)_
 - Why: Fluid loss raises lithium levels. 1.8 with a coarse tremor and slowed thinking is toxicity, and it can progress to seizures.
 - Pearl: Lithium works in a narrow range, about 0.6 to 1.2. Vomiting, diarrhea, coarse tremor or confusion: hold and get a level.
 
@@ -114,7 +134,9 @@ He says his throat has been sore since yesterday.
 - **Check first:** Absolute neutrophil count → ANC 800.
 - Other checks: Heart rate (HR 98.); Last bowel movement (Yesterday.)
 - **Decision:** Hold it and call now
-- Wrong: Give it. Clozapine is the only thing that works for him; Give it and offer throat lozenges
+- Wrong:
+  - Hold it and recheck the ANC tomorrow _(why not: Holding is right, but a sore throat with an ANC of 800 could be the start of a serious infection. The prescriber needs to know today.)_
+  - Give it and ask for a throat swab _(why not: With an ANC under 1,000, clozapine is interrupted. The swab is reasonable; the dose isn't.)_
 - Why: An ANC under 1,000 is moderate neutropenia; clozapine is interrupted. A sore throat could be the first sign of a serious infection.
 - Pearl: Clozapine: check the ANC before the dose. Fever, sore throat or flu-like symptoms are urgent until proven otherwise.
 
@@ -124,7 +146,9 @@ He says his throat has been sore since yesterday.
 - **Check first:** When she last ate → Nothing since 21:00. Breakfast comes at 07:30.
 - Other checks: TSH (Last month: in range.); Heart rate (HR 76.)
 - **Decision:** Give it now with a full glass of water
-- Wrong: Hold it until breakfast so it's with food; Give it with her calcium
+- Wrong:
+  - Give it with breakfast at 07:30 so it won't upset her stomach _(why not: Food cuts absorption. It goes on an empty stomach, 30 to 60 minutes before breakfast.)_
+  - Give it now along with her morning calcium _(why not: Calcium binds levothyroxine. Separate them by at least 4 hours.)_
 - Why: Levothyroxine absorbs best on an empty stomach, 30 to 60 minutes before food, and at least 4 hours apart from calcium or iron.
 - Pearl: Not every check ends in a hold. When it's safe and timed right, give it on time.
 
@@ -134,7 +158,9 @@ Due at 12:00. He also has hydrocodone-acetaminophen ordered for breakthrough pai
 - **Check first:** Every acetaminophen since midnight → 1 g at 00:00 and 06:00, plus 2 hydrocodone-acetaminophen tablets (325 mg each) at 04:00 and 10:00. Total 3.3 g.
 - Other checks: Pain score (Pain 4 of 10.); Liver enzymes (Normal yesterday.)
 - **Decision:** Hold it and ask for the orders to be adjusted
-- Wrong: Give it. It's scheduled; Give it and skip his next hydrocodone
+- Wrong:
+  - Give it and tell the next nurse to skip his 16:00 hydrocodone _(why not: This dose alone puts him at 4.3 g today. The fix is new orders, not a handoff note.)_
+  - Give 650 mg instead of 1,000 _(why not: That's still 3.95 g today, right at the adult limit and above many hospitals' limit for older adults. Changing a dose is the prescriber's decision.)_
 - Why: Another gram makes 4.3 g today. Adults shouldn't exceed 4 g a day, and many hospitals cap older adults lower.
 - Pearl: Count every acetaminophen, including combination pills. Adults: no more than 4 g a day, often less in older adults and liver disease.
 
@@ -142,9 +168,11 @@ Due at 12:00. He also has hydrocodone-acetaminophen ordered for breakthrough pai
 A new order. She says she's allergic "to something, a penicillin maybe."
 
 - **Check first:** Her allergy band and chart → Penicillin: hives and throat tightness.
-- Other checks: Temperature (38.1.); Kidney function (Normal.)
+- Other checks: Temperature (38.1.); Temperature (38.1.)
 - **Decision:** Hold it and call for a different antibiotic
-- Wrong: Give it. Amoxicillin isn't penicillin; Give it with diphenhydramine first
+- Wrong:
+  - Give it. Amoxicillin isn't a true penicillin _(why not: Amoxicillin is a penicillin (an aminopenicillin), so her reaction applies.)_
+  - Give it after premedicating with diphenhydramine _(why not: Premedicating doesn't prevent anaphylaxis. With throat tightness last time, it isn't given at all.)_
 - Why: Amoxicillin is a penicillin. Throat tightness last time means this could be anaphylaxis.
 - Pearl: Match the allergy to the drug class, not just the name. Ask what happened last time.
 
@@ -154,7 +182,9 @@ Room 302, bed B. You say "Mr. Lee?" and he says "Yep, that's me."
 - **Check first:** His name and birth date, from him, against the band and MAR → He says "Kevin Lee, March 4, 1961." Your MAR is Kenneth Lee, 1958.
 - Other checks: The room and bed number (Room 302, bed B.); Pain score (Pain 6.)
 - **Decision:** Don't give it. Sort out the mix-up first
-- Wrong: Give it. Room and name match; Give it and fix the band afterwards
+- Wrong:
+  - Recheck the room and bed against the MAR, then give it _(why not: Room and bed are locations, not identifiers. Two identifiers he stated already disagree with the MAR.)_
+  - Give it, then report the band mix-up _(why not: Wrong patient: Kevin has never had opioids. Sort out who he is before anything is given.)_
 - Why: Two Mr. Lees on the unit. A room number and a yes are not identifiers. The patient states them; you match them.
 - Pearl: Two identifiers, said by the patient, matched to the band and the MAR. Every time.
 
@@ -162,9 +192,11 @@ Room 302, bed B. You say "Mr. Lee?" and he says "Yep, that's me."
 She's also on lisinopril. She says her legs feel heavy.
 
 - **Check first:** Potassium → K 5.9.
-- Other checks: Blood pressure (BP 122/70.); Weight (Stable.)
+- Other checks: Blood pressure (BP 122/70.); Creatinine (1.6, up from 1.3.)
 - **Decision:** Hold it and call. Ask for an ECG
-- Wrong: Give it. It's a diuretic, it will lower the K; Give it and recheck tomorrow
+- Wrong:
+  - Hold the spironolactone but give the lisinopril _(why not: Lisinopril raises potassium too. At 5.9 both wait for the provider.)_
+  - Hold it and recheck the potassium in the morning _(why not: A potassium of 5.9 with weakness needs an ECG and treatment now, not tomorrow.)_
 - Why: Spironolactone keeps potassium, and so does lisinopril. At 5.9 with weakness, she needs an ECG and treatment, not more.
 - Pearl: Potassium-sparing diuretics, ACE inhibitors and ARBs raise K. Above about 5.0, hold and report; high K plus weakness gets an ECG.
 
@@ -174,7 +206,9 @@ Chest pressure, 5 of 10. The ECG is done and the team is on the way.
 - **Check first:** Ask about erectile dysfunction medicines → He took sildenafil at 22:00 last night.
 - Other checks: Blood pressure (BP 132/80.); Heart rate (HR 88.)
 - **Decision:** Hold the nitro and tell the provider
-- Wrong: Give it. His pressure is fine; Give half a tablet
+- Wrong:
+  - Give it, since his systolic is over 100 _(why not: Blood pressure is only half the check. Sildenafil in the last 24 hours makes nitrates dangerous at any starting pressure.)_
+  - Give it and have IV fluids ready in case his pressure drops _(why not: Preparing for the drop you expect isn't a reason to cause it.)_
 - Why: Sildenafil within 24 hours (tadalafil within 48) plus nitrates can drop the pressure dangerously low.
 - Pearl: Before nitro: blood pressure, and ask about sildenafil, vardenafil or tadalafil. Men often don't list them.
 
@@ -184,7 +218,9 @@ Chest pressure, 5 of 10. The ECG is done and the team is on the way.
 - **Check first:** Fingerstick glucose → Glucose 182.
 - Other checks: Potassium (K 4.1.); Blood pressure (BP 130/78.)
 - **Decision:** Give the full dose
-- Wrong: Hold it. He'll be fasting overnight; Give lispro instead to bring the 182 down
+- Wrong:
+  - Give half the dose, since he'll be fasting overnight _(why not: Basal insulin covers the body's overnight needs. At 182 the full dose is right, and changing it is the prescriber's call.)_
+  - Give it, plus correction lispro for the 182 _(why not: Correction insulin at bedtime raises the risk of overnight lows, and it wasn't ordered for bedtime. Give what's ordered.)_
 - Why: Basal insulin covers the body's background needs through the night. 182 is safe; holding it sets him up for a high morning.
 - Pearl: Don't hold basal insulin because a meal was small. Hold for a low, and call.
 
@@ -194,7 +230,9 @@ Crackles at both bases. Up 1.5 kg since yesterday. She asks if she can skip it s
 - **Check first:** Potassium and blood pressure → K 4.2. BP 128/74.
 - Other checks: Temperature (36.9.); Glucose (104.)
 - **Decision:** Give it now, and explain why the timing helps
-- Wrong: Hold it as she asked, and chart the refusal; Give it at bedtime instead
+- Wrong:
+  - Respect her wish: hold it and chart her refusal _(why not: She hasn't refused; she asked a question. Explain the timing first, then let her decide.)_
+  - Move it to 14:00 so she's less bothered this morning _(why not: Changing the time is a new order, and she's gaining fluid now.)_
 - Why: The numbers are safe and she is gaining fluid. Giving it in the morning means she's done urinating by evening.
 - Pearl: When the numbers are safe, give it on time. Explain before you accept a refusal; she may just need the reason.
 
@@ -204,7 +242,9 @@ A 20-month-old. The syringe on the counter reads 15 mL.
 - **Check first:** Weight in kilograms → 10 kg. 15 mg/kg is 150 mg, which is 4.7 mL.
 - Other checks: Temperature (38.9.); Last dose time (None today.)
 - **Decision:** Discard it and draw up 4.7 mL
-- Wrong: Give the 15 mL. Pharmacy drew it; Give half the syringe
+- Wrong:
+  - Give the 15 mL; pharmacy verified it _(why not: Pharmacy can make errors too. The final check is yours, at the bedside.)_
+  - Give 5 mL, the usual dose for a toddler _(why not: 5 mL is 160 mg, a little over his 150 mg, and there's no "usual" toddler dose. Always calculate by weight.)_
 - Why: 15 mL is 480 mg, three times his dose. Someone wrote the mg/kg number as millilitres.
 - Pearl: Kids: dose by weight in kilograms, every time. Then check that the volume makes sense for the size of the child.
 
@@ -214,7 +254,9 @@ The 6-hour level just posted. She mentions her gums bled when she brushed.
 - **Check first:** Anti-Xa level against the protocol goal → Anti-Xa 0.95. The goal is 0.3 to 0.7.
 - Other checks: Blood pressure (BP 128/74.); Oxygen saturation (SpO₂ 95% on room air.)
 - **Decision:** Pause and lower the rate per the protocol, check for bleeding, report
-- Wrong: Leave it running. Clots are the bigger danger; Give the protocol bolus
+- Wrong:
+  - Keep the rate and recheck the level in 6 hours _(why not: Above goal with bleeding needs the protocol's pause and rate change now, not another level at the same rate.)_
+  - Stop the infusion and ask for protamine _(why not: Protamine is for major bleeding. Gum bleeding with a high level is handled by the protocol.)_
 - Why: Her level is above the goal and she is bleeding from her gums. The heparin protocol tells you how long to pause and how much to lower the rate.
 - Pearl: Heparin drips run on the protocol. Above goal: pause and lower as written, look for bleeding, recheck on time. A bolus is only for a level under goal.
 
@@ -224,7 +266,9 @@ He's going to the OR at 10:00 for a hernia repair.
 - **Check first:** His diet order today → Nothing by mouth since midnight. No tray is coming.
 - Other checks: His A1c (A1c 8.1%.); His potassium (K 4.2.)
 - **Decision:** Hold the mealtime dose, check his glucose, ask about his basal dose
-- Wrong: Give it. It's scheduled; Give half, to be safe
+- Wrong:
+  - Give it and ask for a dextrose infusion to cover it _(why not: That treats a problem you created. No meal, no mealtime insulin.)_
+  - Give half to cover stress hyperglycemia before surgery _(why not: High glucose from stress is covered by correction insulin, if ordered, not by mealtime insulin.)_
 - Why: Mealtime insulin covers a meal. With no meal, it only drops his glucose, and he will be under anesthesia where nobody can see the symptoms.
 - Pearl: Mealtime insulin follows the meal. NPO? Hold it, check glucose often, and ask what to do with the long-acting dose.
 
@@ -234,7 +278,9 @@ Ordered for her fast rate. She says she feels lightheaded.
 - **Check first:** Blood pressure → BP 84/52.
 - Other checks: Potassium (K 4.1.); Last bowel movement (This morning.)
 - **Decision:** Hold it and call. She is already hypotensive
-- Wrong: Give it slowly over 2 minutes; Give it and lay her flat
+- Wrong:
+  - Give it slowly over 5 minutes to soften the drop _(why not: A slower push doesn't change the fact she's already hypotensive.)_
+  - Give a fluid bolus, then the diltiazem _(why not: A bolus may well be part of the plan, but that's the provider's decision. A fast rate with a low pressure needs them now.)_
 - Why: Diltiazem lowers blood pressure as well as heart rate. With a systolic of 84 and dizziness, it could drop her pressure much further.
 - Pearl: Calcium channel blockers and beta blockers for rate control: check the blood pressure first. Hypotension plus a fast rate needs a provider now, not a push.
 
@@ -244,7 +290,9 @@ After his stroke he can't swallow whole pills. You were about to crush it into a
 - **Check first:** Whether this tablet can be crushed → Extended release. The label says do not crush.
 - Other checks: His pain score (Pain 5.); His blood pressure (BP 142/80.)
 - **Decision:** Don't crush it. Ask for a form he can take safely
-- Wrong: Crush it. It's the same drug; Cut it in half instead
+- Wrong:
+  - Cut it in half and give both halves in applesauce _(why not: Cutting breaks the extended-release design just like crushing does.)_
+  - Give it whole in applesauce _(why not: He can't safely swallow whole pills after his stroke. That's an aspiration risk.)_
 - Why: Crushing an extended-release opioid releases the whole 12-hour dose at once. That can stop his breathing.
 - Pearl: ER, XR, SR, LA, CR: never crush, cut or chew unless the label says you can. Ask pharmacy for another form.
 
@@ -254,7 +302,9 @@ She takes sertraline at home. She's sweating, restless, and her legs keep jerkin
 - **Check first:** Temperature, heart rate and a neuro check → T 38.6, HR 122. Twitching that keeps going when you tap her ankle (clonus).
 - Other checks: Pain score (Pain 6.); Her potassium (K 3.9.)
 - **Decision:** Hold it. Report possible serotonin syndrome
-- Wrong: Give it. Pain makes people restless; Give it with a dose of lorazepam
+- Wrong:
+  - Give it, then recheck her temperature in an hour _(why not: Tramadol adds to the serotonin load that's causing the fever and clonus.)_
+  - Hold the tramadol and give acetaminophen for the fever _(why not: Holding is right, but this is a possible drug toxicity and needs the provider now, not just a fever treatment.)_
 - Why: Tramadol raises serotonin, and so does sertraline. Fever, a fast pulse, sweating and clonus point to serotonin syndrome. More tramadol makes it worse.
 - Pearl: Serotonin syndrome: agitation, sweating, fever, fast heart, clonus. Common culprits with SSRIs: tramadol, linezolid, triptans, ondansetron in high doses. Stop the drug and call.
 
@@ -264,7 +314,9 @@ He's pulling at his oxygen. This morning's ECG is in the chart.
 - **Check first:** The QTc on this morning's ECG → QTc 528 ms.
 - Other checks: His blood pressure (BP 146/84.); His glucose (132.)
 - **Decision:** Hold it, reorient him, call about the QTc
-- Wrong: Give it. He'll pull out his oxygen; Give it IM instead of IV
+- Wrong:
+  - Give half the dose _(why not: Any dose adds to the risk at a QTc of 528.)_
+  - Give it IM instead, which is gentler on the heart _(why not: IM haloperidol prolongs the QT too. The route doesn't fix a QTc over 500.)_
 - Why: A QTc over 500 raises the risk of a deadly rhythm called torsades. Haloperidol, especially IV, prolongs the QT further.
 - Pearl: Before QT-prolonging drugs (haloperidol, ondansetron, many antibiotics), check the QTc, potassium and magnesium. Over 500: hold and call.
 
@@ -274,7 +326,9 @@ Six hours after birth. She's hard to rouse and her catheter bag has barely chang
 - **Check first:** Reflexes, breathing and urine output → No knee reflex. RR 10. 40 mL of urine in 2 hours.
 - Other checks: Fundus (Firm, at the umbilicus.); Temperature (37.0.)
 - **Decision:** Stop the infusion, call now, get calcium gluconate ready
-- Wrong: Keep it running. It's preventing seizures; Slow it to 1 g/hour and recheck in an hour
+- Wrong:
+  - Keep it running and give calcium gluconate _(why not: The antidote doesn't make the infusion safe. Stop the magnesium first.)_
+  - Slow it to 1 g/hour and recheck her reflexes in an hour _(why not: No reflexes and a respiratory rate of 10 mean she's toxic now. Stop it.)_
 - Why: Magnesium leaves through the kidneys. Low urine output lets it build up; lost reflexes and slow breathing are signs of toxicity.
 - Pearl: Magnesium checks: reflexes, breathing (12 or more), urine (30 mL/hr or more), level of consciousness. Toxic? Stop it, call, calcium gluconate is the antidote.
 
@@ -284,7 +338,9 @@ The titration is due. She says the contractions are "one on top of the other."
 - **Check first:** The contraction pattern and fetal heart tracing → 6 contractions in 10 minutes. Late decelerations with the last three.
 - Other checks: Her pain score (Pain 8.); Her temperature (37.2.)
 - **Decision:** Don't increase. Stop the oxytocin, turn her on her side, fluid bolus, call
-- Wrong: Increase it. The protocol says every 30 minutes; Keep the rate and recheck in 30 minutes
+- Wrong:
+  - Decrease it by half and reposition her _(why not: With late decelerations, protocols stop oxytocin, not just lower it.)_
+  - Hold the increase and recheck in 30 minutes _(why not: Late decelerations with tachysystole need action now, not a recheck.)_
 - Why: More than 5 contractions in 10 minutes is tachysystole. With late decelerations, the baby isn't getting enough oxygen between contractions.
 - Pearl: Tachysystole with a worrying tracing: stop oxytocin, lateral position, IV fluid, notify. An order to titrate never overrides the tracing.
 
@@ -294,7 +350,9 @@ Day 4. His urine output has been dropping.
 - **Check first:** Creatinine trend and drug level → Creatinine 2.1, up from 1.0. Trough above range.
 - Other checks: His temperature (37.3.); His blood pressure (BP 132/76.)
 - **Decision:** Hold it and call the provider and pharmacy
-- Wrong: Give it. Stopping antibiotics early breeds resistance; Give it with an extra liter of fluid
+- Wrong:
+  - Give it and ask pharmacy to recheck a level tomorrow _(why not: A doubled creatinine and a high trough mean it's accumulating now.)_
+  - Give it with an extra liter of fluid to protect his kidneys _(why not: Fluid doesn't make a toxic level safe.)_
 - Why: Gentamicin can damage the kidneys and the ear. A doubling creatinine and a high trough mean it's building up.
 - Pearl: Aminoglycosides and vancomycin: watch creatinine, urine output and levels. Rising creatinine? Hold and call before the next dose.
 
@@ -304,7 +362,9 @@ Day 4. His urine output has been dropping.
 - **Check first:** Whether she can stay upright and wait to eat → She can sit up for the next hour. Nothing to eat or drink yet.
 - Other checks: Calcium level (9.2. Normal.); Blood pressure (BP 134/78.)
 - **Decision:** Give it now with a full glass of plain water. Upright 30 minutes, then breakfast
-- Wrong: Give it with her coffee as she asked; Hold it until she's back in bed
+- Wrong:
+  - Give it with her coffee, since she'll stay upright _(why not: Anything but plain water blocks absorption.)_
+  - Give it now, then help her back to bed to rest _(why not: Lying down within 30 minutes risks esophageal injury.)_
 - Why: Alendronate absorbs poorly with anything but water, and it can burn the esophagus if she lies down.
 - Pearl: Bisphosphonates: first thing in the morning, full glass of plain water, upright 30 minutes, nothing else by mouth for 30 minutes.
 
@@ -314,7 +374,9 @@ Ten minutes in, his face and neck are red and he says he's itchy. He's breathing
 - **Check first:** The infusion rate → It's set to run over 30 minutes.
 - Other checks: His temperature (37.4.); His glucose (118.)
 - **Decision:** Stop it, tell the provider, restart over at least 90 minutes
-- Wrong: Keep it running. It's nearly done; Stop it for good and list vancomycin as an allergy
+- Wrong:
+  - Keep it running and give PRN diphenhydramine _(why not: The rate is the cause. Stop the infusion first.)_
+  - Stop it and list vancomycin as an allergy _(why not: Flushing from a fast infusion is a rate reaction, not usually an allergy. Labeling it an allergy can take away an antibiotic he needs.)_
 - Why: Flushing and itching from a fast vancomycin infusion is an infusion reaction, not usually a true allergy. It's about speed: run 1.5 g over 90 minutes or more.
 - Pearl: Vancomycin: no faster than about 1 g an hour. Flushing above the waist? Stop, treat as ordered, restart slower. Wheeze, swelling or low BP is anaphylaxis: call a rapid response.
 
@@ -324,7 +386,9 @@ The unit is here. You and another nurse are at the bedside for the check.
 - **Check first:** Her ID band against the unit tag, together → Name and record number match. The unit is A positive. Her type is B positive.
 - Other checks: Her pre-transfusion vital signs (T 36.9, HR 98, BP 118/70.); The IV size (20 gauge in her forearm.)
 - **Decision:** Don't hang it. Return it to the blood bank and call them
-- Wrong: Hang it. A positive is a common type; Hang it slowly and watch for a reaction
+- Wrong:
+  - Call the blood bank, but hang it while you wait _(why not: Nothing mismatched goes up, ever.)_
+  - Hang it slowly and stay for the first 15 minutes _(why not: Watching doesn't make a mismatched unit safe.)_
 - Why: Type A cells given to a type B patient can cause a fatal hemolytic reaction within minutes. The bedside check is the last stop before that happens.
 - Pearl: Blood: two licensed people check patient and unit at the bedside, every time. Any mismatch, it doesn't go up. Stay with them for the first 15 minutes.
 
@@ -332,9 +396,11 @@ The unit is here. You and another nurse are at the bedside for the check.
 He arrived from the ED with fluids running. The first labs just posted.
 
 - **Check first:** Potassium → K 3.0.
-- Other checks: Glucose (486.); Anion gap (24.)
+- Other checks: Glucose trend (486, down from 610 with fluids.); Anion gap (24.)
 - **Decision:** Hold the insulin. Replace potassium first, then start the drip
-- Wrong: Start the drip now. His glucose is 486; Start the drip at half rate
+- Wrong:
+  - Start the drip; his potassium will rise as the acidosis corrects _(why not: It's the reverse: correcting acidosis and giving insulin both push potassium into cells.)_
+  - Start the drip at half rate while potassium runs in _(why not: Protocols hold insulin under 3.3. Even half the rate drives potassium lower.)_
 - Why: Insulin drives potassium into cells. Starting at 3.0 can push it dangerously low and stop the heart. DKA protocols hold insulin until potassium is at least 3.3.
 - Pearl: DKA: fluids first, check potassium before insulin. Under 3.3, replace it before the drip. Glucose is not the emergency; potassium and acidosis are.
 
@@ -344,7 +410,9 @@ Gastroenteritis. She's been vomiting since last night.
 - **Check first:** Her hydration and urine output → No wet diaper in 10 hours. Dry lips, no tears.
 - Other checks: Her weight (12 kg.); Her ears (Normal.)
 - **Decision:** Hold the ibuprofen and call about fluids
-- Wrong: Give it. The fever will make her drink less; Give it as a suppository instead
+- Wrong:
+  - Give it and start oral rehydration _(why not: She's too dry and still vomiting. She needs fluids before an NSAID.)_
+  - Give it with a small sip of fluid to protect her stomach _(why not: The concern isn't her stomach; it's the kidneys of a dehydrated child.)_
 - Why: A child who is this dry is at risk of kidney injury, and NSAIDs reduce blood flow to the kidneys. She needs fluids before anything else.
 - Pearl: Kids: count the wet diapers. Dehydration plus an NSAID can hurt the kidneys. Fluids first; ask about acetaminophen for the fever.
 
@@ -352,9 +420,11 @@ Gastroenteritis. She's been vomiting since last night.
 He's calmer than an hour ago but still yelling. A colleague grabs the olanzapine.
 
 - **Check first:** What he's had in the last few hours → Lorazepam 2 mg IM 40 minutes ago.
-- Other checks: His blood pressure (BP 128/78.); His glucose (104.)
+- Other checks: His blood pressure (BP 128/78.); His oxygen saturation (SpO₂ 97%.)
 - **Decision:** Hold it. Keep watching his breathing and call the prescriber
-- Wrong: Give it. He's still agitated; Give it by mouth instead, right now
+- Wrong:
+  - Give it, since the lorazepam was 40 minutes ago _(why not: That's too soon after an injected benzodiazepine.)_
+  - Give it and check his vitals every 15 minutes _(why not: Monitoring is for a decision that's already safe. This combination is warned against.)_
 - Why: IM olanzapine soon after an injected benzodiazepine can cause dangerous low blood pressure and slowed breathing.
 - Pearl: Before any PRN for agitation, read what was already given. IM olanzapine and an injected benzodiazepine are not given close together.
 
@@ -362,9 +432,11 @@ He's calmer than an hour ago but still yelling. A colleague grabs the olanzapine
 He started it yesterday. Staff say he's "acting out": his neck is twisted and his eyes keep rolling up.
 
 - **Check first:** Look closely at his neck, jaw and eyes → Neck held to one side, jaw clenched, eyes fixed upward. He says he can't stop it.
-- Other checks: His temperature (37.0.); His pulse (HR 96.)
+- Other checks: His blood pressure (BP 124/78.); His pulse (HR 96.)
 - **Decision:** Hold it, give the PRN benztropine or diphenhydramine, call
-- Wrong: Give it. The psychosis needs treating; Give lorazepam for the agitation
+- Wrong:
+  - Give it, along with a dose of benztropine _(why not: Treat the dystonia first and tell the prescriber. Giving the same dose again may bring it right back.)_
+  - Hold it and give lorazepam for the agitation _(why not: He isn't agitated; his muscles are in spasm. Benztropine or diphenhydramine treats it.)_
 - Why: This is an acute dystonic reaction to haloperidol. It's frightening and painful, and it can affect the airway. An anticholinergic fixes it within minutes.
 - Pearl: New antipsychotic plus a twisted neck, rolled eyes or a locked jaw: acute dystonia, not behavior. Benztropine or diphenhydramine, and tell the prescriber.
 
@@ -374,7 +446,9 @@ He asks for "something to take the edge off." Last drink: about 30 hours ago.
 - **Check first:** His withdrawal score (CIWA) right now → CIWA 6: mild anxiety and a slight tremor.
 - Other checks: His glucose (102.); His liver tests (Mildly up.)
 - **Decision:** Hold it. Offer a quiet room and fluids, rescore in an hour
-- Wrong: Give it. He knows his body; Give half a dose
+- Wrong:
+  - Give it, since he's at risk for withdrawal seizures _(why not: Symptom-triggered dosing protects him by scoring often, not by dosing under the threshold.)_
+  - Give half a dose to keep him ahead of it _(why not: The order doesn't cover partial doses below the threshold.)_
 - Why: His score is below the line on the order. Symptom-triggered dosing works because it's given for the score, not the request. You can still help him.
 - Pearl: Symptom-triggered orders: score, then dose. Under the threshold, comfort measures and a rescore. Withdrawal peaks at 24 to 72 hours, so keep scoring.
 
@@ -384,7 +458,9 @@ Her epidural catheter is coming out at 10:00. It's 08:00.
 - **Check first:** The timing against the epidural removal → Removal is in 2 hours. Her last dose was 20 hours ago.
 - Other checks: Her platelets (214,000.); Her pain score (Pain 3.)
 - **Decision:** Hold it and check timing with anesthesia
-- Wrong: Give it. Clot prevention can't wait; Give it in the other thigh, away from the catheter
+- Wrong:
+  - Give it now so it's done before the catheter comes out _(why not: That's exactly the timing that risks a spinal hematoma.)_
+  - Give it and ask anesthesia to push the removal back _(why not: Anesthesia sets the timing. Ask before you give, not after.)_
 - Why: Removing an epidural catheter while enoxaparin is working can cause a spinal bleed that paralyses. The catheter usually comes out 12 hours after a dose, and the next dose waits about 4 hours after removal.
 - Pearl: Anticoagulants and epidurals: line up the dose times with catheter placement and removal. If you're unsure, hold and ask anesthesia.
 
@@ -394,7 +470,9 @@ She's eating breakfast. "These pills are huge."
 - **Check first:** Her urine output and kidney function → Urinating normally. Creatinine 0.8.
 - Other checks: Her temperature (36.8.); Her oxygen (SpO₂ 97%.)
 - **Decision:** Give it with breakfast and a full glass of water
-- Wrong: Hold it. 3.4 is nearly normal; Crush it into her oatmeal to make it easier
+- Wrong:
+  - Give it on an empty stomach so it absorbs better _(why not: Oral potassium irritates the stomach. Give it with food.)_
+  - Crush it into her oatmeal so it's easier to swallow _(why not: Many potassium tablets are extended release and can't be crushed. Ask for the liquid form.)_
 - Why: Her kidneys work and her potassium is low. Taken with food and water, oral potassium is less likely to upset or injure her stomach.
 - Pearl: Oral potassium: with food and a full glass of water, swallowed whole. Many tablets are extended release. If the pill is too big, ask for the liquid.
 
@@ -402,221 +480,423 @@ She's eating breakfast. "These pills are huge."
 The tape is loose. The mark at his nose read 55 cm yesterday.
 
 - **Check first:** The tube's mark at the nose → It now reads 47 cm. The tube has slid out 8 cm.
-- Other checks: His blood pressure (BP 150/88.); His last bowel movement (Yesterday.)
+- Other checks: His blood pressure (BP 150/88.); His gastric residual (30 mL.)
 - **Decision:** Don't use it. Report it and confirm placement before anything goes in
-- Wrong: Push it back to 55 cm and give the meds; Give the meds slowly with extra water
+- Wrong:
+  - Advance it back to 55 cm and give the meds _(why not: Advancing a tube blindly doesn't confirm where the tip is.)_
+  - Test the pH of an aspirate and give the meds if it's acidic _(why not: After a tube has moved 8 cm, follow policy to reconfirm placement (usually an X-ray) before anything goes in. pH alone isn't enough here.)_
 - Why: A tube that has moved may now end in the esophagus or the airway. Anything you push could go into his lungs.
 - Pearl: Before every use: check the external length. If it has moved, stop and reconfirm placement per policy (X-ray is the standard). Never push a tube back in blindly.
+
+### [ ] mp-h-digoxin-k **[NCLEX level]**: Digoxin 0.125 mg PO (Harold Banks, 78)
+He also takes furosemide 40 mg daily. Morning labs just posted. He feels fine.
+
+- **Check first:** Potassium → K 3.2.
+- Other checks: Apical pulse for a full minute (Apical 72, irregular.); Yesterday's digoxin level (1.0 ng/mL, in range.)
+- **Decision:** Hold it and call about the potassium first
+- Wrong:
+  - Give it: his pulse is over 60 and the level is in range _(why not: Both are reassuring, but a low potassium makes even an in-range digoxin level toxic to the heart. Report the K before the dose.)_
+  - Give it and ask for potassium replacement afterward _(why not: Close. The order matters: the provider may want the potassium corrected before he gets more digoxin.)_
+- Why: Low potassium lets digoxin bind more tightly to the heart, so toxicity can happen at a normal level. Furosemide is pulling his potassium down.
+- Pearl: Digoxin: apical pulse, potassium and the level. Hypokalemia, hypomagnesemia and hypercalcemia all raise the risk of toxicity even when the level looks fine.
+
+### [ ] mp-h-lisinopril-give **[NCLEX level]**: Lisinopril 10 mg PO (hold for SBP under 100) (Maria Santos, 64)
+She feels well and wants to walk to the window.
+
+- **Check first:** Blood pressure, against the hold parameter → BP 104/64. No dizziness sitting or standing.
+- Other checks: Potassium (K 4.6.); Creatinine (1.1, stable.)
+- **Decision:** Give it
+- Wrong:
+  - Hold it: 104 is too close to the line _(why not: Parameters exist so you don't have to guess. She's above it, without symptoms, and the drug also protects her kidneys.)_
+  - Give half the dose _(why not: Changing a dose isn't a nursing decision. Either the parameter is met or it isn't.)_
+- Why: Her pressure is above the hold line, she has no symptoms of low blood pressure, and her potassium and kidney function are fine. Holding without a reason is a missed dose.
+- Pearl: Hold parameters cut both ways: under the line, hold and report; over it, give. Check orthostatic symptoms if you're unsure.
+
+### [ ] mp-h-enox-plt **[NCLEX level]**: Enoxaparin 40 mg SubQ (Owen Price, 70)
+Day 2 after surgery. A colleague wonders if he should get it with his platelets down.
+
+- **Check first:** Platelets, against his baseline → 141,000, from 168,000 before surgery.
+- Other checks: Creatinine (0.9.); Look at the incision and his skin (Dressing dry. No new bruising.)
+- **Decision:** Give it
+- Wrong:
+  - Hold it and report possible HIT _(why not: HIT drops platelets by half or more, usually 5 to 10 days after heparin starts. A small dip on day 2 after surgery isn't that pattern.)_
+  - Hold it until tomorrow's platelet count _(why not: Skipping clot prevention after hip surgery raises the risk of a DVT or PE, and nothing here calls for it.)_
+- Why: A 16% drop two days after surgery is expected from blood loss and dilution. He isn't bleeding, and his kidneys clear the drug normally.
+- Pearl: Think HIT when platelets fall by half or more, 5 to 10 days in (sooner if exposed in the last 100 days), or a new clot forms. Small early dips are common after surgery.
+
+### [ ] mp-h-oxy-poss2 **[NCLEX level]**: Oxycodone 5 mg PO, every 4 hours as needed (Darius King, 47)
+Pain 7 of 10. He has dozed off twice while you talked. His last dose was 4 hours ago.
+
+- **Check first:** Sedation level and breathing → Drowsy but wakes easily to your voice and stays awake. RR 14, SpO₂ 96% on room air.
+- Other checks: Blood pressure (BP 138/84.); Bowel sounds (Present in all four quadrants.)
+- **Decision:** Give it, and recheck his sedation and breathing in 30 to 60 minutes
+- Wrong:
+  - Hold it, because he keeps dozing off _(why not: Drowsy but easy to rouse is an acceptable sedation level. Untreated pain keeps him from breathing deeply and walking.)_
+  - Give half the dose to be safe _(why not: He's safe for the ordered dose. A partial dose isn't ordered, and undertreating pain has its own risks.)_
+- Why: Sedation that's easy to reverse with your voice, with normal breathing, is acceptable for an opioid. Sedation you can't interrupt, or drifting off mid-sentence, is when you hold.
+- Pearl: Use a sedation scale (like POSS). 1 to 2 (awake or drowsy, easy to rouse): give and monitor. 3 (falls asleep mid-conversation): hold, rouse, report. 4: emergency.
+
+### [ ] mp-h-levo-hr **[NCLEX level]**: Levothyroxine 150 mcg PO (Linda Park, 58)
+06:00. She says her heart has been "racing" and she can't sleep.
+
+- **Check first:** Apical pulse and how she looks → HR 118, regular. Fine tremor of the hands. Sweaty.
+- Other checks: Last TSH (Low-normal, a month ago, before the dose went up.); Temperature (37.2.)
+- **Decision:** Hold it and report the symptoms
+- Wrong:
+  - Give it: last month's TSH was normal _(why not: That TSH was before the dose went up. Her symptoms now point to too much thyroid hormone.)_
+  - Give it and ask for a beta blocker for the heart rate _(why not: Treating the symptom while giving more of the cause doesn't make sense. Report first.)_
+- Why: A racing heart, tremor, sweating and insomnia after a dose increase are signs of too much thyroid hormone. In older adults this can trigger atrial fibrillation or angina.
+- Pearl: Levothyroxine: hold and report signs of excess (tachycardia, palpitations, tremor, heat intolerance, insomnia), especially after a dose change.
+
+### [ ] mp-h-ssri-teen **[NCLEX level]**: Sertraline 50 mg PO (Emma Walsh, 16)
+She tells you quietly she's been thinking about death more since starting it.
+
+- **Check first:** Ask her directly about suicide → "I think about not being here. I don't have a plan."
+- Other checks: Her weight (Down 1 kg since admission.); Her sleep (About 6 hours a night.)
+- **Decision:** Give it, keep her safe, and report the suicidal thoughts now
+- Wrong:
+  - Hold it: antidepressants cause suicidal thoughts in teens _(why not: The warning is to watch closely, not to stop on your own. Stopping is the prescriber's call; her safety and the report are yours.)_
+  - Give it and pass it on to the morning team _(why not: New or worse suicidal thoughts are reported now, with a safety check now.)_
+- Why: Young people starting an antidepressant need close watching for new or worse suicidal thinking, especially in the first weeks. The response is a safety assessment and an urgent report, not a nurse-initiated stop.
+- Pearl: Antidepressants under 25: watch for new suicidal thoughts, agitation or unusual changes, especially early or after a dose change. Ask directly, keep them safe, report now.
+
+### [ ] mp-h-warfarin-low **[NCLEX level]**: Warfarin 5 mg PO (George Hill, 74)
+He missed two doses at home before admission.
+
+- **Check first:** Today's INR → INR 1.6.
+- Other checks: Signs of bleeding (None.); Platelets (220,000.)
+- **Decision:** Give it and report the low INR
+- Wrong:
+  - Hold it until the INR is back in range _(why not: A low INR means he needs the drug, not less of it. Holding raises his stroke risk further.)_
+  - Give a double dose to catch up _(why not: Dose changes are the prescriber's, and doubling warfarin can overshoot into bleeding.)_
+- Why: Below goal, his clot and stroke risk is higher. Give the ordered dose and let the prescriber adjust it or add a bridge.
+- Pearl: High INR: hold and report. Low INR: give as ordered and report. Never adjust warfarin yourself.
+
+### [ ] mp-h-iron-antacid **[NCLEX level]**: Ferrous sulfate 325 mg PO (Grace Lin, 39)
+09:00. Her heartburn is bad this morning.
+
+- **Check first:** What else is due at 09:00 → Calcium carbonate antacid, 2 tablets.
+- Other checks: Hemoglobin (9.2.); Her last bowel movement (Yesterday, dark and formed.)
+- **Decision:** Give the antacid now for her heartburn, and the iron 2 hours later
+- Wrong:
+  - Give them together with breakfast to protect her stomach _(why not: Antacids and food both cut iron absorption. Separate them.)_
+  - Hold the iron today because of the heartburn _(why not: Heartburn isn't a reason to skip iron. Spacing the doses solves it.)_
+- Why: Calcium and antacids bind iron in the gut. Space them at least 1 to 2 hours apart. Treat her symptom first, then give the iron later.
+- Pearl: Iron: empty stomach if tolerated, with vitamin C helps; not with antacids, calcium, dairy or tea. Dark stools are expected; tarry, sticky stools with symptoms are not.
+
+### [ ] mp-h-lithium-give **[NCLEX level]**: Lithium carbonate 300 mg PO (Sam Ortega, 29)
+He says his hands are a bit shaky and he felt queasy after breakfast. He wants to stop it.
+
+- **Check first:** Lithium level and what the tremor looks like → Level 0.8. Fine tremor holding a cup. No vomiting or diarrhea. Alert.
+- Other checks: Sodium (Na 139.); Urine output (Normal, clear.)
+- **Decision:** Give it with food, and explain these effects often ease
+- Wrong:
+  - Hold it: tremor and nausea are signs of toxicity _(why not: A fine tremor and mild nausea at a level of 0.8 are common early side effects. Toxicity looks like a coarse tremor, vomiting, diarrhea, confusion or unsteadiness.)_
+  - Hold it because he wants to stop _(why not: His concern deserves a conversation and a report to the prescriber, but holding a mood stabilizer on day 5 without that conversation isn't the answer.)_
+- Why: His level is in range and his symptoms are the expected early ones. Taking it with food helps the nausea. Tell the prescriber he's thinking of stopping.
+- Pearl: Lithium: fine tremor and mild nausea early are common. Coarse tremor, vomiting, diarrhea, confusion or ataxia is toxicity. Keep fluids and salt steady.
+
+### [ ] mp-h-furosemide-give **[NCLEX level]**: Furosemide 40 mg IV (Betty Clarke, 81)
+Weight up 1.2 kg. Crackles at both bases. Her pressure is lower than yesterday.
+
+- **Check first:** Blood pressure and how she feels → BP 104/62, no dizziness. Yesterday 132/78.
+- Other checks: Potassium (K 3.8.); Creatinine (1.2, stable.)
+- **Decision:** Give it
+- Wrong:
+  - Hold it: her pressure is soft _(why not: 104 without symptoms isn't a hold, and she's carrying extra fluid. The fluid is what's hurting her.)_
+  - Give it orally instead to make it gentler _(why not: Changing the route is a new order, and gut swelling in heart failure makes oral absorption less reliable.)_
+- Why: She's fluid overloaded with crackles and weight gain. Her pressure is lower but adequate, potassium and kidneys are fine. Diuresis is the treatment.
+- Pearl: In heart failure, a modest pressure drop is common with treatment. Hold for symptomatic hypotension, low potassium or worsening kidney function, not for a number that still meets the order.
 
 ## Who's First
 
 ### [ ] wf-sepsis: Med-surg, 07:30
-- Mr. Bell, 58: Post-op day 1. Pain 6 of 10, due for meds at 08:00.
-- Mr. Gray, 70: COPD. SpO₂ 89% on 2 L. His baseline is 88 to 92.
-- Mrs. Okafor, 46: Diabetic. Glucose 210 before breakfast.
+- Mr. Bell, 58: Post-op day 1. Pain 8 of 10, guarding. Last oxycodone 4 hours ago. _(not first: Pain matters, but it's expected after surgery and his vitals are stable. Sepsis with a low pressure comes first.)_
+- Mr. Gray, 70: COPD. SpO₂ 89% on 2 L. His baseline is 88 to 92. _(not first: 89% is inside his target range. Expected and stable.)_
+- Mrs. Okafor, 46: Diabetic. Glucose 342 before breakfast. No ketones. _(not first: High, but she's alert with no ketones. Correction insulin per the scale, after the unstable patient.)_
 - **Mrs. Whitfield, 82: UTI. Newly confused. HR 118, BP 92/60, T 38.6.** ← first
 - Why: New confusion with a fast heart rate, low pressure and fever is sepsis. The others are expected for their conditions.
 - Pearl: Unexpected beats expected. Acute beats chronic. Sepsis is a clock.
 
 ### [ ] wf-pe: Ortho, 10:00
-- Mrs. Adler, 72: Hip replacement day 1. Asking for pain medicine, 7 of 10.
+- Mrs. Adler, 72: Hip replacement day 1. Pain 8 of 10, BP 158/92. _(not first: Pain is driving her pressure up; treat it soon. A new breathing problem comes first.)_
 - **Mr. Nguyen, 55: Knee replacement day 2. Sudden sharp chest pain, short of breath. HR 122.** ← first
-- Ms. Patel, 40: Wants her discharge papers. Her ride is here.
-- Mr. Boyd, 64: Needs help to the bathroom. Steady with a walker.
+- Ms. Patel, 40: Day 1 after a hysterectomy. Temp 38.0. Incentive spirometer at 750 mL. _(not first: A low-grade temp on day 1 is usually atelectasis. Keep her deep breathing; she's stable.)_
+- Mr. Boyd, 64: Day 2 after a knee replacement. Left calf tender and warm. _(not first: A possible DVT matters, but a possible PE already causing breathlessness and a fast pulse comes first.)_
 - Why: Sudden chest pain and breathlessness after joint surgery is a pulmonary embolism until proven otherwise. Breathing comes before pain.
 - Pearl: Airway, breathing, circulation. A new problem with breathing jumps the line.
 
 ### [ ] wf-psych-calm: Adult psych, 09:00
-- Jasmine, 27: Pacing and loud, demanding the phone. Redirectable so far.
+- Jasmine, 27: Manic. Pacing, loud, yelling at a peer. Redirectable so far. _(not first: Escalating, but still redirectable and nobody is hurt. A hidden suicide risk is more dangerous.)_
 - **Daniel, 35: Admitted for depression. Suddenly calm and smiling. Gave his watch to a peer.** ← first
-- Ruth, 61: Refused breakfast. Says the eggs were cold.
-- Marcus, 44: Asking when he can be discharged.
+- Ruth, 61: Refused her morning lithium. Says it makes her hands shake. _(not first: Address the refusal and check the tremor today; not an emergency.)_
+- Marcus, 44: Hears voices calling him worthless. Says he would never act on them. _(not first: Assess the voices soon, but he's engaged and denies intent. Daniel's sudden calm is the bigger red flag.)_
 - Why: Sudden calm and giving things away after deep depression can mean a decision has been made. That is a suicide warning sign.
 - Pearl: Sudden peace in a depressed patient is a finding, not a recovery. Ask directly about suicide, and keep them safe.
 
 ### [ ] wf-croup: Pediatrics, 14:00
 - **Mateo, 2: Croup. Stridor even at rest. Pulling in at the ribs.** ← first
-- Ava, 8: Broken arm in a cast. Pain 5 of 10. Fingers pink and warm.
-- Noah, 6 mos: 6 months old. Temp 38.2. Feeding well, wet diapers.
-- Zoe, 15: DKA resolving. Off the insulin drip and eating lunch.
+- Ava, 8: Broken arm in a cast. Pain 7 of 10. Fingers pink, cap refill 2 seconds. _(not first: Pain to treat soon; circulation is fine.)_
+- Noah, 6 mos: 6 months old. Temp 38.9, fussy, feeding a little less. _(not first: Fever to assess soon, but he's feeding and his airway is fine.)_
+- Zoe, 15: DKA resolving. Off the drip, glucose 74, eating lunch. _(not first: Low-normal and she's eating. Recheck soon; airway first.)_
 - Why: Stridor at rest with retractions means the airway is narrowing now. Children decompensate fast.
 - Pearl: Stridor at rest is never "just croup." Airway first, always.
 
 ### [ ] wf-pph: Mother-baby, 11:00
 - **Ms. Reyes, 31: 2 hours after birth. Fundus boggy. Soaked a pad in 15 minutes.** ← first
-- Mrs. Chen, 34: Wants help getting the baby to latch.
-- Ms. Ward, 26: Day 1. BP 118/72. Tired, sore, asking for ibuprofen.
-- Baby Ito, 3 days: Day 3. Mild jaundice. Bilirubin under the treatment line.
+- Mrs. Chen, 34: Day 1. BP 142/90. No headache or vision changes. _(not first: Raised but not severe range, and no symptoms. Recheck soon; active bleeding comes first.)_
+- Ms. Ward, 26: Day 2. Temp 38.1, breasts full and tender. _(not first: Engorgement can cause a low-grade temperature. Assess her, but she's stable.)_
+- Baby Ito, 3 days: Day 3. Jaundice to the chest. Bilirubin near the phototherapy line. _(not first: Needs a recheck and maybe phototherapy today; not a minutes-matter emergency.)_
 - Why: A boggy uterus soaking a pad in 15 minutes is a postpartum hemorrhage. She can lose a lot of blood very fast.
 - Pearl: Postpartum: a soft fundus and heavy bleeding means massage the fundus and get help, now.
 
 ### [ ] wf-k: Lab results, 06:00
 - **Mr. Hale, 67: K 6.8. Peaked T waves on the monitor.** ← first
-- Mrs. Ruiz, 58: Sodium 133. Feels fine.
-- Mr. Owens, 49: Hemoglobin 9.8, same as yesterday.
-- Ms. Lin, 44: Glucose 250 on steroids. Already on sliding scale.
+- Mrs. Ruiz, 58: Sodium 127. Mild headache, alert. _(not first: Low and needs follow-up, but she's alert with mild symptoms. ECG changes with K 6.8 come first.)_
+- Mr. Owens, 49: Hemoglobin 7.6, down from 8.4. No bleeding seen. _(not first: A drop to report today, possibly a transfusion. Not as immediate as a lethal rhythm.)_
+- Ms. Lin, 44: Glucose 412 on steroids. Alert, no ketones. _(not first: High and needs insulin per orders, but not immediately life-threatening.)_
 - Why: A potassium of 6.8 with ECG changes can cause a fatal arrhythmia within minutes.
 - Pearl: A critical value with a physical sign (ECG change, symptoms) is an emergency, not a result to file.
 
 ### [ ] wf-stroke: Med-surg, 15:10
 - **Mr. Feld, 74: New facial droop and slurred speech. Fine at 14:50.** ← first
-- Mrs. Dunn, 80: Aphasia from a stroke two years ago. Unchanged.
-- Mr. Obi, 69: Atrial fibrillation, rate 88, on apixaban.
-- Ms. Ross, 52: Headache 3 of 10, asking for acetaminophen.
+- Mrs. Dunn, 80: Aphasia from an old stroke, unchanged. Temp 38.2 tonight. _(not first: Fever needs a workup soon, but her deficit is old. A new deficit inside the treatment window comes first.)_
+- Mr. Obi, 69: Atrial fibrillation, rate 128, BP 124/78. Says he feels fine. _(not first: Rapid AF with a normal pressure and no symptoms: report it, but he's stable.)_
+- Ms. Ross, 52: Migraine history. Headache 6 of 10, like her usual ones. _(not first: A familiar pattern and stable. Treat after the stroke alert.)_
 - Why: New stroke signs with a known last-well time 20 minutes ago. Every minute counts for clot-busting and clot removal.
 - Pearl: New neuro deficit: note the last known well time and call the stroke alert. Old deficits are baseline.
 
 ### [ ] wf-thyroid: Surgical, 13:00
 - **Ms. Ford, 45: 4 hours after thyroidectomy. Hoarse, new noisy breathing.** ← first
-- Mr. Silva, 50: Gallbladder out yesterday. Right shoulder ache.
-- Mrs. Bly, 66: Catheter out 4 hours ago. Hasn't voided yet.
-- Mr. Kahn, 38: Dressing change due at 13:00.
+- Mr. Silva, 50: Gallbladder out yesterday. Right shoulder pain 6 of 10. _(not first: Referred gas pain after laparoscopy is expected.)_
+- Mrs. Bly, 66: Catheter out 6 hours ago. Hasn't voided. Bladder scan 450 mL. _(not first: Needs a straight cath soon. It can wait minutes; an airway can't.)_
+- Mr. Kahn, 38: Thyroidectomy yesterday. Tingling around his lips. _(not first: Possible low calcium: check a calcium soon. But noisy breathing right now is the airway.)_
 - Why: Noisy breathing after neck surgery can be a hematoma or swelling closing the airway.
 - Pearl: After neck surgery: stridor, hoarseness or swelling is an airway emergency. Shoulder pain after laparoscopy is expected gas.
 
 ### [ ] wf-heparin-bleed: Telemetry, 02:00
-- Mr. Cole, 60: Cirrhosis with ascites. Stable, sleeping.
+- Mr. Cole, 60: Cirrhosis. Abdomen tighter than yesterday, breathing comfortably. _(not first: More ascites to report, but he's breathing comfortably.)_
 - **Mrs. Grant, 71: Heparin drip. New headache, now confused.** ← first
-- Mr. Ali, 57: On chemo. Nausea 4 of 10, has an antiemetic ordered.
-- Ms. Park, 48: Asking for a sleeping pill.
+- Mr. Ali, 57: On chemo. Vomited twice, nausea 7 of 10. _(not first: Give the PRN antiemetic soon; not a neuro emergency.)_
+- Ms. Park, 48: Can't sleep. Heart rate 108, says she can't stop worrying. _(not first: Worth assessing, but she's talking and stable.)_
 - Why: A new headache and confusion on an anticoagulant could be bleeding in the brain.
 - Pearl: Anticoagulant plus a new neuro change: stop the drip, neuro checks, call now.
 
 ### [ ] wf-rp-bleed: Step-down, 18:00
 - **Mr. Webb, 63: Femoral cath 3 hours ago. New back pain. HR 110, BP 98/60.** ← first
-- Mrs. Lowe, 79: Wants her glasses from the drawer.
-- Mr. Diaz, 55: Ileus with an NG tube draining green, as expected.
-- Ms. Moore, 61: Glucose 160 before dinner.
+- Mrs. Lowe, 79: Pacemaker placed today. Hiccups since the procedure. _(not first: Constant hiccups can mean the lead is pacing the diaphragm: report it. She's stable; hidden bleeding is first.)_
+- Mr. Diaz, 55: Ileus. NG output 900 mL since noon. _(not first: Replace the losses per orders and watch his potassium. Not as urgent as shock.)_
+- Ms. Moore, 61: Glucose 238 before dinner. Correction insulin due. _(not first: Correction insulin per the scale; not urgent.)_
 - Why: Back or flank pain with a rising heart rate after a femoral procedure is a retroperitoneal bleed until proven otherwise. The groin can look fine.
 - Pearl: Bleeding hides. Rising heart rate and falling pressure after a procedure: think blood loss.
 
 ### [ ] wf-dts: Med-surg, 22:00
 - **Mr. Tate, 52: Last drink 2 days ago. Sweating, shaking, HR 118. Says there are bugs on the wall.** ← first
-- Ms. Ortiz, 33: Depression. Sleeping late, skipped group.
-- Mr. Bloom, 47: Hears his usual voices. Not telling him to do anything.
-- Ms. Kay, 19: Eating disorder. Asking to skip her evening snack.
+- Ms. Ortiz, 33: Depression. Says she's tired of living. No plan. _(not first: Needs a suicide risk assessment today. Untreated severe withdrawal can kill within hours.)_
+- Mr. Bloom, 47: Hears voices telling him to leave. Calm, in his room. _(not first: Assess the command voices soon; he's calm and safe right now.)_
+- Ms. Kay, 19: Anorexia, day 3 of refeeding. Phosphorus 2.4. _(not first: Just under normal: watch closely and report. She's stable now.)_
 - Why: Hallucinations, tremor and a fast pulse two days after the last drink point to severe withdrawal. Delirium tremens can kill.
 - Pearl: Alcohol withdrawal peaks at 24 to 72 hours. Score it (CIWA), treat it, and watch for seizures.
 
 ### [ ] wf-neutro: Oncology, 16:00
 - **Mr. Shah, 58: ANC 300. Temp just came back 38.4.** ← first
-- Mrs. Kerr, 66: Mouth sores, pain 4 of 10.
-- Ms. Bell, 49: Wants to talk about hospice.
-- Mr. Young, 70: Port flush due this shift.
+- Mrs. Kerr, 66: Mouth sores, pain 7 of 10, not drinking much. _(not first: Needs pain control and fluids, but not the one-hour clock of neutropenic fever.)_
+- Ms. Bell, 49: Platelets 18,000. A few new bruises. _(not first: Bleeding precautions and report, but no active bleeding.)_
+- Mr. Young, 70: Hemoglobin 7.8. Tired, vitals stable. _(not first: May need a transfusion today; stable.)_
 - Why: Fever with neutropenia is an emergency. Without neutrophils, infection spreads fast; antibiotics are due within an hour.
 - Pearl: Neutropenic fever: cultures and antibiotics within the hour. The conversation about hospice matters, and comes next.
 
 ### [ ] wf-ed-chest: ED triage, 13:00
 - **Mr. Hayes, 54: Pressure in his chest for 30 minutes. Sweaty and pale.** ← first
-- Ms. Grant, 22: Twisted ankle playing soccer. Swollen, can bear some weight.
-- Mrs. Lopez, 38: Burning when she urinates for two days. Afebrile.
-- Mr. Byrd, 30: Cut on his hand. Bleeding stopped with pressure.
+- Ms. Grant, 22: Ankle injury. Can't bear weight. Foot pink and warm. _(not first: Likely a fracture, but the foot is perfused.)_
+- Mrs. Lopez, 38: Burning urination and flank pain. Temp 38.4, HR 102. _(not first: Possible kidney infection: soon. Possible heart attack: now.)_
+- Mr. Byrd, 30: Deep hand laceration. Bleeding controlled with pressure. _(not first: Controlled bleeding can wait for the next bed.)_
 - Why: Chest pressure with sweating and pallor is a heart attack until proven otherwise. He needs an ECG within 10 minutes of arrival.
 - Pearl: ED chest pain: ECG within 10 minutes. Sweating, pallor and pressure are cardiac warning signs, even if the pain is "only a 4."
 
 ### [ ] wf-ectopic: ED, 21:00
 - **Ms. Kim, 26: Lower belly pain, period is 6 weeks late. Dizzy. Pain in her right shoulder.** ← first
-- Mr. Shaw, 41: Migraine like his usual ones. In a dark room, pain 7.
-- Ms. Fox, 33: Rash on her arms after a new detergent. Itchy, breathing fine.
-- Mr. Okoro, 60: Needs a prescription refill. Ran out of blood pressure pills. BP 152/90.
+- Mr. Shaw, 41: Migraine like his usual ones. Pain 8, vomited once. _(not first: A familiar pattern; treat soon.)_
+- Ms. Fox, 33: Hives after a new antibiotic. Lips normal, breathing fine. _(not first: Watch for anaphylaxis, but no airway or circulation signs right now.)_
+- Mr. Okoro, 60: Ran out of blood pressure pills. BP 188/104. No headache or chest pain. _(not first: Very high, but no signs of organ damage: urgent, not an emergency.)_
 - Why: A missed period, belly pain, dizziness and shoulder-tip pain point to a ruptured ectopic pregnancy bleeding into the abdomen.
 - Pearl: Any person of childbearing age with belly pain gets a pregnancy test. Shoulder-tip pain plus dizziness can mean blood under the diaphragm.
 
 ### [ ] wf-cord: Labor and delivery, 03:00
 - **Ms. Diaz, 28: Waters just broke. You see a loop of cord at the opening.** ← first
-- Mrs. Tran, 32: Asking for her epidural. 5 cm and coping with breathing.
-- Ms. Hall, 25: GBS positive. Second antibiotic dose due in an hour.
-- Mrs. Abebe, 35: 2 hours after birth. Fundus firm, bleeding light.
+- Mrs. Tran, 32: 7 cm, asking for her epidural. Fetal heart rate 140s, moderate variability. _(not first: A reassuring tracing. Her epidural can wait a few minutes.)_
+- Ms. Hall, 25: GBS positive. Antibiotic dose 30 minutes late. _(not first: Give it soon; a late dose isn't a baby losing oxygen.)_
+- Mrs. Abebe, 35: 1 hour after birth. Fundus firm. BP 152/96. _(not first: Recheck her pressure and symptoms soon. A cord prolapse is minutes.)_
 - Why: A prolapsed cord can be squeezed shut by the baby's head, cutting off the baby's oxygen. Minutes count.
 - Pearl: Cord prolapse: call for help, lift the presenting part off the cord with a gloved hand, knees-to-chest or Trendelenburg, and stay until delivery.
 
 ### [ ] wf-vent: ICU, 10:00
 - **Mr. Ruiz, 58: On the ventilator. High-pressure alarm, SpO₂ 84% and falling.** ← first
-- Mrs. Kane, 70: Norepinephrine bag has an hour left. MAP 70.
-- Mr. Bell, 66: Daily sedation pause is due this morning.
-- Mrs. Wu, 81: Her son is on the phone asking for an update.
+- Mrs. Kane, 70: Norepinephrine bag empty in 15 minutes. MAP 68. _(not first: Get the next bag ready soon. A patient desaturating on the vent is happening now.)_
+- Mr. Bell, 66: Sedation pause in progress. Awake, following commands. _(not first: Expected during a pause; reassess for a breathing trial.)_
+- Mrs. Wu, 81: Urine output 25 mL/hr for the last 2 hours. _(not first: Low and needs reporting, but not seconds-to-minutes.)_
 - Why: A high-pressure alarm with falling oxygen means something is blocking or fighting the airway: a plug, a kink, biting, or a collapsed lung. That's seconds to minutes.
 - Pearl: Vent alarm plus falling SpO₂: look at the patient, not the screen. If you can't fix it fast, take them off the vent and bag them with 100% oxygen. Remember DOPE: displacement, obstruction, pneumothorax, equipment.
 
 ### [ ] wf-nms: Adult psych, 14:00
 - **Leon, 33: Started haloperidol 3 days ago. T 39.4, stiff arms, confused, sweating.** ← first
-- Maya, 24: Pacing the hall. Says she's bored.
-- Gus, 58: Refusing his shower. Calm.
-- Rina, 41: Asking for her PRN for anxiety. Vitals normal.
+- Maya, 24: Manic. Hasn't slept in two nights, pacing. _(not first: Needs sleep and limit-setting; not a medical emergency right now.)_
+- Gus, 58: Lithium level 1.4 this morning. Mild hand tremor. _(not first: Slightly high: hold and report. Not as urgent as NMS.)_
+- Rina, 41: On clozapine. Drooling at night. Bowel movement yesterday. _(not first: Expected clozapine side effect; stable.)_
 - Why: Fever, rigid muscles and confusion after starting an antipsychotic point to neuroleptic malignant syndrome. It can kill through high fever, kidney failure and unstable vital signs.
 - Pearl: NMS: fever, "lead-pipe" rigidity, confusion, unstable vitals. Stop the antipsychotic, cool, fluids, and get a medical team now. Check a CK.
 
 ### [ ] wf-peds-edema: Pediatrics, 23:00
 - **Ella, 13: DKA, on her insulin drip. New headache, heart rate dropped from 110 to 58, now confused.** ← first
-- Omar, 4: Ear infection. Pulling his ear and crying. Temp 38.3.
-- Lily, 10: Asthma. SpO₂ 95% after her nebulizer. Talking in full sentences.
-- Baby Cole, 2 days: Mild jaundice. Feeding every 3 hours.
+- Omar, 4: Ear infection. Temp 39.5, crying but consolable. _(not first: Fever to treat; consolable and stable.)_
+- Lily, 10: Asthma. SpO₂ 93%, mild wheeze, talking in sentences. _(not first: Mild: nebulizer per orders. A neuro decline in DKA comes first.)_
+- Baby Cole, 2 days: 2 days old. Jaundice to the belly. Feeding every 3 hours. _(not first: Needs a bilirubin check today; not first.)_
 - Why: A headache, falling heart rate and new confusion during DKA treatment in a child suggest cerebral edema, the leading cause of death in pediatric DKA.
 - Pearl: Kids in DKA: neuro checks hourly. Headache, slowing heart rate, rising blood pressure or confusion: call now. Treatment can't wait for a scan.
 
 ### [ ] wf-hypo: Med-surg, 11:30
 - **Mr. Pratt, 64: Got insulin at 07:30, ate two bites of breakfast. Now sweaty and confused.** ← first
-- Mrs. Ames, 59: Pain 5 after her gallbladder surgery. Due for meds at 12:00.
-- Ms. Ray, 37: Pneumonia, SpO₂ 94% on 2 L. Asking for a blanket.
-- Mr. Dunn, 72: Waiting for discharge papers. His ride arrives at 13:00.
+- Mrs. Ames, 59: Day 1 after gallbladder surgery. Pain 7, BP 150/88. _(not first: Pain to treat soon; she's alert and stable.)_
+- Ms. Ray, 37: Pneumonia. SpO₂ 92% on 2 L, temp 38.3. _(not first: Expected with pneumonia on treatment.)_
+- Mr. Dunn, 72: Heart failure. Up 1 kg since yesterday, mild ankle swelling. _(not first: Report the gain; not an emergency right now.)_
 - Why: Insulin without food, then sweating and confusion: hypoglycemia. The brain runs on glucose, and he can seize if it keeps falling.
 - Pearl: Sweaty and confused on insulin: check a glucose now, and treat a low before anything else. If he can't swallow, IV dextrose or glucagon.
 
 ### [ ] wf-compartment: Ortho, 02:00
 - **Mr. Sato, 27: Tibia fracture in a cast. Pain 10 despite opioids, worse when you move his toes. Toes pale.** ← first
-- Mrs. Fair, 74: Hip replacement day 2. Wants to walk to the bathroom.
-- Mr. Lowe, 55: Spine fusion. Pain 4, asking for something to sleep.
-- Ms. Hart, 49: Knee replacement. Her CPM machine is due to go on.
+- Mrs. Fair, 74: Hip replacement day 2. Pain 7 when she turns, leg looks normal. _(not first: Expected pain with movement; treat it soon.)_
+- Mr. Lowe, 55: Spine fusion. Pain 6, wants to try walking. _(not first: Stable; get help to walk him soon.)_
+- Ms. Hart, 49: Knee replacement. Drain output 40 mL in 4 hours. _(not first: Expected drainage.)_
 - Why: Pain out of proportion to the injury, worse on passive stretch, with pale toes, is compartment syndrome. Muscle and nerve can die within hours.
 - Pearl: Compartment syndrome: pain out of proportion and pain on passive stretch come first. Pulselessness is late. Don't elevate above the heart; call the surgeon now.
 
 ### [ ] wf-burn-airway: ED, 19:00
 - **Mr. Clay, 45: Singed nose hair, soot in his mouth, voice getting hoarse.** ← first
-- Ms. Clay, 42: Blistered burns on her forearm. Pain 8.
-- Teddy Clay, 12: Coughing a little. Talking, SpO₂ 97%.
-- Mr. Pike, 70: Neighbor. Anxious, no burns, BP 160/90.
+- Ms. Clay, 42: Blistered burns over 15% of her body. Pain 9. _(not first: Needs fluids and pain control soon, but a burned airway can close first.)_
+- Teddy Clay, 12: Coughing. SpO₂ 97%. Carbon monoxide level pending. _(not first: Give high-flow oxygen while the level comes back; he's protecting his airway.)_
+- Mr. Pike, 70: Neighbor. Mild cough, no burns, SpO₂ 98%. _(not first: Stable; keep an eye on him.)_
 - Why: Hoarseness and soot after a fire mean the airway is burned and swelling. It can close within hours, and intubating gets harder every minute.
 - Pearl: Burns: airway first. Singed facial hair, soot, hoarseness or stridor means early intubation. Painful burns look worse, but airways kill.
 
 ### [ ] wf-dysreflexia: Rehab, 16:00
 - **Mr. Owusu, 31: Spinal cord injury at T4. Pounding headache, flushed face, BP 212/112.** ← first
-- Mrs. Kline, 68: Stroke rehab. Wants help with her lunch tray.
-- Mr. Vega, 50: Amputation. Phantom pain 5, due for gabapentin.
-- Ms. Ito, 40: Brain injury rehab. Frustrated she can't find her words.
+- Mrs. Kline, 68: Stroke rehab. Coughing during lunch, voice sounds wet. _(not first: Possible aspiration: stop the meal and assess soon. But 212/112 can cause a stroke now.)_
+- Mr. Vega, 50: Amputation. Small spot of drainage on the stump dressing. _(not first: Mark and monitor.)_
+- Ms. Ito, 40: Brain injury rehab. Restless, pulling at her helmet strap. _(not first: Redirect her soon; she's safe.)_
 - Why: A spinal cord injury at T6 or above, a pounding headache and a very high blood pressure is autonomic dysreflexia. It can cause a stroke.
 - Pearl: Autonomic dysreflexia: sit them up, loosen anything tight, find the trigger (usually a full bladder or bowel), and call. The cause below the injury is the treatment.
 
 ### [ ] wf-icp: Neuro, 05:00
 - **Mr. Reed, 23: Head injury yesterday. Right pupil now larger than the left and slow. Harder to wake.** ← first
-- Mrs. Gold, 66: Old stroke. Left-sided weakness, unchanged.
-- Mr. Doe, 45: Seizure yesterday. Sleeping, easy to wake.
-- Ms. Ng, 30: Migraine. Asking for her 06:00 dose early.
+- Mrs. Gold, 66: Old stroke. Left-sided weakness, unchanged. BP 168/92. _(not first: Unchanged deficits; report the pressure.)_
+- Mr. Doe, 45: Seizure yesterday. Phenytoin level low this morning. _(not first: Needs a dose change today; no seizure now.)_
+- Ms. Ng, 30: Migraine. Pain 8 of 10, asking for her dose early. _(not first: A familiar pattern; treat after the new neuro change.)_
 - Why: A new unequal, sluggish pupil and falling level of consciousness after a head injury means pressure in the skull is rising. It can lead to herniation.
 - Pearl: In neuro patients, change is what matters. A new dilated pupil or a drop in level of consciousness: call now, head of bed up 30 degrees, keep the neck straight.
 
 ### [ ] wf-tension: Surgical, 15:00
 - **Mr. Banks, 52: Chest tube clamped for transport. Now struggling to breathe, trachea shifted, BP 84/50.** ← first
-- Mrs. Holt, 63: Chest tube draining 30 mL/hr of light pink fluid.
-- Mr. Kerr, 40: Lobectomy yesterday. Pain 5 when he coughs.
-- Ms. Diaz, 58: Wants to know when she can shower.
+- Mrs. Holt, 63: Chest tube with continuous bubbling in the water seal chamber. _(not first: Look for an air leak in the system soon; she's breathing comfortably.)_
+- Mr. Kerr, 40: Lobectomy yesterday. Pain 7 when he coughs, SpO₂ 93%. _(not first: Treat the pain so he can cough; stable.)_
+- Ms. Diaz, 58: Chest tube. Water in the seal chamber rises and falls as she breathes. _(not first: Tidaling is normal.)_
 - Why: A clamped chest tube, severe breathlessness, a shifted trachea and low blood pressure is a tension pneumothorax. Air is crushing the heart and the other lung.
 - Pearl: Never leave a chest tube clamped. Sudden distress, tracheal shift and hypotension: unclamp, call a rapid response, and prepare for needle decompression.
 
 ### [ ] wf-transfusion: Oncology, 09:20
 - **Mrs. Moss, 61: 15 minutes into a blood transfusion. Chills, back pain, temp 38.6.** ← first
-- Mr. Lin, 55: Chemo tomorrow. Asking about hair loss.
-- Ms. Ray, 47: Nausea 3, has an antiemetic ordered.
-- Mr. Day, 73: Port dressing change due today.
+- Mr. Lin, 55: Platelets 22,000. A few new bruises. _(not first: Bleeding precautions and report; no active bleeding.)_
+- Ms. Ray, 47: Nausea 6, vomited once. Antiemetic due. _(not first: Treat soon; stable.)_
+- Mr. Day, 73: Port site red and tender. Temp 37.9. _(not first: Possible line infection to report and culture. A hemolytic reaction worsens every minute.)_
 - Why: Chills, fever and back pain early in a transfusion suggest a hemolytic reaction. Every extra milliliter makes it worse.
 - Pearl: Transfusion reaction: stop the blood, keep the line open with saline through new tubing, check vitals, call, and send the bag back to the blood bank.
 
 ### [ ] wf-acs-sickle: Pediatrics, 12:00
 - **Marcus, 15: Sickle cell crisis. New chest pain, temp 38.4, SpO₂ 90%.** ← first
-- Sara, 7: Appendectomy yesterday. Pain 4, wants popsicles.
-- Ben, 3: Croup, improving. No stridor at rest.
-- Ava, 11: Type 1 diabetes, glucose 220 before lunch.
+- Sara, 7: Appendectomy yesterday. Temp 38.2, pain 5. _(not first: Low-grade fever after surgery: deep breathing and monitoring.)_
+- Ben, 3: Croup, improving. Barky cough, no stridor at rest. _(not first: Improving; keep watching.)_
+- Ava, 11: Type 1 diabetes. Glucose 285, small ketones. _(not first: Needs insulin per orders and fluids; she's alert and talking.)_
 - Why: Chest pain, fever and low oxygen in sickle cell disease is acute chest syndrome, a leading cause of death in sickle cell.
 - Pearl: Sickle cell: new chest pain, fever, cough or low SpO₂ is acute chest syndrome until proven otherwise. Oxygen, pain control, incentive spirometry, and call.
+
+### [ ] wf-h-surg **[NCLEX level]**: Surgical, 08:00
+- **Mr. Pace, 61: Day 2 after bowel resection. Abdomen rigid, HR 118, temp 38.6.** ← first
+- Mrs. Cho, 77: Day 1 after hip replacement. Pain 9 of 10, last dose 3 hours ago. _(not first: Severe pain needs treatment soon, but it's expected and her vitals are stable. A rigid abdomen with fever and tachycardia is a leak until proven otherwise.)_
+- Mr. Neal, 68: COPD. SpO₂ 87% on 2 L, baseline 88 to 92. Pursed-lip breathing, comfortable. _(not first: Just under his range, comfortable. Recheck and adjust oxygen per orders; not first.)_
+- Mrs. Ruiz, 72: Heart failure. Weight up 1.5 kg overnight. Lungs clear, SpO₂ 96%. _(not first: Report the gain today. With clear lungs and normal oxygen she isn't in distress.)_
+- Why: A rigid abdomen, fever and tachycardia after bowel surgery suggest an anastomotic leak and peritonitis. It can turn into septic shock fast.
+- Pearl: After abdominal surgery: a rigid abdomen with fever and rising heart rate is a surgical emergency. Pain, expected findings and stable chronic conditions wait.
+
+### [ ] wf-h-psych **[NCLEX level]**: Adult psych, 13:00
+- **Nina, 44: On lithium. Vomited twice since lunch, coarse tremor, mixing up words.** ← first
+- Carl, 35: Paranoid, refusing his meds, shouting in his room. Not approaching anyone. _(not first: Give him space and a calm check-in soon. He's contained and not a danger to others right now.)_
+- Pia, 22: Admitted 3 days ago after an overdose. Asking for a razor to shave her legs. _(not first: Safety matters: she can shave with supervision per policy. A medical emergency comes first.)_
+- Ray, 51: Alcohol use disorder, day 4. CIWA 7, asking for coffee. _(not first: A low score on day 4: withdrawal is easing. Keep scoring.)_
+- Why: Vomiting, a coarse tremor and new confusion on lithium are toxicity. It can progress to seizures and kidney damage.
+- Pearl: On a psych unit, medical emergencies come first: toxicity, NMS, withdrawal, overdose. Safety requests and refusals follow.
+
+### [ ] wf-h-ld **[NCLEX level]**: Labor and delivery, 22:00
+- **Ms. Ward, 30: 34 weeks, placenta previa. Sudden painless bright red bleeding.** ← first
+- Mrs. Ali, 27: Preterm labor on magnesium. RR 14, knee reflexes 2+, warm and flushed. _(not first: Flushing and warmth are expected with magnesium. Breathing and reflexes are fine.)_
+- Ms. Pope, 33: 39 weeks, 6 cm, epidural just placed. BP 98/58. Fetal heart rate 140s. _(not first: Common after an epidural: tilt her, fluids per orders. The baby is tolerating it.)_
+- Mrs. Dunn, 36: Postpartum day 1. Fundus firm 1 cm below the umbilicus. Moderate lochia rubra. _(not first: Normal findings for day 1.)_
+- Why: Painless bright red bleeding with a previa can become a hemorrhage quickly for both mother and baby.
+- Pearl: Placenta previa: painless bright red bleeding. Never do a vaginal exam. Abruption: painful, a rigid uterus, sometimes concealed bleeding.
+
+### [ ] wf-h-cardiac **[NCLEX level]**: Cardiac step-down, 04:00
+- **Mr. Byrne, 66: Two days after an MI. New loud murmur, short of breath, crackles to mid-lung.** ← first
+- Mrs. Fry, 74: Atrial fibrillation on a diltiazem drip. Rate 112, BP 116/70. _(not first: Rate a bit high but blood pressure fine; titrate per protocol soon.)_
+- Mr. Okon, 59: Heart failure. K 3.3 on furosemide. Rhythm sinus. _(not first: Replace per protocol and report soon; no rhythm change.)_
+- Ms. Ito, 52: Admitted for chest pain. Now 2 of 10, same as on arrival. Troponin negative twice. _(not first: Unchanged and ruled out so far; reassess, not first.)_
+- Why: A new murmur and sudden pulmonary edema days after an MI suggests papillary muscle rupture or a ventricular septal rupture. Both need surgery urgently.
+- Pearl: After an MI, a new murmur with sudden heart failure is a mechanical complication. Call immediately.
+
+### [ ] wf-h-peds **[NCLEX level]**: Pediatrics, 20:00
+- **Baby Rose, 6 wks: 6 weeks old. Temp 38.3. Feeding poorly, sleepier than usual.** ← first
+- Kai, 4: Asthma. SpO₂ 93%, mild wheeze 20 minutes after his nebulizer. _(not first: Mild and improving; reassess after the neb finishes working.)_
+- Luca, 10: Femur fracture in traction. Pain 6. Toes pink and warm. _(not first: Treat his pain soon; circulation is good.)_
+- Amara, 15: Appendectomy yesterday. Temp 38.1, eating crackers. _(not first: A low-grade temperature after surgery; encourage deep breaths and recheck.)_
+- Why: Any fever in an infant under about 2 to 3 months, with poor feeding or sleepiness, can be sepsis or meningitis. Infants show few other signs.
+- Pearl: Young infants with fever get a full workup fast. Lethargy and poor feeding are danger signs at any age.
+
+### [ ] wf-h-neuro **[NCLEX level]**: Neuro, 15:00
+- **Mr. Shaw, 42: Guillain-Barré. Vital capacity down from 2.2 L to 1.4 L since this morning.** ← first
+- Ms. Rios, 38: Myasthenia gravis. Drooping eyelids, worse at the end of the day. _(not first: Fatigue worse late in the day is typical. Watch her breathing and swallowing, but this is her pattern.)_
+- Mr. Gray, 76: Parkinson's. Freezing when he walks; fell yesterday without injury. _(not first: Fall precautions and PT soon; stable now.)_
+- Mrs. Lee, 34: Multiple sclerosis. Blurry vision in one eye since yesterday. _(not first: Possibly a relapse to report today. Not an airway threat.)_
+- Why: A falling vital capacity in Guillain-Barré means the breathing muscles are weakening. Many need intubation before oxygen levels fall.
+- Pearl: Guillain-Barré and myasthenic crisis: follow vital capacity and negative inspiratory force, not just SpO₂. A falling trend means call now.
+
+### [ ] wf-h-endo **[NCLEX level]**: Med-surg, 18:00
+- **Ms. Grant, 46: Thyroidectomy this morning. Muscle cramps. Her cheek twitches when you tap it.** ← first
+- Mr. Vos, 63: SIADH. Sodium 131, alert, on a fluid restriction. _(not first: Mildly low and improving on treatment. Keep the restriction.)_
+- Mrs. Kahn, 55: On high-dose steroids. Glucose 260 before dinner. _(not first: Expected with steroids. Correction insulin per orders.)_
+- Mr. Bose, 48: Addison's disease. Evening hydrocortisone due. BP 116/72, feels fine. _(not first: Give it on time; he's stable now.)_
+- Why: Muscle cramps and a positive Chvostek sign after thyroid surgery suggest low calcium from parathyroid injury. It can progress to laryngospasm and seizures.
+- Pearl: After thyroid or parathyroid surgery: tingling, cramps, Chvostek or Trousseau sign mean check calcium and have IV calcium ready.
+
+### [ ] wf-h-renal **[NCLEX level]**: Renal, 06:00
+- **Mr. Akins, 58: On dialysis, missed yesterday's session. Weak. K 6.4, HR 52.** ← first
+- Mrs. Reed, 49: Peritoneal dialysis. Cloudy drainage this morning, temp 37.6. _(not first: Possible peritonitis: cultures and antibiotics today. Hyperkalemia with a slowing heart can stop it now.)_
+- Mr. Tan, 66: Kidney biopsy yesterday. Mild flank pain, urine light pink. _(not first: A little blood is expected after a biopsy. Watch the vitals and the color.)_
+- Ms. Ford, 71: Acute kidney injury on IV fluids. Urine output 40 mL/hr, up from 20. _(not first: Improving. Keep going.)_
+- Why: A potassium of 6.4 with a slow heart rate means the potassium is affecting the heart. It can cause a fatal rhythm.
+- Pearl: Dialysis patients who miss treatment: think potassium and fluid. Hyperkalemia with bradycardia or ECG changes is an emergency.
+
+### [ ] wf-h-geri **[NCLEX level]**: Geriatrics, 11:00
+- **Mrs. Hale, 84: On warfarin. Fell an hour ago, hit her head. Now asking the same question over and over.** ← first
+- Mr. Brook, 88: Dementia. Trying to leave the unit to "go to work." _(not first: A safety risk: redirect him soon. He's calm and walking.)_
+- Mrs. Toll, 79: Hip fracture, waiting for surgery. Pain 7, last dose 2 hours ago. _(not first: Pain to treat soon; expected and stable.)_
+- Mr. Webb, 90: Stage 2 pressure injury on his sacrum. Dressing soiled. _(not first: Change it soon; not urgent.)_
+- Why: A head strike on an anticoagulant, with new repetitive questioning, can be a bleed in the skull. Older adults can bleed slowly and look fine at first.
+- Pearl: Anticoagulant plus a fall with head strike: neuro checks and a CT, even if they look okay. New confusion is a red flag.
+
+### [ ] wf-h-resp **[NCLEX level]**: Pulmonary, 09:00
+- **Mrs. Vance, 67: Pneumonia. RR 30, SpO₂ 91% on 4 L, using her neck muscles. Says she's tired.** ← first
+- Mr. Oyelaran, 70: COPD. SpO₂ 88% on 2 L, his baseline. Thick yellow sputum. _(not first: At his baseline. Sputum culture and treatment per orders.)_
+- Ms. Hart, 24: Asthma. Peak flow 70% of her best after a nebulizer. _(not first: Moderate and responding. Reassess.)_
+- Mr. Lane, 58: Pleural effusion. Chest tube drained 300 mL of yellow fluid since morning. _(not first: Expected after placement; monitor the amount.)_
+- Why: Fast breathing, accessory muscle use and fatigue mean she's tiring. Respiratory failure can follow even while her saturation looks acceptable.
+- Pearl: Work of breathing and fatigue predict respiratory failure before SpO₂ falls. "I'm tired" from a patient breathing 30 times a minute is an emergency.
 
 ## SBAR
 
@@ -624,257 +904,521 @@ The tape is loose. The mark at his nose read 55 cm yesterday.
 Heart failure, EF 30%. He can't lie flat. RR 26. SpO₂ 90% on 2 L. Crackles halfway up. Weight up 2 kg.
 
 - **S:** Dr. Chen, this is the nurse for 418, Samuel Ortiz. He's more short of breath: SpO₂ 90% on 2 liters.
-  - Wrong: Hi, it's 4 West. Sorry, are you busy? I have a few things on a few patients. / Mr. Ortiz is a 71-year-old with hypertension, diabetes, gout, and a knee replacement in 2011...
+  - Wrong:
+    - Dr. Chen, this is the nurse for 418, Samuel Ortiz. His vitals are RR 26, HR 104, BP 148/90, temp 37.1. _(why not: Numbers with no headline. Say what changed first: he's more short of breath, SpO₂ 90% on 2 L.)_
+    - Dr. Chen, this is the nurse for 418, Samuel Ortiz. He has heart failure and I'm a little worried about him. _(why not: Sounds polite, but it gives her nothing to act on. Lead with the change and the number.)_
 - **B:** Admitted yesterday for heart failure, EF 30%. One dose of IV furosemide yesterday. Weight up 2 kg.
-  - Wrong: He's been here before. Last year, I think? / His wife says he likes salty food, and he skips pills when he travels to see his daughter in Fresno.
+  - Wrong:
+    - 71, here for heart failure. History of hypertension, diabetes, CKD stage 3, gout and atrial fibrillation. _(why not: A history list buries what matters tonight: the EF, the one dose of furosemide, and the 2 kg gain.)_
+    - Admitted yesterday for heart failure. His home meds include furosemide 40 mg by mouth daily. _(why not: Close, but it leaves out the EF and the 2 kg weight gain, the facts that frame the call.)_
 - **A:** Crackles halfway up, RR 26, can't lie flat. I think he's fluid overloaded and getting worse.
-  - Wrong: I'm not sure. Something's off. / He seems anxious. Maybe it's anxiety.
+  - Wrong:
+    - Crackles and a fever would fit pneumonia. I think he may be developing an infection. _(why not: He has no fever. Crackles halfway up, orthopnea and a 2 kg gain with an EF of 30% point to fluid.)_
+    - He's breathing fast and seems anxious. I think the anxiety is making his breathing worse. _(why not: Anxiety can follow air hunger, but the crackles and weight gain say fluid. Name the likely cause.)_
 - **R:** I'd like another dose of IV furosemide, a chest X-ray, and for you to see him.
-  - Wrong: What do you want to do? / I'll keep an eye on him and call if it gets worse.
+  - Wrong:
+    - Could you put in some orders for his breathing? _(why not: Too vague. Ask for what you think he needs: a diuretic, an X-ray, and a look.)_
+    - Can I give him the PRN morphine for his air hunger? _(why not: Morphine may ease the feeling but doesn't treat the fluid. Ask for the diuretic and an evaluation.)_
 - **✓:** Read back: furosemide 80 mg IV now, portable chest X-ray, you're on your way. Correct?
   - Provider: "Furosemide 80 milligrams IV now, portable chest X-ray, and I'm coming up."
-  - Wrong: Okay, thanks. Bye. / Got it, 18 of furosemide.
+  - Wrong:
+    - Read back: furosemide 40 mg IV now, portable chest X-ray, you're on your way. _(why not: She said 80 mg. The read-back is how wrong numbers get caught.)_
+    - Okay, furosemide and an X-ray. I'll get those going. _(why not: No numbers repeated, so a wrong dose or route can't be caught.)_
 - Pearl: Situation in one sentence, the background that matters, your assessment, a clear ask, and a read-back.
 
 ### [ ] sb-sepsis: Eleanor Whitfield, calling Dr. Patel, hospitalist
 UTI, admitted yesterday. Now she doesn't know where she is. T 38.7, HR 116, BP 88/52, RR 24.
 
 - **S:** This is the nurse for Eleanor Whitfield in 416. I'm worried she's septic: new confusion, BP 88/52, HR 116, temp 38.7.
-  - Wrong: Hi, Mrs. Whitfield is acting a bit funny today. / I'm calling about 416. Her daughter Ruth called and is upset.
+  - Wrong:
+    - This is the nurse for Eleanor Whitfield in 416. She's newly confused and her temp is 38.7. _(why not: Missing the low pressure and fast pulse that make this urgent, and the word sepsis.)_
+    - This is the nurse for 416. Her vitals are off: BP 88/52, HR 116, RR 24, temp 38.7. _(why not: The numbers are there but not your worry. Say "I think she's septic" and the new confusion.)_
 - **B:** UTI, admitted yesterday. First dose of ceftriaxone was due at 08:00 but is still waiting on pharmacy.
-  - Wrong: She's 82 and lives alone with her cat. / She was confused on admission too, so this might be baseline.
+  - Wrong:
+    - 82, admitted yesterday for a UTI. History of hypertension and osteoarthritis. _(why not: Leaves out the delayed antibiotic, the fact that changes the plan.)_
+    - UTI, admitted yesterday. She was a little confused on admission, so this may be her baseline. _(why not: She was oriented at 07:00. Calling it baseline delays sepsis care.)_
 - **A:** She was oriented at 07:00. With the fever, low pressure and fast pulse, I think this is sepsis.
-  - Wrong: Probably just sundowning. / Her vitals are a little off.
+  - Wrong:
+    - She seems dry. I think she's dehydrated from not drinking. _(why not: Dehydration doesn't explain a fever with a known infection. Name sepsis.)_
+    - I think she's delirious, maybe from the new environment. _(why not: She is delirious, but from a cause: infection with low pressure. The cause is the assessment.)_
 - **R:** I'd like blood cultures, a lactate, a fluid bolus, the antibiotic now, and you at the bedside.
-  - Wrong: Can you put in some orders? / Should I give her some acetaminophen?
+  - Wrong:
+    - Can I give acetaminophen for the fever and recheck in an hour? _(why not: Treats the number, not the sepsis. An hour's delay matters.)_
+    - Could you see her when you're next on the unit? _(why not: No time frame and no bundle. Ask for cultures, lactate, fluid, antibiotic, and a bedside look now.)_
 - **✓:** Read back: two blood cultures, lactate, 30 mL/kg lactated Ringer's, then ceftriaxone. See you in five.
   - Provider: "Two sets of cultures, lactate, 30 mL per kilo of lactated Ringer's, then the ceftriaxone. I'll be there in five."
-  - Wrong: Sounds good. / Okay, I'll start the antibiotic and the fluid when pharmacy sends them.
+  - Wrong:
+    - Read back: two blood cultures, lactate, 30 mL/kg normal saline, then ceftriaxone. _(why not: She ordered lactated Ringer's, not normal saline.)_
+    - Okay, cultures, lactate, fluid and the antibiotic. On it. _(why not: No numbers repeated. The read-back exists to catch a wrong volume or drug.)_
 - Pearl: Lead with your worry. "I think she's septic" gets action faster than a list of numbers.
 
 ### [ ] sb-bleed: Margaret Doyle, calling Dr. Abara, orthopedics
 Hip replacement yesterday. Hemoglobin 7.1, down from 10.2. HR 112. BP 94/60. Dressing soaked through.
 
 - **S:** This is the nurse for Margaret Doyle, hip replacement yesterday. Her hemoglobin dropped from 10.2 to 7.1 and she's tachycardic at 112.
-  - Wrong: I'm calling with morning labs on your patients. / Mrs. Doyle wants to know when she can go home.
+  - Wrong:
+    - This is the nurse for Margaret Doyle, hip replacement yesterday. Her hemoglobin this morning is 7.1. _(why not: Give the trend and the heart rate. 7.1 alone may not sound urgent; 10.2 to 7.1 with HR 112 does.)_
+    - This is the nurse for Margaret Doyle. She's pale and a bit dizzy this morning. _(why not: No numbers and no worry stated.)_
 - **B:** Right total hip yesterday. On enoxaparin for clot prevention. The dressing is soaked through.
-  - Wrong: She has a cat and lives with her son. / Her surgery went long, I heard.
+  - Wrong:
+    - Right total hip yesterday. History of osteoporosis and hypothyroidism. _(why not: Leaves out the enoxaparin and the soaked dressing.)_
+    - Right total hip yesterday. Estimated blood loss in the OR was 400 mL. _(why not: Useful, but the anticoagulant and the soaked dressing matter more right now.)_
 - **A:** BP 94/60, she's pale and dizzy sitting up. I think she's bleeding.
-  - Wrong: Her numbers look a bit low. / It's probably from the IV fluids diluting her blood.
+  - Wrong:
+    - I think it's dilution from the IV fluids she got overnight. _(why not: Fluids can lower hemoglobin a little, not 3 points with a fast pulse and a soaked dressing.)_
+    - BP 94/60. I think she's dehydrated and needs fluids. _(why not: Low pressure and a fast pulse, yes, but the falling hemoglobin says blood loss.)_
 - **R:** I'd like a type and crossmatch, to hold the enoxaparin, and for you to look at the wound.
-  - Wrong: What do you think we should do? / I can recheck the hemoglobin in the morning.
+  - Wrong:
+    - Can I give her a 500 mL fluid bolus? _(why not: May be part of the plan, but ask for blood, holding the enoxaparin, and a look at the wound.)_
+    - Can I recheck the hemoglobin at noon? _(why not: Too slow for an active bleed.)_
 - **✓:** Read back: hold enoxaparin, type and cross, transfuse one unit, recheck after. You're coming after your case.
   - Provider: "Hold the enoxaparin. Type and cross, transfuse one unit, recheck after. I'll be up after this case."
-  - Wrong: Okay, two units. / Got it.
+  - Wrong:
+    - Read back: hold enoxaparin, transfuse two units, recheck after. _(why not: He said one unit.)_
+    - Okay, hold the enoxaparin and get blood. Thanks. _(why not: No details repeated, so the unit count and recheck can't be confirmed.)_
 - Pearl: Give the trend, not just the number: "10.2 to 7.1" says more than "7.1".
 
 ### [ ] sb-pca: Kevin Ramos, calling Rapid response nurse, then the surgeon
 Day 1 after bowel surgery on a morphine PCA. You can't wake him. RR 7, SpO₂ 84%. You stopped the PCA and gave naloxone per protocol. He's waking.
 
 - **S:** This is the nurse for Kevin Ramos. He had opioid oversedation on his PCA: RR 7 and SpO₂ 84%. I stopped it and gave naloxone; he's rousing.
-  - Wrong: Hi, just letting you know about a PCA issue. Nothing urgent. / His pain's not controlled, he keeps pushing the button.
+  - Wrong:
+    - This is the nurse for Kevin Ramos. He had a low respiratory rate on his PCA, but he's okay now. _(why not: Undersells it. Say oversedation, the numbers, and what you did.)_
+    - This is the nurse for Kevin Ramos. I gave naloxone and he's awake now. _(why not: Missing what happened and the numbers that made you act.)_
 - **B:** Bowel resection yesterday. Morphine PCA with a basal rate. History of sleep apnea, no CPAP here.
-  - Wrong: He's a high school teacher. / He had a lot of visitors yesterday.
+  - Wrong:
+    - Bowel resection yesterday. Morphine PCA. _(why not: Leaves out the basal rate and the sleep apnea, the two risk factors.)_
+    - Bowel resection yesterday. 44, no significant medical history. _(why not: Not true: sleep apnea is the key history.)_
 - **A:** Now RR 12, SpO₂ 93% on 2 L, sedation improving. The naloxone may wear off before the morphine does.
-  - Wrong: He's fine now. / I think his PCA is broken.
+  - Wrong:
+    - He's awake and talking now, so I think he's out of danger. _(why not: Naloxone wears off before morphine does. He can go back under.)_
+    - I think the PCA pump may have malfunctioned. _(why not: The basal rate and his sleep apnea explain it.)_
 - **R:** I'd like the basal rate stopped, continuous pulse oximetry, and a new pain plan. Can you see him?
-  - Wrong: Should I just restart the PCA? / Can you just call his wife?
+  - Wrong:
+    - Should I restart the PCA with a lower basal rate? _(why not: Restarting the drug that caused this without new monitoring is the risk. Ask for the basal off and continuous monitoring.)_
+    - Can we switch him to oral oxycodone instead? _(why not: A new pain plan comes, but first: stop the basal and monitor continuously.)_
 - **✓:** Read back: basal off, continuous oximetry and capnography, repeat naloxone for RR under 10. You're coming in 20.
   - Provider: "Stop the basal. Continuous oximetry and capnography. Repeat naloxone if RR under 10. I'll see him in 20 minutes."
-  - Wrong: Thanks, I'll restart the PCA then. / Okay.
+  - Wrong:
+    - Read back: basal off, continuous oximetry, repeat naloxone for RR under 8. _(why not: He said under 10, and capnography too.)_
+    - Okay, I'll keep a close eye on him. _(why not: No read-back of the orders.)_
 - Pearl: Act first, then call: stop the opioid and give naloxone by protocol. Then say what you did and what you need.
 
 ### [ ] sb-lithium: Rosa Benitez, calling Dr. Lund, psychiatrist on call
 Bipolar disorder on lithium. Vomiting since lunch. Coarse tremor. Slow to answer. Stat level: 2.1.
 
 - **S:** This is the nurse for Rosa Benitez on 3 East. I'm worried about lithium toxicity: level 2.1, vomiting, coarse tremor and new slowing.
-  - Wrong: Rosa's not feeling well and didn't eat dinner. / Hi, I have a lab value. 2.1.
+  - Wrong:
+    - This is the nurse for Rosa Benitez. She's been vomiting since lunch. _(why not: Lead with the danger: possible lithium toxicity and the level.)_
+    - This is the nurse for Rosa Benitez. Her stat lithium level is 2.1. _(why not: Add the symptoms; the number with the coarse tremor and slowing is the story.)_
 - **B:** Lithium 600 mg twice a day. Started ibuprofen for a toothache three days ago. Last level was 0.9.
-  - Wrong: She's been on lithium for years. It's always fine. / She was angry in group this morning.
+  - Wrong:
+    - Bipolar I, on lithium 600 mg twice a day and quetiapine at night. _(why not: Missing the new ibuprofen and the last level.)_
+    - She's been stable on lithium for years and her levels are usually fine. _(why not: Past stability is why the new ibuprofen and the vomiting matter now. Say them.)_
 - **A:** I think this is lithium toxicity, made worse by the ibuprofen and the vomiting. She needs a medical evaluation.
-  - Wrong: Probably a stomach bug going around. / I think she's manipulating to skip meds.
+  - Wrong:
+    - I think she has a stomach virus. _(why not: Vomiting with a coarse tremor and slowing at 2.1 is toxicity.)_
+    - I think she's dehydrated from the vomiting. _(why not: True but incomplete. Dehydration is driving lithium toxicity; name the toxicity.)_
 - **R:** I'd like to hold lithium and ibuprofen, get a chemistry panel, and transfer her to the ED for evaluation.
-  - Wrong: Should I give her an antiemetic and see how she does? / Can we halve her dose tonight?
+  - Wrong:
+    - Should I give ondansetron and recheck the level in the morning? _(why not: Treating the nausea masks the toxicity.)_
+    - Can we lower her lithium dose tonight? _(why not: She needs it held and a medical evaluation, not a smaller dose.)_
 - **✓:** Read back: hold lithium and ibuprofen, basic panel now, transfer to the ED, you'll call them.
   - Provider: "Hold the lithium and the ibuprofen. Basic panel now. Send her to the ED, I'll call them."
-  - Wrong: Hold the ibuprofen, got it. / Okay, will do.
+  - Wrong:
+    - Read back: hold lithium, basic panel now, transfer to the ED. _(why not: Missed holding the ibuprofen.)_
+    - Okay, I'll hold her meds and get her ready to go. _(why not: Which meds? Repeat them.)_
 - Pearl: Name the danger in the first sentence. NSAIDs, dehydration and some blood pressure pills push lithium levels up.
 
 ### [ ] sb-hyperk: Arthur Hale, calling Dr. Okoye, hospitalist
 Kidney disease, on lisinopril and spironolactone. Morning K 6.6. Peaked T waves. Feels weak.
 
 - **S:** This is the nurse for Arthur Hale in 410. His potassium is 6.6 and he has peaked T waves on the monitor.
-  - Wrong: I have critical labs on a few people. Do you want them? / Mr. Hale feels a little weak this morning.
+  - Wrong:
+    - This is the nurse for Arthur Hale in 410. His potassium is 6.6. _(why not: Add the peaked T waves. That's what makes it an emergency.)_
+    - This is the nurse for Arthur Hale. He feels weak and his potassium is high. _(why not: Give the number and the ECG change.)_
 - **B:** Chronic kidney disease, creatinine 2.8. On lisinopril and spironolactone. Yesterday's K was 5.4.
-  - Wrong: He's a retired teacher. / He ate a banana yesterday.
+  - Wrong:
+    - Chronic kidney disease, hypertension and gout. _(why not: Missing the lisinopril and spironolactone, which raise potassium.)_
+    - His potassium was 5.4 yesterday. _(why not: A good trend, but add the meds and the kidney function.)_
 - **A:** BP 130/80, HR 64. I think this is dangerous hyperkalemia and could cause an arrhythmia.
-  - Wrong: It's probably a hemolyzed sample. / He seems okay.
+  - Wrong:
+    - It may be a hemolyzed sample. Can we redraw it? _(why not: Possible, but peaked T waves on the monitor make it real until proven otherwise.)_
+    - He's stable for now; his blood pressure is fine. _(why not: A normal pressure doesn't protect his heart from a potassium of 6.6.)_
 - **R:** I'd like orders for calcium gluconate, insulin with dextrose, a 12-lead, and a repeat K. And hold his spironolactone.
-  - Wrong: Can we recheck it in the morning? / Should I give him some fluids?
+  - Wrong:
+    - Can you order a repeat potassium? _(why not: A repeat alone leaves his heart unprotected.)_
+    - Should I give him a dose of furosemide? _(why not: It may help later, but calcium protects the heart now.)_
 - **✓:** Read back: calcium gluconate 1 g IV, regular insulin 10 units IV with 25 g dextrose, 12-lead, repeat K in 2 hours, hold spironolactone and lisinopril.
   - Provider: "Calcium gluconate 1 gram IV, regular insulin 10 units IV with 25 grams of dextrose, 12-lead, repeat K in 2 hours, hold spironolactone and lisinopril."
-  - Wrong: Okay, 10 units of insulin. / Got it, thanks.
+  - Wrong:
+    - Read back: calcium gluconate 1 g IV, regular insulin 10 units IV, 12-lead, repeat K in 2 hours. _(why not: Missed the dextrose, which prevents a low after IV insulin, and the meds to hold.)_
+    - Okay, calcium, insulin and a 12-lead. _(why not: No doses repeated.)_
 - Pearl: Critical value + a body sign = say both in the first sentence. Calcium protects the heart; insulin moves potassium into cells.
 
 ### [ ] sb-stroke: Leon Feld, calling Stroke team, via the stroke alert
 Admitted for pneumonia. At 15:05 his right arm is weak and his speech is slurred. Last known well: 14:50, talking normally.
 
 - **S:** Stroke alert, 4 West room 420. Leon Feld, 74: right arm weakness and slurred speech. Last known well 14:50.
-  - Wrong: He's a bit sleepy and his words are off. / Can someone come look at 420 when they have a chance?
+  - Wrong:
+    - Room 420, Leon Feld: new right arm weakness and slurred speech. _(why not: Say "stroke alert" and the last known well time.)_
+    - Stroke alert, room 420. Symptoms started at 15:05. _(why not: 15:05 is when you found him. Last known well is 14:50, and that's the time that matters.)_
 - **B:** Here for pneumonia. History of atrial fibrillation, on no anticoagulant. Glucose 112.
-  - Wrong: He was in the hospital last spring for his knee. / His daughter says he's stubborn.
+  - Wrong:
+    - Here for pneumonia. History of atrial fibrillation, hypertension and diabetes. _(why not: Missing whether he's anticoagulated and his glucose.)_
+    - Here for pneumonia. On apixaban for atrial fibrillation. _(why not: Not true here: he's on no anticoagulant. Getting this wrong changes the treatment.)_
 - **A:** New right-sided weakness and aphasia. I think he's having an acute stroke.
-  - Wrong: Maybe he's just tired from the antibiotics. / I can't tell.
+  - Wrong:
+    - This could be a reaction to his antibiotic. _(why not: Focal weakness with aphasia is a stroke until proven otherwise.)_
+    - It could be low blood sugar. _(why not: Reasonable to check, and you did: 112.)_
 - **R:** He's NPO and I have an IV. I'd like the team at the bedside and a head CT now.
-  - Wrong: Should I give him his lunch pills first? / Can we watch him for an hour and see?
+  - Wrong:
+    - Should I give his 15:00 meds before CT? _(why not: NPO until a swallow screen.)_
+    - Can we recheck him in 30 minutes? _(why not: Every minute counts in a stroke.)_
 - **✓:** Read back: NPO, neuro checks every 15 minutes, CT ready now. I'll have him on the monitor.
   - Provider: "We're on our way. Keep him NPO, neuro checks every 15 minutes, CT is clearing the scanner."
-  - Wrong: Okay, I'll give him water for his pills then. / Thanks.
+  - Wrong:
+    - Read back: NPO, neuro checks every hour, CT now. _(why not: She said every 15 minutes.)_
+    - Okay, CT and neuro checks. _(why not: No frequency repeated.)_
 - Pearl: For stroke: the last known well time is the most important number you have. Say it first.
 
 ### [ ] sb-asthma: Jayden Brooks, calling Dr. Ames, pediatric resident
 Asthma, 6 years old. He was wheezing; now you hear almost nothing. Sitting forward. SpO₂ 89%. Can't finish a sentence.
 
 - **S:** This is the nurse for Jayden Brooks in 512. He has a silent chest: SpO₂ 89%, sitting forward, can't finish sentences. I need you now.
-  - Wrong: His wheezing is better. I hardly hear it now. / Jayden's mom wants an update.
+  - Wrong:
+    - This is the nurse for Jayden Brooks. His wheezing is much quieter now. _(why not: A quiet chest with worse work of breathing is a danger sign, not improvement.)_
+    - This is the nurse for Jayden Brooks. His SpO₂ is 89% on his asthma treatment. _(why not: Add "silent chest" and "can't finish sentences.")_
 - **B:** Admitted for asthma today. Albuterol at 18:30, steroid given at 16:00. Two ICU stays for asthma before.
-  - Wrong: He likes dinosaurs. / He goes to school at Lincoln Elementary.
+  - Wrong:
+    - 6, admitted today for asthma. _(why not: Missing the last albuterol, the steroid, and the ICU history.)_
+    - He had albuterol at 18:30. _(why not: Add the steroid and his two ICU stays: they tell the resident how fast he can crash.)_
 - **A:** Quiet chest with worse work of breathing. He's moving very little air. I think he's about to tire out.
-  - Wrong: Quiet chest means the albuterol worked. / He's anxious about being here.
+  - Wrong:
+    - The wheezing is gone, so the albuterol is working. _(why not: Wheezing disappears when air stops moving.)_
+    - He's anxious, which is making him breathe faster. _(why not: Anxiety doesn't cause a silent chest.)_
 - **R:** I've started albuterol back-to-back. I'd like you at the bedside, and I'm calling the rapid response team.
-  - Wrong: Should I recheck him in an hour? / Can I give him something to calm down?
+  - Wrong:
+    - Can I give another albuterol and recheck in an hour? _(why not: Too slow. He needs continuous treatment and help now.)_
+    - Can I give him something to help him calm down? _(why not: Sedating a tiring asthmatic can stop his breathing.)_
 - **✓:** Read back: continuous albuterol, ipratropium, IV magnesium, rapid response called. See you now.
   - Provider: "Continuous albuterol, ipratropium, IV magnesium, and get rapid response. I'm coming."
-  - Wrong: I'll try a sedative while I wait. / Okay.
+  - Wrong:
+    - Read back: albuterol every hour, ipratropium, IV magnesium. _(why not: She said continuous albuterol, and rapid response.)_
+    - Okay, albuterol and magnesium. _(why not: Incomplete and no doses.)_
 - Pearl: A quiet chest in a struggling asthmatic is not improvement. It means almost no air is moving.
 
 ### [ ] sb-transfusion: Doris Moss, calling Dr. Iyer, oncology
 15 minutes into a unit of red cells: chills, back pain, T 38.6, HR 118, BP 96/58. You stopped the blood and hung saline through new tubing.
 
 - **S:** This is the nurse for Doris Moss. I think she's having a transfusion reaction: chills, back pain, fever 38.6, BP 96/58. I've stopped the blood.
-  - Wrong: Hi, Mrs. Moss has a bit of a fever. Can I give acetaminophen? / Just letting you know her transfusion is running a little behind.
+  - Wrong:
+    - This is the nurse for Doris Moss. She has a fever of 38.6 during her transfusion. _(why not: Missing the back pain and low pressure, and that you've stopped the blood.)_
+    - This is the nurse for Doris Moss. She has chills and back pain. _(why not: Add the numbers and that the blood is off.)_
 - **B:** Leukemia, hemoglobin 6.9 this morning. This is her first unit today. Bedside check was done with two nurses.
-  - Wrong: She's had a lot of transfusions. She's used to them. / Her daughter is visiting from Ohio.
+  - Wrong:
+    - Leukemia. She's had many transfusions before without problems. _(why not: Previous transfusions don't protect against this one; give the unit and the bedside check.)_
+    - Leukemia, on chemotherapy, port in place. _(why not: Missing the hemoglobin, which unit this is, and that the bedside check was done.)_
 - **A:** Fever, back pain and a falling pressure this early make me worried about a hemolytic reaction.
-  - Wrong: Probably just a mild allergic reaction. / She might have an infection from her line.
+  - Wrong:
+    - I think it's a febrile non-hemolytic reaction. _(why not: Possible, but back pain and a falling pressure this early point to hemolysis. Assume the worst until ruled out.)_
+    - She might have a line infection. _(why not: Timing with the transfusion makes the blood the cause until proven otherwise.)_
 - **R:** I'd like you to see her now. I'll send the bag and tubing to the blood bank with blood and urine samples. Do you want a fluid bolus?
-  - Wrong: Can I restart the blood slower? / Should I just watch her?
+  - Wrong:
+    - Can I restart the transfusion at a slower rate? _(why not: The blood stays off until a reaction is ruled out.)_
+    - Should I give acetaminophen and watch her? _(why not: Treats the fever, not the reaction. Send the workup and get her evaluated.)_
 - **✓:** Read back: blood stays off, normal saline 500 mL bolus, transfusion reaction workup sent. You're on your way.
   - Provider: "Keep the blood off. Normal saline 500 mL bolus. Send the transfusion reaction workup. I'm coming up."
-  - Wrong: Okay, I'll restart it when she's settled. / Got it.
+  - Wrong:
+    - Read back: blood stays off, normal saline 250 mL bolus, workup sent. _(why not: He said 500 mL.)_
+    - Okay, saline and the workup. _(why not: No volume repeated.)_
 - Pearl: Act, then call: stop the transfusion, keep the vein open with saline through new tubing, then SBAR. Send the bag back; it's evidence.
 
 ### [ ] sb-nms: Leon Carter, calling Dr. Abrams, psychiatrist on call
 Started haloperidol three days ago. T 39.4, HR 124, BP 168/98. Arms stiff as pipes. Confused and sweating.
 
 - **S:** This is the nurse for Leon Carter on 3 East. I'm worried about neuroleptic malignant syndrome: T 39.4, rigid, confused, BP 168/98.
-  - Wrong: Leon isn't joining groups today and seems off. / Can you renew his PRN orders?
+  - Wrong:
+    - This is the nurse for Leon Carter. He has a fever of 39.4. _(why not: Add rigidity, confusion and the new antipsychotic: name NMS.)_
+    - This is the nurse for Leon Carter. He's stiff and confused today. _(why not: Missing the vital signs.)_
 - **B:** First-episode psychosis. Haloperidol started three days ago and increased yesterday. He's barely drinking.
-  - Wrong: He has been on the unit three days and is usually pleasant. / His mother called twice today.
+  - Wrong:
+    - First-episode psychosis, admitted three days ago. _(why not: Missing the haloperidol start and dose increase.)_
+    - First-episode psychosis. On haloperidol and lorazepam as needed. _(why not: Say when the haloperidol started and that it went up yesterday.)_
 - **A:** Fever, rigidity and confusion after a new antipsychotic. I think this is NMS and he needs medical care.
-  - Wrong: He's probably catatonic. / Maybe a virus.
+  - Wrong:
+    - This could be catatonia. _(why not: Catatonia can look similar, but fever and unstable vitals after a new antipsychotic are NMS until proven otherwise.)_
+    - He may have an infection. _(why not: Possible, but rigidity with fever after haloperidol is a medical emergency in its own right.)_
 - **R:** I'd like to hold the haloperidol, get a CK and labs, start cooling and fluids, and transfer him to medicine.
-  - Wrong: Should I give him more haloperidol for the agitation? / Can we check him again tomorrow?
+  - Wrong:
+    - Should I give lorazepam for the rigidity? _(why not: Lorazepam may be part of NMS treatment, but the antipsychotic must stop and he needs medical care first.)_
+    - Can we check a CK in the morning? _(why not: He needs labs and cooling now.)_
 - **✓:** Read back: hold all antipsychotics, CK and basic panel, IV fluids. You're calling medicine for transfer.
   - Provider: "Hold all antipsychotics. CK, basic panel, IV fluids. I'm calling medicine for transfer now."
-  - Wrong: Hold the haloperidol. Got it. / Okay.
+  - Wrong:
+    - Read back: hold the haloperidol, CK and basic panel, IV fluids. _(why not: She said hold all antipsychotics, not just haloperidol.)_
+    - Okay, labs and fluids. _(why not: No details repeated.)_
 - Pearl: Psych units see medical emergencies too. Say the diagnosis you're worried about, by name, in the first sentence.
 
 ### [ ] sb-pph: Ana Reyes, calling Dr. Holt, OB
 2 hours after a vaginal birth. Fundus boggy above the umbilicus, soaked a pad in 15 minutes. HR 118, BP 92/58. You're massaging the fundus.
 
 - **S:** This is the nurse for Ana Reyes in 214. She's hemorrhaging: boggy uterus, a pad soaked in 15 minutes, HR 118, BP 92/58.
-  - Wrong: Ana is bleeding a bit more than I'd like. / Can you stop by 214 when you're free?
+  - Wrong:
+    - This is the nurse for Ana Reyes in 214. Her bleeding is heavier than expected. _(why not: Say "hemorrhage" and give the numbers: a pad in 15 minutes, HR 118, BP 92/58.)_
+    - This is the nurse for Ana Reyes. Her fundus is boggy. _(why not: Add how fast she's bleeding and her vitals.)_
 - **B:** Vaginal birth at 09:00 after a 20-hour induction on oxytocin. Baby 4.2 kg. Asthma, so no carboprost.
-  - Wrong: It's her second baby. A girl. / She wants to breastfeed.
+  - Wrong:
+    - Vaginal birth at 09:00. Second baby. Breastfeeding. _(why not: Missing the long oxytocin induction, the big baby and the asthma.)_
+    - Vaginal birth at 09:00 after a 20-hour induction. Baby 4.2 kg. _(why not: Missing her asthma, which rules out carboprost.)_
 - **A:** Uterine atony with hemorrhage. Her bladder is empty. She's getting tachycardic.
-  - Wrong: Normal lochia, just heavy. / I think she's anxious.
+  - Wrong:
+    - I think she may have a vaginal tear. _(why not: A boggy uterus points to atony. Tears bleed with a firm fundus.)_
+    - She may have a full bladder causing the bleeding. _(why not: Good thought, but her bladder is empty, and that's part of your assessment.)_
 - **R:** I'm massaging and I've called for help. I'd like uterotonics, a second IV, type and cross, and you at the bedside.
-  - Wrong: Should I recheck in an hour? / Can I give her something for the cramping?
+  - Wrong:
+    - Can I keep massaging and recheck in 15 minutes? _(why not: Keep massaging, yes, but she needs uterotonics and the provider now.)_
+    - Can I give her ibuprofen for the cramping? _(why not: Pain isn't the problem. Hemorrhage is.)_
 - **✓:** Read back: oxytocin 40 units in a liter wide open, methylergonovine 0.2 mg IM, TXA 1 g IV, type and cross 2 units.
   - Provider: "Oxytocin 40 units in a liter, wide open. Methylergonovine 0.2 mg IM. TXA 1 gram IV. Type and cross 2 units. I'm on my way."
-  - Wrong: Okay, methylergonovine. Got it. / Thanks, see you soon.
+  - Wrong:
+    - Read back: oxytocin 40 units wide open, methylergonovine 0.2 mg IV, TXA 1 g. _(why not: Methylergonovine is given IM, not IV: IV can cause severe hypertension and stroke.)_
+    - Okay, oxytocin, methylergonovine and TXA. _(why not: No doses or routes repeated.)_
 - Pearl: In hemorrhage, say the numbers that show it: how fast she's bleeding, heart rate, blood pressure. Mention allergies and conditions that rule out drugs.
 
 ### [ ] sb-compartment: Kenji Sato, calling Dr. Fisher, orthopedics
 Tibia fracture, casted yesterday. Pain 10 after morphine, worse when you stretch his toes. Toes pale and cool, he says they're tingling.
 
 - **S:** This is the nurse for Kenji Sato. I'm worried about compartment syndrome in his left leg: pain 10 despite morphine, worse on passive stretch.
-  - Wrong: Sorry to wake you. He just needs more pain medicine. / His pain is a little high tonight.
+  - Wrong:
+    - This is the nurse for Kenji Sato. His pain is 10 out of 10 after morphine. _(why not: Say what you're worried about: compartment syndrome, and pain on passive stretch.)_
+    - This is the nurse for Kenji Sato. His toes are tingling under the cast. _(why not: Add pain out of proportion and pain on stretch.)_
 - **B:** Closed tibia fracture from a motorcycle crash, casted at 16:00. Morphine 4 mg IV at 01:30 didn't touch it.
-  - Wrong: He's a delivery driver. / He was in a lot of pain in the ED too.
+  - Wrong:
+    - Closed tibia fracture, casted yesterday. _(why not: Missing that the morphine didn't help.)_
+    - Tibia fracture. He had a lot of pain in the ED too. _(why not: Earlier pain doesn't explain pain that's worse now despite morphine.)_
 - **A:** Toes pale and cool, tingling, pulses still there. Pain out of proportion. I think pressure is building in the leg.
-  - Wrong: He seems to have a low pain tolerance. / His pulses are fine, so it's probably okay.
+  - Wrong:
+    - He's anxious, which makes the pain worse. _(why not: Pain out of proportion and on passive stretch is a physical sign, not a personality.)_
+    - His pulses are present, so circulation is fine. _(why not: Pulses are a late sign. Pain on stretch is the early one.)_
 - **R:** I've kept the leg at heart level. I'd like you to see him now and decide about splitting the cast and pressure measurements.
-  - Wrong: Can I raise his leg higher and give more morphine? / Can we reassess at morning rounds?
+  - Wrong:
+    - Can I elevate his leg higher and give more morphine? _(why not: Raising it above the heart lowers blood flow into the compartment.)_
+    - Can we reassess in an hour? _(why not: Muscle can die within hours.)_
 - **✓:** Read back: split the cast now, leg at heart level, NPO in case of surgery. You're coming in.
   - Provider: "I'm coming in. Bivalve the cast now, keep it at heart level, NPO in case we go to the OR."
-  - Wrong: Okay, elevate it high. / Okay, thanks.
+  - Wrong:
+    - Read back: split the cast now, elevate the leg high, NPO. _(why not: He said heart level, not elevated.)_
+    - Okay, I'll split the cast. _(why not: Missing heart level and NPO.)_
 - Pearl: Pulses are a late sign. Pain out of proportion and pain on passive stretch are the early ones. Say them first.
 
 ### [ ] sb-ich: Harriet Lowe, calling Dr. Mendez, hospitalist
 She slipped in the bathroom at 21:30 and hit her head. Now she has a headache and is vomiting. She's on warfarin.
 
 - **S:** This is the nurse for Harriet Lowe. She hit her head in a fall an hour ago and now has a headache and vomiting. She's on warfarin.
-  - Wrong: Just reporting a fall. She seems fine. / She's asking for something for nausea.
+  - Wrong:
+    - This is the nurse for Harriet Lowe. She fell in the bathroom an hour ago. _(why not: Add the head strike, symptoms, and warfarin.)_
+    - This is the nurse for Harriet Lowe. She has a headache and is vomiting. _(why not: Missing the fall and the warfarin.)_
 - **B:** Atrial fibrillation on warfarin, INR 2.8 this morning. Admitted for pneumonia. She was oriented this afternoon.
-  - Wrong: She lives alone and is very independent. / She's had falls before at home.
+  - Wrong:
+    - Admitted for pneumonia. History of atrial fibrillation and hypertension. _(why not: Say she's on warfarin and her INR.)_
+    - On warfarin for atrial fibrillation. _(why not: Add the INR and that she was oriented this afternoon.)_
 - **A:** GCS 14, now slower to answer, pupils equal. I'm worried about a bleed in her head.
-  - Wrong: Probably just a bump. / She's tired and it's late.
+  - Wrong:
+    - She has a bump on her head but is talking. _(why not: Talking now doesn't rule out a growing bleed, especially on warfarin.)_
+    - She's sleepy, but it's late. _(why not: New sleepiness after a head strike is a warning sign.)_
 - **R:** I'd like a head CT now, neuro checks every 15 minutes, and to hold her warfarin. Will you come see her?
-  - Wrong: Can I give her ondansetron and let her sleep? / Should I check her in the morning?
+  - Wrong:
+    - Can I give ondansetron for the vomiting? _(why not: Treats a symptom of a possible bleed. CT first.)_
+    - Can we do neuro checks every 4 hours? _(why not: Too infrequent for a possible bleed on warfarin.)_
 - **✓:** Read back: stat head CT, INR now, hold warfarin, neuro checks every 15 minutes. You're coming.
   - Provider: "Stat head CT, INR now, hold warfarin, neuro checks every 15 minutes. If there's a bleed we reverse it. I'm coming."
-  - Wrong: Okay, hold the warfarin. / Okay, thanks.
+  - Wrong:
+    - Read back: head CT in the morning, hold warfarin, neuro checks every 15 minutes. _(why not: He said stat CT.)_
+    - Okay, CT and neuro checks. _(why not: Missing stat, the INR, and the warfarin hold.)_
 - Pearl: Head strike plus an anticoagulant is high risk even if they look fine. Say both in the first sentence; it gets a CT ordered.
 
 ### [ ] sb-peds-dehyd: Noah Bailey, calling Dr. Grant, pediatric resident
 Vomiting and diarrhea for two days. No wet diaper since 16:00. Sunken soft spot, no tears, hard to wake. HR 178, cap refill 4 seconds.
 
 - **S:** This is the nurse for Noah Bailey, 9 months. He's severely dehydrated and lethargic: HR 178, cap refill 4 seconds, no wet diaper in 12 hours.
-  - Wrong: Noah's parents are worried about him. / He's still not eating much.
+  - Wrong:
+    - This is the nurse for Noah Bailey, 9 months. He hasn't had a wet diaper in 12 hours. _(why not: Add the heart rate, cap refill and lethargy that make it shock.)_
+    - This is the nurse for Noah Bailey. His heart rate is 178. _(why not: Give the whole picture: lethargic, slow cap refill, no wet diapers.)_
 - **B:** Gastroenteritis, admitted yesterday for fluids. His IV came out at 18:00. Weight 8.5 kg.
-  - Wrong: He goes to daycare, where a lot of kids are sick. / He had his shots last month.
+  - Wrong:
+    - Gastroenteritis, admitted yesterday for fluids. _(why not: Missing that his IV came out and his weight.)_
+    - His IV came out at 18:00. _(why not: Add his weight so the resident can dose fluids.)_
 - **A:** Sunken fontanelle, dry mouth, hard to wake. I think he's in shock from fluid loss.
-  - Wrong: Babies sleep a lot. / He's probably teething.
+  - Wrong:
+    - He's tired from being sick. _(why not: Hard to wake with a fast heart rate is shock, not tiredness.)_
+    - He's mildly dehydrated. _(why not: Sunken fontanelle, no tears, slow refill and lethargy are severe.)_
 - **R:** He needs IV access now and a fluid bolus. I'd like a glucose check and you at the bedside.
-  - Wrong: Should we try more Pedialyte? / Can I wait for the morning team to place the IV?
+  - Wrong:
+    - Should we try oral rehydration first? _(why not: He's too lethargic to drink safely.)_
+    - Can we call IV team in the morning? _(why not: He needs access now; an IO if needed.)_
 - **✓:** Read back: normal saline 20 mL/kg, 170 mL over 15 minutes, glucose now, and an IO if two IV attempts fail.
   - Provider: "Normal saline 20 mL per kilo, so 170 mL, over 15 minutes. Check a glucose. If no IV in two tries, call me for an IO. I'm coming."
-  - Wrong: 170 mL over an hour. Okay. / Okay.
+  - Wrong:
+    - Read back: normal saline 170 mL over an hour, glucose now. _(why not: She said over 15 minutes, and an IO after two failed IV attempts.)_
+    - Okay, a bolus and a glucose. _(why not: No volume or rate repeated.)_
 - Pearl: Babies hide shock until late: a fast heart rate and slow cap refill are early signs. Low blood pressure is late. Weight-based fluids, read back the math.
 
 ### [ ] sb-suicide: Tom Brennan, calling Dr. Vasquez, attending psychiatrist
 Voluntary admission for depression, on 15-minute checks. He tells you he plans to hang himself with his shoelaces tonight. He has them on.
 
 - **S:** This is the nurse for Tom Brennan. He just told me he plans to hang himself tonight with his shoelaces, and he had them on. I've removed them and I'm with him.
-  - Wrong: Tom is having a hard day. / Can you see Tom at rounds tomorrow?
+  - Wrong:
+    - This is the nurse for Tom Brennan. He's talking about wanting to die. _(why not: Give the plan, the means and the time, and what you've already done.)_
+    - This is the nurse for Tom Brennan. I'm worried he's suicidal. _(why not: Say what he told you: a plan, a method, tonight.)_
 - **B:** Admitted two days ago after an overdose. On 15-minute checks. His divorce was finalized today.
-  - Wrong: He likes fishing. / He seemed fine at lunch.
+  - Wrong:
+    - Admitted two days ago for depression. _(why not: Missing the overdose and today's divorce.)_
+    - Admitted two days ago after an overdose. _(why not: Add today's divorce and that he's on 15-minute checks.)_
 - **A:** He has a plan, a method and a time. He's at high risk of suicide right now.
-  - Wrong: He's probably seeking attention. / He's just upset about the divorce.
+  - Wrong:
+    - He's upset about his divorce today. _(why not: True, but the plan, method and timing are what make this high risk.)_
+    - He's at moderate risk; he's talking about it. _(why not: A specific plan with access and a time is high risk.)_
 - **R:** I'd like him on 1:1 observation, a room and belongings search, and you to evaluate him today.
-  - Wrong: Can we give him something to help him sleep? / Should I keep the 15-minute checks?
+  - Wrong:
+    - Can we increase his checks to every 5 minutes? _(why not: Even 5-minute checks leave gaps. With a plan and means, ask for 1:1.)_
+    - Should I keep 15-minute checks and remove the laces? _(why not: Removing the laces is right, but 15-minute checks aren't enough.)_
 - **✓:** Read back: 1:1 now, room and belongings search, you'll see him within the hour.
   - Provider: "Start 1:1 observation now. Search the room and his belongings. I'll see him within the hour."
-  - Wrong: Okay, keep checks every 15. / Okay.
+  - Wrong:
+    - Read back: 1:1 now, you'll see him tomorrow. _(why not: She said within the hour, and a room and belongings search.)_
+    - Okay, 1:1. _(why not: Missing the search and the time she'll see him.)_
 - Pearl: Plan, means, timing: say all three. 15-minute checks are too far apart for a patient with a plan and access. Ask for 1:1.
 
 ### [ ] sb-stemi: Earl Watts, calling Dr. Ng, hospitalist
 Day 2 after hip surgery. Crushing chest pain for 15 minutes, sweating. 12-lead shows ST elevation in II, III and aVF.
 
 - **S:** This is the nurse for Earl Watts. He has chest pain and the ECG shows ST elevation in II, III and aVF. I think he's having a STEMI.
-  - Wrong: He has some chest discomfort, maybe gas. / Can I give him more oxycodone?
+  - Wrong:
+    - This is the nurse for Earl Watts. He has crushing chest pain and he's sweating. _(why not: Add the ECG: ST elevation in II, III and aVF.)_
+    - This is the nurse for Earl Watts. His ECG looks abnormal. _(why not: Say what's abnormal and that you think it's a STEMI.)_
 - **B:** Hip replacement two days ago, on enoxaparin. Diabetic, smoker. No cardiac history.
-  - Wrong: He's been walking well with PT. / He's anxious about going home.
+  - Wrong:
+    - Hip replacement two days ago. _(why not: Missing the enoxaparin and his cardiac risk factors.)_
+    - Diabetic and a smoker, no cardiac history. _(why not: Add the recent surgery and the enoxaparin; they affect the cath plan.)_
 - **A:** BP 110/64, HR 58, sweaty. Inferior changes. I'm holding nitroglycerin until we check the right side.
-  - Wrong: Pain's probably from his hip. / I think it's heartburn.
+  - Wrong:
+    - I think it could be a PE given his surgery. _(why not: Possible after surgery, but ST elevation in a coronary pattern points to an MI.)_
+    - I think he's having an MI. Should I give nitro? _(why not: With inferior changes, ask about a right-sided ECG before nitrates.)_
 - **R:** I'd like the cath lab activated and you here now. Do you want aspirin and a right-sided ECG?
-  - Wrong: Should I recheck an ECG in an hour? / Can I give him antacids?
+  - Wrong:
+    - Should I repeat the ECG in 15 minutes? _(why not: ST elevation already means activate the cath lab.)_
+    - Can I give him nitroglycerin for the pain? _(why not: Possible right ventricular involvement: nitrates can drop his pressure.)_
 - **✓:** Read back: cath lab activated, aspirin 324 mg chewed, right-sided ECG, no nitro for now. You're coming.
   - Provider: "Activating the cath lab. Aspirin 324 chewed. Right-sided ECG. No nitro for now. I'm on my way."
-  - Wrong: Okay, nitro and aspirin. / Got it.
+  - Wrong:
+    - Read back: cath lab activated, aspirin 81 mg, right-sided ECG. _(why not: He said 324 mg chewed, and no nitro.)_
+    - Okay, aspirin and ECG. _(why not: No doses repeated.)_
 - Pearl: Read the ECG out loud: "ST elevation in II, III, aVF" gets a STEMI response. With an inferior MI, ask about a right-sided ECG before nitrates.
+
+### [ ] sb-h-hit **[NCLEX level]**: Paul Grady, calling Dr. Reyes, cardiology
+Day 7 on a heparin drip after a PE. Platelets 72,000, from 180,000 on admission. New swelling and pain in his right arm.
+
+- **S:** This is the nurse for Paul Grady. I'm worried about HIT: platelets fell from 180,000 to 72,000 on day 7 of heparin, and he has a new swollen right arm.
+  - Wrong:
+    - This is the nurse for Paul Grady. His platelets are 72,000 this morning. _(why not: The number alone doesn't say why it matters. The drop from 180,000, the timing and the new clot make it HIT.)_
+    - This is the nurse for Paul Grady. His right arm is swollen. I think he may have a DVT. _(why not: Half the story. A new clot with falling platelets on heparin is HIT until proven otherwise.)_
+- **B:** Admitted for a PE, on a heparin drip since day 1. Platelets were 180,000 on admission. No bleeding.
+  - Wrong:
+    - Admitted for a PE. History of hypertension and type 2 diabetes. _(why not: Leaves out how long he's been on heparin and his baseline count, the two facts that point to HIT.)_
+    - His anti-Xa levels have all been in range. _(why not: True, but it doesn't matter for HIT. It's an immune reaction, not a dose problem.)_
+- **A:** A more than 50% drop 5 to 10 days into heparin, with a new clot. I think this is HIT.
+  - Wrong:
+    - I think the heparin level is too high and he's at risk of bleeding. _(why not: HIT causes clots, not bleeding. The danger here is thrombosis.)_
+    - He may be getting thrombocytopenia from an infection. _(why not: Possible, but the timing on heparin and the new clot make HIT the first thing to rule out.)_
+- **R:** I've stopped the heparin. I'd like a non-heparin anticoagulant, a HIT antibody test, and an ultrasound of the arm.
+  - Wrong:
+    - Can we lower the heparin rate and recheck platelets tomorrow? _(why not: Lowering the rate doesn't stop HIT. All heparin stops.)_
+    - Should I stop the heparin and hold anticoagulation until the test comes back? _(why not: Stopping heparin is right, but with HIT and a new clot, he needs a different anticoagulant now. Untreated, clots keep forming.)_
+- **✓:** Read back: stop all heparin including flushes, start argatroban per protocol, HIT antibody, arm Doppler, heparin allergy flagged.
+  - Provider: "Stop all heparin, including flushes. Start argatroban per protocol. Send a HIT antibody. Upper extremity Doppler. Flag the allergy."
+  - Wrong:
+    - Read back: stop the heparin drip, start argatroban, HIT antibody, arm Doppler. _(why not: Missed "including flushes" and the allergy flag. Small heparin exposures keep HIT going.)_
+    - Read back: stop all heparin, start enoxaparin, HIT antibody, arm Doppler. _(why not: Enoxaparin is a heparin. She said argatroban.)_
+- Pearl: HIT: platelets drop by more than half 5 to 10 days into heparin, often with new clots. Stop all heparin (flushes too), start a non-heparin anticoagulant, and list heparin as an allergy.
+
+### [ ] sb-h-preE **[NCLEX level]**: Tasha Green, calling Dr. Holt, OB
+Day 2 after a cesarean, doing well this morning. Now BP 164/112 (rechecked 15 minutes apart), headache 7 of 10, seeing spots.
+
+- **S:** This is the nurse for Tasha Green, day 2 after a cesarean. Severe-range BP 164/112 twice, 15 minutes apart, with a headache and visual changes.
+  - Wrong:
+    - This is the nurse for Tasha Green. Her blood pressure is high and she has a headache. _(why not: No numbers. "Severe range, twice, 15 minutes apart" is what starts the treatment clock.)_
+    - This is the nurse for Tasha Green. She has a bad headache. Can she have something stronger than acetaminophen? _(why not: Treating the headache misses that it's a sign of severe preeclampsia.)_
+- **B:** Cesarean two days ago. Blood pressures were normal in pregnancy and this morning. No magnesium given.
+  - Wrong:
+    - G2P2, cesarean for breech. Breastfeeding well. _(why not: True but not what he needs. Preeclampsia can start after birth even with normal pressures in pregnancy.)_
+    - She has a history of migraines. _(why not: Tempting, but a history of migraines doesn't explain a pressure of 164/112. Don't let it anchor the call.)_
+- **A:** I think this is postpartum preeclampsia with severe features. She's at risk of eclampsia and stroke.
+  - Wrong:
+    - I think it's a post-spinal headache from her anesthesia. _(why not: A spinal headache is positional and doesn't cause severe hypertension or visual spots.)_
+    - I think it's pain and anxiety raising her pressure. _(why not: Pain can raise pressure, but not to 164/112 with visual changes. Assume preeclampsia.)_
+- **R:** I need an antihypertensive within the hour, magnesium for seizure prevention, and preeclampsia labs. Can you come now?
+  - Wrong:
+    - Can I recheck her pressure in an hour and call if it's still high? _(why not: Severe-range pressures confirmed 15 minutes apart need treatment within 30 to 60 minutes, not another hour of watching.)_
+    - Can we start labetalol and recheck in the morning? _(why not: Treating the pressure is right, but she also needs magnesium and labs, and closer checks than the morning.)_
+- **✓:** Read back: labetalol 20 mg IV now, BP in 10 minutes, magnesium 4 g load then 2 g/hr, CBC, liver enzymes, creatinine.
+  - Provider: "Labetalol 20 mg IV now, repeat BP in 10 minutes. Magnesium 4 gram load, then 2 grams an hour. CBC, liver enzymes, creatinine. I'm coming."
+  - Wrong:
+    - Read back: labetalol 20 mg IV, magnesium 2 g load then 4 g/hr, labs. _(why not: The magnesium numbers are reversed: 4 g load, then 2 g an hour. Reversed, she'd get a dangerous maintenance rate.)_
+    - Read back: labetalol 200 mg IV now, magnesium 4 g then 2 g/hr, labs. _(why not: 20 mg, not 200. Read back every number.)_
+- Pearl: Preeclampsia can start up to 6 weeks after birth. Severe range is 160 or more systolic, or 110 or more diastolic, confirmed in 15 minutes: treat within the hour and start magnesium.
+
+### [ ] sb-h-na **[NCLEX level]**: Ellen Moore, calling Dr. Patel, hospitalist
+Admitted for pneumonia. Now confused and vomited once. Sodium 118, down from 129 yesterday. On a thiazide at home.
+
+- **S:** This is the nurse for Ellen Moore. Her sodium dropped from 129 to 118 in a day, and she's newly confused and vomiting.
+  - Wrong:
+    - This is the nurse for Ellen Moore. She has a critical sodium of 118. _(why not: Add the speed of the drop and the symptoms. A fast drop with neuro signs is an emergency; a slow one without symptoms is not.)_
+    - This is the nurse for Ellen Moore. She's confused this afternoon. I think she may be delirious. _(why not: Delirium is a description, not a cause. The sodium is the cause.)_
+- **B:** Pneumonia. Takes hydrochlorothiazide at home, still ordered here. She's been drinking a lot of water.
+  - Wrong:
+    - Pneumonia, on ceftriaxone and azithromycin. She was oriented yesterday. _(why not: Missing the thiazide and the water intake, the likely causes.)_
+    - She has a history of mild dementia. _(why not: Dementia doesn't explain an acute change. Don't let it anchor the call.)_
+- **A:** Symptomatic hyponatremia that fell fast. I'm worried about seizures and brain swelling.
+  - Wrong:
+    - I think she's dehydrated from vomiting. _(why not: Possible contributor, but a sodium of 118 with confusion is the emergency.)_
+    - Her sodium is low but she's not having seizures, so I think it's stable. _(why not: Confusion and vomiting are already neuro symptoms. Seizures are what you're trying to prevent.)_
+- **R:** I've held the thiazide and put her on seizure precautions. Can you see her, and do you want hypertonic saline and frequent sodium checks?
+  - Wrong:
+    - Should I give a liter of normal saline quickly? _(why not: Correction rate matters. Too fast can cause osmotic demyelination. Let the provider order the solution and the rate.)_
+    - Should I restrict her fluids and recheck in the morning? _(why not: A restriction may be part of the plan, but symptomatic sodium of 118 needs active treatment and close checks now.)_
+- **✓:** Read back: 3% saline 100 mL over 10 minutes, sodium every 2 hours, no more than 8 in 24 hours, thiazide held, seizure precautions.
+  - Provider: "3% saline, 100 mL bolus over 10 minutes. Sodium every 2 hours. Don't correct more than 8 in 24 hours. Hold the thiazide. Seizure precautions."
+  - Wrong:
+    - Read back: 3% saline 100 mL over an hour, sodium every 4 hours, thiazide held. _(why not: Wrong rate and wrong check frequency, and the correction limit is missing.)_
+    - Read back: normal saline 100 mL bolus, sodium every 2 hours, thiazide held. _(why not: She ordered 3% saline, not normal saline.)_
+- Pearl: Hyponatremia: how fast it fell and the symptoms matter more than the number. Correct slowly (usually no more than 8 to 10 in 24 hours) to avoid osmotic demyelination.
+
+### [ ] sb-h-gib **[NCLEX level]**: Walter Kim, calling Dr. Shah, hospitalist
+Admitted for a COPD flare. Just vomited 200 mL of coffee-ground material. HR 112, BP 104/66 (baseline 142/80). Takes aspirin and naproxen.
+
+- **S:** This is the nurse for Walter Kim. He vomited 200 mL of coffee-ground material. HR 112, BP 104/66, down from his baseline of 142.
+  - Wrong:
+    - This is the nurse for Walter Kim. He vomited and his heart rate is up. _(why not: Coffee-ground is the key word, and the pressure drop from his baseline tells how much he's lost.)_
+    - This is the nurse for Walter Kim. He has a GI bleed. His pressure is 104/66. _(why not: 104 sounds fine until you say his baseline is 142. Give the change.)_
+- **B:** COPD flare, on prednisone since admission. Takes daily aspirin and naproxen at home. Hemoglobin 12.1 yesterday.
+  - Wrong:
+    - COPD flare. On nebulizers and oxygen 2 L. _(why not: Leaves out the steroid and the NSAIDs, the reasons he's bleeding.)_
+    - No history of GI bleeding. _(why not: True and worth saying, but the steroid plus NSAIDs is what raises his risk now.)_
+- **A:** An upper GI bleed with early shock. I think he's losing more than we see.
+  - Wrong:
+    - I think it's swallowed blood from a nosebleed. _(why not: No nosebleed was seen, and his heart rate and pressure say he's lost volume.)_
+    - His pressure is still over 100, so he's stable for now. _(why not: A drop from 142 with a heart rate of 112 is compensated shock.)_
+- **R:** He's NPO and I've placed a second large IV. I'd like a type and cross, a stat hemoglobin, a PPI, and GI consulted. Can you come?
+  - Wrong:
+    - Can I give ondansetron for the vomiting? _(why not: Treats the symptom, not the bleed.)_
+    - Can I start a liter of fluid and recheck his hemoglobin in the morning? _(why not: Fluids may help, but he needs blood available and a hemoglobin now.)_
+- **✓:** Read back: type and cross 2 units, stat CBC, pantoprazole 80 mg IV bolus then 8 mg/hr, hold aspirin and naproxen. You're calling GI.
+  - Provider: "Type and cross 2 units. Stat CBC. Pantoprazole 80 mg IV bolus, then 8 mg an hour. Hold the aspirin and naproxen. I'm calling GI."
+  - Wrong:
+    - Read back: type and cross 2 units, stat CBC, pantoprazole 8 mg IV bolus then 80 mg/hr. _(why not: The numbers are reversed: an 80 mg bolus, then 8 mg an hour.)_
+    - Read back: type and cross, CBC, pantoprazole, and GI. _(why not: No doses or units repeated.)_
+- Pearl: In bleeding, give the change from baseline: a "normal" pressure can be a big drop. Steroids plus NSAIDs or aspirin is a classic setup for a GI bleed.
 
 ## De-escalation
 
@@ -1149,3 +1693,105 @@ Dementia. Incontinent overnight. When the aide brings the washbasin, she swats a
   - **Best (-1):** Hum a song while you brush her hair.
   - Others: "I can't sing." (0) / "Your mother has passed, Mabel." (+2)
 - Pearl: Dementia care: approach from the front, slowly, at eye level. Keep their routines when you can, keep them warm and covered, and break care into small steps.
+
+### [ ] de-h-grief **[NCLEX level]**: Carla Diaz, Med-surg, 20:00 (starts at 6/10)
+Her father is dying. She snaps at you when you come in to turn him: "Can't you people leave him alone?"
+
+- Turn 1: "Every hour someone comes in and hurts him."
+  - **Best (-2):** "It's hard to watch him be moved when he's this frail."
+  - Others: "We have to turn him every two hours to prevent pressure sores." (+1) / "I understand exactly how you feel." (+1)
+- Turn 2: "Nobody told us it would be this fast."
+  - **Best (-2):** "Tell me what you've been told so far."
+  - Others: "The doctor should have explained that." (+1) / "Don't worry, he's comfortable." (0)
+- Turn 3: "Is he in pain? He keeps frowning."
+  - **Best (-2):** "Let me check him with you. A frown can mean pain, and we can treat it."
+  - Others: "People at the end of life don't feel pain." (+2) / "Why do you think he's in pain?" (+1)
+- Turn 4: After his medicine he settles. "I don't know what to do now."
+  - **Best (-2):** "You can sit close and talk to him. Hearing is often one of the last senses to go."
+  - Others: "You should go home and get some rest." (+1) / "Everything will be okay." (+1)
+- Pearl: Grief often comes out as anger. Reflect the feeling, find out what they know, treat what you can (pain), and tell them what they can do. Avoid false reassurance and "I know how you feel."
+
+### [ ] de-h-new-dx **[NCLEX level]**: Mark Ellis, Oncology, 16:00 (starts at 5/10)
+He learned an hour ago that his cancer has spread. He's staring at the wall and won't take his medicine.
+
+- Turn 1: "What's the point of any of it?"
+  - **Best (-2):** "You just got hard news. I'm here. We don't have to talk about medicine right now."
+  - Others: "Lots of people live for years with treatment." (+1) / "You need to take your medicine so you stay strong." (+1)
+- Turn 2: "I keep thinking about my kids."
+  - **Best (-2):** "Tell me about them."
+  - Others: "Why are you thinking about that now?" (+2) / "Try not to think about that right now." (+1)
+- Turn 3: "Am I going to die soon?"
+  - **Best (-2):** "That's an important question. I'll make sure your oncologist sits down with you about it. What have they told you so far?"
+  - Others: "Nobody can know that." (0) / "Of course not, don't think like that." (+2)
+- Turn 4: "I just don't want to feel like this tonight."
+  - **Best (-1):** "Are you having any thoughts of hurting yourself?"
+  - Others: "Let me get you something to help you sleep." (0) / "Tomorrow will look better." (+1)
+- Pearl: After bad news: presence first, then open questions. Don't reassure falsely or dodge. Ask directly about suicide when someone says they don't want to feel this way.
+
+### [ ] de-h-refuse **[NCLEX level]**: Ivy Chen, Adult psych, 09:00 (starts at 6/10)
+On a 72-hour hold for psychosis. She refuses her antipsychotic: "It makes me a zombie."
+
+- Turn 1: "I'm not taking it. You can't make me."
+  - **Best (-2):** "You're right that you can refuse. Can you tell me what it's been like on it?"
+  - Others: "If you don't take it, the doctor will order a shot." (+3) / "It's for your own good." (+1)
+- Turn 2: "Slow. Like my head is full of cotton. I can't think."
+  - **Best (-2):** "That sounds miserable. I'll tell your doctor exactly how it feels so the dose or the drug can be looked at."
+  - Others: "That's normal. It goes away." (+1) / "Everyone feels like that at first." (+1)
+- Turn 3: "And if I still say no?"
+  - **Best (-2):** "Then I write down that you refused and why, and your doctor talks with you about other options."
+  - Others: "Then you won't get better." (+2) / "Let's not worry about that." (0)
+- Turn 4: "Okay. I'll talk to her."
+  - **Best (-1):** "I'll ask her to see you this morning. Thanks for telling me what's been happening."
+  - Others: "Good. Now take your pill." (+2) / "Great decision." (0)
+- Pearl: Patients on a hold still have the right to refuse medication except in an emergency or by court order. Ask about side effects, advocate, and document the refusal and the reason.
+
+### [ ] de-h-veteran **[NCLEX level]**: Ray Ortiz, ICU step-down, 02:30 (starts at 7/10)
+A veteran recovering from surgery. A tray crashed in the hall. Now he's out of bed, breathing fast, eyes darting.
+
+- Turn 1: "Where am I? Get down!"
+  - **Best (-2):** From a few feet away, calmly: "Ray, it's Dana, your nurse. You're in the hospital. You're safe."
+  - Others: Put a hand on his shoulder to ground him. (+2) / "It's just a tray. Nothing's wrong." (+1)
+- Turn 2: "I heard it. It was right there."
+  - **Best (-2):** "A tray fell in the hall. It was loud. You're in room 6, and it's 2:30 in the morning."
+  - Others: "Are you having a flashback?" (0) / "You're overreacting." (+3)
+- Turn 3: Breathing hard. "I can't slow down."
+  - **Best (-2):** "Breathe with me: in for four, out for six. Feel your feet on the floor."
+  - Others: "Just relax." (+1) / "Let me get you something to calm you down." (0)
+- Turn 4: "Sorry. That happens."
+  - **Best (-2):** "No need to be sorry. Would it help to keep the door closed and a light on at night?"
+  - Others: "It's okay, everybody gets scared." (0) / "Why didn't you tell us about your PTSD?" (+2)
+- Pearl: Trauma responses: keep your distance, say who you are and where they are, avoid touching without asking, ground with breath and senses, then adjust the environment.
+
+### [ ] de-h-teen-od **[NCLEX level]**: Riley, Pediatrics, 10:00 (starts at 6/10)
+Admitted after an acetaminophen overdose. Medically stable now. She glares when you come in: "I don't want to talk."
+
+- Turn 1: "I don't want to talk."
+  - **Best (-2):** "That's okay. I'm going to sit here for a few minutes while I check your IV."
+  - Others: "You'll have to talk to someone eventually." (+2) / "Why did you do it?" (+2)
+- Turn 2: "My mom's acting like I ruined her life."
+  - **Best (-2):** "It sounds like you're feeling blamed."
+  - Others: "I'm sure she's just worried about you." (+1) / "Your mom loves you." (+1)
+- Turn 3: "Are you going to tell her what I say?"
+  - **Best (-2):** "Most of what you tell me stays between us and your care team. If you're in danger, I can't keep that private, and I'd tell you first."
+  - Others: "No, everything you say is confidential." (+1) / "Your mom has a right to know everything." (+2)
+- Turn 4: "I still kind of want to die."
+  - **Best (-1):** "Thank you for telling me. Do you have a plan for how?"
+  - Others: "You don't mean that." (+2) / "You have so much to live for." (+1)
+- Pearl: With teens: presence before questions, reflect feelings, and be honest about confidentiality limits. Ask directly about suicide and a plan; it doesn't plant the idea.
+
+### [ ] de-h-son-ama **[NCLEX level]**: Victor Hale, Med-surg, 17:30 (starts at 6/10)
+His mother, 83, has pneumonia and is confused today. He's packing her bag. "I'm taking her home. You people aren't helping."
+
+- Turn 1: "She was fine before she came here."
+  - **Best (-2):** "Seeing her this confused is frightening. Can you tell me what she's usually like at home?"
+  - Others: "She's confused because of the infection, not because of us." (+1) / "Please calm down." (+2)
+- Turn 2: "Sharp. She does her own bills."
+  - **Best (-2):** "That's really helpful. A sudden change like this is called delirium. It often improves as the infection is treated."
+  - Others: "Older people often get confused in the hospital." (0) / "She'll be fine." (+1)
+- Turn 3: "So what am I supposed to do? Just watch?"
+  - **Best (-2):** "You can help a lot: her glasses and hearing aids, photos, talking about home, being here at night if you can."
+  - Others: "Let the staff handle it." (+1) / "If you take her home, she could die." (+1)
+- Turn 4: "Can I talk to her doctor?"
+  - **Best (-1):** "Yes. I'll page her now and stay with you until she calls."
+  - Others: "The doctor's very busy tonight." (+2) / "Maybe tomorrow." (+1)
+- Pearl: Families who want to leave: acknowledge the fear, use what they know about the patient, explain in plain words, give them a role, and get the provider involved. Scare tactics backfire.

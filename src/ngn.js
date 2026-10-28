@@ -1,5 +1,5 @@
 /* The Shift — NCLEX-style practice items after the debrief.
-   Three items per shift, built from that shift's patients, in the formats the Next Generation NCLEX uses:
+   Three items per shift (plus two NCLEX challenge items from ngn-challenge.js), built from that shift's patients, in the formats the Next Generation NCLEX uses:
    bowtie, matrix, extended multiple response (select all), highlight, and drop-down cloze. Scoring follows the
    NCSBN rules: 0/1 for bowtie, matrix and cloze; +/- for select-all and highlight (wrong picks cancel right ones,
    floor of zero). Each item names the clinical judgment step it tests. */
@@ -356,6 +356,8 @@
         why: `31 is about what a 3-year-old weighs in pounds. Every pediatric dose depends on a weight in kilograms that someone actually measured.` },
     ],
   };
+  // NCLEX challenge items (src/ngn-challenge.js): two harder items per shift, after its three.
+  Object.entries(S.ngnChallenge || {}).forEach(([cid, L]) => { ITEMS[cid] = (ITEMS[cid] || []).concat(L); });
 
   const TYPE = { bowtie: 'Bowtie', matrix: 'Matrix', sata: 'Select all that apply', highlight: 'Highlight', cloze: 'Drop-down', mc: 'Multiple choice', order: 'Ordered response', num: 'Calculation' };
   const max = (it) => it.type === 'mc' || it.type === 'order' || it.type === 'num' ? 1 : it.type === 'bowtie' ? 5 : it.type === 'matrix' ? it.rows.length : it.type === 'cloze' ? it.parts.filter((p) => typeof p !== 'string').length : it.type === 'sata' ? it.opts.filter((o) => o.ok).length : it.parts.filter((p) => p.ok).length;
@@ -363,7 +365,30 @@
      mc { m: i }, order { o: [original index in the order placed] }, num { n: 'typed text' } */
   const numOf = (x) => { const v = parseFloat(String(x == null ? '' : x).replace(/,/g, '').trim()); return isFinite(v) ? v : null; };
   const numOk = (it, x) => { const v = numOf(x); return v !== null && Math.abs(v - it.ans) <= (it.tol || 0) + 1e-9; };
+  /* Answer order. Items are written with the key first, which a test-wise student would learn. Each item gets a fixed
+     shuffle (seeded by its id, so it looks the same every time) of bowtie lists, select-all and single-choice options,
+     and drop-down choices. Keys and inline rationales move with their options; rationales kept in ngn-why.js are read
+     through the stored permutation. Highlight and matrix keep their order (a note reads top to bottom; matrix rows
+     aren't positional). Idempotent and cheap: every entry point calls it. */
+  function seeded(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function order(n, rnd) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function mix(it) {
+    if (!it || it._perm) return it;
+    const rnd = seeded(String(it.id)), perm = {};
+    if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => {
+      const g = it[k], idx = order(g.opts.length, rnd); g.opts = idx.map((i) => g.opts[i]);
+      g.ans = Array.isArray(g.ans) ? g.ans.map((x) => idx.indexOf(x)) : idx.indexOf(g.ans);
+      if (it.whys && it.whys[k]) it.whys[k] = idx.map((i) => it.whys[k][i]);
+      perm[k] = idx;
+    });
+    else if (it.type === 'sata' || it.type === 'mc') { const idx = order(it.opts.length, rnd); it.opts = idx.map((i) => it.opts[i]); perm.opts = idx; }
+    else if (it.type === 'cloze') { perm.blanks = it.parts.filter((x) => typeof x !== 'string').map((x) => { const idx = order(x.opts.length, rnd); x.opts = idx.map((i) => x.opts[i]); x.ans = idx.indexOf(x.ans); if (x.whys) x.whys = idx.map((i) => x.whys[i]); return idx; }); }
+    Object.defineProperty(it, '_perm', { value: perm, enumerable: false });
+    return it;
+  }
+  const mixAll = (L) => { (L || []).forEach(mix); return L; };
   function score(it, a) {
+    mix(it);
     a = a || {};
     if (it.type === 'mc') return a.m !== undefined && it.opts[a.m] && it.opts[a.m].ok ? 1 : 0;
     if (it.type === 'order') return (a.o || []).length === it.opts.length && a.o.every((x, i) => x === i) ? 1 : 0;
@@ -374,17 +399,18 @@
     const list = it.type === 'sata' ? it.opts : it.parts, s = a.s || [];
     return Math.max(0, s.filter((i) => list[i].ok).length - s.filter((i) => !list[i].ok).length);
   }
-  const complete = (it, a) => { a = a || {}; if (it.type === 'mc') return a.m !== undefined; if (it.type === 'order') return (a.o || []).length === it.opts.length; if (it.type === 'num') return numOf(a.n) !== null; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
+  const complete = (it, a) => { mix(it); a = a || {}; if (it.type === 'mc') return a.m !== undefined; if (it.type === 'order') return (a.o || []).length === it.opts.length; if (it.type === 'num') return numOf(a.n) !== null; if (it.type === 'bowtie') return a.c !== undefined && (a.a || []).length === 2 && (a.p || []).length === 2; if (it.type === 'matrix') return it.rows.every((r, i) => (a.r || [])[i] !== undefined); if (it.type === 'cloze') return it.parts.filter((p) => typeof p !== 'string').every((p, i) => (a.d || [])[i] !== undefined); return (a.s || []).length > 0; };
   /* Per-option rationale for any item, in one shape: { cond, actions, params } for bowtie, opts for select-all,
      parts for highlight, blanks (one list per blank) for drop-down, and a tip. Shift items take theirs from
      ngn-why.js; focus items carry theirs inline. Missing pieces come back as empty lists. */
   function whys(it) {
-    const w = (S.ngnWhy || {})[it.id] || {}, o = { tip: it.tip || w.tip || '' };
-    if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => { o[k] = (it.whys && it.whys[k]) || w[k] || []; });
-    else if (it.type === 'sata' || it.type === 'mc') o.opts = it.opts.map((x, i) => x.why || (w.opts || [])[i] || '');
+    mix(it);
+    const w = (S.ngnWhy || {})[it.id] || {}, o = { tip: it.tip || w.tip || '' }, P = it._perm || {}, via = (L, idx) => (L && idx ? idx.map((i) => L[i]) : L);
+    if (it.type === 'bowtie') ['cond', 'actions', 'params'].forEach((k) => { o[k] = (it.whys && it.whys[k]) || via(w[k], P[k]) || []; });
+    else if (it.type === 'sata' || it.type === 'mc') { const ow = via(w.opts, P.opts) || []; o.opts = it.opts.map((x, i) => x.why || ow[i] || ''); }
     else if (it.type === 'order') o.steps = it.opts.map((x, i) => (it.whys || [])[i] || '');
     else if (it.type === 'highlight') o.parts = it.parts.map((x, i) => x.why || (w.parts || [])[i] || '');
-    else if (it.type === 'cloze') { let b = 0; o.blanks = it.parts.filter((x) => typeof x !== 'string').map((x) => x.whys || (w.blanks || [])[b++] || []); }
+    else if (it.type === 'cloze') o.blanks = it.parts.filter((x) => typeof x !== 'string').map((x, b) => x.whys || via((w.blanks || [])[b], (P.blanks || [])[b]) || []);
     return o;
   }
   /* Scoring, shown as working: every part that earns or loses a point, and the rule the exam uses for this format. */
@@ -399,6 +425,7 @@
     highlight: 'Highlight items are scored plus or minus: +1 for each finding you correctly highlight, -1 for each one you highlight that did not need follow-up, never below 0.',
   };
   function breakdown(it, a) {
+    mix(it);
     a = a || {}; const rows = [];
     if (it.type === 'mc') {
       const ok = a.m !== undefined && it.opts[a.m] && it.opts[a.m].ok, best = it.opts.find((o) => o.ok);
@@ -470,8 +497,8 @@
   /* Every item, and lookup by id (focus, bank and case-study items included), for the debrief, the practice hub and the
      instructor dashboard. bank() is everything that stands alone (no case record needed). */
   const focusItems = () => S.ngnFocus || [];
-  const bank = () => { tagAll(); return Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems(), S.ngnBank || []); };
-  const cases = () => { tagAll(); return S.ngnCases || []; };
+  const bank = () => { tagAll(); return mixAll(Object.values(ITEMS).reduce((n, L) => n.concat(L), []).concat(focusItems(), S.ngnBank || [])); };
+  const cases = () => { tagAll(); (S.ngnCases || []).forEach((c) => mixAll(c.items)); return S.ngnCases || []; };
   const all = () => bank().concat(cases().reduce((n, c) => n.concat(c.items), []));
   let IDX = null;
   const byId = (id) => { if (!IDX || IDX.n !== all().length) { IDX = { n: all().length, m: new Map(all().map((x) => [x.id, x])) }; } return IDX.m.get(id) || null; };
@@ -487,7 +514,7 @@
       const fresh = pool.filter((x) => !done[x.id]), pick = (fresh.length ? fresh : pool).slice(0, per);
       pick.forEach((x) => { used.add(x.id); out.push(x); });
     });
-    return out;
+    return mixAll(out);
   }
   /* Counts for the home screen and shift cards, from the build's ngnMeta when it's there, so drawing home doesn't
      unpack the whole question bank. Falls back to counting the data itself. */
@@ -496,5 +523,5 @@
     bank: () => { const m = S.ngnMeta; return m ? shiftN() + m.focus + m.bank : bank().length; },
     cases: (sp) => { const m = S.ngnMeta, L = m ? m.cases : cases(); return sp ? L.filter((c) => c.sp === sp).length : L.length; },
   };
-  S.ngn = { ITEMS, TYPE, RULE, CN, items: (id) => ITEMS[id] || [], score, max, complete, whys, breakdown, all, bank, cases, byId, caseById, focus, numOf, count };
+  S.ngn = { ITEMS, TYPE, RULE, CN, items: (id) => mixAll(ITEMS[id] || []), score, max, complete, whys, breakdown, all, bank, cases, byId, caseById, focus, numOf, count };
 })(window.Shift = window.Shift || {});
