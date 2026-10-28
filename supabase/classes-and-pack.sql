@@ -53,6 +53,19 @@ create table if not exists public.ngn_results (
 );
 create index if not exists ngn_user on public.ngn_results (user_id, at desc);
 
+-- Drill results: one row per card answered (Med Pass, Who's First, SBAR, De-escalation). kind is the drill, card_id
+-- the card in src/drills-*.js, ok whether it was right, retry true for a "retry what you missed" round.
+create table if not exists public.drill_results (
+  id      bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  kind    text not null check (kind in ('med', 'first', 'sbar', 'calm')),
+  card_id text not null,
+  ok      boolean not null,
+  retry   boolean not null default false,
+  at      timestamptz not null default now()
+);
+create index if not exists drill_user on public.drill_results (user_id, at desc);
+
 -- Purchases: written only by the Stripe webhook (service role), read by the player.
 create table if not exists public.entitlements (
   user_id    uuid not null references auth.users (id) on delete cascade,
@@ -67,6 +80,7 @@ alter table public.classes       enable row level security;
 alter table public.class_members enable row level security;
 alter table public.results       enable row level security;
 alter table public.ngn_results   enable row level security;
+alter table public.drill_results enable row level security;
 alter table public.entitlements  enable row level security;
 
 -- Helper: is the signed-in user the instructor of a class this student belongs to?
@@ -131,6 +145,10 @@ drop policy if exists "own ngn" on public.ngn_results;
 create policy "own ngn" on public.ngn_results for select using (user_id = auth.uid() or public.teaches_at(user_id, at));
 drop policy if exists "write own ngn" on public.ngn_results;
 create policy "write own ngn" on public.ngn_results for insert with check (user_id = auth.uid());
+drop policy if exists "own drills" on public.drill_results;
+create policy "own drills" on public.drill_results for select using (user_id = auth.uid() or public.teaches_at(user_id, at));
+drop policy if exists "write own drills" on public.drill_results;
+create policy "write own drills" on public.drill_results for insert with check (user_id = auth.uid());
 
 -- entitlements: read your own. No insert policy: only the webhook (service role) writes.
 drop policy if exists "read own entitlements" on public.entitlements;

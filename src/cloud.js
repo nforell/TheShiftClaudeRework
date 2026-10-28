@@ -145,10 +145,10 @@
   /* Results for instructors: each finished shift and each practice question goes to an outbox on the device,
      then up to results / ngn_results when signed in. Nothing is lost while offline or signed out; the outbox is
      capped so a device that never signs in doesn't grow forever. */
-  const outbox = () => { const o = get(OUTK) || {}; return { results: o.results || [], ngn: o.ngn || [] }; };
+  const outbox = () => { const o = get(OUTK) || {}; return { results: o.results || [], ngn: o.ngn || [], drills: o.drills || [] }; };
   function enqueue(kind, row) {
     if (!on()) return;
-    const o = outbox(); o[kind].push(row); o[kind] = o[kind].slice(-60); put(OUTK, o);
+    const o = outbox(); o[kind].push(row); o[kind] = o[kind].slice(kind === 'drills' ? -200 : -60); put(OUTK, o);
     if (sess) flush().catch(() => {});
   }
   let flushing = null;
@@ -159,10 +159,11 @@
       try {
         if (!(await fresh())) return false;
         const uid = sess.user.id, o = outbox();
-        for (const [kind, table] of [['results', 'results'], ['ngn', 'ngn_results']]) {
+        for (const [kind, table] of [['results', 'results'], ['ngn', 'ngn_results'], ['drills', 'drill_results']]) {
           if (!o[kind].length) continue;
           const rows = o[kind].map((r) => Object.assign({}, r, { user_id: uid }));
-          await call('/rest/v1/' + table, { method: 'POST', auth: true, headers: { Prefer: 'return=minimal' }, body: rows });
+          try { await call('/rest/v1/' + table, { method: 'POST', auth: true, headers: { Prefer: 'return=minimal' }, body: rows }); }
+          catch (e) { if (kind === 'drills') continue; throw e; }   // drills wait on the device until their table exists; they never block shifts
           const now = outbox(); now[kind] = now[kind].slice(o[kind].length); put(OUTK, now);
         }
         return true;
@@ -173,6 +174,9 @@
   function recordRun(r) {
     enqueue('results', { case_id: r.case_id, score: Math.round(r.score || 0), stars: r.stars || 0, minutes: r.minutes == null ? null : Math.round(r.minutes),
       domains: r.domains || [], steps: r.steps || [], misses: (r.misses || []).slice(0, 30), outcomes: r.outcomes || [], played_at: new Date().toISOString() });
+  }
+  function recordDrill(kind, cardId, ok, retry) {
+    enqueue('drills', { kind, card_id: cardId, ok: !!ok, retry: !!retry, at: new Date().toISOString() });
   }
   function recordNgn(caseId, item, score, max) {
     enqueue('ngn', { case_id: caseId, item_id: item.id, item_type: item.type, step: item.step || null, score, max, at: new Date().toISOString() });
@@ -205,6 +209,7 @@
   async function removeMember(classId, userId) { await need(); await call('/rest/v1/class_members?class_id=eq.' + encodeURIComponent(classId) + '&user_id=eq.' + encodeURIComponent(userId), { method: 'DELETE', auth: true, headers: { Prefer: 'return=minimal' } }); }
   const inList = (ids) => 'in.(' + ids.map(encodeURIComponent).join(',') + ')';
   async function classResults(ids) { await need(); if (!ids.length) return []; return (await call('/rest/v1/results?select=*&order=played_at.desc&limit=5000&user_id=' + inList(ids), { auth: true })) || []; }
+  async function classDrills(ids) { await need(); if (!ids.length) return []; try { return (await call('/rest/v1/drill_results?select=*&order=at.desc&limit=10000&user_id=' + inList(ids), { auth: true })) || []; } catch (e) { return []; } }
   async function classNgn(ids) { await need(); if (!ids.length) return []; return (await call('/rest/v1/ngn_results?select=*&order=at.desc&limit=5000&user_id=' + inList(ids), { auth: true })) || []; }
 
   /* The shift pack: owned through a purchase (entitlements, written only by the payment webhook) or through a class
@@ -249,8 +254,8 @@
     user: () => (sess && sess.user) || null,
     linked: () => linked,   // this page load came from the emailed link
     status: () => (!on() ? null : !sess ? { state: 'out', err: meta.err || null } : { state: 'in', email: sess.user && sess.user.email, at: meta.at || null, err: meta.err || null, busy: !!busy }),
-    recordRun, recordNgn, flush, pending: () => { const o = outbox(); return o.results.length + o.ngn.length; },
-    myClasses, join, leave, createClass, teaching, roster, removeMember, classResults, classNgn,
+    recordRun, recordNgn, recordDrill, flush, pending: () => { const o = outbox(); return o.results.length + o.ngn.length + o.drills.length; },
+    myClasses, join, leave, createClass, teaching, roster, removeMember, classResults, classNgn, classDrills,
     owns, checkOwns,
     _merge: mergeProfile,
   };

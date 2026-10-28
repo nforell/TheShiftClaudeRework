@@ -84,7 +84,7 @@ for cid in CF:
     (dist/'review'/cid).mkdir(exist_ok=True)
     (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
 # Instructor dashboard: the shifts' logic (titles, skills, NCLEX steps), accounts, and the practice questions.
-TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js']+[f for f in LOGIC if f.startswith('case-')]
+TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js','drills-content.js','drills-more-1.js','drills-more-2.js']+[f for f in LOGIC if f.startswith('case-')]
 (dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+minjs(''.join((src/f).read_text()+'\n' for f in TEACH))+'</script>'))
 (dist/'privacy').mkdir(exist_ok=True); (dist/'privacy'/'index.html').write_text((root/'site'/'privacy.html').read_text())
 import html as _h

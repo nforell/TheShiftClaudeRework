@@ -31,6 +31,21 @@ def play(pg, case, ngn=False):
         H(pg, 'ngn-check'); pg.wait_for_timeout(300)
     H(pg, 'home'); pg.wait_for_timeout(300)
 
+def drill_round(pg, kind, best, same=None):
+    # Answer a whole round right (best) or wrong, card by card.
+    PICK = """(best) => { const r = Shift.ui._ui.dr, c = r.deck[r.i], D = Shift.drillData, k = D[c.kind].find((x) => x.id === c.id), st = r.c;
+      if (c.kind === 'med') { const L = st.stage === 'check' ? k.check : k.pick; return [st.stage === 'check' ? 'dr-check' : 'dr-pick', L.findIndex((o) => !!o.ok === best)]; }
+      if (c.kind === 'first') return ['dr-pick', k.pts.findIndex((o) => !!o.ok === best)];
+      if (c.kind === 'sbar') { if (st.miss !== null) return ['dr-fix', 0]; const o = k.steps[st.step].o; return ['dr-say', o.findIndex((x) => !!x.ok === best)]; }
+      const ds = k.turns[st.turn].o.map((x) => x.d); return ['dr-calm', ds.indexOf(best ? Math.min(...ds) : Math.max(...ds))]; }"""
+    H(pg, 'dr-start', k=kind)
+    if same: pg.evaluate("(ids) => { const r = Shift.ui._ui.dr; r.deck = ids.map((id) => ({ kind: r.kind, id })); }", same)   # same cards as another student
+    for _ in range(80):
+        if pg.evaluate("Shift.ui._ui.dr.done"): break
+        if pg.evaluate("Shift.ui._ui.dr.c && Shift.ui._ui.dr.res.length > Shift.ui._ui.dr.i"): H(pg, 'dr-next'); continue
+        a, i = pg.evaluate(f"({PICK})({'true' if best else 'false'})"); H(pg, a, i=str(i))
+    ids = pg.evaluate("Shift.ui._ui.dr.deck.map((c) => c.id)"); H(pg, 'dr-quit'); pg.wait_for_timeout(300); return ids
+
 with sync_playwright() as p:
     b = p.chromium.launch(); errs = []
     # Instructor: signed out, then the link, then a class.
@@ -64,11 +79,15 @@ with sync_playwright() as p:
     check('You\'re in NURS 310 Tuesday' in A.content() and A.locator('.cls-list li').count() == 1, 'game confirms and lists the class')
     A.screenshot(path=str(OUT / 'class-join.png'))
     play(A, 'medsurg-4w-2', ngn=True)   # after joining: this one is the instructor's to see
+    a_first = drill_round(A, 'first', False)   # Ana misses every Who's First card
+    drill_round(A, 'med', True)
+    check(sum(1 for r in db.drills if r['user_id'] == 'u-ana') == len(a_first) + 4 and A.evaluate("Shift.cloud.pending()") == 0, 'drill cards upload as they\'re answered')
 
     # Student 2 joins first, then plays signed in: uploads right away.
     B2 = device(b, db, '/play/', 'ben', errs); signin(B2, 's2'); H(B2, 'cls'); B2.wait_for_timeout(300)
     B2.fill('#cls-code', code); B2.fill('#cls-name', 'Ben Okafor'); H(B2, 'cls-join'); B2.wait_for_timeout(600)
     play(B2, 'medsurg-4w-1'); play(B2, 'stepdown-6e-1')
+    drill_round(B2, 'first', False, a_first)   # Ben misses the same cards: these show as the class's most-missed cards
     check(sum(1 for r in db.results if r['user_id'] == 'u-ben') == 2, 'a signed-in student\'s shifts upload as they finish')
     # Someone outside the class.
     O = device(b, db, '/play/', 'out', errs); signin(O, 's3'); play(O, 'psych-3e-1')
@@ -94,6 +113,15 @@ with sync_playwright() as p:
     T.click('[data-act=back]'); T.click('[data-act=tab][data-v=missed]'); T.wait_for_timeout(200)
     check(T.locator('.miss').count() >= 1, 'most-missed decisions listed')
     T.screenshot(path=str(OUT / 'teach-missed.png'), full_page=True)
+    T.click('[data-act=tab][data-v=drills]'); T.wait_for_timeout(200)
+    dt = T.inner_text('#app')
+    check('Med Pass' in dt and 'Who\'s First' in dt and T.locator('.bars .b').count() >= 4, 'the Drills tab shows each drill')
+    check('100' in T.inner_text('.bars .b:first-child') and T.locator('.miss').count() >= 1, 'right and missed drill cards are counted (Med Pass all right, Who\'s First missed)')
+    check('2 of 2' in dt, 'a card both students missed shows as missed by 2 of 2')
+    T.screenshot(path=str(OUT / 'teach-drills.png'), full_page=True)
+    with T.expect_download() as dl: T.click('[data-act=dcsv]')
+    drows = open(dl.value.path()).read().strip().splitlines()
+    check(drows[0].startswith('student,drill,card_id') and len(drows) - 1 == sum(1 for r in db.drills if r['user_id'] in ('u-ana', 'u-ben')), f'drill CSV has a row per card answered ({len(drows) - 1})')
     T.click('[data-act=tab][data-v=ngn]'); T.wait_for_timeout(200)
     check(T.locator('tbody tr').count() == 1, 'practice-question results listed')
     T.select_option('#sf', 'stepdown-6e-1'); T.click('[data-act=tab][data-v=overview]'); T.wait_for_timeout(200)

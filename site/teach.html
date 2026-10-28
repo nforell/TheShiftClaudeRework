@@ -68,14 +68,14 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <main>
   <div class="bar"><a class="home" href="/">The Shift</a><span class="who" id="who"></span></div>
   <h1>Instructor dashboard</h1>
-  <p class="muted">Make a class, give your students the code, and see how their shifts go: scores by skill and by NCLEX clinical judgment step, the decisions most of them missed, and how they did on the practice questions.</p>
+  <p class="muted">Make a class, give your students the code, and see how they're doing: drills (med pass, prioritization, SBAR, de-escalation) and the cards most of them miss, shift scores by skill and by NCLEX clinical judgment step, the decisions most of them missed, and the practice questions.</p>
   <div id="app" aria-live="polite"><p class="muted">Loading…</p></div>
   <p class="foot">Students' results show here only after they join your class. Students can leave a class at any time, and you can remove anyone from yours. <a href="/privacy/">Privacy</a></p>
 </main>
 <!--SCRIPTS-->
 <script>
 (function () {
-  const S = window.Shift, CL = S.cloud, E = S.engine, CJ = S.cjmm, NG = S.ngn;
+  const S = window.Shift, CL = S.cloud, E = S.engine, CJ = S.cjmm, NG = S.ngn, DD = S.drillData || { med: [], first: [], sbar: [], calm: [] };
   const app = document.getElementById('app'), who = document.getElementById('who');
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const CASES = Object.keys(E.cases);
@@ -114,9 +114,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     st.cur = id; st.data = null; st.student = null; render();
     try {
       const roster = await CL.roster(id), ids = roster.map((r) => r.user_id);
-      const [runs, ngn] = await Promise.all([CL.classResults(ids), CL.classNgn(ids)]);
-      st.data = { roster, runs, ngn };
-    } catch (e) { st.data = { roster: [], runs: [], ngn: [], err: e.message }; }
+      const [runs, ngn, drills] = await Promise.all([CL.classResults(ids), CL.classNgn(ids), CL.classDrills ? CL.classDrills(ids) : []]);
+      st.data = { roster, runs, ngn, drills: drills || [] };
+    } catch (e) { st.data = { roster: [], runs: [], ngn: [], drills: [], err: e.message }; }
     render();
   }
 
@@ -137,13 +137,13 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     const d = st.data;
     if (!d) return head + '<p class="muted">Loading results…</p>';
     if (d.err) return head + `<p class="err">Couldn't load results: ${esc(d.err)}</p>`;
-    if (!d.roster.length) return head + '<div class="empty">No students yet. Share the code: results show here as soon as someone joins and finishes a shift.</div>';
-    const tabs = [['overview', 'Overview'], ['students', 'Students'], ['missed', 'Most missed'], ['ngn', 'Practice questions']];
+    if (!d.roster.length) return head + '<div class="empty">No students yet. Share the code: results show here as soon as someone joins and plays a round of drills or finishes a shift.</div>';
+    const tabs = [['overview', 'Overview'], ['drills', 'Drills'], ['students', 'Students'], ['missed', 'Most missed'], ['ngn', 'Practice questions']];
     return head + `<div class="row" style="align-items:center;justify-content:space-between">
         <div class="tabs" role="group" aria-label="View">${tabs.map(([id, l]) => `<button data-act="tab" data-v="${id}" aria-pressed="${st.tab === id}">${l}</button>`).join('')}</div>
-        <div style="flex:0 1 16rem"><label for="sf" style="margin-top:0">Shift</label><select id="sf" data-act="shift"><option value="all">All shifts</option>${CASES.map((c) => `<option value="${c}" ${st.shift === c ? 'selected' : ''}>${esc(title(c))}</option>`).join('')}</select></div></div>
-      ${st.student ? studentHTML() : st.tab === 'students' ? studentsHTML() : st.tab === 'missed' ? missedHTML() : st.tab === 'ngn' ? ngnHTML() : overviewHTML()}
-      <p style="margin-top:1.4rem"><button data-act="csv">Download results (CSV)</button> <button data-act="refresh">Refresh</button></p>`;
+        <div style="flex:0 1 16rem${st.tab === 'drills' && !st.student ? ';visibility:hidden' : ''}"><label for="sf" style="margin-top:0">Shift</label><select id="sf" data-act="shift"><option value="all">All shifts</option>${CASES.map((c) => `<option value="${c}" ${st.shift === c ? 'selected' : ''}>${esc(title(c))}</option>`).join('')}</select></div></div>
+      ${st.student ? studentHTML() : st.tab === 'drills' ? drillsHTML() : st.tab === 'students' ? studentsHTML() : st.tab === 'missed' ? missedHTML() : st.tab === 'ngn' ? ngnHTML() : overviewHTML()}
+      <p style="margin-top:1.4rem"><button data-act="csv">Download shift results (CSV)</button> <button data-act="dcsv">Download drill results (CSV)</button> <button data-act="refresh">Refresh</button></p>`;
   }
 
   const name = (uid) => { const r = st.data.roster.find((x) => x.user_id === uid); return r ? r.display_name : 'Former student'; };
@@ -162,8 +162,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     const L = latest(), all = runsF(), played = new Set(all.map((r) => r.user_id));
     const ng = st.data.ngn.filter((r) => st.shift === 'all' || r.case_id === st.shift);
     const harmed = L.filter((r) => (r.outcomes || []).some((o) => o.tone === 'bad')).length;
-    if (!all.length) return '<div class="empty">No finished shifts yet' + (st.shift === 'all' ? '' : ' on this one') + '.</div>';
-    return `<div class="stats">
+    const dsum = drillSummary();
+    if (!all.length) return dsum + '<div class="empty">No finished shifts yet' + (st.shift === 'all' ? '' : ' on this one') + '.</div>';
+    return dsum + `<div class="stats">
         <div class="stat"><b>${played.size}<small style="font-size:1rem"> / ${st.data.roster.length}</small></b><span>students have finished a shift</span></div>
         <div class="stat"><b>${all.length}</b><span>shifts finished</span></div>
         <div class="stat"><b>${avg(L.map((r) => r.score)) ?? '—'}</b><span>average score, latest attempts</span></div>
@@ -187,7 +188,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   function studentHTML() {
     const uid = st.student, mine = runsF().filter((r) => r.user_id === uid);
     const ng = st.data.ngn.filter((r) => r.user_id === uid && (st.shift === 'all' || r.case_id === st.shift));
+    const dr = firsts((st.data.drills || []).filter((r) => r.user_id === uid)), dmiss = dr.filter((r) => !r.ok);
     return `<p><button class="link" data-act="back">← All students</button></p><h2>${esc(name(uid))}</h2>
+      ${dr.length ? `<h3 style="margin-top:1rem">Drills</h3>${bars(Object.keys(KIND).map((k) => { const x = dr.filter((r) => r.kind === k); return [KIND[k], pct(x), x.length ? x.length + ' cards' : 'not played yet']; }))}${dmiss.length ? `<details><summary>${dmiss.length} card${dmiss.length === 1 ? '' : 's'} missed on the first try</summary><ul>${dmiss.map((r) => `<li>${esc(cardLabel(r.kind, r.card_id))} <small class="muted">· ${esc(KIND[r.kind])}</small></li>`).join('')}</ul></details>` : ''}<h3 style="margin-top:1.2rem">Shifts</h3>` : ''}
       ${mine.length ? '' : '<div class="empty">No finished shifts' + (st.shift === 'all' ? '' : ' on this one') + ' yet.</div>'}
       ${mine.map((r) => `<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h3>${esc(title(r.case_id))} <span class="muted" style="font-weight:400">· ${when(r.played_at)}</span></h3><span>${sc(r.score)} ${'★'.repeat(r.stars || 0)}</span></div>
         <p class="muted" style="font-size:.88rem">${(r.steps || []).map((x) => `${esc(STEP[x.id] || x.id)} ${x.score}`).join(' · ')}</p>
@@ -197,6 +200,50 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   }
 
   function itemLabel(r) { const it = NG.items(r.case_id).find((x) => x.id === r.item_id) || (NG.byId && NG.byId(r.item_id)); return it ? (it.q || it.stem || r.item_id).slice(0, 110) : r.item_id; }
+
+  /* ---------- drills ---------- */
+  const KIND = { med: 'Med Pass', first: 'Who\'s First', sbar: 'SBAR', calm: 'De-escalation' };
+  const cardOf = (kind, id) => (DD[kind] || []).find((c) => c.id === id);
+  function cardLabel(kind, id) {
+    const k = cardOf(kind, id); if (!k) return id;
+    if (kind === 'med') return `${k.med} · ${k.p.n}`;
+    if (kind === 'first') { const x = k.pts.find((p) => p.ok); return `${k.where}: ${x ? x.p.n + ', ' + x.line : ''}`; }
+    if (kind === 'sbar') return `${k.p.n}: calling ${k.to}`;
+    return `${k.p.n}, ${k.where}`;
+  }
+  /* The honest measure is each student's first try at a card; retries are practice. */
+  function firsts(rows) { const seen = {}, out = []; rows.slice().reverse().forEach((r) => { if (r.retry) return; const key = r.user_id + '|' + r.card_id; if (!seen[key]) { seen[key] = 1; out.push(r); } }); return out; }
+  const pct = (rs) => rs.length ? Math.round(rs.filter((r) => r.ok).length / rs.length * 100) : null;
+  function drillSummary() {
+    const rs = st.data.drills || []; if (!rs.length) return '';
+    const f = firsts(rs), who = new Set(rs.map((r) => r.user_id));
+    return `<div class="stats">
+        <div class="stat"><b>${who.size}<small style="font-size:1rem"> / ${st.data.roster.length}</small></b><span>students have played drills</span></div>
+        <div class="stat"><b>${f.length}</b><span>drill cards answered (first tries)</span></div>
+        <div class="stat"><b>${pct(f) ?? '—'}%</b><span>right on the first try</span></div></div>
+      <p class="muted" style="margin-top:.4rem"><button class="link" data-act="tab" data-v="drills">See drills by skill and the cards most students miss ›</button></p>`;
+  }
+  function drillsHTML() {
+    const rs = st.data.drills || [];
+    if (!rs.length) return '<div class="empty">No drills played yet. Students play them from the game\'s home screen; each round takes about three minutes.</div>';
+    const f = firsts(rs);
+    const byKind = Object.keys(KIND).map((k) => { const x = f.filter((r) => r.kind === k), n = new Set(x.map((r) => r.user_id)).size; return [KIND[k], pct(x), x.length ? `${x.length} card${x.length === 1 ? '' : 's'} · ${n} student${n === 1 ? '' : 's'}` : 'not played yet']; });
+    const cards = {}; f.forEach((r) => { const k = r.kind + '|' + r.card_id, o = cards[k] = cards[k] || { kind: r.kind, id: r.card_id, n: 0, miss: 0 }; o.n++; if (!r.ok) o.miss++; });
+    const missed = Object.values(cards).filter((o) => o.miss).sort((a, b) => b.miss / b.n - a.miss / a.n || b.miss - a.miss).slice(0, 15);
+    const rows = st.data.roster.map((m) => { const mine = f.filter((r) => r.user_id === m.user_id), all = rs.filter((r) => r.user_id === m.user_id);
+      return `<tr><td><button class="link" data-act="student" data-id="${esc(m.user_id)}">${esc(m.display_name)}</button></td>${Object.keys(KIND).map((k) => `<td class="n">${sc(pct(mine.filter((r) => r.kind === k)))}</td>`).join('')}<td class="n">${mine.length}</td><td>${all.length ? when(all[0].at) : '<span class="muted">—</span>'}</td></tr>`; }).join('');
+    return `<h2>By drill</h2><p class="muted">Share right on each student's first try at a card. Retries of missed cards are practice and don't count here.</p>${bars(byKind)}
+      <h2>Cards most students miss</h2><p class="muted">Worth teaching to: what the card tests is in the line under it.</p>
+      ${missed.length ? missed.map((o) => { const k = cardOf(o.kind, o.id); return `<div class="miss"><div class="m"><span>${Math.round(o.miss / o.n * 100)}% · ${o.miss} of ${o.n} student${o.n === 1 ? '' : 's'}</span><span>${esc(KIND[o.kind])}</span></div><p>${esc(cardLabel(o.kind, o.id))}</p>${k && k.pearl ? `<p class="muted" style="font-size:.88rem;margin-top:.2rem">${esc(k.pearl)}</p>` : ''}</div>`; }).join('') : '<div class="empty">Nobody has missed a card yet.</div>'}
+      <h2>Students</h2><div class="scroll"><table><thead><tr><th>Student</th>${Object.values(KIND).map((l) => `<th class="n">${esc(l)}</th>`).join('')}<th class="n">Cards</th><th>Last played</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  function dcsv() {
+    const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = ['student,drill,card_id,card,right,retry,at'].concat((st.data.drills || []).map((r) => [name(r.user_id), KIND[r.kind] || r.kind, r.card_id, cardLabel(r.kind, r.card_id), r.ok ? 'yes' : 'no', r.retry ? 'yes' : 'no', r.at].map(q).join(',')));
+    const k = st.classes.find((x) => x.id === st.cur);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+    a.download = 'the-shift-drills-' + (k ? k.name.replace(/[^\w]+/g, '-').toLowerCase() : 'class') + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+  }
 
   function missedHTML() {
     const L = latest(), by = {};
@@ -252,6 +299,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     else if (a === 'back') { st.student = null; render(); }
     else if (a === 'refresh') open(st.cur);
     else if (a === 'csv') csv();
+    else if (a === 'dcsv') dcsv();
     else if (a === 'copy') {
       const k = st.classes.find((x) => x.id === st.cur), t = `Join my class on The Shift: open ${location.origin}/play/, then Menu → Your class, and enter code ${k.code}.`;
       try { await navigator.clipboard.writeText(t); b.textContent = 'Copied'; } catch (x) { b.textContent = 'Code: ' + k.code; }

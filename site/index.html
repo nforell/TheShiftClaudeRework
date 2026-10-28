@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Shift — a nursing shift simulator (beta)</title>
-<meta name="description" content="A free nursing clinical-judgment simulator. Take report, walk the hall, decide who needs you first, and see in the debrief what your choices did.">
+<title>The Shift — nursing judgment, one decision at a time (beta)</title>
+<meta name="description" content="Free nursing clinical-judgment practice. Three-minute rounds: check before a med pass, decide who you see first, make the SBAR call, talk someone down. Every answer explained. Then work a whole shift.">
 <meta name="theme-color" content="#22406A">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="The Shift — a nursing shift simulator">
-<meta property="og:description" content="Take report, decide who to see first, and work a nursing shift in about 20 minutes. Free, in your browser.">
-<meta property="og:image" content="/assets/room.jpg">
+<meta property="og:title" content="The Shift — a patient needs you. What do you do?">
+<meta property="og:description" content="Real decisions from the floor, three minutes a round, every answer explained. Med pass, prioritization, SBAR and de-escalation. Free, in your browser.">
+<meta property="og:image" content="/assets/drill-med.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2322406A'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23FAF8F3' stroke-width='5'/%3E%3Cpath d='M32 32V18M32 32l-6.5 11' stroke='%23FAF8F3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,6 +64,7 @@ section{padding:clamp(3.5rem,8vw,6rem) 0 0}
 .note .cred{font-size:.92rem;color:var(--ink-2)}
 .note img{width:200px;height:240px;object-fit:cover;border:6px solid #fff;box-shadow:0 8px 18px -10px rgba(0,0,0,.5);transform:rotate(2deg)}
 @media (max-width:700px){.note{grid-template-columns:1fr}.note img{width:160px;height:190px}}
+.note:not(:has(img)){grid-template-columns:minmax(0,1fr)}
 /* how a shift goes: a timeline, not cards */
 .tl{border-top:2px solid var(--ink)}
 .tl-row{display:grid;grid-template-columns:7.5rem minmax(0,.9fr) minmax(0,1.1fr);gap:1.6rem;padding:1.6rem 0;border-bottom:1px solid var(--line);align-items:start}
@@ -72,6 +73,26 @@ section{padding:clamp(3.5rem,8vw,6rem) 0 0}
 .tl-row p{margin:.4rem 0 0;color:var(--ink-2)}
 .tl-row .shot img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top left}
 @media (max-width:860px){.tl-row{grid-template-columns:5rem minmax(0,1fr)}.tl-row .shot{grid-column:1/-1}}
+/* hero: the game on a phone */
+.hero-fig{margin:0;display:flex;flex-direction:column;align-items:center}
+.phone{width:min(300px,78vw);padding:10px;border-radius:34px;background:#1C2330;box-shadow:0 26px 50px -24px rgba(0,0,0,.6)}
+.phone img{width:100%;border-radius:25px}
+.hero-fig .cap{max-width:300px;text-align:center}
+/* drills: four cards */
+.drills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1rem,3vw,1.8rem)}
+.drill{border-top:4px solid var(--k);padding-top:1rem}
+.drill h3{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.drill h3 small{font-family:var(--sans);font-size:.85rem;font-weight:600;color:var(--ink-2)}
+.drill p{margin:.4rem 0 1rem;color:var(--ink-2)}
+.drill .shot img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}
+.d-mp{--k:#22706B}.d-wf{--k:#B4531A}.d-sb{--k:#2F5F9E}.d-de{--k:#6A4690}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .d-mp{--k:#6CC3B9}:root:not([data-theme="light"]) .d-wf{--k:#F0A06A}:root:not([data-theme="light"]) .d-sb{--k:#8DB4EC}:root:not([data-theme="light"]) .d-de{--k:#C0A2E6}}
+@media (max-width:760px){.drills{grid-template-columns:minmax(0,1fr)}}
+.loop{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:2rem 0 0;padding:0;list-style:none;counter-reset:l}
+.loop li{border-top:2px solid var(--ink);padding-top:.7rem;color:var(--ink-2);counter-increment:l}
+.loop li::before{content:counter(l);display:block;font-family:var(--sign);font-size:1.6rem;font-weight:600;color:var(--ink);line-height:1}
+.loop b{color:var(--ink)}
+@media (max-width:700px){.loop{grid-template-columns:minmax(0,1fr)}}
 /* shifts: a schedule */
 .sched{border-top:2px solid var(--ink)}
 .sh{display:grid;grid-template-columns:5.5rem minmax(0,1fr) 9rem;gap:1.2rem;align-items:baseline;padding:1rem 0;border-bottom:1px solid var(--line)}
@@ -106,8 +127,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
   <div class="wrap">
     <a class="mark" href="/">The Shift</a><span class="beta">beta</span>
     <nav>
-      <a class="lnk" href="#how">How a shift goes</a>
-      <a class="lnk" href="#shifts">Shifts</a>
+      <a class="lnk" href="#drills">Drills</a>
+      <a class="lnk" href="#how">Full shifts</a>
       <a class="lnk" href="#nick">Who made this</a>
       <a class="btn btn-primary btn-sm" href="/play/">Play</a>
     </nav>
@@ -117,13 +138,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
 <main>
   <div class="hero wrap">
     <div>
-      <h1>Work a nursing shift in about twenty minutes.</h1>
-      <p class="lede">Take report on four or five patients, decide who to see first, and work the hall: assessments, meds, calls to the provider. Patients change based on what you do and what you miss. At the end you see what happened to each of them, and why.</p>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Play a shift</a><p class="meta">Free, in your browser. No account needed.</p></div>
+      <h1>A patient needs you. What do you do?</h1>
+      <p class="lede">Real decisions from the floor, one at a time. Check what matters before a med pass, decide who you see first, make the call to the provider, talk someone down. The patient reacts to what you choose, and every answer is explained.</p>
+      <div class="cta"><a class="btn btn-primary" href="/play/">Start playing</a><p class="meta">Three minutes a round. Free, in your browser, no account needed.</p></div>
     </div>
-    <figure style="margin:0">
-      <div class="shot"><img src="/assets/room.jpg" width="1600" height="1000" alt="A room in The Shift: a patient in bed, the IV pole, a whiteboard with the care team, and the nurse's actions below."></div>
-      <figcaption class="cap"><b>07:16, room 412.</b> Post-op day 1. Pain 6 out of 10, and he splints every time he takes a breath.</figcaption>
+    <figure class="hero-fig">
+      <div class="phone"><img src="/assets/drill-phone.jpg" width="780" height="1560" alt="A Med Pass drill on a phone: Samuel Ortiz is due for metoprolol. You checked his apical pulse and blood pressure: 52 and 94/58. Give, hold, or call?"></div>
+      <figcaption class="cap"><b>Med Pass, metoprolol 25 mg.</b> His pulse is 52 and he feels "a little floaty." Give, hold, or call?</figcaption>
     </figure>
   </div>
 
@@ -133,7 +154,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
         <div>
           <h2>Why I made this</h2>
           <p>I'm Nick, a registered nurse. I got my MSN at Johns Hopkins and have worked inpatient psych at Johns Hopkins Hospital and in the Bay Area.</p>
-          <p>The Shift is practice for what a real assignment feels like: report from a tired night nurse, more patients than time, a phone that keeps buzzing, and one patient who is sicker than they look. The patients are made up. The situations are the ones that actually go wrong on a unit.</p>
+          <p>It's practice for what a real assignment feels like: report from a tired night nurse, more patients than time, a phone that keeps buzzing, and one patient who is sicker than they look. The patients are made up. The situations are the ones that actually go wrong on a unit.</p>
+          <p>Most of the work is a series of small decisions: check this before that dose, see this patient first, say this on the phone. So that's how The Shift starts. Practice the decisions on their own until they're automatic, then put them together on a full shift.</p>
           <p>It's in beta. If something is clinically off, every decision in the debrief has a link to tell me, and I read all of them.</p>
           <p class="sig">Nick</p>
           <p class="cred">RN, MSN</p>
@@ -143,9 +165,27 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     </div>
   </section>
 
+  <section id="drills">
+    <div class="wrap">
+      <div class="sec-h"><h2>Four drills, about a hundred patients</h2><p>Each round is a few patients and a few minutes. Get one wrong and you see what happened to them, why, and one line worth remembering. Missed cards come back until you get them.</p></div>
+      <div class="drills">
+        <article class="drill d-mp"><h3>Med Pass <small>40 cards</small></h3><p>Before the dose, what do you check? The number comes back. Then give, hold or call. Beta blockers, insulin, heparin, lithium, magnesium, blood.</p><div class="shot"><img src="/assets/drill-med.jpg" width="1600" height="1000" loading="lazy" alt="A Med Pass drill: after checking the pulse, give, hold or call."></div></article>
+        <article class="drill d-wf"><h3>Who's First <small>26 sets</small></h3><p>Four patients, one nurse. Pick who you see first. Sepsis hiding as confusion, a quiet chest, a calm that isn't recovery.</p><div class="shot"><img src="/assets/drill-first.jpg" width="1600" height="1000" loading="lazy" alt="A Who's First drill: four patients, and the one with new confusion and a low blood pressure picked first."></div></article>
+        <article class="drill d-sb"><h3>SBAR <small>16 calls</small></h3><p>Build the call line by line. Lead with your worry, give the background that matters, ask for what they need, read back the order.</p><div class="shot"><img src="/assets/drill-sbar.jpg" width="1600" height="1000" loading="lazy" alt="An SBAR drill: building a call about possible sepsis to the hospitalist."></div></article>
+        <article class="drill d-de"><h3>De-escalation <small>16 scenarios</small></h3><p>Every line you choose moves the agitation meter and the patient's face. Waiting rooms, psych holds, dementia, withdrawal, a doctor yelling in the hall.</p><div class="shot"><img src="/assets/drill-calm.jpg" width="1600" height="1000" loading="lazy" alt="A de-escalation drill: an agitation meter falling after a calm first line."></div></article>
+      </div>
+      <ol class="loop">
+        <li><b>Play a daily round.</b> One of each drill, five patients, about three minutes.</li>
+        <li><b>Fix what you missed.</b> Retry the ones you got wrong right away, or let them come back later.</li>
+        <li><b>Then work a shift.</b> Put it all together on a whole unit, from report to debrief.</li>
+      </ol>
+      <div class="cta"><a class="btn btn-primary" href="/play/">Play today's round</a></div>
+    </div>
+  </section>
+
   <section id="how">
     <div class="wrap">
-      <div class="sec-h"><h2>How a shift goes</h2><p>The clock only moves when you act. Every assessment, med pass and phone call costs minutes, and your other patients keep changing while you're busy.</p></div>
+      <div class="sec-h"><h2>Then put it together: a full shift</h2><p>Four or five patients until handoff, about twenty minutes. A Next card always shows what to do next and walks you there. The clock only moves when you act. Every assessment, med pass and phone call costs minutes, and your other patients keep changing while you're busy.</p></div>
       <div class="tl">
         <div class="tl-row"><div class="t">06:58<small>Report</small></div><div><h3>Take report</h3><p>The off-going nurse talks through every patient. Flag what matters onto your brain sheet. Some of what you hear is noise.</p></div><div class="shot"><img src="/assets/report.jpg" width="1600" height="1000" loading="lazy" alt="Shift report with flagged lines written onto a brain sheet."></div></div>
         <div class="tl-row"><div class="t">07:15<small>Prioritize</small></div><div><h3>Decide who's first</h3><p>Rank your patients before you move. Nova, the charge nurse, compares your order with hers and tells you why at the end.</p></div><div class="shot"><img src="/assets/triage.jpg" width="1600" height="1000" loading="lazy" alt="Ranking patients from first to last."></div></div>
@@ -178,7 +218,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     <div class="wrap">
       <div class="sec-h"><h2>What it practices</h2><p>The clinical judgment the Next Generation NCLEX tests: noticing cues, prioritizing, acting, and checking whether it worked.</p></div>
       <ul class="plain">
-        <li><b>You choose what to look at.</b> There are no multiple-choice questions during the shift. You decide what to assess, in what order, and what to do about it.</li>
+        <li><b>You choose what to look at.</b> In a drill you pick what to check before you decide. In a shift there are no questions at all: you decide what to assess, in what order, and what to do about it.</li>
         <li><b>Mistakes play out.</b> Give the wrong med and the patient reacts. Hold the right one and the debrief explains why it mattered.</li>
         <li><b>The traps are real ones.</b> An order that's active but unsafe. A helpful family member. A report that says "probably a stomach bug."</li>
         <li><b>A charge nurse who helps a little.</b> Nova gives a few hints a shift. She'll point you somewhere; she won't do it for you.</li>
@@ -188,12 +228,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
 
   <section id="feedback" class="beta-box">
     <div class="wrap">
-      <h2>Play a shift, then tell me what broke.</h2>
-      <p>Anything that felt clinically off, confusing, or too easy. Every decision in the debrief has a <b>Report a problem</b> link. Your progress saves in your browser as you play.</p>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Play a shift</a></div>
+      <h2>Play a round, then tell me what broke.</h2>
+      <p>Anything that felt clinically off, confusing, or too easy. Every decision in a shift debrief has a <b>Report a problem</b> link. Your progress saves in your browser as you play.</p>
+      <div class="cta"><a class="btn btn-primary" href="/play/">Start playing</a></div>
       <form class="signup" id="signup" novalidate>
-        <h3>Get new shifts first</h3>
-        <p>One email when a new unit is ready. Nothing else, and you can unsubscribe anytime.</p>
+        <h3>Get new drills and shifts first</h3>
+        <p>One email when new drills or a new unit are ready. Nothing else, and you can unsubscribe anytime.</p>
         <div class="su-row">
           <label class="sr" for="su-email">Email</label>
           <input id="su-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
@@ -236,7 +276,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     const r = T ? T.signup(email, role) : 'email';
     if (r === 'email' && !T) location.href = 'mailto:nicholasforell@gmail.com?subject=' + encodeURIComponent('Add me to The Shift beta list') + '&body=' + encodeURIComponent(email + (role ? '\n' + role : ''));
     f.classList.add('done'); m.className = 'su-msg ok';
-    m.textContent = r === 'sent' ? 'You\'re on the list. Go play a shift.' : 'Your email app should open with this filled in. Hit send and you\'re on the list.';
+    m.textContent = r === 'sent' ? 'You\'re on the list. Go play a round.' : 'Your email app should open with this filled in. Hit send and you\'re on the list.';
   });
 })();
 </script>
