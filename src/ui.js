@@ -378,31 +378,52 @@
   function vHome() {
     const DS = DR ? DR.summary() : null, g = E.store.load(), saved = g && !g.ended ? E.getCase(g.caseId) : null;
     const newbie = DS && !DS.rounds && !prof.runs.length;
-    const tile = (x) => `<button class="h2-tile k-${x.color}" data-act="dr-start" data-k="${x.k}">
-        <span class="h2-ic">${DICON[x.k]}</span><span class="h2-tt"><b>${esc(x.name)}</b><small>${esc(x.verb)}</small></span>
-        <span class="h2-m" aria-label="${x.got} of ${x.all} cards mastered"><i style="--p:${x.all ? x.got / x.all : 0}"></i></span><small class="h2-mt">${x.got ? `${x.got} of ${x.all} mastered` : `${x.all} cards`}</small></button>`;
-    const row = (act, ic, title, sub, cls) => `<button class="h2-row ${cls || ''}" data-act="${act}"><span class="h2-ic">${DICON[ic]}</span><span><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>`;
+    const nShifts = CASES.length, nUnits = new Set(CASES.map((id) => meta(id).sp)).size;
+    const day = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+    // The front door is the unit whiteboard (the same board as the station): two assignments side by side, so a full
+    // shift is as plain a choice as a quick round. Skills below are badge buddies, the cards nurses clip behind their ID.
+    const badge = (x) => `<button class="h2-tile bb k-${x.color}" data-act="dr-start" data-k="${x.k}">
+        <span class="bb-slot" aria-hidden="true"></span>
+        <span class="bb-ic" aria-hidden="true">${DICON[x.k]}</span>
+        <span class="bb-tt"><b>${esc(x.name)}</b><small>${esc(x.verb)}</small></span>
+        <span class="bb-m"><span class="bb-bar" aria-hidden="true"><i style="--p:${x.all ? x.got / x.all : 0}"></i></span><small>${x.got ? `${x.got} of ${x.all} mastered` : `${x.all} cards`}</small></span></button>`;
+    const more = (act, title, sub, cls) => `<button class="h2-row ${cls || ''}" data-act="${act}"><span><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>`;
     return `<div class="home h2">
       <header class="h2-top"><span class="mark" style="cursor:default">The Shift</span><span class="sp"></span>
         ${DS && DS.streak ? `<span class="h2-streak ${DS.today ? 'lit' : ''}" title="${DS.streak} day${DS.streak === 1 ? '' : 's'} in a row">${ICON.flame}<b>${DS.streak}</b><span class="sr"> day${DS.streak === 1 ? '' : 's'} in a row${DS.today ? ', played today' : ', play today to keep it'}</span></span>` : ''}
         <button class="btn btn-quiet hn-menu" data-act="menu" aria-label="Menu: settings, how it plays and more">${ICON.menu}</button></header>
-      ${DS ? `<section class="h2-hero">
-        <div class="h2-cast" aria-hidden="true">${DR.cast()}</div>
-        <div class="h2-copy">
-          <p class="h2-k">${newbie ? 'Nursing judgment, one decision at a time' : DS.today ? 'Today\'s round: done' : 'Today\'s round is ready'}</p>
-          <h1>${newbie ? 'A patient needs you. What do you do?' : DS.today ? 'One more?' : 'Think like a nurse.'}</h1>
-          <p class="lede">One patient, one decision, every answer explained. About three minutes.</p>
-          <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><span><b>${DS.today ? 'Play another round' : newbie ? 'Start playing' : 'Play today\'s round'}</b><small>5 patients: a med, two priorities, a call, a hard conversation</small></span></button>
-          ${newbie ? '' : `<button class="h2-hard" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>${DS.hard} cards where every option is plausible. No gimmes.</span><span class="h2-chev" aria-hidden="true">›</span></button>`}
+      <section class="wb" aria-labelledby="wb-h">
+        <div class="wb-head"><h1 id="wb-h">${newbie ? 'Pick your assignment' : DS && DS.today ? 'Back for more?' : 'Pick your assignment'}</h1><span class="wb-date" aria-hidden="true">${esc(day)}</span></div>
+        <div class="wb-cols">
+          ${DS ? `<div class="wb-col wb-round">
+            <span class="wb-mag" aria-hidden="true"></span>
+            <h2>Quick round</h2>
+            <div class="wb-faces" aria-hidden="true">${DR.cast()}</div>
+            <p>Five patients, one decision each: a med, two who's-firsts, a call and a hard conversation. Every answer explained.</p>
+            <p class="wb-time">About 3 minutes</p>
+            <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><b>${DS.today ? 'Play another round' : newbie ? 'Play a round' : 'Play today\'s round'}</b></button>
+            ${newbie ? '' : `<button class="wb-alt" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>${DS.hard} cards where every option is plausible</span></button>`}
+          </div>` : ''}
+          <div class="wb-col wb-shift">
+            <span class="wb-mag" aria-hidden="true"></span>
+            <h2>Full shift</h2>
+            <ol class="wb-tl" aria-label="What happens in a shift">
+              <li><b>Report</b></li><li><b>Assess</b></li><li><b>Meds</b></li><li><b>Calls</b></li><li><b>Debrief</b></li>
+            </ol>
+            <p>Run a whole shift on one unit: four or five patients, things changing by the minute, then see what happened to each of them.</p>
+            <p class="wb-time">${nShifts} shifts on ${nUnits} units, 15 to 25 minutes each</p>
+            ${saved ? `<button class="btn h2-shift" data-act="resume"><span class="h2-pi" aria-hidden="true">${DICON.shift}</span><span class="h2-rs"><b>Resume your shift</b><small>${esc(saved.title)}, at ${hhmm(saved, g.t)}</small></span></button>
+            <button class="wb-alt" data-act="shifts"><b>Choose a different shift</b></button>`
+            : `<button class="btn h2-shift" data-act="shifts"><span class="h2-pi" aria-hidden="true">${DICON.shift}</span><b>Choose a shift</b></button>`}
+          </div>
         </div>
-      </section>` : ''}
-      ${saved ? `<button class="h2-resume" data-act="resume"><span class="h2-ic">${DICON.shift}</span><span><b>Resume your shift</b><small>${esc(saved.title)}, at ${hhmm(saved, g.t)}</small></span><span class="h2-chev" aria-hidden="true">›</span></button>` : ''}
-      ${DS ? `<section class="h2-sec"><h2>Practice one skill</h2><div class="h2-grid">${DS.kinds.map(tile).join('')}</div></section>` : ''}
-      <section class="h2-sec"><h2>Go deeper</h2><div class="h2-deep">
-        ${row('shifts', 'shift', 'Full shifts', `${CASES.length} shifts on ${new Set(CASES.map((id) => meta(id).sp)).size} units: report, triage, meds, calls and a debrief`)}
-        ${NG && NG.bank ? row('practice', 'ngn', 'NCLEX practice', `${NG.count.cases()} case studies and ${NG.count.bank()} questions, every answer explained`, 'hn-px') : ''}
-        ${S.ref ? row('ref', 'ref', 'Pocket reference', 'Quick cards for the floor and the exam') : ''}
-      </div></section>
+        <div class="wb-tray" aria-hidden="true"><i></i><i></i><i></i></div>
+      </section>
+      ${DS ? `<section class="h2-sec"><h2>Practice one skill</h2><div class="h2-grid">${DS.kinds.map(badge).join('')}</div></section>` : ''}
+      ${(NG && NG.bank) || S.ref ? `<section class="h2-sec"><h2>Study</h2><div class="h2-deep">
+        ${NG && NG.bank ? more('practice', 'NCLEX practice', `${NG.count.cases()} case studies and ${NG.count.bank()} questions, every answer explained`, 'hn-px') : ''}
+        ${S.ref ? more('ref', 'Pocket reference', 'Quick cards for the floor and the exam') : ''}
+      </div></section>` : ''}
       <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : ''}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div>
     </div>`;
   }
