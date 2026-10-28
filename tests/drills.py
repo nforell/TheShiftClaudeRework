@@ -33,6 +33,10 @@ with sync_playwright() as p:
     check(not bad, f'drill content is well formed ({len(bad)} problems{": " + "; ".join(bad[:4]) if bad else ""})')
     counts = pg.evaluate("Object.fromEntries(Object.entries(Shift.drillData).map(([k, v]) => [k, v.length]))")
     check(counts['med'] >= 20 and counts['first'] >= 12 and counts['sbar'] >= 8 and counts['calm'] >= 8, f'enough cards to replay ({counts})')
+    # The landing page quotes these counts; keep it honest.
+    land = (ROOT / 'site' / 'index.html').read_text()
+    for kind, word in (('med', 'cards'), ('first', 'sets'), ('sbar', 'calls'), ('calm', 'scenarios')):
+        check(f'<small>{counts[kind]} {word}</small>' in land, f'the landing page says {counts[kind]} {word} for {kind}')
     pg.close()
 
     for W, theme in ((390, 'light'), (1280, 'light'), (390, 'dark')):
