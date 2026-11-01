@@ -231,7 +231,7 @@
       respond(s, P, A, picked, req) {
         if (picked.includes('lkw')) {
           if (P.called === null) P.called = s.t;
-          P.tpaClarified = true;
+          P.tpaClarified = true; A.retireMsgs('22', /tenecteplase|in the window/i); if (P.tpaGiven === null) A.dcOrder('22', /Tenecteplase/);
           if (P.ir === null && P.tpaGiven === null) { P.ir = s.t + 25; A.addOrder('22', `Cancel thrombolysis: last known well 10:00, outside the 4.5-hour window. CTA ${P.cta ? 'shows' : 'pending, likely'} left M1 occlusion: neurointerventional radiology activated for thrombectomy. BP at or under 185/110 for the procedure. Keep NPO.`); }
           A.judge('22-sbar', 'comm', req === 'tx' ? 2 : 1, `You told the team Mr. Haskins's true last known well.`, `The EMS time was when he was found. One question to his wife changed the treatment from thrombolysis, outside its window, to a thrombectomy, which works up to 24 hours out for a large clot.`, '22');
           return P.tpaGiven !== null ? `10:00? It's already in. I'm getting a stat CT and calling neurosurgery. Neuro checks every 15 minutes, and keep his pressure under 180/105.` : `Ten? Then no thrombolysis, thank you. Good thing you asked. He's got an M1 clot: I'm activating IR for thrombectomy. Keep his pressure under 185.`;
@@ -259,7 +259,7 @@
     look: { skin: '#D2A07A', shade: '#B4825C', lip: '#9A5648', blush: '#D48A70', iris: '#2A1C12', head: { w: 54, h: 60, jaw: .25 }, eye: 10,
       hair: { style: 'long', color: '#2A1C14' }, brow: { w: 3.2, color: '#1E140E' }, body: { w: 78, cloth: 'gown' }, extras: ['hoops'], smile: .15,
       lines: { calm: `It's just bad cramps. Can I have some water?`, pain: `It's on the left. And my shoulder hurts, which is weird.`, anxious: `I feel really dizzy.`, dizzy: `The room's spinning when I sit up.`, drowsy: `I just want to lie down.`, none: `She doesn't respond.` } },
-    bio: `Dental assistant. Lives with her boyfriend Derek. Her mom and two sisters live twenty minutes away.`,
+    bio: `Dental assistant. Lives with her boyfriend Derek. Her mom, Lucia, and two sisters live twenty minutes away.`,
     dx: `Lower abdominal pain, positive pregnancy test`, reason: `Left lower abdominal pain since this morning, "like bad cramps." Last period about 7 weeks ago. Urine hCG positive at 14:35. Pelvic ultrasound ordered; radiology backed up.`,
     hx: [`G1P0`, `Chlamydia treated two years ago`, `No surgeries`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `61 kg`,
@@ -659,7 +659,7 @@
       if (task.id === 'epi') { A.judge('deleg-epi', 'deleg', -2, `You asked the tech to give epinephrine.`, `Medication administration is a nursing task, and this is the most urgent one in the department.`); return `Rico: "I can't give meds! You need to do it, now."`; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return `Rico: "Give me a minute, I'm still on the last one."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the tech.`, 'Hand off the task; keep the interpretation.');
+      A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the tech.`, 'Hand off the task; keep the interpretation.');
       return `Rico: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {

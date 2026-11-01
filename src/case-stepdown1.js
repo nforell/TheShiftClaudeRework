@@ -279,6 +279,16 @@
     hx: [`Hypertension`, `Osteoarthritis`, `Never had heparin before this admission`],
     allergies: `Sulfa (rash)`, code: `Full code`, weight: `70 kg`,
     lines: [`PIV 20g right forearm: heparin infusion`, `PIV 22g left hand: saline lock`], mobility: `Up in the room with assist`, diet: `Regular`,
+    // Once the heparin stops or the HIT orders come in, the chart says so everywhere it's shown.
+    live: (s, P) => {
+      if (P.stopped === null && !P.called) return null;
+      const o = {}, hep = P.stopped !== null ? `heparin stopped ${clock(P.stopped)}` : `heparin still running`;
+      o.dx = P.called ? `Pulmonary embolism; suspected HIT (${hep})` : `Pulmonary embolism; ${hep}`;
+      o.reason = `Bilateral pulmonary emboli after a long car trip to her sister's. Heparin infusion from admission to day 5, ${P.stopped !== null ? `stopped at ${clock(P.stopped)}` : 'now being stopped'} for suspected heparin-induced thrombocytopenia${P.argaAt !== null ? `; argatroban since ${clock(P.argaAt)}` : P.called ? '; argatroban ordered' : ''}.`;
+      o.lines = [`PIV 20g right forearm: ${P.argaAt !== null ? `argatroban infusion (heparin off since ${clock(P.stopped !== null ? P.stopped : P.argaAt)})` : P.stopped !== null ? `heparin stopped ${clock(P.stopped)}, line clamped` : 'heparin infusion'}`, `PIV 22g left hand: saline lock${P.called || P.flushFixed ? ', saline flushes only' : ''}`];
+      if (P.called) o.allergies = `Heparin (suspected HIT), Sulfa (rash)`;
+      return o;
+    },
     init: { rate: 18, hepOn: true, holdUntil: null, adjusted: null, labsRead: false, stopped: null, called: false, argaAt: null, foot: 0, footSeen: false, gone: false, nomo: null },
     nightVitals: { T: 36.9, HR: 86, SBP: 136, DBP: 78, RR: 18, SpO2: 95, O2: 'Room air', pain: 0 },
     labs: [
@@ -318,6 +328,8 @@
     },
     interventions: [
       { id: 'labs', label: 'Review her morning CBC and aPTT, with the trend', cost: 2, avail: (s, P) => !P.labsRead, run(s, P, A) { P.labsRead = true; A.judge('605-labs', 'assess', 2, `You reviewed Mrs. Price's full morning labs, with the trend.`, `The critical value is the one they called; the platelet count is the one they didn't. A fall of more than half, on day 5 of heparin, is the classic timing for heparin-induced thrombocytopenia.`, '605'); return `aPTT 104 (goal 60–85). Platelets 98, down from 214 two days ago and 230 on admission: a 57% drop. Hemoglobin 12.1, stable. Day 5 of heparin; she'd never had heparin before.`; } },
+      { id: 'pf4', label: 'Send the PF4/heparin antibody (ordered)', cost: 2, avail: (s, P) => P.called && !P.pf4 && !P.gone, run(s, P, A) { P.pf4 = s.t; A.log('605', 'PF4/heparin antibody drawn and sent.', 'act'); return `Drawn from a fresh stick and sent. The lab says the result takes a day; treat as HIT until then.`; } },
+      { id: 'duplex', label: 'Request the bilateral leg duplex (ordered)', cost: 1, avail: (s, P) => P.called && !P.duplex && !P.gone, run(s, P, A) { P.duplex = s.t; return `Vascular lab has her on the list${P.footSeen ? ', moved up for the cold left foot' : ''}. They'll come to the bedside.`; } },
       { id: 'reassess', label: 'Recheck her left foot after the change', cost: 2, avail: (s, P) => P.footSeen && P.stopped !== null && !P.reassessed && s.t - Math.max(P.stopped, P.argaAt || 0) >= 30, run(s, P, A) { P.reassessed = true; A.judge('605-reassess', 'judgment', 1, `You rechecked Mrs. Price's foot after the change in treatment.`, `Arterial clots in HIT can take a limb. Compare pulses, color, temperature and pain against your last look, and say exactly what changed.`, '605'); return P.argaAt !== null ? `Left foot a little warmer, pulses still faint but present, pain ${Math.max(2, Math.round(3 + P.foot * 4))}/10.` : `Unchanged: cool, faint pulses. She needs the non-heparin anticoagulant running.`; } },
     ],
     meds: [
@@ -339,10 +351,12 @@
       {
         id: '605-arga', name: 'Argatroban infusion', dose: '2 mcg/kg/min (start)', route: 'IV', freq: 'Continuous, titrate to aPTT 1.5–3 × baseline (new order)', prn: true, infusion: true, available: (s, P) => P.called,
         block: (s, P) => (P.argaAt !== null ? 'Started at ' + clock(P.argaAt) + '.' : null),
-        checks: (s, P) => [{ label: 'Heparin', value: P.stopped !== null ? `Stopped at ${clock(P.stopped)}` : 'Still running', ok: P.stopped !== null }, { label: 'Liver function', value: 'Normal', ok: true }, { label: 'Heparin flushes', value: P.flushFixed ? 'Changed to saline' : 'Still ordered', ok: !!P.flushFixed }],
+        checks: (s, P) => [{ label: 'Heparin', value: P.stopped !== null ? `Stopped at ${clock(P.stopped)}` : 'Still running', ok: P.stopped !== null }, { label: 'Liver function', value: 'Normal', ok: true }, { label: 'Heparin flushes', value: P.flushFixed || P.called ? 'Changed to saline' : 'Still ordered', ok: !!(P.flushFixed || P.called) }],
         give(s, P, A) { P.argaAt = s.t; if (P.stopped === null) { A.judge('605-arga-hep', 'meds', -2, `You started argatroban with heparin still running.`, `Two anticoagulants at once is a bleeding risk, and the heparin is the cause of her clotting. Stop the heparin first.`, '605'); } else A.judge('605-arga', 'meds', 1, `You started argatroban after stopping the heparin.`, `She still has a PE and now a clotting disorder; she needs anticoagulation that isn't heparin.`, '605'); return `Argatroban started at 1 mcg/kg/min. aPTT in 2 hours.`; },
       },
       { id: '605-flush', name: 'Heparin lock flush', dose: '10 units/mL, 3 mL', route: 'IV', freq: 'Every 8 h', due: 60,
+        // Discontinued with the HIT orders ("all heparin, including flushes"): it leaves the MAR and the task list.
+        available: (s, P) => !P.called || s.meds['605-flush'].status !== 'due',
         checks: (s, P) => [{ label: 'Platelets', value: P.labsRead ? '98, down 57% on heparin' : 'Not reviewed', ok: P.labsRead ? false : null }],
         give(s, P, A) { P.flushGiven = true; if (P.labsRead || P.stopped !== null) A.judge('605-flush', 'meds', -2, `You flushed Mrs. Price's line with heparin after suspecting HIT.`, `In HIT, all heparin stops, including flushes and heparin-coated catheters. Flush with saline.`, '605'); return `Flushed with 3 mL heparin 10 units/mL.`; },
         hold(s, P, A) { P.flushFixed = true; A.judge('605-flush-hold', 'meds', P.labsRead || P.stopped !== null ? 1 : 0, `You held the heparin flush${P.labsRead ? ' and used saline' : ''}.`, P.labsRead ? `Right: no heparin of any kind once you suspect HIT.` : `Holding a flush needs a reason; saline works when there is one.`, '605'); return 'Held. Flushed with saline instead.'; } },
@@ -367,7 +381,7 @@
       respond(s, P, A, picked, req) {
         if (!picked.includes('plt')) { if (req === 'hit') return `What makes you think HIT? What are her platelets doing?`; A.judge('605-sbar-nomo', 'comm', 0, `You called about Mrs. Price's aPTT.`, `Fine, but the nomogram covers the aPTT. The thing worth a call is in the CBC.`, '605'); return `Follow the nomogram. What did her CBC show?`; }
         P.called = true; P.flushFixed = P.flushFixed || false;
-        A.addOrder('605', `Discontinue all heparin, including flushes: flush with normal saline. Add heparin to the allergy list (suspected HIT). PF4/heparin antibody. Argatroban 2 mcg/kg/min, aPTT in 2 hours. No platelet transfusion. Bilateral lower extremity duplex.`);
+        A.addOrder('605', `Discontinue all heparin, including flushes: flush with normal saline. Add heparin to the allergy list (suspected HIT). PF4/heparin antibody. Argatroban 2 mcg/kg/min, aPTT in 2 hours. No platelet transfusion. Bilateral lower extremity duplex.`, [/heparin/i]);
         A.judge('605-sbar', 'comm', req === 'hit' ? 2 : 1, `You called about suspected HIT in Mrs. Price.`, `Timing, a platelet drop of more than half, no other cause: a high-probability 4T score. HIT clots more than it bleeds, so she needs a different anticoagulant, not none.`, '605');
         return `Good catch. That's HIT until proven otherwise. ${P.stopped === null ? 'Stop the heparin now, flushes too. ' : ''}Argatroban, antibody, duplex. No platelets.${P.footSeen ? ' And I\'m calling vascular about that foot.' : ''}`;
       },
@@ -592,7 +606,7 @@
       if (task.id === 'urinal') { const P = s.p['603']; P.urinal = true; A.judge('deleg-urinal', 'deleg', 1, `You had Benny help Mr. Okoro void while flat.`, `A good task for a CNA, with a clear instruction: keep him flat.`); return `Benny: "Urinal and a curtain. On it."`; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return `Benny: "Give me a minute, I'm still on the last thing."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, 'Hand off the measurements; keep the interpretation.');
+      A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the CNA.`, 'Hand off the measurements; keep the interpretation.');
       return `Benny: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {

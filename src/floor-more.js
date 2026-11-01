@@ -2771,7 +2771,7 @@
   ],
   "teach": "Latex allergy: ask about reactions to gloves, balloons, dental work and cross-reactive foods (banana, avocado, kiwi, chestnut). Document it, band the patient, notify the procedural team, and use latex-free supplies. People with spina bifida and frequent catheterizations are at higher risk.",
   "miss": {
-   "text": "The latex allergy reached the procedure room only because Nova caught it in the hall.",
+   "text": "A colleague's patient going for a procedure, charted \"NKDA,\" had a latex allergy story; it reached the procedure room only because Nova caught it in the hall.",
    "why": "Latex on mucous membranes can cause anaphylaxis. The time to flag it is before transport."
   }
  },
