@@ -402,7 +402,7 @@
             <p>Five patients, one decision each: a med, two who's-firsts, a call and a hard conversation. Every answer explained.</p>
             <p class="wb-time">About 3 minutes</p>
             <button class="btn btn-primary h2-play" data-act="dr-start" data-k="mix"><span class="h2-pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><b>${DS.today ? 'Play another round' : newbie ? 'Play a round' : 'Play today\'s round'}</b></button>
-            ${newbie ? '' : `<button class="wb-alt" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>${DS.hard} cards where every option is plausible</span></button>`}
+            ${newbie ? '' : `<button class="wb-alt" data-act="dr-start" data-k="hard"><b>NCLEX-level round</b><span>Five cards drawn from ${DS.hard} where every option is plausible</span></button>`}
           </div>` : ''}
           <div class="wb-col wb-shift">
             <span class="wb-mag" aria-hidden="true"></span>
@@ -605,7 +605,7 @@
   /* The one next thing for a patient: what their To-do list would put first (overdue, then due now). */
   function nextFor(pid) {
     const d = def(pid), P = s.p[pid]; if (!d || !here(d) || gone(P)) return null;
-    const open = brainRows(d, P).filter((r) => !r.done && !r.prog && !r.info && r.t !== null && r.t <= s.t + 30);
+    const open = brainRows(d, P).filter((r) => !r.done && !r.prog && !r.info && !r.notBefore && r.t !== null && r.t <= s.t + 30);
     open.sort((a, b) => !!a.blocked - !!b.blocked || !!b.stat - !!a.stat || !!b.late - !!a.late || a.t - b.t);
     return open[0] || null;
   }
@@ -777,6 +777,8 @@
     if (st.status === 'given' && !m.prn) return { cls: 'done', text: 'Given ' + E.clock(st.at) };
     if (st.status === 'held') return { cls: 'done', text: 'Held ' + E.clock(st.at) };
     if (st.status === 'verify') return { cls: '', text: 'Pharmacy hold' };
+    if (m.ordered && !st.given.length) return { cls: 'due', text: 'New order' };
+    if (m.ordered) return { cls: 'done', text: 'Given ' + E.clock(st.given[0]) };
     if (m.prn) return { cls: '', text: st.given.length ? 'Last ' + E.clock(st.given[st.given.length - 1]) : 'As needed' };
     if (m.initStatus === 'given') return { cls: 'done', text: m.givenNote || 'Given' };
     const late = s.t > m.due + 60; return { cls: late ? 'late' : s.t >= m.due - 30 ? 'due' : '', text: (late ? 'Late, due ' : 'Due ') + E.clock(m.due) };
@@ -852,7 +854,7 @@
     // A patient who needs you now always has something on the list, even when nothing is scheduled: look, then act.
     if (!off && d.status(s, P, A()) === 'urgent') {
       const mine = [P.vit.filter((v) => v.by === 'You').map((v) => v.t), Object.values(P.assessAt || {})].flat(), lastLook = mine.length ? Math.max(...mine) : -999;
-      const alert = s.inbox.find((m) => m.pid === d.id && m.urgent && s.t - m.t <= 60), fresh = s.t - lastLook <= 15;
+      const alert = s.inbox.find((m) => m.pid === d.id && m.urgent && m.stale === undefined && s.t - m.t <= 60), fresh = s.t - lastLook <= 15;
       rows.push({ key: 'urg', t: s.t, late: false, stat: true, text: fresh ? `Needs you now: you assessed at ${E.clock(lastLook)}. Act on it` : 'Needs you now: assess and act', sub: fresh ? 'Treat what you can at the bedside (Care), and call for what you can\'t (Talk & call).' : alert ? clip(alert.text, 110) : 'Look at the patient, take vital signs, then decide what to do and who to call.', ...(() => { if (!fresh) return { go: { act: 'dock', id: 'assess' }, sys: 'vitals', hl: 'Vital signs' }; const Ax = A(), u = (d.interventions || []).find((x) => (!x.avail || x.avail(s, P, Ax)) && (x.urgent || /juice|d50|brady/.test(x.id))); return u ? { go: { act: 'dock', id: 'care' }, hl: u.label } : { go: { act: 'dock', id: 'talk' }, hl: 'Call SBAR' }; })() });
     }
     (d.meds || []).forEach((m) => {
@@ -860,12 +862,23 @@
       if (m.available && !m.available(s, P)) return;
       if (off && st.status !== 'given' && st.status !== 'held') return;
       if (m.later) { rows.push({ t: null, later: m.later, text: `${m.name} ${m.dose} ${m.route}`, sub: `Due at ${m.later}` }); return; }
+      // A one-time order that just came in ("KCl 40 now", a verbal order): a task until it's given or held.
+      if (m.ordered && !off) {
+        if (st.avAt === undefined) st.avAt = s.t;
+        const doneAt = st.status === 'held' ? st.at : (st.given && st.given.length ? st.given[0] : null);
+        if (doneAt !== null) rows.push({ key: 'n:' + m.id, t: doneAt, done: true, text: `${m.name} ${m.dose} ${m.route}`, sub: `${st.status === 'held' ? 'Held' : 'Given'} ${E.clock(doneAt)}` });
+        else { const nb = m.notBefore ? m.notBefore(s, P) : null;   // a scheduled order whose first dose comes later
+          if (nb !== null && nb > s.t) { if (nb < C().length) rows.push({ key: 'n:' + m.id, t: nb, notBefore: true, text: `${m.name} ${m.dose} ${m.route}`, sub: `New order, first dose ${E.clock(nb)}` }); else rows.push({ t: null, later: E.clock(nb), text: `${m.name} ${m.dose} ${m.route}`, sub: `New order, first dose ${E.clock(nb)}: the next shift's, so put it in report` }); }
+          else rows.push({ key: 'n:' + m.id, t: Math.max(st.avAt, nb === null ? st.avAt : nb), stat: true, late: s.t > Math.max(st.avAt, nb || 0) + (m.urgent ? 10 : 30), text: `${m.name} ${m.dose} ${m.route}`, sub: 'New order: give it, or hold it with a reason', go: { act: 'med', id: m.id } }); }
+        return;
+      }
       if (m.due === undefined || m.prn) return;
       if (st.status === 'given' || st.status === 'held') rows.push({ key: 'm:' + m.id, t: st.at, done: true, text: `${m.name} ${m.dose} ${m.route}`, sub: `${st.status === 'given' ? 'Given' : 'Held'} ${E.clock(st.at)}` });
       else if (m.initStatus === 'given') return;
       else rows.push({ key: 'm:' + m.id, t: m.due, late: s.t > m.due + 60, text: `${m.name} ${m.dose} ${m.route}`, sub: st.status === 'verify' ? 'Awaiting pharmacy: it can\'t be given until it\'s released' : m.freq, blocked: st.status === 'verify', go: { act: 'med', id: m.id } });
     });
-    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{2,3}(?=\s)/) || [])[0] !== d.id) return; const tx = x.text.replace(/^\d{2,3}\s*/, ''); if (x.info) { rows.push({ key: 'x:' + tx, t: x.t, late: false, info: true, text: tx, sub: 'Heads-up: nothing to do yet' }); return; } const tab = x.tab || (x.sys ? 'assess' : paneFor(d, P, tx)); rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, sys: x.sys, hl: x.hl, go: tab ? { act: 'dock', id: tab } : null }); });
+    if (C().dueExtras) C().dueExtras(s, A()).forEach((x) => { if ((x.text.match(/^\d{2,3}(?=\s)/) || [])[0] !== d.id) return; if (!x.info && x.t >= C().length) return;   // due after handoff: the oncoming nurse's task
+      const tx = x.text.replace(/^\d{2,3}\s*/, ''); if (x.info) { rows.push({ key: 'x:' + tx, t: x.t, late: false, info: true, text: tx, sub: 'Heads-up: nothing to do yet' }); return; } const tab = x.tab || (x.sys ? 'assess' : paneFor(d, P, tx)), early = x.notBefore && x.t > s.t; rows.push({ key: 'x:' + tx, t: x.t, late: x.late, text: tx, sys: x.sys, hl: x.hl, notBefore: early, sub: early ? `Not before ${E.clock(x.t)}: doing it early is a different decision` : x.sub, go: tab ? { act: 'dock', id: tab } : null }); });
     // Anything a provider ordered that the nurse carries out ("Draw blood cultures × 2 (ordered)") is a task, not just a button.
     if (!off) {
       const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), have = rows.map((r) => norm(r.text || '')), Ax = A();
@@ -1005,7 +1018,10 @@
     let h = '';
     if (cid || line) {
       const story = !!(STY && STY.waiting(s, C(), d, P, Ax)), fresh = !!(node && node.choices && !(s.seenDlg || {})[cid]);
-      const wants = cid && (story || fresh), label = wants && !d.newborn && !liveDef(d).vented ? `${d.short} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
+      // Someone who can't speak (intubated, GCS 3, a newborn) never "wants to talk"; if their story is told by family, the family does.
+      const arcWho = STY && STY._arcs && (STY._arcs[C().id] || {})[d.id] && STY._arcs[C().id][d.id].who, famVoice = arcWho && d.family && d.family.name.toLowerCase().startsWith(String(arcWho).toLowerCase());
+      const mute = d.newborn || liveDef(d).vented || d.unresponsive;
+      const wants = cid && (story || fresh), label = wants && !mute ? `${d.short} wants to talk` : wants && famVoice ? `${d.family.name} wants to talk` : (d.talkLabel || `Talk with ${d.short}`);
       h += `<div class="sb idle ${wants ? 'wants' : ''} ${ui.captionPoke ? 'fresh' : ''}" data-anchor="pt">${line ? `<p class="sb-tx">${speechHTML(line.text, !line.quiet)}</p>` : ''}${cid ? `<button class="sb-go" data-act="talk">${wants ? '<i class="ping" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span><small>3 min</small></button>` : ''}<i class="sb-tail" aria-hidden="true"></i></div>`;
     }
     if (d.family && fl.family && (!d.family.avail || d.family.avail(s, P, Ax))) h += `<div class="sb idle fam" data-anchor="fam"><button class="sb-go" data-act="family"><span>Talk with ${esc(d.family.name)}</span><small>${d.family.cost} min</small></button><i class="sb-tail" aria-hidden="true"></i></div>`;
@@ -1110,6 +1126,15 @@
       </div></main>`;
   }
 
+  /* A decision already made in a conversation isn't offered again word for word: talking again gets a short
+     follow-up instead (the choice, its score and its consequences stay with the first answer). */
+  function again(d, cid, fam) {
+    const node = cid && C().dialogs[cid], rec = (s.doneDlg || {})[cid];
+    if (!node || !node.choices || node.repeat || !rec || rec.bad) return cid;   // a conversation that went badly can be tried again
+    const id = `again:${cid}`, nm = fam ? d.family.name : d.short, L = !fam && d.look && d.look.lines;
+    if (!C().dialogs[id]) C().dialogs[id] = { who: node.who, pid: d.id, text: `You've already talked this through with ${nm}. ${L && L.calm ? `"${L.calm}"` : `${nm} nods. Nothing new since you last spoke.`}` };
+    return id;
+  }
   /* What to do in this room, right now: the top of the To-do list as one button. Done here? Point at the next room. */
   function nextHere(d, P) {
     const r = nextFor(d.id);
@@ -1348,7 +1373,7 @@
     const nx = NG && CJ && cj ? nclexSummary(cj) : null, tab = nx && ui.dtab === 'nclex' ? 'nclex' : 'shift';
     const tabs = nx ? `<div class="dtabs" role="tablist" aria-label="Debrief">${[['shift', 'Your shift', `${d.outcomes.length} patients`], ['nclex', 'NCLEX review', nx.left ? `${nx.left} question${nx.left === 1 ? '' : 's'} waiting` : 'All answered']].map(([k, l, sub]) => `<button role="tab" id="dt-${k}" class="dtab dt-${k}" aria-selected="${tab === k}" aria-controls="dp" data-act="dtab" data-v="${k}"><b>${l}</b><small>${sub}</small></button>`).join('')}</div>` : '';
     const hero = `<section class="deb-hero"><div><p class="muted" style="margin:0">${esc(C().title)} debrief, ${E.clock(0)} to ${E.clock(s.t)}</p><h1>${esc(d.rating)}</h1><p class="muted" style="max-width:52ch">${s.t < C().length - 30 ? `You ended the shift early, at ${E.clock(s.t)}. ` : ''}What happened to your patients, and the calls behind it.</p></div>
-      <div class="deb-score"><span class="num" data-to="${d.overall}">${ui.debDone ? d.overall : 0}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>`;
+      <div class="deb-score"><span class="num" data-to="${d.overall}">${d.overall}</span><small>out of 100${best !== null ? `. Your best: ${best}` : ''}</small></div></section>`;
     if (tab === 'nclex') return `<main><div class="deb">${hero}${tabs}<div id="dp" role="tabpanel" aria-labelledby="dt-nclex">${nclexTab(d, cj, nx, next, nextId)}</div>${fbCard()}</div></main>`;
     return `<main><div class="deb">
       ${hero}${tabs}<div id="dp" role="tabpanel" aria-labelledby="dt-shift">
@@ -1515,10 +1540,19 @@
       [['cn', it.cn], ['step', it.step]].forEach(([k, v]) => { if (!v) return; const o = (by[k][v] = by[k][v] || { pts: 0, max: 0, n: 0 }); o.pts += l; o.max += r.max; o.n++; }); });
     return { by, pts, max, n };
   }
+  /* Bank rows are titled by topic; two different questions on one topic get the client who's in each, so the list
+     never shows two identical titles ("Ventilator alarms" twice). */
+  let qtDup = null;
+  function qTitle(x) {
+    if (!qtDup) { const n = {}; NG.bank().forEach((q) => { const k = q.topic || ''; n[k] = (n[k] || 0) + 1; }); qtDup = n; }
+    const t = x.topic || NG.TYPE[x.type]; if (!x.topic || qtDup[x.topic] < 2) return t;
+    const st = String(x.stem || x.q || '').replace(/<[^>]+>/g, ''), m = /^(?:An?|The)\s+([^,.;:]{4,48}?)(?:\s+(?:is|was|has|who|with|in|on|at|comes|arrives|returns)\b|[,.;:])/i.exec(st);
+    return `${t}: ${m ? m[1].replace(/\s+$/, '') : NG.TYPE[x.type]}`;
+  }
   function bankFiltered() {
     const f = ui.pf || {}, done = prof.ngn || {};
     return NG.bank().filter((x) => (!f.cn || x.cn === f.cn) && (!f.step || x.step === f.step) && (!f.type || x.type === f.type)
-      && (!f.st || (f.st === 'new' ? !done[x.id] : f.st === 'missed' ? done[x.id] && lastOf(done[x.id]) < done[x.id].max : true)));
+      && (!f.st || (f.st === 'new' ? !done[x.id] : f.st === 'missed' ? done[x.id] && lastOf(done[x.id]) < done[x.id].max : f.st === 'done' ? !!done[x.id] : true)));
   }
   function startSet(list, label) {
     const done = prof.ngn || {}, rank = (x) => (!done[x.id] ? 0 : lastOf(done[x.id]) < done[x.id].max ? 1 : 2);
@@ -1547,7 +1581,7 @@
       body = `<div class="pf">${chips('cn', NG.CN.map((x) => [x[0], x[1]]), 'Client Needs')}${chips('step', CJ.STEPS.map((x) => [x[0], x[1]]), 'Judgment step')}${chips('type', types.map((t) => [t, NG.TYPE[t]]), 'Format')}${chips('st', [['new', 'Not tried'], ['missed', 'Missed'], ['done', 'Tried']], 'Status')}</div>
         <div class="pr-go"><span><b>${L.length}</b> question${L.length === 1 ? '' : 's'} match</span><button class="btn btn-primary btn-go" data-act="pset" ${L.length ? '' : 'aria-disabled="true" data-why="Nothing matches these filters."'}>Start ${Math.min(10, L.length) || ''} question${Math.min(10, L.length) === 1 ? '' : 's'} <span aria-hidden="true">→</span></button></div>
         <p class="pr-note">Sets take up to ten, questions you haven't tried first, then ones you missed.</p>
-        <ol class="qb-list">${shown.map((x) => { const r = done[x.id]; return `<li><button class="qb-row" data-act="qb-one" data-id="${x.id}"><span class="qb-t"><b>${esc(x.topic || NG.TYPE[x.type])}</b><small>${esc(CNL(x.cn))} · ${esc(NG.TYPE[x.type])} · ${esc(STEPNAME(x.step))}</small></span><span class="qb-s ${r ? (lastOf(r) === r.max ? 'ok' : 'miss') : ''}">${r ? `${lastOf(r)} of ${r.max}` : 'New'}</span></button></li>`; }).join('')}</ol>
+        <ol class="qb-list">${shown.map((x) => { const r = done[x.id]; return `<li><button class="qb-row" data-act="qb-one" data-id="${x.id}"><span class="qb-t"><b>${esc(qTitle(x))}</b><small>${esc(CNL(x.cn))} · ${esc(NG.TYPE[x.type])} · ${esc(STEPNAME(x.step))}</small></span><span class="qb-s ${r ? (lastOf(r) === r.max ? 'ok' : 'miss') : ''}">${r ? `${lastOf(r)} of ${r.max}` : 'New'}</span></button></li>`; }).join('')}</ol>
         ${L.length > shown.length ? `<button class="btn" data-act="pall">Show all ${L.length}</button>` : ''}`;
     } else {
       const bar = (o, lab, sub, act) => { const p = o && o.max ? Math.round(o.pts / o.max * 100) : null; return `<div class="rd"><div class="rd-l"><b>${esc(lab)}</b><small>${esc(sub)}</small></div><div class="rd-b"><div class="bar" aria-hidden="true"><i style="width:${p || 0}%" class="${p === null ? '' : p >= 80 ? 'hi' : p >= 60 ? 'mid' : 'lo'}"></i></div><span>${p === null ? 'Not tried' : `${p}% · ${o.n} question${o.n === 1 ? '' : 's'}`}</span></div>${act}</div>`; };
@@ -1561,7 +1595,7 @@
     const P = ui.pset; if (!P) return '';
     const its = P.ids.map((id) => NG.byId(id)).filter(Boolean), done = prof.ngn || {};
     const got = its.reduce((n, x) => n + (done[x.id] ? lastOf(done[x.id]) : 0), 0), mx = its.reduce((n, x) => n + NG.max(x), 0);
-    return sheet('Your set', `<p class="pres-h"><b>${got} of ${mx} points</b> on ${its.length} question${its.length === 1 ? '' : 's'}${P.label ? ` · ${esc(P.label)}` : ''}</p><ol class="qb-list">${its.map((x, i) => { const r = done[x.id]; return `<li><button class="qb-row" data-act="ngn-go" data-list="bank" data-i="${i}"><span class="qb-t"><b>${esc(x.topic || '')}</b><small>${esc(CNL(x.cn))} · ${esc(STEPNAME(x.step))}</small></span><span class="qb-s ${r ? (lastOf(r) === r.max ? 'ok' : 'miss') : ''}">${r ? `${lastOf(r)} of ${r.max}` : '–'}</span></button></li>`; }).join('')}</ol><p class="muted">Tap a question to see it and its reasoning again.</p>`,
+    return sheet('Your set', `<p class="pres-h"><b>${got} of ${mx} points</b> on ${its.length} question${its.length === 1 ? '' : 's'}${P.label ? ` · ${esc(P.label)}` : ''}</p><ol class="qb-list">${its.map((x, i) => { const r = done[x.id]; return `<li><button class="qb-row" data-act="ngn-go" data-list="bank" data-i="${i}" data-review="1"><span class="qb-t"><b>${esc(qTitle(x))}</b><small>${esc(CNL(x.cn))} · ${esc(STEPNAME(x.step))}</small></span><span class="qb-s ${r ? (lastOf(r) === r.max ? 'ok' : 'miss') : ''}">${r ? `${lastOf(r)} of ${r.max}` : '–'}</span></button></li>`; }).join('')}</ol><p class="muted">Tap a question to see it and its reasoning again.</p>`,
       `<button class="btn" data-act="close">Done</button><button class="btn btn-primary" data-act="pset">Another set</button>`, { label: 'Set results' });
   }
   function ovCsres() {
@@ -1768,7 +1802,8 @@
     const n = root.querySelector('.deb-score .num'); if (!n) return;
     const to = +n.dataset.to, t0 = performance.now(), dur = reduced() ? 1 : 1100;
     root.querySelectorAll('.meter .bar i').forEach((b) => { const w = b.style.width; b.style.width = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; })); });
-    const tick = (now) => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); n.textContent = Math.round(to * e); if (p < 1) requestAnimationFrame(tick); else FX.play(to >= 72 ? 'right' : 'commit'); };
+    // The score lands as itself: a counting number passes through values that look like a different score ("82... 83").
+    const tick = () => { n.textContent = to; n.classList.remove('pop'); void n.offsetWidth; n.classList.add('pop'); setTimeout(() => FX.play(to >= 72 ? 'right' : 'commit'), reduced() ? 0 : 420); };
     const r = s && s.reward; if (r && !reduced()) { for (let i = 0; i < r.stars; i++) setTimeout(() => FX.play('star'), 1300 + i * 380); if (r.lvAfter.n > r.lvBefore.n) setTimeout(() => FX.play('levelup'), 2900); else if (r.earned.length) setTimeout(() => FX.play('right'), 2900); }
     requestAnimationFrame(tick); setTimeout(() => { n.textContent = to; }, dur + 120);   // rAF can stall in a background tab; never leave the count short
   }
@@ -1787,7 +1822,7 @@
     const pid = ui.chart.pid, tab = ui.chart.tab, d = def(pid), P = s.p[pid];
     const tabs = [['overview', 'Overview'], ['vitals', 'Vitals'], ['labs', 'Labs'], ['orders', 'Orders'], ['mar', 'MAR'], ['notes', 'Notes'], ['io', 'Intake/output']];
     let b = '';
-    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(d.reason)}</dd><dt>Problem</dt><dd>${esc(liveDef(d).dx)}</dd><dt>History</dt><dd>${liveDef(d).hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd>${/^(no known|nkda|none)/i.test(liveDef(d).allergies || "") ? esc(liveDef(d).allergies) : `<b style="color:var(--red)">${esc(liveDef(d).allergies)}</b>`}</dd><dt>Code status</dt><dd>${esc(liveDef(d).code)}</dd><dt>Weight</dt><dd>${esc(liveDef(d).weight)}</dd><dt>Lines and devices</dt><dd>${liveDef(d).lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
+    if (tab === 'overview') b = `<dl class="kv"><dt>Patient</dt><dd>${esc(d.name)}, ${ageSex(d)}. ${esc(d.bio)}</dd><dt>Admitted for</dt><dd>${esc(liveDef(d).reason)}</dd><dt>Problem</dt><dd>${esc(liveDef(d).dx)}</dd><dt>History</dt><dd>${liveDef(d).hx.map(esc).join('<br>')}</dd><dt>Allergies</dt><dd>${/^(no known|nkda|none)/i.test(liveDef(d).allergies || "") ? esc(liveDef(d).allergies) : `<b style="color:var(--red)">${esc(liveDef(d).allergies)}</b>`}</dd><dt>Code status</dt><dd>${esc(liveDef(d).code)}</dd><dt>Weight</dt><dd>${esc(liveDef(d).weight)}</dd><dt>Lines and devices</dt><dd>${liveDef(d).lines.map(esc).join('<br>')}</dd><dt>Mobility</dt><dd>${esc(d.mobility)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl>`;
     if (tab === 'vitals') {
       const ab = (k, v) => abn(d, k, v);
       b = `<div class="tbl-wrap"><table><caption class="sr">Vital sign flowsheet</caption><thead><tr><th>Time</th><th>Temp °C</th><th>HR</th><th>BP</th><th>RR</th><th>SpO₂</th><th>O₂</th><th>Pain</th><th>By</th></tr></thead><tbody>
@@ -1799,7 +1834,7 @@
       P.k.labsSeen = s.t; if (pid === '418') P.kSeen = true;
       b = `<div class="tbl-wrap"><table><thead><tr><th>Resulted</th><th>Test</th><th>Result</th><th>Flag</th><th>Reference</th></tr></thead><tbody>${P.labs.slice().sort((a, b2) => b2.t - a.t).map((l) => `<tr><td>${(C().start || 420) + l.t < -1440 ? 'Prior' : (C().start || 420) + l.t < 0 ? 'Yesterday ' + E.clock(l.t) : E.clock(l.t)}</td><td>${esc(l.name)}</td><td class="${l.flag ? 'ab' : ''} wrap">${esc(fLab(l))} ${esc(l.unit)}</td><td class="flag">${l.flag === 'H' ? 'High' : l.flag === 'L' ? 'Low' : l.flag === 'A' ? 'Abnormal' : ''}</td><td class="wrap">${esc(l.ref)}</td></tr>`).join('')}</tbody></table></div>`;
     }
-    if (tab === 'orders') b = `<ul class="list">${P.orders.slice().reverse().map((o) => `<li>${esc(o.text)}${o.isNew ? '<span class="new-tag">New ' + E.clock(o.t) + '</span>' : ''}</li>`).join('')}</ul>`;
+    if (tab === 'orders') { const live = P.orders.filter((o) => o.dc === undefined).reverse(), dc = P.orders.filter((o) => o.dc !== undefined).reverse(); b = `<ul class="list">${live.map((o) => `<li>${esc(o.text)}${o.isNew ? '<span class="new-tag">New ' + E.clock(o.t) + '</span>' : ''}</li>`).join('')}</ul>${dc.length ? `<h3 style="margin:1.2rem 0 .5rem">Discontinued</h3><ul class="list ord-dc">${dc.map((o) => `<li><s>${esc(o.text)}</s><span class="new-tag dc">Stopped ${E.clock(o.dc)}</span></li>`).join('')}</ul>` : ''}`; }
     if (tab === 'mar') b = `<p class="muted" style="margin-top:0">${s.loc === pid && ui.view === 'room' ? 'You are at the bedside. Select a medication to review it.' : 'Medications are given at the bedside. Go to the room to give or hold.'}</p><div class="tbl-wrap"><table><thead><tr><th>Medication</th><th>Route</th><th>Frequency</th><th>Status</th><th></th></tr></thead><tbody>${d.meds.filter((m) => !m.available || m.available(s, P)).map((m) => { const st = medStatus(m); const inRoom = s.loc === pid && ui.view === 'room' && !m.later && m.initStatus !== 'given'; return `<tr><td class="wrap"><b>${esc(m.name)}</b> ${esc(medDose(m))}${m.param ? `<br><small class="muted">${esc(m.param)}</small>` : ''}${m.indication ? `<br><small class="muted">${esc(m.indication)}</small>` : ''}</td><td>${m.route}</td><td class="wrap">${esc(m.freq)}</td><td><b class="${st.cls === 'late' ? 'ab' : ''}">${st.text}</b></td><td>${inRoom ? `<button class="btn" data-act="med" data-id="${m.id}">Review</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`;
     if (tab === 'notes') b = `<ul class="list">${P.notes.slice().reverse().map((n) => `<li><div class="src">${esc(n.author)}, ${(C().start || 420) + n.t < 0 ? 'yesterday' : E.clock(n.t)}</div><div class="voice">${esc(n.text)}</div></li>`).join('')}</ul>`;
     if (tab === 'io') b = `<dl class="kv"><dt>Intake</dt><dd>${esc(d.io.intake)}</dd><dt>Output</dt><dd>${esc(d.io.output)}</dd><dt>Diet</dt><dd>${esc(d.diet)}</dd></dl><p class="muted" style="font-size:.85rem">Last 24 hours, charted by night shift. Assess GI/GU at the bedside for current status.</p>`;
@@ -1827,7 +1862,7 @@
     const d = def(s.loc), P = s.p[d.id], m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id], Ax = A();
     const checks = m.checks ? m.checks(s, P, Ax) : [];
     const block = m.block ? m.block(s, P, Ax) : prnLimit(m, st);
-    const done = !m.prn && (st.status === 'given' || st.status === 'held');
+    const done = (!m.prn && (st.status === 'given' || st.status === 'held')) || (m.ordered && st.status === 'held');
     const verify = st.status === 'verify';
     const refuse = !done && !block && !verify && m.refuse ? m.refuse(s, P, Ax) : null;
     let body = `<div class="order"><b>${esc(m.name)} ${esc(medDose(m))} ${m.route}</b>, ${esc(m.freq)}${m.indication ? `<br><span class="muted">${esc(m.indication)}</span>` : ''}${m.param ? `<br><b>${esc(m.param)}</b>` : ''}</div>
@@ -1840,13 +1875,15 @@
     if (verify) { const ph = (d.interventions || []).concat(d.comms || []).find((x) => /pharmac/i.test(x.label) && (!x.avail || x.avail(s, P, Ax))), tab = ph && (d.interventions || []).includes(ph) ? 'Care' : 'Talk & call'; body += `<div class="warnbox">Pharmacy has not verified this order. It can't be dispensed yet.${ph ? ` To find out what they need, use <b>${esc(ph.label)}</b> on the ${tab} tab.` : ' Check your messages: pharmacy usually says what they need to release it.'}</div>`; }
     if (done) body += `<div class="warnbox">${st.status === 'given' ? 'Given' : 'Held'} at ${E.clock(st.at)}.${st.note ? ' ' + esc(st.note) : ''}</div>`;
     if (m.doses && !block && !verify && !refuse) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
+    // Before the reason: say plainly when nothing on the checks meets the order's hold criteria.
+    if (ui.med.holding && m.param && !ui.med.paramOk) { const ck = checks.filter((c) => c.ok === true || c.ok === false); if (ck.length && ck.every((c) => c.ok === true)) body += `<div class="warnbox" role="alert"><b>Nothing here meets the hold criteria.</b> ${esc(m.param.replace(/\.$/, ''))}. ${esc(ck.map((c) => `${c.label} ${c.value}`).join(', '))}. By the order, this dose is given. Hold only for a reason you can name.</div>`; }
     if (ui.med.holding) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Reason for holding</legend>${['Meets the hold parameter', 'Condition changed, clarify with provider', 'Not enough intake', 'Patient declined'].map((r, i) => `<label class="opt"><input type="radio" name="hr" data-act="hreason" data-v="${i}" ${ui.med.reason == i ? 'checked' : ''}><span>${r}</span></label>`).join('')}</fieldset>`;
     let foot = '';
     if (done && st.status === 'held' && !block) foot += `<button class="btn" data-act="med-unhold">Undo the hold <span style="font-weight:400;opacity:.8">so you can give it</span></button>`;
     if (!done && !block && !verify) {
       if (ui.med.holding) foot += `<button class="btn btn-primary" data-act="med-hold" ${ui.med.reason == null ? 'disabled data-why="Choose a reason for holding first."' : ''}>Hold this dose</button>`;
       else {
-        if (!m.prn) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
+        if (!m.prn || m.ordered) foot += `<button class="btn" data-act="med-holdask">Hold</button>`;
         if (refuse) foot += `<button class="btn btn-primary" data-act="med-declined">Offer again later <span style="font-weight:400;opacity:.8">2 min</span></button>`;
         else { const dl = m.doses && ui.med.dose != null ? m.doses.find((x) => x.id == ui.med.dose) : null, dshort = dl ? dl.label.split(/ \(|: /)[0] : '', what = m.infusion ? (dshort ? `Set the pump: ${dshort}` : 'Set the pump') : `Give ${esc(m.name)}${dshort ? ' ' + dshort : ''}`;
           foot += `<button class="btn btn-primary holdbtn" data-act="med-give" data-hold="1" data-hk="med-give:${m.id}" ${m.doses && ui.med.dose == null ? 'disabled data-why="Choose a dose first."' : ''}><i class="hold-fill" aria-hidden="true"></i><span class="hold-l">${esc(what)}<small class="hold-how">Press and hold, or tap twice</small></span> <span style="font-weight:400;opacity:.8">${P.medPassAt !== undefined && s.t - P.medPassAt <= 6 ? '2 min, same med pass' : '5 min'}</span></button>`; }
@@ -2017,7 +2054,7 @@
 
   function ovReview() { return sheet('Your reply, reviewed', `<p class="muted" style="margin-top:0">${esc(ui.review.title)}</p>${reviewHTML(ui.review.list, 'Why it matters')}`, `<button class="btn btn-primary" data-act="close">Continue</button>`, { label: 'Decision review' }); }
   function ovCalls() {
-    const list = s.judg.slice().reverse(), m = RW.mult(s.streak || 0);
+    const list = s.judg.filter((j) => !j.superseded).reverse(), m = RW.mult(s.streak || 0);
     const good = s.judg.filter((j) => j.delta > 0).length, bad = s.judg.filter((j) => j.delta < 0).length;
     const top = `<div class="prog-top"><div class="pg-xp">${ICON.xp}<b>${fmtN(s.xp || 0)}</b><small>care XP this shift</small></div><div class="pg-st ${m > 1 ? 'hot' : ''}">${ICON.flame}<b>${s.streak || 0}</b><small>in a row${m > 1 ? ` · ×${m} XP` : ''} · best ${s.bestStreak || 0}</small></div></div>
       <p class="muted pg-how">On-time tasks and good calls build your streak; the streak multiplies XP (×1.5 at 3, ×2 at 5, ×2.5 at 8, ×3 at 12). Anything going overdue, or a call to rethink, resets it.</p>
@@ -2466,7 +2503,10 @@
     'med-unhold'() { const d = def(s.loc), m = d.meds.find((x) => x.id === ui.med.id), st = s.meds[m.id]; const at = st.at; st.status = 'due'; st.at = null; st.note = ''; A().log(d.id, `${m.name}: hold reversed (held at ${E.clock(at)}).`, 'act'); s.log[s.log.length - 1].label = `${m.name} hold reversed`; ui.med.holding = false; ui.med.reason = null; save(); render(); },
     'med-holdask'() { ui.med.holding = true; render(); },
     'ngn-open'(el) { ngnStart(el.dataset.list || 'shift', +el.dataset.i || 0); ui.ov = 'ngn'; render(); },
-    'ngn-go'(el) { const cs = ui.ngn && ui.ngn.cs; ngnStart(el.dataset.list || 'shift', +el.dataset.i, cs ? { cs } : null); ui.ov = 'ngn'; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
+    'ngn-go'(el) { const cs = ui.ngn && ui.ngn.cs; ngnStart(el.dataset.list || 'shift', +el.dataset.i, cs ? { cs } : null);
+      // From set results: reopen the question as answered, with your answer and every option's reasoning showing.
+      if (el.dataset.review) { const it = ngnList()[ui.ngn.i], r = it && (prof.ngn || {})[it.id]; if (r && r.a && NG.complete(it, r.a)) { ui.ngn.a = JSON.parse(JSON.stringify(r.a)); ui.ngn.checked = true; ui.ngn.review = true; } }
+      ui.ov = 'ngn'; render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
     'ngn-move'(el) { const q = ui.ngn, o = q && q.a.o; if (!o || q.checked) return; const k = +el.dataset.k, j = k + +el.dataset.d; if (j < 0 || j >= o.length) return; [o[k], o[j]] = [o[j], o[k]]; render(); },
     practice() { ui.view = 'practice'; ui.ov = null; window.scrollTo(0, 0); TEL.track('practice_open', {}); render(); },
     ptab(el) { ui.pTab = el.dataset.v; ui.pAll = false; render(); },
@@ -2502,7 +2542,7 @@
       const q = ui.ngn, it = ngnList()[q.i]; if (!NG.complete(it, q.a)) { const n = document.getElementById('ngn-num'); if (n) n.focus(); return; } q.checked = true;
       const where = s && q.list !== 'case' && q.list !== 'bank' ? s.caseId : q.list === 'case' ? q.cs : 'practice';
       const sc = NG.score(it, q.a), mx = NG.max(it); prof.ngn = prof.ngn || {}; const prev = prof.ngn[it.id];
-      prof.ngn[it.id] = { score: Math.max(sc, prev ? prev.score : 0), max: mx, last: sc, at: Date.now() }; E.store.saveProfile(prof);
+      prof.ngn[it.id] = { score: Math.max(sc, prev ? prev.score : 0), max: mx, last: sc, at: Date.now(), a: JSON.parse(JSON.stringify(q.a)) }; E.store.saveProfile(prof);   // the answer, so review can show it
       TEL.track('ngn_item', { case: where, item: it.id, type: it.type, step: it.step, cn: it.cn || null, score: sc, max: mx, focus: q.list === 'focus', list: q.list });
       if (CL) CL.recordNgn(where, it, sc, mx);
       render();
@@ -2540,11 +2580,12 @@
       const d = def(s.loc), P = s.p[d.id], Ax = A(), cid = d.talk(s, P, Ax), sid = cid && STY ? STY.pick(s, C(), d, P, Ax, cid) : null, id = sid || cid;
       if (!id) { hint(el, `${d.short} can't talk with you right now.`); return; }
       if (!sid) { s.seenDlg = s.seenDlg || {}; s.seenDlg[cid] = 1; }
-      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.captionPoke = false; ui.caption = null; ui.dlg = { id }; ui.ov = 'dialog'; ui.convoIn = true; R.poke('room:' + d.id); render(); },
-    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.convoIn = true; ui.dlg = { id: d.family.dialog(s, s.p[d.id], A()) }; ui.ov = 'dialog'; render(); },
+      spend(3, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.captionPoke = false; ui.caption = null; ui.dlg = { id: sid ? id : again(d, cid) }; ui.ov = 'dialog'; ui.convoIn = true; R.poke('room:' + d.id); render(); },
+    family() { const d = def(s.loc); spend(d.family.cost, () => {}); if (s.ended) return; s.p[d.id].touchAt = s.t; ui.dlgReview = null; ui.said = null; ui.convoIn = true; ui.dlg = { id: again(d, d.family.dialog(s, s.p[d.id], A()), true) }; ui.ov = 'dialog'; render(); },
     dlg(el) {
       const node = C().dialogs[ui.dlg.id], c = node.choices[+el.dataset.i];
       const Ax = A(), j0 = s.judg.length; if (c.fx) c.fx(s, Ax);
+      s.doneDlg = s.doneDlg || {}; if (!node.story && !node.repeat) s.doneDlg[ui.dlg.id] = { t: s.t, bad: judgSince(j0).some((j) => j.delta < 0) };
       const rv = judgSince(j0); ui.dlgReview = rv.length ? rv : null; reviewSound(rv);
       const text = typeof node.text === 'function' ? node.text(s) : node.text;
       const pid = node.pid || (/^\d+$/.test(node.who) ? node.who : s.loc);
@@ -2994,6 +3035,8 @@
   }
   /* Drills plug in with their own handlers (all dr-) and read the profile through these. */
   if (DR) { Object.assign(handlers, DR.handlers); DR.init({ ui, esc, render: (t) => render(t), prof: () => prof, saveProf: () => E.store.saveProfile(prof), R, FX, TEL, ICON, reduced: () => reduced() }); }
-  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF, _law: lawText };
+  S.ui = { boot, _handlers: handlers, _ui: ui, _state: () => s, _render: render, _perf: PERF, _law: lawText,
+    // test hooks (tests/round3.py)
+    _brainRows: (pid) => { RC = null; return brainRows(def(pid), s.p[pid]); }, _nextFor: (pid) => { RC = null; return nextFor(pid); }, _liveDef: (pid) => liveDef(def(pid)), _bankFiltered: () => bankFiltered() };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.Shift);

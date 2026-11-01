@@ -546,7 +546,7 @@
 
   /* ---------- 714 Joseph Mensah: anoxic brain injury; the family meeting and comfort care ---------- */
   const jo = {
-    id: '714', room: '714', name: 'Joseph Mensah', short: 'Mr. Mensah', talkLabel: 'Sit with Mr. Mensah', age: 58, sex: 'M', mrn: '00715560', provider: 'siddiqui', vented: true,
+    id: '714', room: '714', name: 'Joseph Mensah', short: 'Mr. Mensah', talkLabel: 'Sit with Mr. Mensah', age: 58, sex: 'M', mrn: '00715560', provider: 'siddiqui', vented: true, unresponsive: true,
     look: { skin: '#5E3A27', shade: '#47291B', lip: '#4A2418', blush: '#86493A', iris: '#1A100A', head: { w: 58, h: 63, jaw: .6 }, eye: 9.6,
       hair: { style: 'buzz', color: '#8E8A86' }, brow: { w: 4, color: '#4A4440' }, body: { w: 88, cloth: 'gown' }, extras: ['ett'], smile: 0,
       lines: { calm: `(He doesn't respond.)`, none: `(He doesn't respond. The ventilator breathes for him; now and then he gives a weak cough.)` } },
@@ -703,7 +703,7 @@
     linda_after: { who: 'linda', pid: '711', text: `"His color's a little better, isn't it?" She's been watching the monitor all night. "The top number on the right. The doctor said 65."` },
 
     tu_talk: { who: '712', text: (s) => (s.p['712'].sedOff ? `You tell him your name, the day, that he's in the hospital and Michael is here. His eyes flutter toward Michael's voice.` : `You tell him your name, the day, and that Michael is here. Hearing can remain under sedation. His eyes don't open.`) },
-    tu_agit: { who: '712', text: `His eyes are wide. He coughs against the tube, grabs for it, and the ventilator alarms.`, choices: [
+    tu_agit: { repeat: true, who: '712', text: `His eyes are wide. He coughs against the tube, grabs for it, and the ventilator alarms.`, choices: [
       { label: `Tuan, I'm your nurse. You're in the hospital. There's a tube helping you breathe; please don't pull it. Michael is right here. Squeeze my hand if you hear me.`, next: 'tu_a', fx: (s, A) => { const P = s.p['712']; P.alts = true; A.judge('712-alts', 'safety', 2, `You tried reorientation and family before anything restrictive.`, `Least restrictive first: explain, reorient, touch, a familiar voice. With delirium it may not be enough, but it comes first.`, '712'); } },
       { label: `Stop that! You'll pull your tube out!`, next: 'tu_b', fx: (s, A) => { A.judge('712-alts', 'comm', -1, `You shouted at Mr. Pham.`, `A delirious patient hears threat, not instruction. Calm, simple, repeated words work better.`, '712'); } },
     ] },
@@ -863,7 +863,7 @@
       if (task.id === 'bath' && pid === '714' && s.p['714'].extAt !== null) return `Tomas: "Not now. The family's with him."`;
       if (s.deleg.filter((d) => !d.done).length >= 2) return `Tomas: "I've got two going. Give me a few minutes."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the ICU tech.`, 'Hand off the measurements and routine care on stable patients; keep the assessment and the drips.');
+      A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the ICU tech.`, 'Hand off the measurements and routine care on stable patients; keep the assessment and the drips.');
       return `Tomas: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {

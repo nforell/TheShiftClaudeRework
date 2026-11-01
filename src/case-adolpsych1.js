@@ -82,7 +82,7 @@
         hold(s, P, A) { P.held = true; A.judge('401-kphos-hold', 'meds', -2, `You held Ella's phosphate supplement.`, `Her phosphorus is falling. The scheduled dose is part of the treatment, and holding it makes refeeding syndrome more likely.`, '401'); return 'Held.'; },
       },
       {
-        id: '401-repl', name: 'Electrolyte replacement', dose: 'K-Phos 500 mg, KCl 20 mEq, Mg oxide 400 mg', route: 'PO', freq: 'Once, now (new order)', prn: true, available: (s, P) => P.replOrder,
+        id: '401-repl', name: 'Electrolyte replacement', dose: 'K-Phos 500 mg, KCl 20 mEq, Mg oxide 400 mg', route: 'PO', freq: 'Once, now (new order)', prn: true, ordered: true, available: (s, P) => P.replOrder,
         block: (s, P) => (P.replAt !== null ? 'Given at ' + clock(P.replAt) + '.' : null),
         checks: (s, P) => [{ label: 'Phosphorus', value: phosTxt(P), ok: true }, { label: 'Potassium', value: '3.3', ok: true }, { label: 'Magnesium', value: '1.6', ok: true }],
         give(s, P, A) { P.replAt = s.t; A.judge('401-repl', 'meds', 2, `You gave Ella's electrolyte replacement promptly.`, `Replace the phosphorus, potassium and magnesium, keep feeding, and recheck. Stopping the food isn't the treatment; replacing what the food is using up is.`, '401'); return `All three taken, with a small cup of water. "Is this because I'm eating? Should I eat less?" "No. It's because your body is rebuilding. We give you more of what it's using."`; },
@@ -252,6 +252,7 @@
     bio: `Eighth grader. Plays snare drum in the school band. Wants to be a paleontologist. His little sister Zuri packed him a stuffed T. rex.`,
     dx: `DMDD and ADHD, aggression at home`, reason: `Disruptive mood dysregulation disorder and ADHD. Admitted after punching through a window at home during an argument.`,
     hx: [`ADHD since age 7, on methylphenidate`, `Explosive outbursts most days for two years`, `Never had an antipsychotic before today`],
+    live: (s, P) => (P.reported ? { allergies: `Haloperidol (acute dystonia, today)` } : null),
     allergies: `No known drug allergies`, code: `Full code`, weight: `52 kg`,
     lines: [`None`], mobility: `Independent`, diet: `Regular`,
     init: { dys: 0, postIM: false, airway: false, dphAt: null, reassessed: false, reported: false, secl: false, haloAgain: null, believed: null, icu: false, gone: false, docRev: null, f2fCalled: null, f2fAt: null, momCalled: null, benAsked: null, selfCharted: false },
@@ -311,7 +312,15 @@
         give(s, P, A) { P.dphAt = s.t; if (P.dys <= 0) { A.judge('405-dph', 'meds', -1, `You gave Jaylen diphenhydramine without signs of dystonia.`, `It's the antidote, not a sedative.`, '405'); return 'Diphenhydramine 50 mg IM given.'; } A.judge('405-dph', 'meds', 2, `You treated Jaylen's acute dystonia with diphenhydramine.`, `Acute dystonia after a first dose of haloperidol, in a young male: the textbook case. An anticholinergic like diphenhydramine or benztropine reverses it, usually within minutes to half an hour.`, '405'); return `Diphenhydramine 50 mg IM in the thigh. You tell him what it's for. "This medicine undoes the reaction. It should loosen up soon, and you'll get sleepy."`; },
       },
       {
-        id: '405-halo', name: 'Haloperidol', dose: '5 mg', route: 'IM', freq: 'Once as needed, imminent danger', prn: true,
+        // The scheduled anticholinergic Dr. Adeyemi orders after the call: first dose 6 hours after the IM rescue dose.
+        id: '405-dphs', name: 'Diphenhydramine (scheduled)', dose: '25 mg', route: 'PO', freq: 'Every 6 h, scheduled, for 48 hours (new order)', prn: true, ordered: true, available: (s, P) => P.reported,
+        notBefore: (s, P) => (P.dphAt !== null ? P.dphAt + 360 : null),
+        block: (s, P) => (P.dphAt !== null && s.t < P.dphAt + 360 ? `First scheduled dose at ${clock(P.dphAt + 360)}, six hours after the IM dose.` : s.meds['405-dphs'].given.length ? 'Given at ' + clock(s.meds['405-dphs'].given[0]) + '.' : null),
+        checks: (s, P) => [{ label: 'Dystonia', value: P.dphAt !== null ? `Treated with IM diphenhydramine at ${clock(P.dphAt)}` : 'Untreated', ok: P.dphAt !== null }],
+        give(s, P, A) { return 'Diphenhydramine 25 mg PO. He takes it with juice.'; },
+      },
+      {
+        id: '405-halo', name: 'Haloperidol', dose: '5 mg', route: 'IM', freq: 'Once as needed, imminent danger', prn: true, available: (s, P) => !P.reported || P.haloAgain !== null,   // discontinued with the allergy order
         block: (s, P) => (P.haloAgain !== null ? 'Given at ' + clock(P.haloAgain) + '.' : null),
         checks: (s, P) => [{ label: 'Imminent danger', value: P.dys > 0 ? 'No: rigid and frightened' : 'No: groggy, calm', ok: false }, { label: 'Last dose', value: '14:30, his first ever', ok: false }],
         give(s, P, A) { P.haloAgain = s.t; P.dys = Math.min(3, P.dys + .8); A.judge('405-halo', 'meds', -3, `You gave Jaylen more haloperidol.`, P.dys > .8 ? `The dystonia was caused by haloperidol. More of it makes it worse.` : `He wasn't an imminent danger. Emergency medication isn't for being difficult.`, '405'); return 'Haloperidol 5 mg IM given.'; },
@@ -696,7 +705,7 @@
       if (task.id === 'sit') { s.p['407'].sitter = true; A.judge('deleg-sit', 'deleg', 1, `You had Tasha sit near Kayla's door during visiting hours.`, `A familiar adult in sight makes a frightening hour safer. Good use of the mental health worker.`); return `Tasha: "I'll be right outside her door."`; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return `Tasha: "Give me a minute, I'm still on the last thing, plus checks."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      if (task.id === 'vitals' || task.id === 'ortho') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the mental health worker.`, 'Hand off the tasks; keep the assessments and the conversations that need a nurse.');
+      if (task.id === 'vitals' || task.id === 'ortho') A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the mental health worker.`, 'Hand off the tasks; keep the assessments and the conversations that need a nurse.');
       return `Tasha: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {

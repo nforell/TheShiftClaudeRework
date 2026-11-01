@@ -168,7 +168,8 @@
     status: (s, P) => P.icu ? 'gone' : P.co2 >= 70 ? 'urgent' : P.co2 >= 62 || P.o2 > 3 ? 'watch' : 'stable',
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Hypercapnic respiratory failure, ICU', text: 'Found barely rousable with a PaCO₂ in the 80s. The high-flow oxygen that looked like good care drove it.' };
-      if (P.bipap) return { tone: P.co2 < 66 ? 'mixed' : 'bad', title: 'BiPAP for CO₂ retention', text: 'She needed noninvasive ventilation after hours on 6 L. Recognized and treated, but it started with an oxygen change that was never turned back down.' };
+      if (P.bipap) { const fixed = P.o2Fixed !== undefined && P.o2Fixed !== null, hrs = P.raisedAt != null ? Math.round(((fixed ? P.o2Fixed : s.t) - P.raisedAt) / 60 * 10) / 10 : null;
+        return { tone: P.co2 < 66 ? 'mixed' : 'bad', title: 'BiPAP for CO₂ retention', text: fixed ? `She needed noninvasive ventilation. Her oxygen went back to 2 L at ${clock(P.o2Fixed)}, but ${hrs !== null ? `after ${hrs >= 1 ? hrs + ' hours' : Math.round(hrs * 60) + ' minutes'}` : 'only after'} on 6 L the CO₂ had already built up.` : 'She needed noninvasive ventilation after hours on 6 L. Recognized and treated, but it started with an oxygen change that was never turned back down.' }; }
       if (P.co2 >= 62) return { tone: 'bad', title: 'Drowsy and retaining CO₂ at handoff', text: 'Still over-oxygenated and sleepy. The next nurse inherits a patient drifting toward respiratory failure.' };
       return { tone: 'good', title: 'Back at her baseline', text: 'Sats 88–92% on 2 L, alert, breathing easier after nebs and coaching.' + (P.lorazAt !== null ? ' She did get a benzodiazepine.' : '') };
     },
@@ -937,7 +938,7 @@
       if (busy >= 2) return 'Luis: "I\'m tied up with two things. Give me a few."';
       if (task.id === 'blood' && (s.p['425'].unit || s.p['425'].transAt !== null || (s.p['425'].returned && s.t < s.p['425'].rightUnitAt))) return 'Luis: "Blood bank says there\'s nothing ready for her right now."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      if (task.id === 'vitals' || task.id === 'bg' || task.id === 'blood' || task.id === 'tray') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, task.id === 'blood' ? 'Transporting blood is commonly delegated. The verification at the bedside is still yours.' : 'Routine, predictable tasks on stable patients are what CNAs are for. It frees you to assess.');
+      if (task.id === 'vitals' || task.id === 'bg' || task.id === 'blood' || task.id === 'tray') A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the CNA.`, task.id === 'blood' ? 'Transporting blood is commonly delegated. The verification at the bedside is still yours.' : 'Routine, predictable tasks on stable patients are what CNAs are for. It frees you to assess.');
       return `Luis: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
@@ -1053,6 +1054,8 @@
         '421': 'Sat 90% on 2 L is her target. She looks the most anxious and is the most stable, for now.',
       },
     },
+    // Debrief claims checked against the record (engine.js, checkClaims).
+    claims: [{ pid: '421', rx: /never turned back down/i, ok: (s, P) => P.o2Fixed === null || P.o2Fixed === undefined }],
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const Pa = s.p['421'];

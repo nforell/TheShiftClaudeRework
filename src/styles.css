@@ -240,6 +240,8 @@ td.wrap{white-space:normal;min-width:220px}
 .list li{padding:.7rem 0;border-bottom:1px solid var(--line)}
 .list .src{font-size:.8rem;color:var(--ink-2)}
 .new-tag{font-size:.7rem;font-weight:700;color:var(--teal);margin-left:.4em}
+.new-tag.dc{color:var(--ink-2)}
+.ord-dc li{color:var(--ink-2)}
 .checks{list-style:none;margin:.6rem 0;padding:0}
 .checks li{display:grid;grid-template-columns:1.6rem minmax(0,1fr);gap:.4rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
 .checks .g{font-weight:800}.checks .g.ok{color:var(--good)}.checks .g.bad{color:var(--red)}.checks .g.na{color:var(--ink-2)}
@@ -923,9 +925,11 @@ button.b-row:hover{border-color:var(--teal);border-left-color:var(--teal)}
 /* Press and hold */
 .holdbtn{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .hold-fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--hp,0) * 100%);background:rgba(255,255,255,.34);pointer-events:none}
-.fs-row .hold-fill{background:color-mix(in srgb,var(--red) 26%,transparent)}
+.fs-row .hold-fill{background:color-mix(in srgb,var(--red) 30%,transparent);box-shadow:inset -3px 0 0 color-mix(in srgb,var(--red) 70%,transparent)}
+.fs-row.urgent .hold-fill{background:color-mix(in srgb,var(--ink) 22%,transparent);box-shadow:inset -3px 0 0 var(--ink)}
+.holdbtn.holding .hold-note{visibility:hidden}.holdbtn.holding .hold-note::before{content:'Keep holding\2026';visibility:visible;font-weight:700}
 .holdbtn.holding{transform:scale(.985)}
-.holdbtn.holding::after,.holdbtn.armed::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:currentColor;opacity:.55;transform-origin:left;transform:scaleX(var(--hp,0));pointer-events:none}
+.holdbtn.holding::after,.holdbtn.armed::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:currentColor;opacity:.8;transform-origin:left;transform:scaleX(var(--hp,0));pointer-events:none}
 .holdbtn.armed{outline:2px dashed currentColor;outline-offset:2px}
 .holdbtn.armed::after{transform:scaleX(1);opacity:.25;animation:armfade 4s linear forwards}
 @keyframes armfade{to{transform:scaleX(0)}}
@@ -2802,3 +2806,6 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 
 .dr-lv{display:inline-block;margin-left:.5rem;padding:.05rem .45rem;border-radius:3px;background:var(--ink);color:var(--bg);font-family:var(--sign);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;vertical-align:1px}
 .ng-ch{display:inline-block;padding:0 .4rem;border-radius:3px;background:var(--ink);color:var(--bg);font-family:var(--sign);font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;vertical-align:2px}
+.deb-score .num.pop{animation:scorepop .55s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes scorepop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.deb-score .num.pop{animation:none}}

@@ -53,13 +53,22 @@ window.Shift = window.Shift || {};
       def: (id) => c.patients.find((p) => p.id === id),
       log(pid, text, kind) { s.log.push({ id: ++s.seq, t: s.t, pid, text, kind: kind || 'info' }); },
       judge(key, domain, delta, text, why, pid) {
-        if (key && s.judg.some((j) => j.key === key)) return;
+        if (key) {
+          const prev = s.judg.find((j) => j.key === key);
+          // One decision, one judgment, unless the player later undoes a safe call (kept him flat, then sat him up).
+          // Then the reversal is what counts, so it replaces the credit instead of vanishing.
+          if (prev && !(delta < 0 && prev.delta > 0 && !s.finalized)) return;
+          if (prev) { prev.delta = 0; prev.superseded = true; why = `${why} This undid an earlier call ("${prev.text.replace(/\.$/, '')}"), so that credit no longer counts.`; }
+        }
         // A dose whose order was discontinued or replaced can't be "missed".
         if (key && /-missed$/.test(key)) { const mid = key.slice(0, -7); for (const d of c.patients) { const m = (d.meds || []).find((x) => x.id === mid); if (m && m.available && !m.available(s, s.p[d.id])) return; } }
         if (key === 'brain') why = (why || '') + cueDetail(s, c);   // name the lines, so "4 that didn't matter" can be checked
         s.judg.push({ key, t: s.t, domain, delta, text, why, pid });
       },
       hasJudg: (key) => s.judg.some((j) => j.key === key),
+      /* When the facts behind a message change (onset corrected, emergency over), retire it: no reply buttons, and
+         its text stops being quoted as a task. */
+      retireMsgs(pid, rx) { s.inbox.forEach((m) => { if ((pid === null || m.pid === pid) && (!rx || rx.test(m.text))) { m.done = true; m.read = true; m.stale = s.t; } }); },
       msg(o) {
         const m = Object.assign({ id: ++s.seq, t: s.t, read: false, replies: null, done: false }, o);
         s.inbox.unshift(m); s.fresh.push(m.id); return m;
@@ -76,7 +85,10 @@ window.Shift = window.Shift || {};
          `mins` minutes), so feedback never quotes a number the player never saw. Falls back to the live value. */
       seen(pid, mins) { const v = s.p[pid].vit, l = v[v.length - 1]; if (l && s.t - l.t <= (mins || 30)) return Object.assign({ seenAt: l.t }, l); return Object.assign({ seenAt: null }, a.vitals(pid)); },
       addLab(pid, lab) { s.p[pid].labs.push(Object.assign({ t: s.t }, lab)); },
-      addOrder(pid, text) { s.p[pid].orders.push({ t: s.t, text, isNew: true }); },
+      /* A new order. `dc` (a regex, or a list of them) discontinues the older orders it replaces, so the chart never
+         shows a stopped drug, an old dose or a wrong-weight order as if it were still live. */
+      addOrder(pid, text, dc) { if (dc) a.dcOrder(pid, dc); s.p[pid].orders.push({ t: s.t, text, isNew: true }); },
+      dcOrder(pid, rx) { const L = [].concat(rx); s.p[pid].orders.forEach((o) => { if (o.dc === undefined && L.some((r) => r.test(o.text))) o.dc = s.t; }); },
       /* An order that needs repeated nursing checks ("vitals every 15 min × 4"): puts each check on the task list until done.
          o: { id, text, every (min), times, vitals: true | rx: 'regex on the action label', tab, sys, first (min to first check) } */
       watch(pid, o) { s.watch = s.watch || []; if (s.watch.some((w) => w.id === o.id)) return; s.watch.push(Object.assign({ from: s.t, every: 15, times: 1 }, o, { pid })); },
@@ -89,6 +101,12 @@ window.Shift = window.Shift || {};
   /* When a patient leaves the unit (ICU, OR, NICU, discharge), questions asked about them before they left
      ("he won't wake to eat, is that normal?") stop offering answers: the situation those replies were for is over. */
   function retireStale(s) {
+    // Any question whose moment has passed stops offering answers: a case can say so (`staleMsg`: the baby is born, so
+    // "she has to push NOW" is over), and an urgent message nobody answered expires after 90 minutes.
+    const c = cases[s.caseId], A = c && c.staleMsg ? api(s) : null;
+    // A message that asks you to come to a room is answered once you've been in that room since it arrived.
+    const went = (m) => m.pid && s.p[m.pid] && s.p[m.pid].seenAt !== null && s.p[m.pid].seenAt > m.t && m.replies.some((r) => r.act === 'goto' && (!r.pid || r.pid === m.pid));
+    s.inbox.forEach((m) => { if (!m.replies || m.done) return; if ((m.urgent && s.t - m.t > 90) || went(m) || (A && c.staleMsg(s, m, A))) { m.done = true; m.read = true; m.stale = s.t; } });
     Object.keys(s.p).forEach((pid) => {
       const P = s.p[pid]; if (!P || !(P.icu || P.gone)) return;
       if (P.leftAt === undefined) P.leftAt = s.t;
@@ -176,7 +194,7 @@ window.Shift = window.Shift || {};
     const c = cases[s.caseId];
     const A = api(s);
     const dom = DOMAINS.map(([id, label]) => {
-      const T = tally(s.judg.filter((j) => j.domain === id));
+      const T = tally(s.judg.filter((j) => j.domain === id && !j.superseded));
       return { id, label, score: T.score, good: T.good, bad: T.bad };
     });
     const scored = dom.filter((d) => d.score !== null);
@@ -188,11 +206,37 @@ window.Shift = window.Shift || {};
       if (P.seenAt === null && (!d.arrives || P.arrived) && !P.icu && !P.gone && o.tone !== 'bad') return { id: d.id, tone: 'mixed', title: 'Never seen this shift', text: 'You never went into the room. Whatever happened with this patient happened without you.' };
       return o;
     });
+    const violations = checkClaims(s, c, A, outcomes);
     const harmed = outcomes.filter((o) => o.tone === 'bad').length;
     let rating = overall >= 85 ? 'Charge-nurse material' : overall >= 72 ? 'Safe, solid shift' : overall >= 58 ? 'Getting there' : 'Rough shift';
     if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';
     if (!harmed && rating === 'Rough shift' && overall >= 45) rating = 'Getting there';
-    return { dom, overall, rating, outcomes, judg: s.judg.slice().sort((a, b) => a.t - b.t) };
+    return { dom, overall, rating, outcomes, violations, judg: s.judg.filter((j) => !j.superseded).sort((a, b) => a.t - b.t) };
+  }
+
+  /* The debrief may only say what happened. Before it renders, each outcome sentence is checked against the shift's
+     record. A case lists `claims`: { pid, rx, ok(s, P, A, match) } — a sentence matching rx that fails ok is
+     removed (so a player never reads "drip off after a full overlap" over a 116-minute flag) and reported in
+     `violations` (tests/debrief_truth.py fails on any). Shared checks, below, only report: they're heuristics. */
+  const SHARED_CLAIMS = [
+    // A lab value quoted in a debrief must be one that resulted in this patient's chart.
+    { lab: true, rx: /\b(sodium|potassium|magnesium|phosphorus|platelets|lactate|hemoglobin|creatinine)\b(?:\s+level)?(?:\s+(?:was|of|at|reached|is))?\s+(\d+(?:\.\d+)?)\b/i,
+      ok: (s, P, A, m) => { const L = P.labs.filter((l) => l.name.toLowerCase().startsWith(m[1].toLowerCase())); return !L.length || L.some((l) => +l.val === +m[2]); } },
+  ];
+  function checkClaims(s, c, A, outcomes) {
+    const rules = (c.claims || []).map((r) => Object.assign({ drop: true }, r)).concat(SHARED_CLAIMS);
+    const out = [];
+    outcomes.forEach((o) => {
+      if (!o.text) return;
+      const P = s.p[o.id], parts = String(o.text).match(/[^.!?]+[.!?]*(\s+|$)/g) || [o.text];
+      const keep = parts.filter((sent) => {
+        let ok = true;
+        rules.forEach((r) => { if (r.pid && r.pid !== o.id) return; const m = r.rx.exec(sent); if (!m || r.ok(s, P, A, m)) return; out.push({ pid: o.id, text: sent.trim(), rule: String(r.rx) }); if (r.drop) ok = false; });
+        return ok;
+      });
+      if (keep.length !== parts.length) o.text = keep.join('').trim();
+    });
+    return out;
   }
 
   /* Persistence — local for now; same shape could post to a backend later. */

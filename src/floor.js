@@ -412,7 +412,9 @@
 
   // Seeded randomness: the same run replays the same calls; a new run gets a different set.
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  const cnaKey = (c) => c.cna || 'luis';
+  // While the aide is floated off the unit (Nights: Dee goes to the ED at 01:00), her calls come from the charge nurse.
+  let cur = null;
+  const cnaKey = (c) => (cur && c.delegation && c.delegation.away && c.delegation.away(cur) ? 'nova' : c.cna || 'luis');
   const fromKey = (c, it) => (it.from === '@cna' ? cnaKey(c) : it.from === 'fl-rn' ? 'fl-rn-' + kindOf(c) : it.from);
   function fill(c, x) { const cn = (c.staff[cnaKey(c)] || {}).name || 'Your aide'; return String(x).replace(/\{rn\}/g, RN[kindOf(c)]).replace(/\{cna\}/g, cn); }
   const item = (id) => POOL.find((x) => x.id === id);
@@ -428,13 +430,15 @@
   function busy(s, A, c) { return c.patients.some((d) => { const P = s.p[d.id]; return P && (!d.arrives || P.arrived) && !P.icu && !P.gone && d.status(s, P, A) === 'urgent'; }); }
 
   function tick(s, A, c) {
+    cur = s;
     if (!s.floor) init(s, c);
     const F = s.floor;
     F.q.forEach((x) => {
       if (x.done || s.t < x.exp) return;
       x.done = 'missed';
       const it = item(x.id), m = s.inbox.find((mm) => mm.floor === x.id); if (m) { m.done = true; m.read = true; }
-      A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${it.title.toLowerCase()} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.` });
+      // Close the loop the call opened ("two admissions are coming"), so nobody waits for something that won't happen.
+      A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${it.title.toLowerCase()} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.${it.after ? ' ' + fill(c, it.after.replace(/^Nova:\s*/, '').replace(/^"|"$/g, '')) : ''}` });
       if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, `Floor call you didn't get to${where(it)}: ${fill(c, it.miss.text)}`, fill(c, it.miss.why));
     });
     if (F.n >= F.order.length || s.t < F.next || s.t > c.length - 25) return;
@@ -447,6 +451,7 @@
 
   // What the player sees: options in a stable, shuffled order.
   function view(s, c, id) {
+    cur = s;
     const it = item(id), r = rng((s.seed || 1) + id.length * 131 + id.charCodeAt(0));
     const opts = it.opts.map((o, i) => ({ i, t: fill(c, o.t), v: o.v, fb: fill(c, o.fb), key: r() })).sort((a, b) => a.key - b.key);
     const tx = typeof it.text === 'string' ? it.text : it.text[kindOf(c)] || it.text.med;
@@ -457,6 +462,7 @@
   // Floor calls are about the rest of the unit, not the player's own patients: the debrief says whose bed it was.
   const where = (it) => { const m = /\b(bed|room)\s+(\d{2,4})\b/i.exec(it.ping || ''); return m ? ` (${m[1].toLowerCase()} ${m[2]}, not your patient)` : ''; };
   function answer(s, A, id, i) {
+    cur = s;
     const c = A.c, it = item(id), x = s.floor.q.find((q) => q.id === id); if (!x || x.done) return null;
     const o = it.opts[i]; x.done = 'answered'; x.pick = i; x.v = o.v; x.t = s.t;
     const m = s.inbox.find((mm) => mm.floor === id); if (m) { m.done = true; m.read = true; }

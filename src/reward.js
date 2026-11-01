@@ -43,7 +43,7 @@
     const onUnit = c.patients.filter((d) => here(d) && !out(s.p[d.id])), rep = onUnit.filter((d) => s.report && s.report[d.id]).length;
     const report = onUnit.length && rep === onUnit.length ? 'done' : s.ended ? 'fail' : 'open';
     return [
-      { id: 'eyes', label: 'Everyone seen', sub: `Every patient seen by ${A.clock(seeBy)}`, st: eyes, n: seen, of: need.length },
+      { id: 'eyes', label: 'Everyone seen', sub: c.patients.some((d) => d.arrives) ? `Everyone from report seen by ${A.clock(seeBy)} (arrivals don't count)` : `Every patient seen by ${A.clock(seeBy)}`, st: eyes, n: seen, of: need.length },
       { id: 'meds', label: 'Meds on time', sub: 'No scheduled dose over an hour late', st: meds, n: late, of: tot, bad: true },
       { id: 'calls', label: 'Call lights and floor calls', sub: 'Every call light and every floor call answered', st: calls, n: bellMiss + fl.missed, of: rang + fl.answered + fl.missed, bad: true },
       { id: 'report', label: 'Report given', sub: `Report on every patient by ${A.clock(len)}`, st: report, n: rep, of: onUnit.length },

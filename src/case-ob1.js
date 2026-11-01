@@ -33,6 +33,8 @@
     hx: [`Asthma: albuterol inhaler, one ED visit for asthma two years ago`, `G2P2. First birth uncomplicated`, `Epidural in labor, removed at 05:30`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `84 kg`,
     lines: [`PIV 18g left forearm: oxytocin infusion`], mobility: `Up with assist; first time up not yet done`, diet: `Regular`,
+    // The hemorrhage is what the next nurse must hear first: blood loss, what was given, who came.
+    reportExtra: (s, P) => (P.qbl >= 500 || P.called !== null ? [{ label: `Postpartum hemorrhage today: QBL ${Math.round(P.qbl)} mL${P.methAt !== null ? ', methylergonovine' : ''}${P.txaAt !== null ? ', TXA' : ''}${P.misoAt !== null ? ', misoprostol' : ''}${P.rrt ? `; hemorrhage team called at ${clock(P.rrtAt)}` : ''}. Asthma: no carboprost`, key: true }] : []),
     init: { tone: .38, bladder: true, qbl: 450, ut: 0, fundusAt: null, deviated: false, qblSeen: false, qblAt: null, massages: 0, cathAt: null, voidTry: false, called: null, carboAsked: false, oxyUp: false, oxyOff: false, methAt: null, misoAt: null, txaAt: null, carbo: false, bronch: false, albAt: null, ivs: false, reassessed: false, gone: false },
     nightVitals: { T: 37.1, HR: 88, SBP: 118, DBP: 70, RR: 18, SpO2: 98, O2: 'Room air', pain: 3 },
     labs: [
@@ -127,7 +129,7 @@
         block: (s, P) => (P.carbo ? 'Given.' : null),
         checks: () => [{ label: 'Asthma', value: 'Yes: albuterol at home, ED visit 2 years ago', ok: false }, { label: 'Order set', value: 'Contraindicated in asthma', ok: false }],
         give(s, P, A) { P.carbo = true; P.bronch = true; P.bronchAt = s.t; P.ut += 1; A.judge('212-carbo', 'meds', -3, `You gave carboprost to Ms. Brown, who has asthma.`, `Carboprost is a prostaglandin F2-alpha: it contracts bronchial smooth muscle as well as the uterus. In asthma it can cause severe bronchospasm.${P.carboAsked ? ' The provider suggested it because the call left out her asthma.' : ''} Methylergonovine or misoprostol were safe.`, '212'); return `Carboprost 250 mcg IM. Within minutes she starts to wheeze.`; },
-        hold(s, P, A) { A.judge('212-carbo-hold', 'meds', 1, `You held carboprost for Ms. Brown's asthma.`, `Right drug class, wrong patient. Say so on the call so nobody orders it later.`, '212'); return 'Held: asthma.'; },
+        hold(s, P, A) { A.judge('212-carbo-hold', 'meds', P.carboAsked ? 2 : 1, P.carboAsked ? `You held the carboprost Dr. Brennan suggested, because Ms. Brown has asthma.` : `You held carboprost for Ms. Brown's asthma.`, P.carboAsked ? `A provider's suggestion doesn't override a contraindication. Hold it and call back: she has asthma, so misoprostol instead. The call left out the asthma, which is why carboprost was suggested.` : `Right drug class, wrong patient. Say so on the call so nobody orders it later.`, '212'); return P.carboAsked ? 'Held: asthma. Dr. Brennan needs to hear that before anyone gives it.' : 'Held: asthma.'; },
       },
       {
         id: '212-miso', name: 'Misoprostol', dose: '800 mcg', route: 'Buccal', freq: 'PPH order set; once', prn: true,
@@ -145,7 +147,7 @@
       { id: '212-alb', name: 'Albuterol inhaler', dose: '2 puffs', route: 'Inhaled', freq: 'Every 4 h as needed, wheeze', prn: true, checks: (s, P) => [{ label: 'Wheeze', value: P.bronch ? 'Yes, all fields' : 'None', ok: P.bronch }], give(s, P, A) { P.albAt = s.t; if (P.bronch) A.judge('212-alb', 'meds', 1, `You treated Ms. Brown's bronchospasm with albuterol.`, `Bronchodilator first, sit her up, oxygen, and call.`, '212'); return `Albuterol 2 puffs with a spacer.`; } },
     ],
     comms: [
-      { id: 'rrt', label: 'Call the obstetric hemorrhage team (rapid response)', cost: 3, avail: (s, P) => !P.gone && P.qbl >= 700 && !P.rrt, run(s, P, A) { P.rrt = true; P.called = P.called === null ? s.t : P.called; P.ut += .8; A.judge('212-rrt', 'judgment', P.qbl < 1200 ? 2 : 1, `You called the obstetric hemorrhage team for Ms. Brown.`, `Ongoing bleeding past 1,000 mL, or vital signs changing, is Stage 2: more hands, blood to the bedside, the provider in the room.`, '212'); return `The team is on the way. Anesthesia and the OB hospitalist are coming; blood bank is preparing 2 units.`; } },
+      { id: 'rrt', label: 'Call the obstetric hemorrhage team (rapid response)', cost: 3, avail: (s, P) => !P.gone && P.qbl >= 700 && !P.rrt, run(s, P, A) { P.rrt = true; P.rrtAt = s.t; P.called = P.called === null ? s.t : P.called; P.ut += .8; A.judge('212-rrt', 'judgment', P.qbl < 1200 ? 2 : 1, `You called the obstetric hemorrhage team for Ms. Brown.`, `Ongoing bleeding past 1,000 mL, or vital signs changing, is Stage 2: more hands, blood to the bedside, the provider in the room.`, '212'); return `The team is on the way. Anesthesia and the OB hospitalist are coming; blood bank is preparing 2 units.`; } },
     ],
     talk: (s, P) => (P.gone ? null : P.bronch && P.albAt === null ? 'kei_sob' : P.tone > .6 && !P.k.talkGush ? 'kei_gush' : P.k.talked ? 'kei_after' : 'kei_talk'),
     sbar: {
@@ -171,10 +173,13 @@
         if (!picked.includes('fundus') && !picked.includes('qbl')) return `How's her fundus? How much has she bled, weighed?`;
         if (req === 'ok' && P.tone > .45) { A.judge('212-sbar-ok', 'judgment', -2, `You reported Ms. Brown's atony as handled.`, `A uterus that firms with massage and softens again is still bleeding. "Firmed up" isn't the end of the story until it stays firm.`, '212'); return `Okay. Keep an eye on her.`; }
         if (P.called === null) P.called = s.t;
-        if (!P.ordered) { P.ordered = true; A.addOrder('212', `Stage 1 to 2 PPH: tranexamic acid 1 g IV now. Second large-bore IV. CBC, fibrinogen, type and crossmatch 2 units. Methylergonovine 0.2 mg IM if not given. Keep oxytocin at 250 mL/h for 4 more hours. Weigh all pads every 30 minutes.${picked.includes('asthma') ? ' No carboprost: asthma.' : ''}`); }
-        if (!picked.includes('asthma') && !P.carbo) P.carboAsked = true;
-        A.judge('212-sbar', 'comm', picked.includes('asthma') ? 2 : 1, `You called about Ms. Brown's bleeding.`, `Name the cause (atony), the number (QBL), the trend (heart rate) and the contraindication (asthma). The provider can only avoid a drug they know is dangerous.`, '212');
-        return picked.includes('asthma') ? `Good call, and thank you for the asthma. No Hemabate. Methergine if you haven't, TXA now, labs and crossmatch. I'm coming up.` : `Okay, sounds like atony. Methergine, TXA, labs. If she's still boggy after that, give Hemabate. I'm coming.`;
+        // The asthma reaches the provider if it's in the background lines or in the request itself ("she has asthma, so no carboprost").
+        const toldAsthma = picked.includes('asthma') || req === 'pph';
+        if (!P.ordered) { P.ordered = true; A.addOrder('212', `Stage 1 to 2 PPH: tranexamic acid 1 g IV now. Second large-bore IV. CBC, fibrinogen, type and crossmatch 2 units. Methylergonovine 0.2 mg IM if not given. Keep oxytocin at 250 mL/h for 4 more hours. Weigh all pads every 30 minutes.${toldAsthma ? ' No carboprost: asthma.' : ''}`); }
+        if (!toldAsthma && !P.carbo) P.carboAsked = true;
+        if (P.mdComing === undefined) P.mdComing = s.t;
+        A.judge('212-sbar', 'comm', toldAsthma ? 2 : 1, `You called about Ms. Brown's bleeding.`, `Name the cause (atony), the number (QBL), the trend (heart rate) and the contraindication (asthma). The provider can only avoid a drug they know is dangerous.`, '212');
+        return toldAsthma ? `Good call, and thank you for the asthma. No Hemabate. Methergine if you haven't, TXA now, labs and crossmatch. I'm coming up.` : `Okay, sounds like atony. Methergine, TXA, labs. If she's still boggy after that, give Hemabate. I'm coming.`;
       },
     },
     scene: (s, P) => ({ iv: P.oxyOff ? 'lock' : 'running', crib: false, tray: 'eaten', flowers: true, family: null, empty: P.gone, emptyText: 'Bed stripped, soaked pads in a pile. Back to Labor and Delivery for a hemorrhage.' }),
@@ -185,7 +190,7 @@
       if (P.gone) return { tone: 'bad', title: 'Postpartum hemorrhage, back to L&D', text: `QBL over 1,600 mL. Back to Labor and Delivery for a balloon tamponade and blood. ${P.bladder ? 'Her bladder was still full.' : ''}${P.carbo ? ' She also needed treatment for bronchospasm after carboprost.' : ''}` };
       const controlled = P.tone <= .55 && !P.bladder;
       if (P.carbo) return { tone: 'bad', title: 'Bronchospasm after carboprost', text: `The atony settled, but carboprost triggered an asthma attack. ${P.albAt !== null ? 'Albuterol and steroids broke it.' : 'She needed a respiratory therapist and steroids.'} Carboprost is contraindicated in asthma.` };
-      if (controlled && P.qbl < 1000 && P.called !== null) return { tone: 'good', title: 'Atony caught early', text: `Bladder emptied${P.methAt !== null ? ', methylergonovine' : ''}${P.txaAt !== null ? ', TXA' : ''}, the provider at the bedside. QBL ${Math.round(P.qbl)} mL. Firm and staying firm.${P.reassessed ? ' Reassessed and better.' : ''}` };
+      if (controlled && P.qbl < 1000 && P.called !== null) return { tone: 'good', title: 'Atony caught early', text: `Bladder emptied${P.methAt !== null ? ', methylergonovine' : ''}${P.txaAt !== null ? ', TXA' : ''}${P.mdHere !== undefined ? `, Dr. Brennan at the bedside by ${clock(P.mdHere)}` : ', and the provider called'}${P.teamHere !== undefined ? ', the hemorrhage team in the room' : ''}. QBL ${Math.round(P.qbl)} mL. Firm and staying firm.${P.reassessed ? ' Reassessed and better.' : ''}` };
       if (controlled) return { tone: 'mixed', title: P.qbl >= 1000 ? 'Postpartum hemorrhage, controlled late' : 'Bleeding controlled, provider not told', text: `QBL ${Math.round(P.qbl)} mL. ${P.called === null ? 'Nobody called the provider about a soft uterus and a full bladder.' : 'It took longer than it needed to.'}` };
       return { tone: 'bad', title: 'Still boggy at handoff', text: `QBL ${Math.round(P.qbl)} mL and counting.${P.bladder ? ' Her bladder was never emptied.' : ''} The next nurse inherits an active hemorrhage.` };
     },
@@ -318,8 +323,9 @@
           { id: 'canoe', label: 'Paddles outrigger canoe', key: false, need: true },
         ];
       },
-      requests: [
-        { id: 'mg', label: 'She\'s oliguric with a rising creatinine and her reflexes are falling on 2 g/h. I\'m worried about magnesium toxicity. Can we decrease or stop it and get a stat level?' },
+      // The rate in the request is the rate running now, so a second call after the decrease doesn't say "2 g/h".
+      requests: (s, P) => [
+        { id: 'mg', label: `She's oliguric with a rising creatinine and her reflexes are falling on ${P.stopped !== null ? 'magnesium (now stopped)' : (P.rate || 2) + ' g/h'}. I'm worried about magnesium toxicity. Can we ${P.stopped !== null ? 'keep it off' : P.rate < 2 ? 'stop it' : 'decrease or stop it'} and get a stat level?` },
         { id: 'bp', label: 'Severe-range pressure, confirmed, with a headache. I\'m treating per the protocol. Can you see her?' },
         { id: 'fyi', label: 'Just keeping you updated.' },
       ],
@@ -351,13 +357,15 @@
     rig: (s, P) => ({ rr: lRR(s, P), alert: P.mg >= 11 ? 2 : P.mg >= 9.5 ? 1 : 0, pain: P.sevAt !== null && P.bpDrop < 10 ? 7 : 2, anxious: 0, sbp: lSBP(P) }),
     status: (s, P) => (P.icu ? 'gone' : lRR(s, P) < 12 || dtr(P) === 'absent' || (P.sevAt !== null && lSBP(P) >= 160) ? 'urgent' : P.mg >= 8.4 || P.uo < 30 ? 'watch' : 'stable'),
     outcome(s, P) {
+      // Quote only a level that actually resulted, with its time.
+      const lv = P.labs.filter((l) => l.name === 'Magnesium').pop(), lvTx = lv ? `last magnesium level ${lv.val} at ${lv.t < 0 ? '06:00' : clock(lv.t)}` : 'no new magnesium level';
       if (P.icu) return { tone: 'bad', title: 'Magnesium toxicity, respiratory arrest', text: `Magnesium ${P.mg.toFixed(1)} with urine output in the 20s since 04:00. Bag-mask breaths, calcium, and the ICU. Reflexes had been fading all morning.` };
       const sevOk = P.sevAt === null || (P.firstBpMed !== null && P.firstBpMed - P.sevAt <= 60);
       const mgOk = (P.reduced !== null || P.stopped !== null) && P.mg < 10;
-      if (mgOk && sevOk && P.called !== null && P.caAt === null) return { tone: 'good', title: 'Magnesium caught before toxicity', text: `Rate down to ${P.rate || 0} g/h on ${clock(P.called)}'s call, level ${P.mg.toFixed(1)} at handoff, reflexes ${dtr(P)}. ${P.sevAt !== null ? `Severe pressure treated in ${P.firstBpMed - P.sevAt} minutes.` : ''}` };
-      if (mgOk && sevOk) return { tone: 'mixed', title: P.caAt !== null ? 'Toxicity reversed' : 'Magnesium adjusted, loop not closed', text: `${P.caAt !== null ? 'She needed calcium for respiratory depression before the infusion came off. ' : ''}${P.called === null ? 'The provider never heard about the oliguria. ' : ''}Level ${P.mg.toFixed(1)} at handoff.` };
+      if (mgOk && sevOk && P.called !== null && P.caAt === null) return { tone: 'good', title: 'Magnesium caught before toxicity', text: `${P.stopped !== null ? `Stopped at ${clock(P.stopped)}` : `Rate down to ${P.rate || 0} g/h`} after the ${clock(P.called)} call; ${lvTx}, reflexes ${dtr(P)}. ${P.sevAt !== null ? `Severe pressure treated in ${P.firstBpMed - P.sevAt} minutes.` : ''}` };
+      if (mgOk && sevOk) return { tone: 'mixed', title: P.caAt !== null ? 'Toxicity reversed' : 'Magnesium adjusted, loop not closed', text: `${P.caAt !== null ? 'She needed calcium for respiratory depression before the infusion came off. ' : ''}${P.called === null ? 'The provider never heard about the oliguria. ' : ''}At handoff: ${lvTx}, reflexes ${dtr(P)}.` };
       if (!sevOk) return { tone: 'bad', title: 'Severe hypertension, treated late', text: `Pressures over 160 from ${clock(P.sevAt)}${P.firstBpMed !== null ? `, first dose at ${clock(P.firstBpMed)}` : ', never treated'}. Stroke is a leading cause of death in preeclampsia; the 60-minute clock exists for that reason.${P.apapForHead ? ' Acetaminophen went in for the headache instead.' : ''}` };
-      return { tone: 'bad', title: 'Magnesium still accumulating', text: `Level about ${P.mg.toFixed(1)} and rising at handoff, reflexes ${dtr(P)}, urine ${Math.round(P.uo)} mL/h.` };
+      return { tone: 'bad', title: 'Magnesium still accumulating', text: `Still running and accumulating at handoff: ${lvTx}, reflexes ${dtr(P)}, urine ${Math.round(P.uo)} mL/h.` };
     },
   };
   function bpMed(s, P, A, k, drop, txt) {
@@ -521,6 +529,8 @@
     hx: [`Depression since her 20s; sertraline 100 mg, stopped when she found out she was pregnant`, `Three years of infertility treatment`, `Rh negative; baby Miles is Rh positive`],
     allergies: `No known drug allergies`, code: `Full code`, weight: `68 kg`,
     lines: [`PIV 20g left hand: saline lock`, `Low transverse incision, dressing dry`], mobility: `Up in the room; walked twice`, diet: `Regular`,
+    // Her depression screen and safety plan travel with her in report, whatever was or wasn't done about them.
+    reportExtra: (s, P) => [{ label: `EPDS 15 with item 10 marked${P.si ? '; she told you she has had thoughts her family would be better off without her' : P.asked !== null ? '; asked directly about self-harm' : '; not yet asked about it'}. ${P.safety ? 'Room made safe' : 'No safety measures yet'}${P.comp ? ', companion with her' : ''}${P.consult ? ', psychiatry consulted' : ''}${P.called !== null ? ', provider aware' : ''}. Discharge ${P.consult || P.called !== null ? 'on hold' : 'still planned for 14:00'}.`, key: true }],
     init: { epdsSeen: false, asked: null, si: false, planAsked: false, dismissed: false, called: null, consult: false, safety: false, comp: false, rhig: null, itm: [-60], disclosed: false, disclosureSeen: false, oxyAt: null, dcAsk: false },
     nightVitals: { T: 36.9, HR: 78, SBP: 112, DBP: 68, RR: 16, SpO2: 98, O2: 'Room air', pain: 3 },
     labs: [
@@ -692,6 +702,9 @@
   /* ---------- events ---------- */
   const A0 = (s) => Object.keys(s.p).every((id) => s.p[id].seenAt === null);
   const events = [
+    // People who say they're coming arrive: Dr. Brennan after the bleeding call, the hemorrhage team after the page.
+    { id: 'brennan-here', when: (s) => { const P = s.p['212']; return P.mdComing !== undefined && !P.gone && s.t >= P.mdComing + 12; }, run(s, A) { const P = s.p['212']; P.mdHere = s.t; A.log('212', `Dr. Brennan at the bedside: bimanual exam, ${P.tone > .55 ? 'still boggy; she stays to manage it with you' : 'uterus firm now'}. Plan reviewed with you.`, 'info'); A.msg({ from: 'brennan', pid: '212', text: `I'm in 212. ${P.carboAsked && !P.carbo ? 'And I see the asthma on her chart: no Hemabate. Misoprostol if she needs a third drug.' : 'Thanks for the call.'}` }); } },
+    { id: 'pph-team', when: (s) => { const P = s.p['212']; return P.rrtAt !== undefined && !P.gone && s.t >= P.rrtAt + 6; }, run(s, A) { const P = s.p['212']; P.teamHere = s.t; A.log('212', 'Obstetric hemorrhage team at the bedside: anesthesia, the OB hospitalist and 2 units of blood. A second IV is in and labs are sent.', 'info'); A.msg({ from: 'nova', pid: '212', text: `The hemorrhage team is in 212: anesthesia, the OB hospitalist, and blood at the bedside.` }); } },
     { id: 'aide-hi', when: (s) => s.t >= 3, run(s, A) { A.msg({ from: 'mei', text: `Morning! I've got your four rooms. 216's sugar is due and he's out cold. Want me to start vitals?`, replies: [{ label: 'Open tasks for Mei', act: 'delegate' }] }); } },
     { id: 'linh-sleepy', when: (s) => s.t >= 10 && !s.p['216'].checks.length, run(s, A) { A.msg({ from: 'mei', pid: '216', text: `216's mom says he won't wake up to eat and she's asking if that's normal.`, replies: [{ label: 'I\'ll go see him', act: 'goto', pid: '216' }, { label: 'First day, babies sleep. It\'s fine.', act: 'baby-fine' }] }); } },
     { id: 'kei-gush', when: (s) => { const P = s.p['212']; return s.t >= 20 && !P.gone && P.tone > .55 && P.fundusAt === null; }, run(s, A) { A.msg({ from: 'mei', pid: '212', text: `212 says she felt a big gush when she moved. Her pad's pretty full. Want me to change it?`, replies: [{ label: 'Weigh it before you toss it. I\'m coming.', act: 'kei-weigh' }, { label: 'Yes, change it, thanks', act: 'kei-change' }] }); } },
@@ -743,7 +756,7 @@
       if (task.id === 'sit') { const P = s.p['218']; if (P.si || P.disclosed) { P.comp = true; A.judge('deleg-sit', 'deleg', 1, `You had Mei stay with Ms. Mercer.`, `A safety companion is an appropriate task for a CNA, with clear instructions: stay in the room, call you for any change.`); return `Mei: "I'll stay with her. I'll call if anything changes."`; } return `Mei: "Sure, though she says she's fine. I'll check on her."`; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return `Mei: "Give me a minute, I'm still on the last thing."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, 'Hand off the measurements; keep the interpretation.');
+      A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the CNA.`, 'Hand off the measurements; keep the interpretation.');
       return `Mei: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
@@ -852,6 +865,8 @@
         '218': `A positive depression screen that needs a real conversation today, before discharge. Physically stable.`,
       },
     },
+    // Debrief claims checked against the record (engine.js, checkClaims): nobody is "at the bedside" who never came.
+    claims: [{ pid: '212', rx: /(Brennan|provider) at the bedside/i, ok: (s, P) => P.mdHere !== undefined }, { pid: '212', rx: /hemorrhage team in the room/i, ok: (s, P) => P.teamHere !== undefined }],
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const K = s.p['212'];

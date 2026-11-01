@@ -281,6 +281,17 @@
   };
 
   /* ---------- 435 Kaia Sorensen: DKA on an insulin infusion ---------- */
+  /* The order is "continue the infusion 2 h after glargine". A stop within 5 minutes of that mark is the order
+     followed (the task never offers it earlier); anything shorter is early, and the debrief quotes the real minutes. */
+  const OVERLAP_OK = 115;
+  const overlap = (P) => (P.glarAt === null || P.dripOffAt === null ? null : P.dripOffAt - P.glarAt);
+  function stopJudge(s, P, A) {
+    const m = s.t - (P.glarAt === null ? s.t : P.glarAt);
+    if (!P.gapClosed) A.judge('435-stop', 'meds', -3, 'You stopped the insulin infusion before the anion gap closed.', 'The drip is treating the ketoacidosis. Glucose looking better isn\'t the endpoint; a closed gap is.', '435');
+    else if (P.glarAt === null) A.judge('435-stop', 'meds', -3, 'You stopped the insulin infusion with no basal insulin on board.', 'Regular insulin IV lasts minutes. Without long-acting insulin already working, ketones come right back.', '435');
+    else if (m < OVERLAP_OK) A.judge('435-stop', 'meds', -2, `You stopped the drip ${m} minutes after the glargine; the order said 2 hours.`, 'Subcutaneous glargine takes about 2 hours to start working. Stop the drip early and DKA comes back.', '435');
+    else A.judge('435-stop', 'meds', 2, `You stopped the drip ${m} minutes after the glargine, a full overlap.`, 'Textbook transition: gap closed, basal on board, overlap, then off.', '435');
+  }
   const kaia = {
     id: '435', room: '435', name: 'Kaia Sorensen', short: 'Ms. Sorensen', age: 26, sex: 'F', mrn: '00815530',
     look: { skin: '#D6A47C', shade: '#B8845C', lip: '#9B574D', blush: '#D98468', iris: '#3A2618', head: { w: 52, h: 61, jaw: .3 }, eye: 10.4,
@@ -357,10 +368,7 @@
         id: 'stop', label: 'Stop the insulin infusion', cost: 1, avail: (s, P) => P.dripOn,
         run(s, P, A) {
           P.dripOn = false; P.dripOffAt = s.t;
-          if (!P.gapClosed) A.judge('435-stop', 'meds', -3, 'You stopped the insulin infusion before the anion gap closed.', 'The drip is treating the ketoacidosis. Glucose looking better isn\'t the endpoint; a closed gap is.', '435');
-          else if (P.glarAt === null) A.judge('435-stop', 'meds', -3, 'You stopped the insulin infusion with no basal insulin on board.', 'Regular insulin IV lasts minutes. Without long-acting insulin already working, ketones come right back.', '435');
-          else if (s.t - P.glarAt < 120) A.judge('435-stop', 'meds', -2, `You stopped the drip ${s.t - P.glarAt} minutes after the glargine.`, 'Subcutaneous glargine takes about 2 hours to start working. Stop the drip early and DKA comes back.', '435');
-          else A.judge('435-stop', 'meds', 2, 'You stopped the drip after a full 2-hour overlap with glargine.', 'Textbook transition: gap closed, basal on board, overlap, then off.', '435');
+          stopJudge(s, P, A);
           return 'Insulin infusion stopped.';
         },
       },
@@ -417,7 +425,8 @@
       if (P.rebound) return { tone: 'bad', title: 'DKA came back', text: 'The drip came off before basal insulin was working. Her gap reopened by morning.' };
       if (P.hypo) return { tone: 'mixed', title: 'Gap closing, but her glucose crashed', text: 'Insulin kept running without dextrose, and her glucose fell into the 50s.' };
       if (P.kLow && !P.paused) return { tone: 'mixed', title: 'Insulin ran with a low potassium', text: 'Her K dipped to 3.1 while the drip ran. No arrhythmia, this time.' };
-      if (P.gapClosed && P.glarAt !== null) return { tone: 'good', title: 'DKA resolved, safe transition', text: P.dripOn ? 'Gap closed, glargine given, and the drip handed off to finish its 2-hour overlap.' : 'Gap closed, glargine on board, drip off after a full overlap. She\'s eating breakfast.' };
+      if (P.gapClosed && P.glarAt !== null && !P.dripOn && overlap(P) < OVERLAP_OK) return { tone: 'mixed', title: 'DKA resolved, overlap cut short', text: `Gap closed and glargine given, but the drip came off ${overlap(P)} minutes later instead of 2 hours. Her gap held this time; that was luck, not the plan.` };
+      if (P.gapClosed && P.glarAt !== null) return { tone: 'good', title: 'DKA resolved, safe transition', text: P.dripOn ? 'Gap closed, glargine given, and the drip handed off to finish its 2-hour overlap.' : `Gap closed, glargine on board, drip off ${overlap(P)} minutes later. She\'s eating breakfast.` };
       if (P.gapClosed) return { tone: 'mixed', title: 'Gap closed, no basal yet', text: 'Ready to transition, but glargine never went in.' };
       return { tone: 'mixed', title: 'Still in DKA at handoff', text: 'The gap never closed overnight.' };
     },
@@ -505,7 +514,7 @@
         give(s, P, A) { if (stroke(P)) { P.poGiven = true; A.judge('437-po', 'safety', -2, 'You gave oral medication to a patient with new stroke symptoms.', 'NPO until a swallow screen. The stroke team will manage his BP IV.', '437'); return 'He chokes on the pill and coughs for a full minute.'; } return 'Metoprolol 25 mg given.'; },
         hold(s, P, A, r) { if (stroke(P) && P.found !== null) { A.judge('437-hold-po', 'safety', 1, 'You held Mr. Delgado\'s oral meds after his stroke symptoms.', 'NPO until swallow screen.', '437'); return 'Held.'; }
           const v = A.lastVitals('437'), inside = v.HR >= 60 && v.SBP >= 100; P.metoHeld = s.t;
-          if (inside) A.judge('437-meto-hold', 'meds', -1, `You held Mr. Delgado's metoprolol at ${clock(s.t)} with HR ${v.HR} and BP ${v.SBP}/${v.DBP}, inside the hold parameter.`, 'The parameter is HR under 60 or SBP under 100. Inside it, the order says give. A held beta-blocker in a man with AF and hypertension means a faster rate and a higher pressure overnight, and in a stroke, a pressure over 185/110 has to come down before any thrombolytic can start.', '437');
+          if (inside) A.judge('437-meto-hold', 'meds', -1, `You held Mr. Delgado's metoprolol at ${clock(s.t)} with HR ${v.HR} and BP ${v.SBP}/${v.DBP}, numbers that didn't meet the hold parameter.`, 'The order says hold for HR under 60 or SBP under 100. Neither was true, so the order says give. A held beta-blocker in a man with AF and hypertension means a faster rate and a higher pressure overnight, and in a stroke, a pressure over 185/110 has to come down before any thrombolytic can start.', '437');
           return inside ? 'Held. His numbers were inside the parameter.' : 'Held per parameter.'; },
       },
       {
@@ -680,7 +689,7 @@
 
   /* ---------- dialogs ---------- */
   const dialogs = {
-    dot_confused: { who: '431', text: '"I have to go! Where\'s the bathroom? Why won\'t anybody let me go?" She pushes at the rail.', choices: [
+    dot_confused: { repeat: true, who: '431', text: '"I have to go! Where\'s the bathroom? Why won\'t anybody let me go?" She pushes at the rail.', choices: [
       { label: 'You need the bathroom? Let me check your bladder, Mrs. Pruitt. I think I can help with that.', next: 'dot_a', fx: J('431-talk', 'comm', 1, 'You took Mrs. Pruitt\'s words literally.', 'Delirious patients often tell you exactly what\'s wrong. "I need the bathroom" plus no void since 17:00 is a clue, not noise.', '431') },
       { label: 'You don\'t need to go. Go back to sleep, it\'s the middle of the night.', next: 'dot_b', fx: J('431-talk', 'comm', -1, 'You dismissed what Mrs. Pruitt was telling you.', 'She was telling you the cause. Arguing with delirium also escalates it.', '431') },
       { label: 'Would you like something to help you sleep?', next: 'dot_c', fx: J('431-talk', 'judgment', -1, 'You offered Mrs. Pruitt a sleep aid for agitation.', 'Sleep aids in delirium, especially anticholinergics, usually make it worse. Look for the cause first.', '431') },
@@ -707,7 +716,7 @@
     kaia_b: { who: '435', text: '"Oh my god, thank you." She tears into them.' },
     kaia_off: { who: '435', text: '"The doctor said my labs are good! Can you take the drip off now? I just want to sleep without the beeping."', choices: [
       { label: 'Almost. Your long-acting insulin takes about two hours to kick in, so the drip keeps running until then. If we stop it now, you could slide right back into DKA.', next: 'kaia_c', fx: (s, A) => { s.p['435'].askedOff = true; A.judge('435-talk-off', 'comm', 1, 'You explained the insulin overlap to Ms. Sorensen.', 'Knowing why the drip stays on for two hours is how patients (and nurses) avoid the most common DKA relapse.', '435'); } },
-      { label: 'Sure, your labs are good. I\'ll stop it.', next: null, fx: (s, A) => { const P = s.p['435']; P.askedOff = true; P.dripOn = false; P.dripOffAt = s.t; A.judge('435-stop', 'meds', P.glarAt === null ? -3 : s.t - P.glarAt < 120 ? -2 : 2, P.glarAt === null ? 'You stopped the insulin infusion with no basal insulin on board.' : `You stopped the drip ${s.t - P.glarAt} minutes after the glargine.`, 'Subcutaneous glargine takes about 2 hours to start working. Stop the drip early and DKA comes back.', '435'); } },
+      { label: 'Sure, your labs are good. I\'ll stop it.', next: null, fx: (s, A) => { const P = s.p['435']; P.askedOff = true; P.dripOn = false; P.dripOffAt = s.t; stopJudge(s, P, A); } },
     ] },
     kaia_c: { who: '435', text: '"Two more hours of beeping. Fine. For science."' },
     kaia_low: { who: '435', text: '"I feel shaky and weird. Sweaty. Is my sugar low?" Her hands are trembling.' },
@@ -744,7 +753,7 @@
     { id: 'pca-arrest', when: (s) => { const P = s.p['439']; return P.crisis !== null && !P.icu && s.t - P.crisis >= 25 && poss(P) >= 4; }, run(s, A) { const P = s.p['439']; P.icu = true; A.judge('439-arrest', 'safety', -3, 'Ms. Holloway stopped breathing from opioid over-sedation.', 'POSS 4 with a falling respiratory rate needs the opioid stopped and naloxone titrated now. The sedation had been building for hours.', '439'); A.msg({ from: 'nova', pid: '439', urgent: true, text: 'Code blue 439. Respiratory arrest. They bagged her and gave naloxone; she\'s going to the ICU.' }); } },
     { id: 'gap', when: (s) => { const P = s.p['435']; return !P.gapClosed && P.dripMin >= 170 && P.bg < 250 && s.t >= 175; }, run(s, A) { const P = s.p['435']; P.gapClosed = true; A.addLab('435', { name: 'Anion gap', val: 11, unit: 'mmol/L', ref: '8–12', flag: '' }); A.addLab('435', { name: 'Bicarbonate', val: 18, unit: 'mmol/L', ref: '22–28', flag: 'L' }); A.addOrder('435', 'Anion gap closed. Insulin glargine 20 units subQ now. Continue insulin infusion 2 h after glargine, then stop. Diet as tolerated.'); A.msg({ from: 'sato', pid: '435', text: '435\'s gap is closed. Give glargine 20 units now, keep the drip going for 2 hours after, then stop it. She can eat.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'kaia-low', when: (s) => s.p['435'].bg < 70 && !s.p['435'].hypo, run(s, A) { s.p['435'].hypo = true; A.judge('435-hypo', 'judgment', -2, 'Ms. Sorensen went hypoglycemic on the insulin drip.', 'Glucose falls before the acid clears. That\'s why the protocol adds dextrose under 250 and checks every hour.', '435'); A.msg({ from: 'nova', pid: '435', urgent: true, text: '435 is sweaty and confused. Her sugar is 58 on the drip.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
-    { id: 'rebound', when: (s) => { const P = s.p['435']; return P.dripOffAt !== null && !P.rebound && (P.glarAt === null || P.dripOffAt - P.glarAt < 120) && s.t >= P.dripOffAt + 45; }, run(s, A) { const P = s.p['435']; P.rebound = true; A.addLab('435', { name: 'Anion gap', val: 19, unit: 'mmol/L', ref: '8–12', flag: 'H' }); A.msg({ from: 'lab', pid: '435', urgent: true, text: '435 Sorensen BMP: glucose 318, anion gap 19. The gap has reopened.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
+    { id: 'rebound', when: (s) => { const P = s.p['435']; return P.dripOffAt !== null && !P.rebound && (P.glarAt === null || P.dripOffAt - P.glarAt < OVERLAP_OK) && s.t >= P.dripOffAt + 45; }, run(s, A) { const P = s.p['435']; P.rebound = true; A.addLab('435', { name: 'Anion gap', val: 19, unit: 'mmol/L', ref: '8–12', flag: 'H' }); A.msg({ from: 'lab', pid: '435', urgent: true, text: '435 Sorensen BMP: glucose 318, anion gap 19. The gap has reopened.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'bg-late', when: (s) => { const P = s.p['435']; const last = P.bgs.length ? P.bgs[P.bgs.length - 1].t : -60; return P.dripOn && s.t - last > 85; }, run(s, A) { A.judge('435-bg-late', 'time', -1, 'Ms. Sorensen\'s hourly glucose checks slipped.', 'On an insulin infusion, the hourly glucose is the steering wheel. Miss one and you\'re driving blind.', '435'); A.msg({ from: 'nova', pid: '435', text: '435\'s glucose is overdue. She\'s on a drip.', replies: [{ label: 'Go to 435', act: 'goto', pid: '435' }] }); } },
     { id: 'ct', when: (s) => { const P = s.p['437']; return P.alert !== null && P.ct === null && s.t >= P.alert + 20; }, run(s, A) { const P = s.p['437']; P.ct = s.t; A.addLab('437', { name: 'CT head without contrast', val: 'No hemorrhage. No early ischemic changes.', unit: '', ref: '', flag: '' }); A.msg({ from: 'stroke', pid: '437', text: 'CT head on 437: no bleed.' }); } },
     { id: 'tpa-wait', when: (s) => { const P = s.p['437']; return P.ct !== null && P.eligible === null && (P.labeAt === null || P.bgAt === null) && s.t >= P.ct + 4; }, run(s, A) { A.msg({ from: 'stroke', pid: '437', urgent: true, text: 'We can\'t decide on thrombolytics for 437 yet. We need a glucose and a BP under 185/110.', replies: [{ label: 'Go to 437', act: 'goto', pid: '437' }] }); } },
@@ -773,7 +782,7 @@
       if (task.id === 'pca') { A.judge('deleg-pca', 'deleg', -2, 'You asked the CNA to press a patient\'s PCA button.', 'Only the patient presses a PCA. That rule is the pump\'s whole safety system.'); return 'Dee: "No way. Only the patient presses that. You know that."'; }
       if (s.deleg.filter((d) => !d.done).length >= 2) return 'Dee: "I\'ve got two things going. Give me a few."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      if (task.id === 'vitals' || task.id === 'bg') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the CNA.`, 'Before your help disappears at 01:00, use it on the routine work so you can assess.');
+      if (task.id === 'vitals' || task.id === 'bg') A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the CNA.`, 'Before your help disappears at 01:00, use it on the routine work so you can assess.');
       if (task.id === 'sit') s.p['431'].calm.push({ t: s.t, amt: .9 });
       return `Dee: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
@@ -854,7 +863,7 @@
     dueExtras(s) {
       const out = [], K = s.p['435'], F = s.p['437'], R = s.p['439'];
       if (K.dripOn) { const last = K.bgs.length ? K.bgs[K.bgs.length - 1].t : -60; out.push({ t: last + 60, late: s.t > last + 75, text: '435 Glucose (hourly on insulin drip)' }); }
-      if (K.dripOn && K.glarAt !== null && K.glarAt !== undefined) out.push({ t: K.glarAt + 120, late: s.t > K.glarAt + 140, text: '435 Stop the insulin drip, 2 h after glargine' });
+      if (K.dripOn && K.glarAt !== null && K.glarAt !== undefined) out.push({ t: K.glarAt + 120, late: s.t > K.glarAt + 140, notBefore: true, text: `435 Stop the insulin drip at ${clock(K.glarAt + 120)} (2 h after glargine)` });
       if (K.dripOn && !K.dex && K.bg < 260) out.push({ t: s.t, late: false, text: '435 Check if glucose < 250: D5 ½NS per protocol' });
       if (F.lastNormal < 0 && !stroke(F)) out.push({ t: 60, late: s.t > 90, text: '437 Neuro check (every 4 h)' });
       const pl = R.k.possAt !== undefined ? R.k.possAt : -60; if (!R.icu) out.push({ t: pl + 60, late: s.t > pl + 75, sys: 'neuro', text: '439 Sedation (POSS) and RR (hourly on PCA)' });
@@ -876,6 +885,8 @@
         '433': 'Looks stable, but refused prophylaxis three nights and has a leg that aches. Assess his legs before the night gets busy.',
       },
     },
+    // Debrief claims checked against the record (engine.js, checkClaims).
+    claims: [{ pid: '435', rx: /full overlap|2-hour overlap/i, ok: (s, P) => P.dripOn || (overlap(P) !== null && overlap(P) >= OVERLAP_OK) }],
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const Fd = s.p['437'];
