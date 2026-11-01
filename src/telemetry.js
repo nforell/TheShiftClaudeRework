@@ -80,9 +80,26 @@
         body: JSON.stringify({ kind, fields: trim(fields), version: CFG.version || '', page: location.pathname }) }).catch(() => {});
     } catch (e) { /* offline */ }
   }
+  /* A copy of every feedback note in Supabase's feedback table (supabase/feedback.sql), so the whole beta can be
+     exported as one CSV and handed to Claude. Anonymous: the install id, never an account. Insert-only for players;
+     only the project owner can read the table. Best effort, never blocks. */
+  function store(kind, fields) {
+    if (!CFG.supabaseUrl || !CFG.supabaseKey || !site) return;
+    const f = fields || {}, note = String(f.note || f.comments || '').slice(0, 4000);
+    const row = { install_id: id, kind: String(kind).slice(0, 40), shift: String(f.case || '').slice(0, 80), difficulty: f.difficulty || null,
+      helps_nclex: f.helps_nclex || null, would_pay: f.would_pay || null, problem: f.problem || null, note: note || null,
+      score: typeof f.score === 'number' ? Math.round(f.score) : null, source: src.source || '', app_version: CFG.version || '', screen: vw(),
+      details: trim(f) };
+    if (row.details && row.details.text) row.details.text = String(row.details.text).slice(0, 20000);
+    try {
+      fetch(String(CFG.supabaseUrl).replace(/\/$/, '') + '/rest/v1/feedback', { method: 'POST', keepalive: true,
+        headers: { 'Content-Type': 'application/json', apikey: CFG.supabaseKey, Prefer: 'return=minimal' }, body: JSON.stringify(row) }).catch(() => {});
+    } catch (e) { /* offline */ }
+  }
   /* Feedback: returns 'sent', or 'email' when it opened a prefilled email instead. */
   function feedback(kind, fields) {
     const props = Object.assign({ kind }, fields);
+    store(kind, fields);
     if (canSend()) { direct('feedback', props); notify(kind, fields); return 'sent'; }
     return mail('The Shift beta: ' + kind, props);
   }
