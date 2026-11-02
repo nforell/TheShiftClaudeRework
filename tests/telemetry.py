@@ -8,8 +8,8 @@ from fonts import fontroute
 from playwright.sync_api import sync_playwright
 
 DIST = ROOT / 'dist'
-SITE, PH = 'https://play.theshift.test', 'https://ph.theshift.test'
-sent, fails = [], []
+SITE, PH, SB = 'https://play.theshift.test', 'https://ph.theshift.test', 'https://sb.theshift.test'
+sent, fails, rows = [], [], []
 def check(ok, what):
     print(('ok   ' if ok else 'FAIL ') + what)
     if not ok: fails.append(what)
@@ -21,6 +21,13 @@ def serve(route):
     if not f.exists(): return route.fulfill(status=404, body='nope')
     route.fulfill(status=200, body=f.read_bytes(), content_type=mimetypes.guess_type(str(f))[0] or 'application/octet-stream')
 
+def sbcapture(route):
+    if route.request.method == 'OPTIONS': return route.fulfill(status=200, headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'POST'})
+    if route.request.url.endswith('/rest/v1/feedback'):
+        try: rows.append(json.loads(route.request.post_data or '{}'))
+        except Exception as e: fails.append(f'bad feedback row: {e}')
+    route.fulfill(status=201, body='', headers={'Access-Control-Allow-Origin': '*'})
+
 def capture(route):
     try: sent.extend(json.loads(route.request.post_data or '{}').get('batch', []))
     except Exception as e: fails.append(f'bad payload: {e}')
@@ -29,8 +36,8 @@ def capture(route):
 with sync_playwright() as p:
     b = p.chromium.launch()
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
-    ctx.add_init_script(f"window.Shift={{config:{{posthogKey:'phc_test',posthogHost:'{PH}'}}}};")
-    ctx.route(SITE + '/**', serve); ctx.route(PH + '/**', capture)
+    ctx.add_init_script(f"window.Shift={{config:{{posthogKey:'phc_test',posthogHost:'{PH}',supabaseUrl:'{SB}',supabaseKey:'sb_publishable_test'}}}};")
+    ctx.route(SITE + '/**', serve); ctx.route(PH + '/**', capture); ctx.route(SB + '/**', sbcapture)
     pg = ctx.new_page(); fontroute(pg)
     errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     # Landing page: a visit from a campaign link, then a signup.
@@ -56,7 +63,9 @@ with sync_playwright() as p:
     H('h-done'); H('rank-submit'); H('rank-go'); H('endask'); H('end-yes')
     check(pg.evaluate("Shift.ui._ui.view") == 'debrief', 'reached the debrief')
     # Debrief feedback: type, choose, send.
-    pg.fill('#fb-note', 'Room 412 potassium timing felt off'); H('fb-pay', v='yes'); H('fb-send')
+    check(pg.get_attribute('[data-act="fb-send"]', 'aria-disabled') == 'true', 'feedback waits for an answer')
+    H('fb-q', k='level', v='hard'); check(pg.get_attribute('[data-act="fb-send"]', 'aria-disabled') is None, 'one tap is enough to send')
+    H('fb-q', k='nclex', v='yes'); pg.fill('#fb-note', 'Room 412 potassium timing felt off'); H('fb-pay', v='yes'); H('fb-send')
     check(pg.locator('.fbk.sent').count() == 1, 'feedback card shows thanks after sending')
     # Report a problem on one decision.
     jk = pg.evaluate("(()=>{const j=Shift.ui._state().judg[0];return j?[j.key||'',String(j.t)]:null})()")
@@ -69,7 +78,12 @@ with sync_playwright() as p:
     fb = [e for e in sent if e['event'] == 'feedback']
     deb = [e for e in fb if e['properties'].get('kind') == 'debrief']
     check(bool(deb) and deb[0]['properties'].get('would_pay') == 'yes' and 'potassium' in deb[0]['properties'].get('note', ''), 'debrief feedback carries the answers')
+    check(bool(deb) and deb[0]['properties'].get('difficulty') == 'hard' and deb[0]['properties'].get('helps_nclex') == 'yes', 'debrief feedback carries the one-tap answers')
     if jk: check(any(e['properties'].get('kind') == 'decision' and e['properties'].get('problem') == 'clinical' for e in fb), 'decision report carries its reason')
+    drow = next((r for r in rows if r.get('kind') == 'debrief'), {})
+    check(drow.get('shift') == 'medsurg-4w-1' and drow.get('difficulty') == 'hard' and drow.get('helps_nclex') == 'yes' and drow.get('would_pay') == 'yes' and 'potassium' in (drow.get('note') or ''), 'debrief feedback is stored as an exportable row')
+    check(drow.get('source') == 'tiktok' and isinstance(drow.get('score'), int) and len(drow.get('install_id', '')) > 10, 'the stored row has the campaign, score and anonymous id')
+    if jk: check(any(r.get('kind') == 'decision' and r.get('problem') == 'clinical' and (r.get('details') or {}).get('decision_text') for r in rows), 'decision reports are stored with the decision they are about')
     check(all(e['properties'].get('first_source') == 'tiktok' for e in sent if e['event'] == 'shift_complete'), 'shifts are credited to the campaign that brought the player')
     ids = {e['properties'].get('distinct_id') for e in sent}
     check(landing_id in ids, 'landing visit and shifts share one id')

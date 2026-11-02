@@ -92,5 +92,23 @@ await as(T2, `select public.delete_my_account()`);
 check((await q(`select count(*)::int n from public.classes where id = '${k2.id}'`)).rows[0].n === 0 && (await q(`select count(*)::int n from auth.users where id = '${S2}'`)).rows[0].n === 1, 'an instructor deleting their account removes their class, not their students');
 e = null; try { await db.exec(`set role authenticated; select set_config('request.uid','',false); select public.delete_my_account();`); } catch (x) { e = x.message; } finally { await db.exec('reset role'); }
 check(/sign in/.test(e || ''), 'deleting needs a signed-in player');
+// Beta feedback (supabase/feedback.sql): anyone can add a fresh row, nobody reads, updates or deletes through the game's key.
+await db.exec(fs.readFileSync(R + 'feedback.sql', 'utf8'));
+await db.exec(fs.readFileSync(R + 'feedback.sql', 'utf8'));   // idempotent
+await db.exec(`grant usage on schema public to anon;`);
+async function anon(sql) { await db.exec(`set role anon;`); try { return await q(sql); } finally { await db.exec('reset role'); } }
+await anon(`insert into public.feedback (install_id, kind, shift, difficulty, helps_nclex, would_pay, note) values ('i1','debrief','medsurg-4w-1','hard','yes','maybe','K+ timing felt off')`);
+check((await q(`select count(*)::int n from public.feedback`)).rows[0].n === 1, 'a signed-out player can send feedback');
+e = null; try { await anon(`select * from public.feedback`); } catch (x) { e = x.message; }
+check(/permission/.test(e || ''), 'players cannot read anyone\'s feedback');
+e = null; try { await anon(`update public.feedback set status = 'fixed'`); } catch (x) { e = x.message; }
+check(/permission/.test(e || ''), 'players cannot change feedback');
+e = null; try { await anon(`insert into public.feedback (install_id, kind, status) values ('i1','debrief','fixed')`); } catch (x) { e = x.message; }
+check(!!e, 'players cannot set the triage status');
+e = null; try { await anon(`insert into public.feedback (install_id, kind, difficulty) values ('i1','debrief','meh')`); } catch (x) { e = x.message; }
+check(!!e, 'answers outside the choices are refused');
+e = null; try { await anon(`select * from public.feedback_summary`); } catch (x) { e = x.message; }
+check(/permission/.test(e || ''), 'players cannot read the summary');
+check((await q(`select too_hard, nclex_yes, pay_maybe from public.feedback_summary where shift = 'medsurg-4w-1'`)).rows[0].too_hard === 1, 'the summary counts answers per shift');
 console.log(bad ? 'SQL FAILED ' + bad : 'SQL CLEAN');
 process.exit(bad ? 1 : 0);

@@ -1618,14 +1618,22 @@
 
   /* ------------ beta feedback ------------ */
   const PAY = [['yes', 'Yes'], ['maybe', 'Maybe'], ['no', 'No']];
+  /* Three one-tap questions, then an optional note. Every answer lands as a row Nick can export (supabase/feedback.sql). */
+  const FBQ = [
+    ['level', 'How hard was this shift?', [['easy', 'Too easy'], ['right', 'About right'], ['hard', 'Too hard']]],
+    ['nclex', 'Did it help you think like the NCLEX asks?', [['yes', 'Yes'], ['some', 'A little'], ['no', 'Not really']]],
+  ];
+  const fbAny = (f) => !!(f && (String(f.note || '').trim() || f.pay || f.level || f.nclex));
+  const fbSeg = (k, label, opts, cur, act) => `<div class="fb-row"><span class="fb-l" id="fb-${k}-l">${label}</span><div class="seg" role="group" aria-labelledby="fb-${k}-l">${opts.map(([v, l]) => `<button data-act="${act}" data-k="${k}" data-v="${v}" aria-pressed="${cur === v}">${l}</button>`).join('')}</div></div>`;
   function fbCard() {
     const f = ui.fb || (ui.fb = {});
     if (f.sent) return `<section class="fbk sent" aria-live="polite"><h2>Thanks. I read every one of these.</h2><p class="muted">${f.sent === 'email' ? 'Your email app should have opened with it filled in. Hit send there.' : 'Every report gets read, and clinical problems get fixed first.'}</p></section>`;
-    return `<section class="fbk" aria-labelledby="fbh"><h2 id="fbh">Help shape the beta</h2><p class="muted">Two questions. Clinical problems get fixed first.</p>
-      <label class="fb-l" for="fb-note">Anything clinically off, confusing, or too easy?</label>
+    return `<section class="fbk" aria-labelledby="fbh"><h2 id="fbh">Help shape the beta</h2><p class="muted">Three taps and you're done. Clinical problems get fixed first.</p>
+      ${FBQ.map(([k, label, opts]) => fbSeg(k, label, opts, f[k], 'fb-q')).join('')}
+      ${fbSeg('pay', 'Would you pay for more shifts like this?', PAY, f.pay, 'fb-pay')}
+      <label class="fb-l" for="fb-note">Anything clinically off, confusing, or missing? <span class="muted">(optional)</span></label>
       <textarea id="fb-note" class="fb-t" data-bind="note" rows="3" maxlength="2000" placeholder="Room, moment, what you'd expect instead">${esc(f.note || '')}</textarea>
-      <div class="fb-row"><span class="fb-l" id="fb-pay-l">Would you pay for more shifts like this?</span><div class="seg" role="group" aria-labelledby="fb-pay-l">${PAY.map(([v, l]) => `<button data-act="fb-pay" data-v="${v}" aria-pressed="${f.pay === v}">${l}</button>`).join('')}</div></div>
-      <div class="fb-f"><button class="btn btn-primary" data-act="fb-send" ${f.note || f.pay ? '' : 'aria-disabled="true" data-why="Answer one of the two first."'}>Send feedback</button></div></section>`;
+      <div class="fb-f"><button class="btn btn-primary" data-act="fb-send" ${fbAny(f) ? '' : 'aria-disabled="true" data-why="Answer one question first."'}>Send feedback</button></div></section>`;
   }
   const RPT = [['clinical', 'Clinically wrong'], ['unclear', 'Confusing'], ['scoring', 'Unfair scoring'], ['bug', 'Something broke'], ['other', 'Other']];
   function ovReport() {
@@ -2707,7 +2715,8 @@
     'acct-out'() { CL.signOut(); ui.ov = null; render(); hint(document.querySelector('.top .mark') || document.body, 'Signed out. Your progress stays on this device.'); },
     tel(el) { TEL.setOptOut(el.dataset.v === 'off'); render(); },
     'fb-pay'(el) { ui.fb = ui.fb || {}; ui.fb.pay = ui.fb.pay === el.dataset.v ? null : el.dataset.v; render(); },
-    'fb-send'() { const f = ui.fb || {}; if (!f.note && !f.pay) return; const d = s && s.ended ? E.debrief(s) : null; f.sent = TEL.feedback('debrief', Object.assign(fbWhere(), { would_pay: f.pay || '', note: (f.note || '').trim(), score: d ? d.overall : null })); render(); },
+    'fb-q'(el) { ui.fb = ui.fb || {}; const k = el.dataset.k; ui.fb[k] = ui.fb[k] === el.dataset.v ? null : el.dataset.v; render(); },
+    'fb-send'() { const f = ui.fb || {}; if (!fbAny(f)) return; const d = s && s.ended ? E.debrief(s) : null; f.sent = TEL.feedback('debrief', Object.assign(fbWhere(), { difficulty: f.level || '', helps_nclex: f.nclex || '', would_pay: f.pay || '', note: (f.note || '').trim(), score: d ? d.overall : null })); render(); },
     rpt(el) { const k = el && el.dataset && el.dataset.k, tt = el && el.dataset && el.dataset.t, qid = el && el.dataset && el.dataset.q; const j = k !== undefined && s ? s.judg.find((x) => (x.key || '') === k && String(x.t) === String(tt)) || null : null; const q = qid && NG ? NG.byId(qid) : null; ui.rp = { j, q, back: q && ui.ov === 'ngn' ? 'ngn' : null, why: null, note: '' }; ui.ov = 'report'; render(); },
     'rpt-why'(el) { ui.rp.why = ui.rp.why === el.dataset.v ? null : el.dataset.v; render(); },
     'rpt-send'() { const r = ui.rp; if (!r || (!r.why && !r.note)) return; r.sent = TEL.feedback(r.j ? 'decision' : r.q ? 'question' : 'general', Object.assign(fbWhere(), { problem: r.why || '', note: (r.note || '').trim(), decision_key: r.j ? r.j.key || '' : '', decision_text: r.j ? r.j.text : '', patient: r.j ? r.j.pid || '' : '', question_id: r.q ? r.q.id : '', question_type: r.q ? r.q.type : '', question_step: r.q ? r.q.step || '' : '', question_stem: r.q ? String(r.q.stem || r.q.q || '').slice(0, 300) : '' })); render(); },
@@ -3012,7 +3021,7 @@
     document.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('[data-hold]')) e.preventDefault(); });
     document.addEventListener('keydown', onKey); document.addEventListener('keydown', armIdle);
     document.addEventListener('input', (e) => { const b = e.target && e.target.dataset && e.target.dataset.bind; if (!b) return; const v = e.target.value; if (b === 'ngn.n' && ui.ngn) { ui.ngn.a.n = v; const bt = document.querySelector('[data-act="ngn-check"]'); if (bt) { if (NG.numOf(v) !== null) { bt.removeAttribute('aria-disabled'); bt.classList.remove('off'); } else { bt.setAttribute('aria-disabled', 'true'); } } }
-      else if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } else if (b === 'cls.code' || b === 'cls.name') { ui.cls = ui.cls || {}; ui.cls[b.slice(4)] = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? !!(v.trim() || (ui.fb && ui.fb.pay)) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = 'Answer one of the two first.'; } } });
+      else if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } else if (b === 'cls.code' || b === 'cls.name') { ui.cls = ui.cls || {}; ui.cls[b.slice(4)] = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? fbAny(ui.fb) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = b === 'note' ? 'Answer one question first.' : 'Pick what kind of problem, or describe it.'; } } });
     requestAnimationFrame(frameMon);
     if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
     const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { s = g; caseId = g.caseId; E.useCase(caseId); }
