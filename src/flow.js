@@ -266,7 +266,7 @@ window.Shift = window.Shift || {};
         later: 'A week in the hospital. She had seized from water intoxication before, in 2021; weights, watching her and a fluid restriction are what prevent the next one. Correction is capped at about 8 a day; once the drinking stops, polydipsic patients can overcorrect fast.',
       } : {
         unit: 'Medicine', nurse: 'med', emergent: false,
-        event: `Hyponatremia, sodium ${Math.round(P.na)}, from psychogenic polydipsia. Transferred to medicine at ${A.clock(at)}.`,
+        event: `Hyponatremia, sodium ${(P.labs.filter((l) => l.name === 'Sodium').pop() || { val: Math.round(P.na) }).val}, from psychogenic polydipsia. Transferred to medicine at ${A.clock(at)}.`,
         extra: [{ label: 'Drinks from any source (sink, shower); needs close watching', key: true }, { label: 'Clozapine for 8 years: lowers the seizure threshold, needs ANC monitoring, don\'t let doses lapse', key: true }],
         course: [
           { at: 0, st: 'serious', text: 'On medicine with a sitter. Fluid restricted. Sodium every 4 hours.' },
@@ -334,7 +334,8 @@ window.Shift = window.Shift || {};
       later: 'Tachysystole (more than 5 contractions in 10 minutes, averaged over 30) cuts the time the placenta has to refill between contractions. With late decelerations, the first move is to stop or reduce the oxytocin, reposition, and give fluid, before the baby runs out of reserve.',
     }),
     '223': (s, P, A, at) => {
-      const dt = P.ruptAt !== null && P.statAt !== null ? P.statAt - P.ruptAt : 99, fast = dt <= 5;
+      // Three tiers by minutes from rupture to the STAT call; the L&D debrief (case-ld1.js, outcome for 223) uses the same tiers and numbers.
+      const dt = P.ruptAt !== null && P.statAt !== null ? P.statAt - P.ruptAt : 99, fast = dt <= 5, mid = !fast && dt <= 10 && P.statBy !== 'nova';
       return {
         unit: 'OR', nurse: 'or', emergent: true,
         event: `STAT cesarean at ${A.clock(at)} for uterine rupture during a trial of labor after cesarean: sudden constant pain, contractions stopped, loss of station, fetal bradycardia${fast ? '' : `, ${dt} minutes from the rupture to the STAT call`}.`,
@@ -343,6 +344,10 @@ window.Shift = window.Shift || {};
           { at: 0, st: 'crit', text: 'General anesthesia. Baby girl delivered from the abdomen 11 minutes after the rupture: APGARs 4 and 8, intubated briefly, extubated in the NICU.' },
           { at: 80, st: 'serious', text: 'Uterus repaired; 1,400 mL blood loss, two units given. Mother extubated, stable.' },
           { at: 200, st: 'improving', text: 'Baby on room air, cooling not needed. Mother asking to see her.' },
+        ] : mid ? [
+          { at: 0, st: 'crit', text: 'General anesthesia. Baby girl delivered from the abdomen: APGARs 2 and 6, resuscitated, to the NICU for observation.' },
+          { at: 85, st: 'serious', text: 'Uterus repaired; 1,800 mL blood loss, three units given. Mother extubated, stable.' },
+          { at: 210, st: 'improving', text: 'Baby breathing on her own, no cooling needed. Mother asking to see her.' },
         ] : [
           { at: 0, st: 'crit', text: 'General anesthesia. Baby girl delivered limp: APGARs 1 and 3, resuscitated, cord pH 6.91. Therapeutic hypothermia started in the NICU.' },
           { at: 90, st: 'crit', text: 'Hysterectomy for uncontrolled bleeding. Massive transfusion protocol, six units.' },
@@ -511,7 +516,7 @@ window.Shift = window.Shift || {};
       unit: 'OR', nurse: 'or', emergent: !!P.rupture, push: 50,
       event: P.rupture ? `Ruptured ectopic, hemorrhagic shock at ${A.clock(at)}; massive transfusion protocol.` : `Possible ruptured ectopic, free fluid on bedside ultrasound. To the OR for laparoscopy.`,
       extra: [{ label: 'O negative: Rh immune globulin after surgery', key: true }, { label: P.disclosed ? 'Disclosed partner violence; boyfriend not to be given information' : 'Partner present and controlling; safety not yet assessed', key: true }],
-      family: { name: 'Her mother', rel: 'mother', phone: true },
+      family: { name: 'Lucia Moreno', rel: 'mother', phone: true },
       course: [
         { at: 0, st: P.rupture ? 'crit' : 'surgery', text: P.rupture ? 'In the OR, two units in. Left tubal rupture, 1.8 L of blood in the abdomen.' : 'Laparoscopy: left tubal ectopic, ruptured, 600 mL in the pelvis. Salpingectomy.' },
         { at: 60, st: 'serious', text: 'In recovery. Hemoglobin 9.2. Rh immune globulin given.' },
@@ -523,7 +528,7 @@ window.Shift = window.Shift || {};
       unit: 'ICU', nurse: 'icu', emergent: true,
       event: `Anaphylaxis with airway obstruction at ${A.clock(at)}; intubated. Epinephrine ${P.epi.length ? 'first given at ' + A.clock(P.epi[0]) : 'not given before the airway closed'}.`,
       extra: [{ label: 'Peanut anaphylaxis; diphenhydramine from EMS, no epinephrine', key: true }, { label: 'Mild asthma', key: false }],
-      family: { name: 'His mother', rel: 'mother', phone: true },
+      family: { name: 'Emiko Watanabe', rel: 'mother', phone: true },
       course: [
         { at: 0, st: 'crit', text: 'Intubated with a small tube through a swollen airway. Epinephrine infusion running.' },
         { at: 90, st: 'serious', text: 'Epinephrine weaned off. Swelling going down; cuff leak test tomorrow.' },
@@ -611,7 +616,8 @@ window.Shift = window.Shift || {};
     peds: ['Their favorite cartoon', 'Every vital sign since the start of the shift, in order', 'Which popsicle flavor they picked', 'A guess about how the parents get along'],
   };
   const NOBELL = { 'peds-5s-1': ['507'], 'psych-3e-1': ['301'], 'psych-4n-1': ['409'] };
-  const noBell = (s, d, P) => (NOBELL[s.caseId] || []).includes(d.id) || P.oneToOne || P.secluded || P.restrained || P.callLight;
+  // No call lights in the voice of someone who can't press one or speak (GCS 3, no response to pain).
+  const noBell = (s, d, P) => (NOBELL[s.caseId] || []).includes(d.id) || d.unresponsive || P.oneToOne || P.secluded || P.restrained || P.callLight;
   const touched = (P) => Math.max(P.touchAt === undefined ? -999 : P.touchAt, P.roundAt === undefined ? -999 : P.roundAt, -30);
   const cnaKey = (c) => c.cna || 'luis';
   const bellDone = (s, pid) => s.inbox.forEach((m) => { if (m.bell && m.pid === pid) m.done = true; });
@@ -766,14 +772,16 @@ window.Shift = window.Shift || {};
   }
   // PRN reassessment: every as-needed dose earns a look at whether it worked.
   const REASS = [[/morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|PCA|tylenol/i, 'pain'], [/ondansetron|prometh|metoclop/i, 'gi'], [/albuterol|ipratrop|neb/i, 'resp'], [/lorazepam|haloperidol|olanzapine|diphenhyd|hydroxyz|chlordiaz|ziprasid/i, 'neuro'], [/naloxone/i, 'resp'], [/epinephrine/i, 'resp'], [/furosemide/i, 'resp'], [/labetalol|hydralazine|nifedipine|nitroglycerin|diltiazem|amiodarone|saline bolus/i, 'vitals']];
-  const reassessed = (s, pid, after) => s.log.some((l) => l.pid === pid && l.kind === 'find' && l.t >= after && (l.label === 'Vital signs' || /assess|score|pain|breath|lung|neuro|mental|sedation|CIWA|POSS|check|count|look|GI/i.test(l.label || '')));
+  // What counts as checking whether a PRN worked: a focused look at the system it treats, or vitals. A glance
+  // ("General look") isn't a reassessment, and a CIWA-protocol dose is reassessed with a CIWA score.
+  const reassessed = (s, pid, after, m) => s.log.some((l) => l.pid === pid && l.kind === 'find' && l.t >= after && (m && /CIWA/i.test(m.name) ? /CIWA/i.test(l.label || '') : (l.label === 'Vital signs' || /assess|score|pain|breath|lung|neuro|mental|sedation|CIWA|POSS|check|count|GI|behavior|RASS|FLACC|monitor|strip|stroke scale/i.test(l.label || ''))));
   function prnRows(s, A, d, P) {
     const rows = [];
     (d.meds || []).filter((m) => m.prn).forEach((m) => {
       const st = s.meds[m.id]; if (!st || !st.given.length || !REASS.some(([rx]) => rx.test(m.name))) return;
       const g = st.given[st.given.length - 1], fast = /IV|IM|SC|SQ|neb|inh/i.test(m.route), due = g + (fast ? 30 : 60), gap = fast ? 10 : 20;
       const sys = (REASS.find(([rx]) => rx.test(m.name)) || [null, 'vitals'])[1];
-      rows.push({ key: 'rx:' + m.id + ':' + g, t: due, late: s.t > due + 30, done: reassessed(s, d.id, g + gap), text: `Reassess after ${m.name}`, sub: `Given ${A.clock(g)}. Did it work?`, go: { act: 'dock', id: 'assess' }, sys });
+      rows.push({ key: 'rx:' + m.id + ':' + g, t: due, late: s.t > due + 30, done: reassessed(s, d.id, g + gap, m), text: `Reassess after ${m.name}`, sub: `Given ${A.clock(g)}. Did it work?`, ...(/CIWA/i.test(m.name) ? { go: { act: 'dock', id: 'care' }, hl: 'CIWA' } : { go: { act: 'dock', id: 'assess' }, sys }) });
     });
     return rows;
   }
@@ -891,7 +899,7 @@ window.Shift = window.Shift || {};
     if (liveDef(s, d).legal && !/^Interpreter/.test(liveDef(s, d).legal)) items.push({ id: 'legal', label: `Legal status: ${liveDef(s, d).legal}`, key: true });
     if (d.reportExtra) (d.reportExtra(s, P, A) || []).forEach((x, i) => items.push(Object.assign({ id: 'rx' + i }, x)));   // case-specific lines the next nurse must hear
     if (P.bell) items.push({ id: 'bell', label: `Still waiting: ${P.bell.who} ${kindOf(A.c) === 'psych' ? 'asked ' : ''}${P.bell.text}`, key: true });
-    items.push({ id: 'dx', label: `Here for: ${d.reason}`, key: false });
+    items.push({ id: 'dx', label: `Here for: ${liveDef(s, d).reason}`, key: false });
     const nz = NOISE[kindOf(A.c)], a = seed(d.id + 'r') % nz.length;
     items.push({ id: 'n1', label: nz[a], noise: true }, { id: 'n2', label: nz[(a + 1) % nz.length], noise: true });
     return items.sort((x, y) => seed(d.id + x.id + 'r') % 9 - seed(d.id + y.id + 'r') % 9);
@@ -930,7 +938,10 @@ window.Shift = window.Shift || {};
       const ask = (P.painAsks || []).find((at) => s.t - at >= 45);
       const pain = (d.meds || []).filter((m) => m.prn && /morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|tylenol|tramadol|ketamine/i.test(m.name) && !/PCA/i.test(m.name));
       if (ask !== undefined && pain.length && !s.judg.some((j) => j.pid === d.id && /pain/.test(j.key || ''))) {
-        const acted = pain.some((m) => { const st = s.meds[m.id]; return st && (st.given.some((g) => g >= ask && g <= ask + 60) || (st.at !== null && st.at >= ask && st.at <= ask + 60 && st.status !== 'prn')); });
+        // Any analgesic counts, scheduled or PRN: one given within the hour after the ask, or in the two hours before it
+        // (the pain was already being treated, and the next dose isn't due), answers it.
+        const RXP = /morphine|hydromorph|oxycod|fentanyl|acetaminophen|ibuprofen|ketorolac|tylenol|tramadol|ketamine/i, near = (g) => g !== null && g >= ask - 120 && g <= ask + 60;
+        const acted = (d.meds || []).filter((m) => RXP.test(m.name) && !/PCA/i.test(m.name)).some((m) => { const st = s.meds[m.id]; return st && ((st.given || []).some(near) || (st.status !== 'prn' && near(st.at))); });
         if (!acted) A.judge(`${d.id}-pain-ask`, 'meds', 0, `${d.short} asked for something for pain at ${A.clock(ask)}, and no pain medicine was given or decided against afterward.`, `The call light is the task. The list won't add "give a PRN" for you: rate the pain, check what's ordered and when it was last given (${pain.slice(0, 2).map((m) => m.name).join(', ')}), then give it, hold it with a reason, or offer something else, and come back to see if it worked.`, d.id);
       }
       // PRNs nobody went back to check.

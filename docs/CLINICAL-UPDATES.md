@@ -2,6 +2,24 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## November 1, 2026: Round 3 playtest fixes (needs nurse review)
+
+| Where | What changed | Basis |
+|---|---|---|
+| Nights 4W, 435 DKA transition | The drip-stop task is never offered before 2 hours after glargine; a stop at 115 minutes or later is the order followed. The debrief quotes the real minutes of overlap. | ADA DKA guidance: basal insulin 1 to 2 hours before stopping IV insulin; the order in the case says 2 hours. |
+| Step-down, 603 post-cath | Sitting him up after first keeping him flat is now judged (the reversal replaces the earlier credit). | Bed rest with the hip straight after femoral sheath removal per order. |
+| Step-down, 605 HIT | The HIT orders discontinue every heparin order (infusion, flushes) in the chart, add heparin to allergies, update problem, reason and lines, and make the PF4 antibody and duplex into tasks. | ASH 2018 HIT guideline: stop all heparin, including flushes; non-heparin anticoagulant; PF4 antibody; duplex. |
+| Days 4W, 418 verbal orders | One-time ordered doses (KCl 40, furosemide 80) are tasks until given or held; the chest X-ray has an action and a result. | Every provider order needs a path to completion. |
+| ED, 22 stroke | Once the last known well is corrected, the tenecteplase message and order are retired. | AHA/ASA 2019: thrombolysis within 4.5 hours of last known well. |
+| Mother-baby, 212 PPH | Saying "asthma, so no carboprost" in the request counts as telling the provider; holding a suggested carboprost is credited with the reason. Dr. Brennan and the hemorrhage team now arrive. | ACOG PB 183: carboprost contraindicated in asthma. |
+| Mother-baby, 214 magnesium | The second call states the rate actually running; the debrief quotes only a magnesium level that resulted. | |
+| L&D, 223 rupture | Debrief and OR course agree: two units (STAT call within 5 min), three (within 10), six with hysterectomy (later). | Internal consistency. |
+| L&D, 224 intraamniotic infection | One charted temperature is quoted everywhere; the fever is dated from the first charted temperature of 38 or more. | |
+| Adult psych, 309 | Dr. Iyer, the transfer and the note quote the resulted sodium. The emergency-medication and restraint notes include the observed behavior (knocked the medication cup away and threw it). | Chart the observed behavior (CMS 482.13). |
+| Teen psych, 405 | Scheduled diphenhydramine 25 mg PO every 6 hours for 48 hours reaches the MAR (first dose 6 hours after the IM dose); haloperidol PRN is discontinued and listed as an allergy. | |
+| Peds, 505 / 501 / 509 | Wrong-weight orders are discontinued in the chart after correction; NG-feed judgment uses the charted RR; the asthma debrief reports real neb timing and the steroid. | |
+| Evenings 4W, CIWA | A lorazepam CIWA-protocol dose is reassessed with a CIWA score, not a general look. | Symptom-triggered CIWA-Ar protocol. |
+
 ## October 10, 2026: Shift 11, Days in Labor and Delivery (needs L&D nurse review)
 
 | Patient | Teaching | Basis |

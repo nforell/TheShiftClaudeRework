@@ -384,7 +384,8 @@
     scene: (s, P) => ({ tele: true, iv: 'running', foley: false, crib: brBorn(P), family: 'jordan', familyLabel: brBorn(P) ? 'Jordan, holding the baby\'s foot' : 'Jordan, her partner, in a delivery company polo', flowers: false }),
     clues: (s, P) => ({ monitor: brBorn(P) ? 'Monitor off. The baby\'s first footprints are on the whiteboard.' : `Fetal monitor: ${P.hypo >= .5 ? 'heart rate 90 and flat for minutes. The maternal cuff blinks 82/44.' : P.crown ? 'heart rate dipping with each push, popping back up.' : 'heart rate in the 130s, contractions every 3 to 4 minutes.'}`, iv: `LR at 125 mL/h${P.bolus ? ', a bolus bag open' : ''}. Epidural pump at 10 mL/h.${P.ppOxy !== null ? ' Postpartum oxytocin running.' : ''}`, family: `Jordan, in a delivery company polo, asleep with his phone on his chest${brBorn(P) ? '; now very awake' : ''}. A car seat by the door, still in its box.`, crib: brBorn(P) ? `Infant warmer, on. A tiny hat, a blanket, an ID band waiting.` : `Infant warmer, ${P.setup ? 'on and warm' : 'off'}.` }),
     rig: (s, P) => ({ sbp: brSBP(P), anxious: P.hypo >= .4 ? .5 : P.crown && !brBorn(P) ? .7 : 0, pain: P.crown && !brBorn(P) ? 6 : 1 }),
-    status: (s, P) => (P.hypo >= .4 || (P.crown && !brBorn(P)) || (P.placentaAt !== null && brAtony(s, P) >= 1.5) ? 'urgent' : P.hypo >= .15 || !brBorn(P) || P.placentaAt === null || brAtony(s, P) >= .5 ? 'watch' : 'stable'),
+    // Labor going normally is stable; the tag moves for hypotension, crowning, the third stage, or a uterus at risk of atony.
+    status: (s, P) => (P.hypo >= .4 || (P.crown && !brBorn(P)) || (P.placentaAt !== null && brAtony(s, P) >= 1.5) ? 'urgent' : P.hypo >= .15 || (brBorn(P) && (P.placentaAt === null || brAtony(s, P) >= .5)) ? 'watch' : 'stable'),
     live: (s, P) => (brBorn(P) ? { dx: P.placentaAt !== null ? `Delivered ${clock(P.bornAt)}: fourth stage, epidural` : `Delivered ${clock(P.bornAt)}: placenta not out yet` } : P.crown ? { dx: `Complete and crowning, with an epidural` } : null),
     outcome(s, P) {
       const bad = P.held && P.bornBy !== 'you' || P.qbl >= 1000 || P.pulledCord;
@@ -545,9 +546,11 @@
       if (!P.rupt) return { tone: 'good', title: 'Laboring safely', text: 'Still in labor at noon.' };
       const d = P.statAt !== null ? P.statAt - P.ruptAt : 99;
       const misses = [!P.iv && !P.ivs && 'no IV access', P.fentAfter && 'opioids for the rupture pain', P.waited && 'waiting for the strip to recover', !P.ts && 'no type and screen until the emergency'].filter(Boolean);
-      if (P.statBy === 'nova' || d > 10) return { tone: 'bad', title: 'Uterine rupture, recognized late', text: `Her uterus ruptured at ${clock(P.ruptAt)}; the STAT call came ${d} minutes later${P.statBy === 'nova' ? ', from Nova' : ''}. Yusuf's sister was born with a cord pH of 6.94 and went to the NICU for cooling. Fatima needed 4 units of blood${!P.ts ? ', with no type and screen on file' : ''}. ${misses.length ? 'Gaps: ' + misses.join('; ') + '.' : ''}` };
-      if (d <= 5 && !misses.length) return { tone: 'good', title: 'Uterine rupture, caught in minutes', text: `Rupture at ${clock(P.ruptAt)}, STAT call ${d === 0 ? 'the same minute' : d + ' minutes later'}, baby out ${P.mdNear ? 11 : 14} minutes after the rupture with APGARs of 4 and 8. The tear along the old scar was repaired; she kept her uterus and needed 1 unit of blood.` };
-      return { tone: 'mixed', title: 'Uterine rupture, a slower start', text: `STAT call ${d} minutes after the rupture. Baby born with APGARs of 2 and 6 and admitted to the NICU for observation. ${misses.length ? 'Gaps: ' + misses.join('; ') + '.' : ''}` };
+      // Same three tiers, and the same numbers, as her OR course in flow.js.
+      const gaps = misses.length ? ' Gaps: ' + misses.join('; ') + '.' : '';
+      if (P.statBy === 'nova' || d > 10) return { tone: 'bad', title: 'Uterine rupture, recognized late', text: `Her uterus ruptured at ${clock(P.ruptAt)}; the STAT call came ${d} minutes later${P.statBy === 'nova' ? ', from Nova' : ''}. Yusuf's sister was born with a cord pH of 6.91 and went to the NICU for cooling. Fatima lost her uterus and needed six units of blood${!P.ts ? ', with no type and screen on file' : ''}.${gaps}` };
+      if (d <= 5) return { tone: misses.length ? 'mixed' : 'good', title: misses.length ? 'Uterine rupture, caught fast, with gaps' : 'Uterine rupture, caught in minutes', text: `Rupture at ${clock(P.ruptAt)}, STAT call ${d === 0 ? 'the same minute' : d + ' minutes later'}, baby out 11 minutes after the rupture with APGARs of 4 and 8. The tear along the old scar was repaired; she kept her uterus and needed two units of blood.${gaps}` };
+      return { tone: 'mixed', title: 'Uterine rupture, a slower start', text: `STAT call ${d} minutes after the rupture. Baby born with APGARs of 2 and 6 and admitted to the NICU for observation. The uterus was repaired; she needed three units of blood.${gaps}` };
     },
   };
 
@@ -556,6 +559,9 @@
   const clT = (s, P) => +(37.2 + P.inf * 1.9 - .7 * clApap(s, P)).toFixed(1);
   const clFHR = (s, P) => Math.round(Math.min(180, 140 + P.inf * 42 - 8 * clApap(s, P)) / 5) * 5;
   const clFever = (s, P) => clT(s, P) >= 38;
+  /* The temperature on paper: the last one somebody took (within the hour), else the one Renee reported. Screens quote
+     this, so the message, the task, the MAR check and the SBAR all show the same number until someone retakes it. */
+  const chT = (s, P) => { const v = P.vit.filter((x) => x.T !== undefined && s.t - x.t <= 60).pop(); return v ? +v.T : P.feverT !== undefined ? P.feverT : clT(s, P); };
   function clStrip(s, P) {
     const b = clFHR(s, P), varb = P.inf >= .6 ? 'minimal' : 'moderate';
     return stripLine({ base: b, varb, accel: P.inf < .5, decel: 'No decelerations.', n: s.t < 120 ? 3 : 4, tone: 'each 50 to 70 seconds' });
@@ -639,14 +645,14 @@
         hold(s, P, A) { A.judge('224-pcn-hold', 'meds', -3, `You held Ms. Donnelly's GBS prophylaxis.`, `GBS positive in labor with rupture over 18 hours: penicillin protects the baby from early-onset GBS sepsis. Her birth plan preference about IVs is a conversation, not a reason to skip it.`, '224'); return 'Held.'; } },
       { id: '224-amp', name: 'Ampicillin', dose: '2 g', route: 'IV', freq: 'Every 6 hours', prn: true, available: (s, P) => P.ampOrdered && !P.gone,
         block: (s, P) => (P.ampAt !== null ? `Given at ${clock(P.ampAt)}.` : null),
-        checks: (s, P) => [{ label: 'Temperature', value: `${clT(s, P).toFixed(1)} °C (${fF(clT(s, P))} °F)`, ok: clFever(s, P) }, { label: 'Allergies', value: 'None', ok: true }],
+        checks: (s, P) => [{ label: 'Temperature', value: `${chT(s, P).toFixed(1)} °C (${fF(chT(s, P))} °F)`, ok: chT(s, P) >= 38 }, { label: 'Allergies', value: 'None', ok: true }],
         give(s, P, A) { P.ampAt = s.t; const d = P.feverAt !== null ? s.t - P.feverAt : 0; A.judge('224-amp', 'meds', d <= 45 ? 2 : 1, `You started ampicillin for Ms. Donnelly's intraamniotic infection${d <= 45 ? ' promptly' : ', after a delay'}.`, `ACOG: treat intraamniotic infection with broad-spectrum antibiotics as soon as it's suspected. Ampicillin covers GBS and many gut organisms; gentamicin covers the gram-negatives.`, '224'); return `Ampicillin 2 g IV over 15 minutes.`; } },
       { id: '224-gent', name: 'Gentamicin', dose: '5 mg/kg (360 mg)', route: 'IV', freq: 'Every 24 hours', prn: true, available: (s, P) => P.ampOrdered && !P.gone,
         block: (s, P) => (P.gentAt !== null ? `Given at ${clock(P.gentAt)}.` : null),
         checks: () => [{ label: 'Weight', value: '72 kg', ok: true }, { label: 'Creatinine', value: '0.6', ok: true }],
         give(s, P, A) { P.gentAt = s.t; A.judge('224-gent', 'meds', 1, `You gave gentamicin with the ampicillin.`, `Weight-based, once daily. The combination is the standard first-line regimen for intraamniotic infection.`, '224'); return `Gentamicin 360 mg IV over 30 minutes.`; } },
       { id: '224-apap', name: 'Acetaminophen', dose: '1 g', route: 'PO', freq: 'Every 6 hours as needed, temperature 38.0 or higher or pain', prn: true, available: (s, P) => !P.gone,
-        checks: (s, P) => [{ label: 'Temperature', value: `${clT(s, P).toFixed(1)} °C (${fF(clT(s, P))} °F)`, ok: clFever(s, P) }],
+        checks: (s, P) => [{ label: 'Temperature', value: `${chT(s, P).toFixed(1)} °C (${fF(chT(s, P))} °F)`, ok: chT(s, P) >= 38 }],
         give(s, P, A) { P.apapAt = s.t;
           if (P.feverAt !== null && P.called === null) A.judge('224-apap', 'judgment', -1, `You treated Ms. Donnelly's fever before telling the provider.`, `Acetaminophen is right for a laboring fever, but it treats the number, not the infection. The call and the antibiotics come first.`, '224');
           else if (P.feverAt !== null) A.judge('224-apap', 'meds', 1, `You gave acetaminophen for Ms. Donnelly's fever.`, `Maternal fever raises the baby's oxygen demand and is linked to newborn encephalopathy. Treat it along with the infection.`, '224');
@@ -658,7 +664,7 @@
       items(s, P, A) {
         const v = A.vitals('224');
         return [
-          { id: 'temp', label: `Temp ${clT(s, P).toFixed(1)} °C (${fF(clT(s, P))} °F)`, key: clFever(s, P), need: true },
+          { id: 'temp', label: `Temp ${chT(s, P).toFixed(1)} °C (${fF(chT(s, P))} °F)`, key: chT(s, P) >= 38, need: true },
           { id: 'hr', label: `Maternal HR ${v.HR}`, key: v.HR > 110, need: true },
           { id: 'fhr', label: `FHR baseline ${clFHR(s, P)}, ${P.inf >= .6 ? 'minimal' : 'moderate'} variability`, key: clFHR(s, P) > 160, need: P.efmAt !== null, lock: 'Review the tracing' },
           { id: 'tender', label: 'Tender uterus between contractions, cloudy foul fluid', key: true, need: P.tender, lock: 'Feel her uterus' },
@@ -838,7 +844,9 @@
     { id: 'tl-or', when: (s) => { const P = s.p['223']; return P.statAt !== null && !P.gone && s.t >= P.statAt + (P.mdNear ? 4 : 7); }, run(s, A) { const P = s.p['223']; P.gone = true; P.goneAt = s.t; P.orAt = s.t; P.goneText = 'STAT cesarean for uterine rupture'; A.msg({ from: 'adeyemi', pid: '223', urgent: true, text: `Taking 223 back to OR 2 now. General anesthesia. NICU's coming.` }); } },
     { id: 'tl-baby', when: (s) => { const P = s.p['223']; return P.orAt !== null && s.t >= P.orAt + 12; }, run(s, A) { const P = s.p['223']; const d = P.statAt - P.ruptAt; A.msg({ from: 'adeyemi', pid: '223', text: d <= 5 && P.statBy !== 'nova' ? `Baby girl out of 223's uterus, through a tear along the old scar. APGARs 4 and 8, cord gas okay. I repaired the uterus; she's lost about a liter. Thank you for calling it fast.` : d <= 10 && P.statBy !== 'nova' ? `223's baby is out: APGARs 2 and 6, to the NICU for observation. The tear was along the old scar; she needed 2 units.` : `223's baby is out: APGARs 1 and 3, cord pH 6.94. NICU is starting cooling. Fatima needed a hysterectomy and 4 units.` }); } },
 
-    { id: 'g-fever', when: (s) => s.t >= 105 && !s.p['224'].gone, run(s, A) { const P = s.p['224']; P.feverAt = s.t; A.msg({ from: 'renee', pid: '224', text: `224's temp is ${clT(s, P).toFixed(1)} (${fF(clT(s, P))}) and her heart rate's ${A.vitals('224').HR}. She asked for a cold washcloth. Anything else?`, replies: [{ label: 'I\'m coming to assess her now', act: 'goto', pid: '224' }, { label: 'A washcloth is fine. It\'s probably the room', act: 'g-wash' }] }); } },
+    // A fever someone charts first (you, or Renee on a vitals round) is the fever's time; Renee's call then never comes.
+    { id: 'g-found', when: (s) => { const P = s.p['224']; return P.feverAt === null && !P.gone && P.vit.some((v) => v.t > 0 && +v.T >= 38); }, run(s, A) { const P = s.p['224'], v = P.vit.find((x) => x.t > 0 && +x.T >= 38); P.feverAt = v.t; P.feverT = +v.T; } },
+    { id: 'g-fever', when: (s) => s.t >= 105 && !s.p['224'].gone && s.p['224'].feverAt === null, run(s, A) { const P = s.p['224']; P.feverAt = s.t; P.feverT = clT(s, P); A.msg({ from: 'renee', pid: '224', text: `224's temp is ${P.feverT.toFixed(1)} (${fF(P.feverT)}) and her heart rate's ${A.vitals('224').HR}. She asked for a cold washcloth. Anything else?`, replies: [{ label: 'I\'m coming to assess her now', act: 'goto', pid: '224' }, { label: 'A washcloth is fine. It\'s probably the room', act: 'g-wash' }] }); } },
     { id: 'g-strip', when: (s) => { const P = s.p['224']; return P.feverAt !== null && P.efmAt !== null && P.efmAt >= P.feverAt && !P.gone; }, run(s, A) { A.msg({ from: 'nova', pid: '224', text: `How's 224's strip with that fever?`, replies: [{ label: 'Category II: fetal tachycardia around 170 with minimal variability. With her fever, that\'s intraamniotic infection until proven otherwise', act: 'g-cat-2' }, { label: 'Category I: 170 is the high end of normal', act: 'g-cat-1' }, { label: 'Category III. She needs a cesarean now', act: 'g-cat-3' }] }); } },
     { id: 'g-sepsis', when: (s) => { const P = s.p['224']; return !P.gone && P.ampAt === null && P.inf >= 1.4; }, run(s, A) { const P = s.p['224']; P.gone = true; P.goneAt = s.t; P.goneText = 'Cesarean for maternal sepsis'; A.judge('224-sepsis', 'safety', -3, `Ms. Donnelly's intraamniotic infection progressed to sepsis.`, `Fever with a long rupture, maternal and fetal tachycardia and a tender uterus was treatable with antibiotics at 08:45. It needed a call.`, '224'); A.msg({ from: 'adeyemi', pid: '224', urgent: true, text: `224 is septic: temp 39.4, pressure 88/46, FHR 180 with no variability. Starting ampicillin and gentamicin and taking her for a cesarean. Who was watching her?` }); } },
 
@@ -909,7 +917,7 @@
       if (P.gone) return `Renee: "${nm}'s in the OR."`;
       if (s.deleg.filter((d) => !d.done).length >= 2) return `Renee: "I've got two going. Give me a few minutes."`;
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the OB tech.`, 'Hand off the measurements, supplies and routine care on stable patients; keep the strips, the exams and the drips.');
+      A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the OB tech.`, 'Hand off the measurements, supplies and routine care on stable patients; keep the strips, the exams and the drips.');
       return `Renee: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
@@ -989,6 +997,14 @@
       bb: { name: 'Blood bank', role: 'Transfusion service', look: null },
     },
     patients: [alicia, brianna, fatima, claire],
+    // Questions whose moment is over: the baby is out, the pressure is back, the rupture has gone to the OR.
+    staleMsg(s, m) {
+      const P = s.p[m.pid]; if (!P) return false;
+      if (m.pid === '222') return (/push NOW/.test(m.text) && P.bornAt !== null) || (/BP is 82/.test(m.text) && P.hypo < .15 && s.t - m.t >= 10);
+      if (m.pid === '223') return (/keeps alarming/.test(m.text) && P.rupt) || P.gone || P.statAt !== null;
+      if (m.pid === '224') return P.gone || P.called !== null;
+      return false;
+    },
     dueExtras(s) {
       const out = [], L = s.p['221'], B = s.p['222'], F = s.p['223'], C = s.p['224'];
       [['221', L], ['222', B], ['223', F], ['224', C]].forEach(([id, P]) => { if (P.gone || (id === '222' && B.bornAt !== null)) return; const nx = (P.efmAt === null ? -15 : P.efmAt) + 30; out.push({ t: Math.max(0, nx), late: s.t > nx + 15, tab: 'care', hl: 'fetal monitor', text: `${id} Review the fetal monitor tracing (every 30 minutes)` }); });
@@ -1001,14 +1017,14 @@
       if (B.bladder && B.bornAt === null && !B.crown) out.push({ t: 0, late: s.t > 60, tab: 'care', hl: 'Bladder scan', text: '222 No void since 04:00 with an epidural: bladder' });
       if (B.crown && B.bornAt === null) out.push({ t: B.crownAt, late: true, tab: 'care', hl: 'Call for help', text: '222 Crowning: catch the baby' });
       if (B.bornAt !== null && B.ppOxy === null) out.push({ t: B.bornAt, late: s.t > B.bornAt + 10, tab: 'meds', hl: 'Oxytocin', text: '222 Postpartum oxytocin' });
-      if (B.placentaAt !== null) { const nx = (B.fundusAt === null ? B.placentaAt : B.fundusAt) + 15; if (s.t < B.placentaAt + 60 || B.fundusAt === null) out.push({ t: nx, late: s.t > nx + 10, tab: 'care', hl: 'fundus', text: '222 Fundus and bleeding every 15 minutes' }); }
+      if (B.placentaAt !== null) { const nx = (B.fundusAt === null ? B.placentaAt : B.fundusAt) + 15; if (nx <= B.placentaAt + 60 || B.fundusAt === null) out.push({ t: nx, late: s.t > nx + 10, tab: 'care', hl: 'fundus', text: '222 Fundus and bleeding every 15 minutes' }); }
       if (!F.gone) {
         if (!F.iv) out.push({ t: 0, late: s.t > 60, tab: 'care', hl: '18-gauge IV', text: '223 TOLAC: IV access and type and screen (admission orders)' });
         if (F.rupt && F.statAt === null) out.push({ t: F.ruptAt, late: true, tab: 'care', hl: 'STAT', text: '223 Constant pain, FHR 70, contractions gone' });
       }
       if (!C.gone) {
         if (C.pcnAt === null && C.feverAt === null) out.push({ t: 0, late: s.t > 30, tab: 'meds', hl: 'Penicillin', text: '224 GBS prophylaxis due 07:00' });
-        if (C.feverAt !== null && C.called === null) out.push({ t: C.feverAt, late: s.t > C.feverAt + 20, tab: 'care', hl: 'fetal monitor', text: '224 Fever ' + clT(s, C).toFixed(1) + ' °C (' + fF(clT(s, C)) + ' °F) after a long rupture: assess and call' });
+        if (C.feverAt !== null && C.called === null) out.push({ t: C.feverAt, late: s.t > C.feverAt + 20, tab: 'care', hl: 'fetal monitor', text: '224 Fever ' + (C.feverT !== undefined ? C.feverT : clT(s, C)).toFixed(1) + ' °C (' + fF(C.feverT !== undefined ? C.feverT : clT(s, C)) + ' °F) after a long rupture: assess and call' });
         if (C.ampOrdered && C.ampAt === null) out.push({ t: C.called, late: s.t > C.called + 20, tab: 'meds', hl: 'Ampicillin', text: '224 Ampicillin and gentamicin ordered' });
       }
       return out;
@@ -1028,6 +1044,8 @@
         '223': `TOLAC, early labor, Category I. She needs an IV and a plan, not rescue, right now.`,
       },
     },
+    // Debrief claims checked against the record (engine.js, checkClaims): blood given matches her OR course in flow.js.
+    claims: [{ pid: '223', rx: /\b(one|two|three|four|six|\d+) units? of blood/i, ok: (s, P, A, m) => { const d = P.statAt !== null ? P.statAt - P.ruptAt : 99, want = P.statBy === 'nova' || d > 10 ? 'six' : d <= 5 ? 'two' : 'three'; return m[1].toLowerCase() === want; } }],
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       const L = s.p['221'];

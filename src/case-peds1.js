@@ -66,7 +66,7 @@
           return 'He takes 90 mL, pausing to breathe.';
         },
       },
-      { id: 'ng', label: 'Hold PO: give the feed by NG (order: RR > 60)', cost: 5, avail: (s, P) => !P.ng, run(s, P, A) { P.ng = true; P.fedAt = s.t; const rr = A.vitals('501').RR; A.judge('501-ng', 'safety', rr > 60 ? 2 : 0, rr > 60 ? 'You switched Mateo to NG feeds when his RR was over 60.' : 'You started NG feeds for Mateo.', rr > 60 ? 'Nutrition without the aspiration risk. The order spelled out the threshold; you used it.' : 'Allowed by the order, though his rate was under 60.', '501'); return 'NG placed and verified, 90 mL of breast milk over 30 minutes by pump.'; } },
+      { id: 'ng', label: 'Hold PO: give the feed by NG (order: RR > 60)', cost: 5, avail: (s, P) => !P.ng, run(s, P, A) { P.ng = true; P.fedAt = s.t; const rr = A.seen('501', 60).RR; /* the rate the nurse had in front of them, not a fresh number */ A.judge('501-ng', 'safety', rr > 60 ? 2 : 0, rr > 60 ? 'You switched Mateo to NG feeds when his RR was over 60.' : 'You started NG feeds for Mateo.', rr > 60 ? 'Nutrition without the aspiration risk. The order spelled out the threshold; you used it.' : `Allowed by the order, though the last rate you had was ${rr}, not over 60.`, '501'); return 'NG placed and verified, 90 mL of breast milk over 30 minutes by pump.'; } },
     ],
     comms: [
       { id: 'rrt', label: 'Call the PICU team / rapid response', cost: 3, avail: (s, P) => !P.rrt && P.work > 1.7, run(s, P, A) { P.rrt = true; P.picuAt = s.t + 30; P.escBy = 'rrt'; A.judge('501-rrt', 'judgment', P.work > 2.2 ? 2 : 1, 'You called the PICU team for Mateo.', 'Escalating flow, rising score and a tiring infant: babies with bronchiolitis get worse fast and apnea comes without warning. Early transfer is the safe move.', '501'); return 'The PICU fellow is at the crib in five minutes. "Good call. We\'ll take him upstairs for CPAP."'; } },
@@ -309,7 +309,7 @@
       ],
       respond(s, P, A, picked, req) {
         if (picked.includes('wt') && req === 'fix') {
-          if (!P.fixed) { P.fixed = true; P.reported = true; P.orders.forEach((o) => { if (/31 kg/.test(o.text) && !/^DISCONTINUED/.test(o.text)) o.text = 'DISCONTINUED (wrong weight): ' + o.text; }); A.addOrder('505', 'CORRECTED for weight 14.1 kg: morphine 1.4 mg IV every 3 h PRN, acetaminophen 210 mg PO every 6 h, ceftriaxone 700 mg IV daily at 18:00, naloxone 0.02 mg IV PRN respiratory depression. D5NS decreased to 48 mL/h (maintenance for 14.1 kg). Metronidazole recalculated for 14.1 kg. Previous weight-based orders discontinued. Safety report filed.'); }
+          if (!P.fixed) { P.fixed = true; P.reported = true; A.addOrder('505', 'CORRECTED for weight 14.1 kg: morphine 1.4 mg IV every 3 h PRN, acetaminophen 210 mg PO every 6 h, ceftriaxone 700 mg IV daily at 18:00, naloxone 0.02 mg IV PRN respiratory depression. D5NS decreased to 48 mL/h (maintenance for 14.1 kg). Metronidazole recalculated for 14.1 kg. Clear liquids, advance as tolerated; FLACC every 2 h (unchanged). Previous weight-based orders discontinued. Safety report filed.', [/31 kg|3\.1 mg|465 mg|1,550 mg|mL\/h/]); }
           A.judge('505-sbar', 'comm', 2, 'You got Leo\'s orders corrected for his real weight.', 'A wrong weight makes every order wrong. Catching it once, at the source, fixes all of them.', '505');
           return 'Oh no. 31 pounds. Thank you. I\'m discontinuing everything and re-ordering for 14.1. I\'ll file the safety report.';
         }
@@ -483,7 +483,7 @@
         id: '509-alb', name: 'Albuterol', dose: '5 mg', route: 'Nebulized', freq: 'Every 2 h scheduled; every 1 h as needed', prn: true,
         block: (s, P) => (P.cont ? 'On continuous albuterol now.' : s.t - P.albAt < 60 ? 'Given at ' + clock(P.albAt) + '. PRN every 1 h at most.' : null),
         checks: (s, P, A) => { const v = A.vitals('509'); return [{ label: 'Last dose', value: P.albAt < 0 ? '13:00' : clock(P.albAt), ok: s.t - P.albAt >= 60 }, { label: 'HR', value: `${v.HR}`, ok: v.HR < 170 }, { label: 'Asthma score', value: P.pas !== null ? `${P.pas}` : 'Not scored', ok: P.pas !== null ? null : null }]; },
-        give(s, P, A) { const late = s.t - P.albAt > 150 + (P.albAt < 0 ? 20 : 0); P.albAt = s.t; P.br = Math.max(.6, P.br - .85); if (late) A.judge('509-alb-late-' + s.t, 'time', -1, 'Zoe\'s albuterol went in late.', 'Every-2-hour albuterol in a flare is holding the airway open. Late doses let the bronchospasm catch up.', '509'); return 'Albuterol neb over 10 minutes. Her wheeze loosens; she coughs up some mucus. She\'s a little jittery.'; },
+        give(s, P, A) { const late = s.t - P.albAt > 150 + (P.albAt < 0 ? 20 : 0); P.albLate = Math.max(P.albLate || 0, s.t - P.albAt - 120); P.albAt = s.t; P.br = Math.max(.6, P.br - .85); if (late) A.judge('509-alb-late-' + s.t, 'time', -1, 'Zoe\'s albuterol went in late.', 'Every-2-hour albuterol in a flare is holding the airway open. Late doses let the bronchospasm catch up.', '509'); return 'Albuterol neb over 10 minutes. Her wheeze loosens; she coughs up some mucus. She\'s a little jittery.'; },
       },
       { id: '509-dex', name: 'Dexamethasone', dose: '16 mg (0.6 mg/kg)', route: 'PO', freq: 'Once, 17:00', due: 120, checks: () => [{ label: 'Dose check', value: '0.6 mg/kg × 26 kg = 15.6 mg; 16 mg (max 16)', ok: true }], give(s, P) { P.dexAt = s.t; return 'Dexamethasone 16 mg taken in applesauce.'; }, hold(s, P, A) { A.judge('509-dex-hold', 'meds', -2, 'You held Zoe\'s steroid.', 'Steroids treat the inflammation behind an asthma flare. Without it, the albuterol only buys time.', '509'); return 'Held.'; } },
     ],
@@ -523,7 +523,7 @@
     outcome(s, P) {
       if (P.icu) return { tone: 'bad', title: 'Respiratory failure, PICU', text: 'The quiet was her tiring out. She needed intubation upstairs.' };
       if (P.rrt) return { tone: P.spaced ? 'mixed' : 'good', title: 'Escalated before she tired out', text: 'Continuous albuterol and magnesium turned it around.' + (P.spaced ? ' The treatments were almost spaced out first.' : '') };
-      if (P.br < 1.8) return { tone: 'good', title: 'Breathing easier, on schedule', text: 'Nebs on time and the steroid in.' + (P.taught ? ' Mom can do the spacer teach-back.' : '') };
+      if (P.br < 1.8) { const late = P.cont ? (P.albLate || 0) : Math.max(P.albLate || 0, s.t - P.albAt - 120), dex = s.meds['509-dex'].status === 'given'; return { tone: late > 15 || !dex ? 'mixed' : 'good', title: late > 15 ? 'Breathing easier, nebs ran late' : 'Breathing easier, on schedule', text: (late > 15 ? `A neb ran ${Math.round(late)} minutes late, and she held anyway.` : 'Nebs on time.') + (dex ? ' Steroid in.' : ' The steroid was never given.') + (P.taught ? ' Mom can do the spacer teach-back.' : '') }; }
       return { tone: 'mixed', title: 'Still tight at handoff', text: 'Wheezy and working, but on the edge.' };
     },
   };
@@ -629,7 +629,7 @@
       if (task.id === 'watch') { s.p['507'].observed = true; A.judge('deleg-watch', 'deleg', 1, 'You had the PCT keep Noah in sight.', 'Continuous observation is a perfect PCT task. The assessment and the report stay with you.'); return 'Kiana: "On it. I\'ll sit in the doorway."'; }
       if (s.deleg.filter((d) => !d.done).length >= 1) return 'Kiana: "Give me a sec, I\'m still on the last thing."';
       s.deleg.push({ id: task.id, pid, due: s.t + task.mins, done: false, at: s.t });
-      if (task.id === 'vitals' || task.id === 'weigh' || task.id === 'io') A.judge('deleg-good-' + task.id, 'deleg', 1, `You delegated ${task.label.toLowerCase()} to the PCT.`, 'Hand off the measurements; keep the interpretation.');
+      if (task.id === 'vitals' || task.id === 'weigh' || task.id === 'io') A.judge('deleg-good-' + task.id + '-' + pid, 'deleg', 1, `You delegated ${task.label.toLowerCase()} for ${A.def(pid).short} to the PCT.`, 'Hand off the measurements; keep the interpretation.');
       return `Kiana: "On it: ${task.label.toLowerCase()} for ${nm}."`;
     },
     complete(d, s, A) {
@@ -721,6 +721,8 @@
         '505': 'Post-op and fussing, but stable. Weigh him before any weight-based dose.',
       },
     },
+    // Debrief claims checked against the record (engine.js, checkClaims).
+    claims: [{ pid: '509', rx: /Nebs on time/i, ok: (s, P) => Math.max(P.albLate || 0, P.cont ? 0 : s.t - P.albAt - 120) <= 15 }],
     events, delegation, dialogs, novaHint, endChecks,
     tick(s, A) {
       if (s.p['505'].flaccAgain != null && !s.p['505'].icu) A.watch('505', { id: '505-flacc', text: 'FLACC pain score again', every: 60, times: 1, rx: 'FLACC', tab: 'care', from: s.p['505'].flaccAgain });
