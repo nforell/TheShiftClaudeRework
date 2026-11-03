@@ -2809,3 +2809,136 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .deb-score .num.pop{animation:scorepop .55s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes scorepop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.deb-score .num.pop{animation:none}}
+
+/* === 4 West experience polish, pass 1 ===
+   Semantic status remains sourced from the existing simulator.  This layer
+   clarifies, but does not infer urgency or clinical severity. */
+:root{
+  --focus-ring:color-mix(in srgb,var(--teal) 75%,var(--surface));
+  --soft-separator:color-mix(in srgb,var(--line) 70%,transparent);
+}
+.board,.report,.dock,.phone,.brain{
+  box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 4%,transparent);
+}
+.board-h{align-items:center;min-height:60px;gap:.75rem}
+.board-h h2{font-family:var(--sign);font-size:1.5rem;font-weight:600;letter-spacing:.012em}
+.pt-row{
+  position:relative;
+  gap:clamp(.55rem,1.3vw,1rem);
+  padding:.95rem 1.05rem;
+  border-bottom-color:var(--soft-separator);
+}
+.pt-row.tap{cursor:pointer}
+.pt-row.tap:hover{background:color-mix(in srgb,var(--teal) 5%,var(--surface))}
+.pt-row.tap:focus-within{outline:2px solid var(--focus-ring);outline-offset:-2px;background:color-mix(in srgb,var(--teal) 6%,var(--surface))}
+.pt-row>.portrait,.pt-row .portrait{
+  border:1px solid color-mix(in srgb,var(--ink) 13%,var(--line));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--scene-wall) 44%,transparent);
+  overflow:hidden;
+}
+.pt-row .nm{font-size:1.02rem;line-height:1.28;letter-spacing:-.012em}
+.pt-row .nm small{display:inline-block;font-size:.8rem;line-height:1.25}
+.pt-row .dx{margin-top:.15rem;line-height:1.35}
+.pt-row .facts{gap:.35rem;margin-top:.55rem}
+.pt-row .go{align-items:center;gap:.4rem}
+.pt-row .go .btn{font-size:.86rem;min-height:44px}
+.pt-row .pt-next{
+  margin-top:.55rem;
+  padding:.45rem .6rem;
+  border-left:3px solid var(--line);
+  background:color-mix(in srgb,var(--surface-2) 60%,transparent);
+  border-radius:0 var(--r) var(--r) 0;
+  line-height:1.4;
+}
+.pt-row .pt-next span{font-size:.72rem;line-height:1.4;font-weight:800}
+.pt-row .pt-next.late{border-left-color:var(--red);background:color-mix(in srgb,var(--red-bg) 58%,var(--surface))}
+.pt-row .pt-next.stat{border-left-color:var(--red);background:color-mix(in srgb,var(--red-bg) 34%,var(--surface))}
+.pt-row .pt-next.ok{border-left-color:var(--good);background:color-mix(in srgb,var(--good-bg) 25%,var(--surface))}
+.pt-row.pending .dx{max-width:58ch}
+.pt-row.gone{opacity:.8}
+.pt-row .chip{line-height:1.3}
+.msg.tap:focus-within,.due li.tap:focus-within,.brain li.tap:focus-within{
+  outline:2px solid var(--focus-ring);outline-offset:-2px;
+}
+.report-head{gap:1.15rem}
+.report-head .who{min-width:0}
+.report-head h2{line-height:1.25}
+.report-head .meta{margin-top:.55rem;gap:.4rem}
+.report-head .portrait,.out .portrait{
+  border:1px solid color-mix(in srgb,var(--ink) 12%,var(--line));
+}
+.line{line-height:1.65}
+.line[aria-pressed="true"]{border-left:3px solid var(--amber);padding-left:calc(.6rem - 3px);background:color-mix(in srgb,var(--amber-bg) 18%,transparent)}
+.room-top{border:1px solid color-mix(in srgb,var(--scene-wall) 55%,var(--line))}
+.plate{
+  border:1px solid color-mix(in srgb,var(--line) 80%,transparent);
+  background:color-mix(in srgb,var(--surface) 96%,transparent);
+  box-shadow:0 3px 16px -9px color-mix(in srgb,var(--ink) 30%,transparent);
+}
+.plate h2{font-size:1.13rem;line-height:1.25}
+.plate .facts{margin-top:.4rem;gap:.35rem}
+.plate-btns{flex-wrap:wrap;justify-content:flex-end}
+.plate-btns .btn{min-height:44px}
+.nh{margin:.8rem 0 .6rem;gap:.35rem}
+.nh-k{font-size:.78rem;letter-spacing:.075em}
+.nh-go{min-height:64px;padding:.8rem 1rem;gap:.15rem .85rem}
+.nh-go b{font-size:1.06rem;line-height:1.4}
+.nh-go small{line-height:1.45}
+.nh-go:focus-visible,.cmd-go:focus-visible,.dock-tabs button:focus-visible{
+  outline:3px solid var(--focus-ring);outline-offset:2px;
+}
+.dock-tabs button[aria-selected="true"]{
+  background:color-mix(in srgb,var(--teal) 7%,var(--surface));
+}
+.dock-tabs button:focus-visible{outline-offset:-3px}
+.deb-hero{gap:1rem;align-items:center;padding-top:1.2rem}
+.deb-hero h1{line-height:1.05}
+.deb-score{font-variant-numeric:tabular-nums}
+.deb-score small{margin-top:.45rem;font-family:var(--sans);font-size:.78rem;line-height:1.4}
+.outs{gap:.7rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));border-bottom:0;padding:.75rem 0}
+.out{
+  grid-template-columns:48px minmax(0,1fr);
+  gap:.7rem;
+  align-content:start;
+  padding:1rem;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-left:3px solid var(--line);
+  border-radius:var(--rc);
+  overflow-wrap:anywhere;
+}
+.out .portrait{width:48px;height:48px}
+.out.good{border-left-color:var(--good)}
+.out.mixed{border-left-color:var(--amber)}
+.out.bad{border-left-color:var(--red)}
+.out h3{line-height:1.35;margin:.2rem 0 .35rem}
+.out p{line-height:1.52}
+.deb-grid{gap:clamp(1.2rem,3vw,2rem)}
+.moments li{gap:1rem;padding:1.1rem .15rem;border-bottom-color:var(--soft-separator)}
+.moments li .mk{letter-spacing:.025em}
+.moments li b{line-height:1.38}
+.moments li p{line-height:1.55;margin-top:.4rem}
+@media(max-width:700px){
+  .pt-row{padding:.9rem .75rem}
+  .pt-row .nm{font-size:.97rem}
+  .pt-row .pt-next{padding:.45rem .5rem;margin-top:.4rem}
+  .board-h{padding:.8rem}
+  .report-head{gap:.8rem;padding:.9rem}
+  .nameplate{gap:.4rem;padding:.5rem}
+  .plate{padding:.55rem .65rem;max-width:100%}
+  .plate h2{font-size:1rem}
+  .plate .facts{gap:.2rem}
+  .deb-hero{grid-template-columns:minmax(0,1fr) auto}
+  .deb-score{font-size:clamp(2.8rem,13vw,4.6rem)}
+  .outs{grid-template-columns:minmax(0,1fr);gap:.6rem}
+  .out{padding:.9rem}
+}
+@media(max-width:390px){
+  .deb-hero{grid-template-columns:minmax(0,1fr)}
+  .deb-score{text-align:left;margin-top:.35rem}
+  .deb-score small{text-align:left}
+  .plate-btns .btn{padding:.5em .7em}
+}
+@media(prefers-reduced-motion:reduce){
+  .pt-row,.moments li,.nh-go{animation:none;transition:none}
+}
