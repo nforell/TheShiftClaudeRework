@@ -109,6 +109,20 @@
     s += `<g class="r-cheeks"><ellipse cx="${-w * .58}" cy="${h * .4}" rx="${w * .27}" ry="${h * .16}" fill="url(#rbl${uid})"/><ellipse cx="${w * .58}" cy="${h * .4}" rx="${w * .27}" ry="${h * .16}" fill="url(#rbl${uid})"/></g>`;
     if (ex.includes('freckles')) [[-.55, .28], [-.45, .36], [-.64, .36], [.55, .28], [.45, .36], [.64, .36], [-.1, .3], [.1, .3]].forEach(([x, y]) => { s += `<circle cx="${x * w}" cy="${y * h}" r="1.3" fill="${c.shade}"/>`; });
     if (ex.includes('wrinkles')) s += `<g stroke="${c.shade}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".7"><path d="M ${-w * .35} ${-h * .5} q ${w * .35} -5 ${w * .7} 0"/><path d="M ${-w * .25} ${-h * .4} q ${w * .25} -4 ${w * .5} 0"/><path d="M ${-w * .32} ${h * .36} q -5 8 -2 16"/><path d="M ${w * .32} ${h * .36} q 5 8 2 16"/><path d="M ${-w * .66} ${h * .1} l -6 -2 M ${-w * .66} ${h * .16} l -6 1 M ${w * .66} ${h * .1} l 6 -2 M ${w * .66} ${h * .16} l 6 1"/></g>`;
+    // Marcus Bell: layered editorial portrait details. Generated from his existing
+    // facial geometry so the drawing remains animateable in portrait and bedside
+    // rigs. No external image or large raster payload.
+    if (c.signature === 'marcus-v2') {
+      s += `<g class="r-marcus-details" pointer-events="none">
+        <path d="M ${-w*.81} ${-h*.16} Q ${-w*.68} ${-h*.06} ${-w*.70} ${h*.12} M ${w*.81} ${-h*.16} Q ${w*.68} ${-h*.06} ${w*.70} ${h*.12}" stroke="${c.shade}" stroke-width="1.35" opacity=".54" fill="none" stroke-linecap="round"/>
+        <path d="M ${-w*.50} ${h*.30} Q ${-w*.43} ${h*.45} ${-w*.25} ${h*.49} M ${w*.50} ${h*.30} Q ${w*.43} ${h*.45} ${w*.25} ${h*.49}" stroke="${c.shade}" stroke-width="1.5" opacity=".4" fill="none" stroke-linecap="round"/>
+        <path d="M ${-w*.47} ${-h*.44} Q 0 ${-h*.52} ${w*.46} ${-h*.43} M ${-w*.37} ${-h*.35} Q 0 ${-h*.41} ${w*.36} ${-h*.35}" stroke="${c.shade}" stroke-width="1.65" opacity=".55" fill="none" stroke-linecap="round"/>
+        <path d="M ${-w*.72} ${h*.27} Q ${-w*.56} ${h*.32} ${-w*.46} ${h*.31} M ${w*.72} ${h*.27} Q ${w*.56} ${h*.32} ${w*.46} ${h*.31}" stroke="${shade(c.skin,28)}" stroke-width="2.4" opacity=".36" fill="none" stroke-linecap="round"/>
+        <ellipse cx="${-w*.57}" cy="${h*.40}" rx="${w*.23}" ry="${h*.13}" fill="${shade(c.skin,20)}" opacity=".11"/>
+        <ellipse cx="${w*.57}" cy="${h*.40}" rx="${w*.23}" ry="${h*.13}" fill="${shade(c.skin,20)}" opacity=".11"/>
+      </g>`;
+    }
+
     s += `<ellipse cx="1.5" cy="${h * .28}" rx="2" ry="${h * .065}" fill="#fff" opacity=".13"/><path d="M -1.5 ${h * .24} Q -7 ${h * .38} 0 ${h * .41} Q 5.5 ${h * .4} 5 ${h * .33}" stroke="${c.shade}" stroke-width="2.1" fill="none" stroke-linecap="round"/><ellipse cx="-4" cy="${h * .39}" rx="1.8" ry="1.1" fill="${shade(c.shade, -30)}" opacity=".45"/><ellipse cx="4.2" cy="${h * .385}" rx="1.8" ry="1.1" fill="${shade(c.shade, -30)}" opacity=".45"/>`;
     s += `<ellipse class="r-cyan" cx="0" cy="${h * .6}" rx="17" ry="10" fill="#7487C0" opacity="0"/>`;
     if (ex.includes('beard')) s += `<path d="M ${-w * .95} 0 C ${-w * .95} ${h * .92} ${-w * .42} ${h * 1.12} 0 ${h * 1.12} C ${w * .42} ${h * 1.12} ${w * .95} ${h * .92} ${w * .95} 0 C ${w * .82} ${h * .55} ${w * .42} ${h * .76} 0 ${h * .76} C ${-w * .42} ${h * .76} ${-w * .82} ${h * .55} ${-w * .95} 0 Z" fill="${c.hair.color}"/>`;
@@ -174,8 +188,9 @@
     const dys = clamp(Math.max(clamp((v.rr - 22) / 12), cyan * .9)), lean = clamp(Math.max(v.lean || 0, Math.min((v.rr - 25) / 6, (93 - v.spo2) / 5)));
     const alertEff = Math.max(v.alert || 0, v.glu < 45 ? 2 : v.glu < 56 ? 1 : 0, v.sbp < 72 ? 2 : v.sbp < 84 ? 1 : 0, v.spo2 < 83 ? 1 : 0, v.rr < 10 ? (v.rr < 8 ? 2 : 1) : 0);
     const confused = (v.confused || v.glu < 56) && alertEff < 2, dizzy = (v.hr < 52 && v.sbp < 96 && alertEff < 2) ? 1 : 0, nausea = v.nausea ? 1 : 0;
+    const postOpGuard = clamp(v.postOpGuard || 0), breathEffort = clamp(v.breathEffort || 0), rapport = clamp(v.rapport || 0);
     const comfort = 1 - clamp(painF + dys + hypoG + fever * .6 + lowBP + nausea + (confused ? .6 : 0) + dizzy + alertEff * .5 + lean + anx * .8 + tremorIn * .5 + rigors * .6);
-    return { painF, splint, fever, rigors, lowBP, mottle, cyan, hypoG, dys, lean, alertEff, confused, dizzy, nausea, comfort, tremorIn, pale, anx, sweatIn };
+    return { painF, splint, fever, rigors, lowBP, mottle, cyan, hypoG, dys, lean, alertEff, confused, dizzy, nausea, comfort, tremorIn, pale, anx, sweatIn, postOpGuard, breathEffort, rapport };
   }
   function targets(c, d) {
     const T = {};
@@ -189,6 +204,19 @@
     T.cyan = d.cyan; T.sweat = clamp(Math.max(d.hypoG, d.dys * .75, d.rigors * .5, d.painF > .8 ? .4 : 0, d.mottle * .85, d.fever > .7 ? .3 : 0, d.lean * .8, d.sweatIn));
     T.mottle = d.mottle; T.green = d.nausea; T.lean = d.lean; T.droop = [0, .3, 1][d.alertEff]; T.guard = d.splint; T.guard2 = c.guard && d.painF > .85 ? 1 : 0;
     T.pick = d.confused ? 1 : 0; T.tremor = Math.max(d.hypoG > .15 ? d.hypoG : 0, d.tremorIn); T.glassy = d.fever; T.strain = clamp(d.lean * .9 + d.dys * .35);
+    // Single-patient v2 treatment: pain-related guarding, visible respiratory
+    // effort and calm engagement follow patient state rather than random events.
+    if (c.signature === 'marcus-v2') {
+      const guard = clamp(d.postOpGuard), 0, 1);
+      const effort = clamp(d.breathEffort), 0, 1);
+      const rapport = clamp(d.rapport), 0, 1);
+      T.guard = Math.max(T.guard, guard);
+      T.guard2 = Math.max(T.guard2, guard * .55);
+      T.strain = Math.max(T.strain, effort * .72);
+      T.worry = clamp(T.worry + guard * .18 + effort * .24 - rapport * .24);
+      T.smile = clamp(T.smile + rapport * .32 - guard * .12, -.8, 1);
+      T.raise += rapport * .11;
+    }
     return T;
   }
   const breathCurve = (p) => (p < .42 ? .5 - .5 * Math.cos(Math.PI * p / .42) : .5 + .5 * Math.cos(Math.PI * (p - .42) / .58));
@@ -241,6 +269,9 @@
     for (const key in T) cur[key] = lerp(cur[key], T[key], k);
     I.phase = (I.phase + dt * Math.max(4, v.rr) / 60) % 1; const b = breathCurve(I.phase);
     const depth = (d.alertEff === 2 ? 1.2 : 1) * (1 - cur.guard * .55) * (v.rr > 26 ? .8 : 1) * (reduced ? .6 : 1);
+    // Separate visible effort from measured respiratory rate. Diminished chest
+    // excursion with pain remains plausible and is never used for scoring.
+    const breathEffort = c.signature === 'marcus-v2' ? d.breathEffort : 0;
     // gaze
     const g = I.gaze, attentive = d.alertEff === 0 && !d.confused && !d.dizzy;
     if (attentive && (now() - pointer.t < 3 || I.hover)) {
@@ -286,10 +317,10 @@
     // motion
     const shiv = d.rigors && d.alertEff < 2 ? calm : 0, jx = shiv * Math.sin(t * 47) * 1.3, jy = shiv * Math.cos(t * 53) * .8, trem = cur.tremor * calm;
     const idle = calm * (1 - cur.droop * .6), sway = d.dizzy * calm;
-    const rot = Math.sin(t * .45 + I.seed) * 1.6 * idle + g.x * 3 * idle + cur.droop * 9 + sway * Math.sin(t * 1.25) * 6 - yawn * 5;
+    const rot = Math.sin(t * .45 + I.seed) * (c.signature === 'marcus-v2' ? .8 : 1.6) * idle + g.x * 3 * idle + cur.droop * 9 + sway * Math.sin(t * 1.25) * 6 - yawn * 5;
     const hxp = Math.sin(t * .6 + I.seed) * 1.2 * idle + g.x * 2.2 * idle + sway * Math.sin(t * 1.25) * 4 + jx + trem * Math.sin(t * 61) * .6;
     const P = I.B + 40, gain = I.mode === 'bed' ? .032 : .018, riseAmt = (P - I.T) * gain * b * depth;
-    const hyp = -riseAmt + cur.droop * 8 + cur.lean * 13 + jy - pe * (d.alertEff < 2 ? 3 : 0) - yawn * 3;
+    const hyp = -riseAmt + cur.droop * 8 + cur.lean * 13 + jy - pe * (d.alertEff < 2 ? 3 : 0) - yawn * 3 + breathEffort * Math.sin(I.phase * Math.PI * 2) * .8 * calm;
     I.head.setAttribute('transform', `translate(${hxp} ${hyp}) rotate(${rot} 0 ${I.h * .8}) scale(${1 + cur.lean * .06})`);
     if (I.torso) { const sy = 1 + gain * b * depth + cur.lean * .04, sx = 1 + .015 * b * depth + cur.lean * .03; I.torso.setAttribute('transform', `translate(${jx} ${jy}) translate(0 ${P}) scale(${sx} ${sy}) translate(0 ${-P})`); }
     if (I.strain) I.strain.setAttribute('opacity', cur.strain * (.6 + .4 * b));
