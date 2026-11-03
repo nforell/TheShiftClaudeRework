@@ -18,7 +18,7 @@
 
   const bell = {
     id: '412', room: '412', name: 'Marcus Bell', short: 'Mr. Bell', age: 58, sex: 'M',
-    look: { skin: '#8C5637', shade: '#6A3E25', lip: '#5C2E22', blush: '#B9563F', iris: '#3A2618', head: { w: 60, h: 63, jaw: .8 }, eye: 10.2,
+    look: { signature: 'marcus-v2', skin: '#8C5637', shade: '#6A3E25', lip: '#5C2E22', blush: '#B9563F', iris: '#3A2618', head: { w: 60, h: 63, jaw: .8 }, eye: 10.2,
       hair: { style: 'buzz', color: '#2A2220' }, brow: { w: 4.6, color: '#241C1A' }, body: { w: 92, cloth: 'gown' }, extras: ['goatee'], smile: .2, guard: true,
       lines: { calm: 'Better. Not great, better. Don\'t tell Denise I said that.', pain: 'Easy. That\'s a 7, and it\'s climbing.', dys: 'Can\'t get a good breath in. Hurts to try.', drowsy: 'Mm. Just resting my eyes, chief.', fever: 'Is it hot in here, or is it me?', none: 'Snores. He doesn\'t wake to his name.' } },
     bio: 'Retired city bus mechanic. Wry, stoic, hates asking for help. Wife Denise works days.',
@@ -60,6 +60,20 @@
       { text: 'Foley is ordered out at 08:00. Dressing is clean. Hemoglobin 11.8, down from 13.4 pre-op.', key: true },
       { text: 'He\'s a good guy. His wife Denise will come by after work.', key: false },
     ],
+    // Visual-only pose inputs for the 4 West character prototype. They reflect
+    // the same documented pain, sedation and pulmonary states as the patient chart;
+    // no clinical decisions or hidden outcome information are changed.
+    rig(s, P) {
+      const p = bellPain(s, P), sed = bellSedated(s, P), at = bellAtel(s, P);
+      const coached = P.isCoached !== null && !P.isPoor && recent(s, P.isCoached, 25);
+      const walked = P.ambulated && P.ambAt !== null && recent(s, P.ambAt, 40);
+      return {
+        alert: sed ? 1 : 0,
+        postOpGuard: clamp((p - 4) / 5, 0, 1),
+        breathEffort: clamp((at ? .5 : .12) + (p >= 7 ? .2 : 0), 0, 1),
+        rapport: !sed && !at && p <= 5 && (coached || walked) ? .75 : 0,
+      };
+    },
     vitals(s, P) {
       const at = bellAtel(s, P), p = bellPain(s, P), sed = bellSedated(s, P);
       return {

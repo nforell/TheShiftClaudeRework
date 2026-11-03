@@ -1,0 +1,35 @@
+name: Temporary Marcus prototype build sync
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/animated-patient-marcus-v2'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci --prefix tools/minify --no-audit --no-fund
+      - name: Rebuild and commit generated HTML on isolated branch
+        run: |
+          python build.py
+          if ! git diff --quiet -- dist/; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add dist/
+            git commit -m "build: regenerate playable Marcus prototype and game"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi

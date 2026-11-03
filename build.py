@@ -62,6 +62,13 @@ root=pathlib.Path(__file__).parent; dist=root/'dist'
 # The game: /play/ on the site, plus a standalone single file.
 (dist/'play').mkdir(parents=True, exist_ok=True)
 (dist/'the-shift.html').write_text(html); (dist/'play'/'index.html').write_text(html)
+# Working character proof of concept. Uses the exact same production rig as
+# /play/, keeping one renderer and avoiding an independent character demo engine.
+(dist/'prototype'/'marcus').mkdir(parents=True, exist_ok=True)
+rig_script = '<script>' + minjs((src/'rig.js').read_text()) + '</script>'
+(dist/'prototype'/'marcus'/'index.html').write_text(
+    (root/'site'/'marcus-prototype.html').read_text().replace('<!--RIG-SCRIPT-->', rig_script)
+)
 # The beta landing page at / and its screenshots at /assets/.
 import shutil
 # The landing page shares the game's config and telemetry, so a visit, a signup and the shifts played line up.
