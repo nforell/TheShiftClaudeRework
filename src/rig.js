@@ -207,9 +207,9 @@
     // Single-patient v2 treatment: pain-related guarding, visible respiratory
     // effort and calm engagement follow patient state rather than random events.
     if (c.signature === 'marcus-v2') {
-      const guard = clamp(d.postOpGuard), 0, 1);
-      const effort = clamp(d.breathEffort), 0, 1);
-      const rapport = clamp(d.rapport), 0, 1);
+      const guard = clamp(d.postOpGuard, 0, 1);
+      const effort = clamp(d.breathEffort, 0, 1);
+      const rapport = clamp(d.rapport, 0, 1);
       T.guard = Math.max(T.guard, guard);
       T.guard2 = Math.max(T.guard2, guard * .55);
       T.strain = Math.max(T.strain, effort * .72);
