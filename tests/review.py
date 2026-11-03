@@ -61,7 +61,7 @@ with sync_playwright() as p:
     g.evaluate("Shift.review.CASES['psych-3e-1'].hash='0000000000'")
     check(g.evaluate("Shift.review.status('psych-3e-1').state") == 'changed', 'content changed after sign-off shows updated since review')
     H('review'); g.wait_for_timeout(150)
-    check(g.locator('.rv-row').count() == len(CF) and g.locator('.rv-go').count() == len(CF), 'in-game sheet lists every shift with a review link')
+    check(g.locator('.rv-row:not(.rv-pk)').count() == len(CF) and g.locator('.rv-go:not(.rv-pgo)').count() == len(CF), 'in-game sheet lists every shift with a review link')
     check(len(set(hashes.values())) == len(CF), 'each shift has its own content hash')
     check(not errs, 'no page errors' + (': ' + errs[0][:200] if errs else ''))
     b.close()
