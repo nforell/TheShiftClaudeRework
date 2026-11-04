@@ -23,6 +23,19 @@ import decisions as DEC
 CF = DEC.case_files()
 hashes = {cid: hashlib.sha256(b''.join(f.read_bytes() for f in fs)).hexdigest()[:10] for cid, fs in CF.items()}
 pre = 'window.Shift = window.Shift || {}; window.Shift.reviewHashes = ' + json.dumps(hashes) + ';\n'
+# Practice content (drills, NCLEX items): every item's review text and fingerprint come from tools/review_items.js;
+# sign-offs live in src/review-items.json. The game only gets each pack's counts; the pages get the items.
+_ri = subprocess.run(['node', str(pathlib.Path(__file__).parent/'tools'/'review_items.js')], capture_output=True)
+if _ri.returncode: raise SystemExit('review_items.js failed: ' + _ri.stderr.decode()[:2000])
+RPACKS = json.loads(_ri.stdout)['packs']
+_REG = json.loads((src/'review-items.json').read_text())['items']
+for _p in RPACKS:
+    for _it in _p['items']:
+        _r = _REG.get(_it['id'])
+        _it['st'] = 'awaiting' if not _r else 'reviewed' if _r.get('hash') == _it['hash'] else 'changed'
+        if _r: _it['by'] = _r.get('reviewer', '')
+RSUM = [{'id': p['id'], 'title': p['title'], 'sub': p['sub'], 'n': len(p['items']), 'reviewed': sum(i['st'] == 'reviewed' for i in p['items']), 'changed': sum(i['st'] == 'changed' for i in p['items'])} for p in RPACKS]
+pre += 'window.Shift.reviewPacks = ' + json.dumps(RSUM) + ';\n'
 # Terms of use and disclaimer: one source (src/terms.json) for the in-game sheet and the /terms/ page.
 TERMS = json.loads((src/'terms.json').read_text())
 pre += 'window.Shift.terms = ' + json.dumps(TERMS).replace('</', '<\\/') + ';\n'
@@ -83,6 +96,18 @@ rv=(root/'site'/'review.html').read_text().replace('<!--SCRIPTS-->', logic+'<scr
 for cid in CF:
     (dist/'review'/cid).mkdir(exist_ok=True)
     (dist/'review'/cid/'index.html').write_text(rv.replace('<!--SCRIPTS-->','').replace('<script>window.REVIEW_DECISIONS=', '<script>window.REVIEW_CASE='+json.dumps(cid)+';window.REVIEW_DECISIONS=', 1))
+# Practice content review: /review/practice/ lists the packs, /review/practice/<pack>/ is the checklist.
+_rvhead = (root/'site'/'review.html').read_text().split('<!--SCRIPTS-->')[0].replace('<title>Clinical review', '<title>Practice content review')
+_rvjs = minjs((src/'config.js').read_text() + (src/'telemetry.js').read_text() + '\n') 
+_rvitems = (root/'site'/'review-items.js').read_text()
+_rvcss = '<style>.item .body p{margin:.15rem 0}.item .body .why{color:var(--ink-2);font-size:.92rem;margin:0 0 .35rem 1.1rem}.item .body .ok b{display:inline;margin:0;color:var(--good)}.item .body .no{color:var(--ink)}.item .body .sp{height:.5rem}.item>b{margin-bottom:.5rem}</style>'
+def _rvpage(data):
+    return _rvhead.replace('</head>', _rvcss + '</head>') + '<script>' + _rvjs + '</script><script>window.RI=' + json.dumps(data, ensure_ascii=False).replace('</', '<\\/') + ';</script><script>' + minjs(_rvitems) + '</script>\n</body>\n</html>\n'
+(dist/'review'/'practice').mkdir(parents=True, exist_ok=True)
+(dist/'review'/'practice'/'index.html').write_text(_rvpage({'pack': None, 'packs': RSUM}))
+for _p in RPACKS:
+    (dist/'review'/'practice'/_p['id']).mkdir(exist_ok=True)
+    (dist/'review'/'practice'/_p['id']/'index.html').write_text(_rvpage({'pack': _p, 'packs': RSUM}))
 # Instructor dashboard: the shifts' logic (titles, skills, NCLEX steps), accounts, and the practice questions.
 TEACH=['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn-challenge.js','ngn.js','ngn-focus.js','ngn-bank.js','ngn-cases.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js']+[f for f in LOGIC if f.startswith('case-')]
 (dist/'teach').mkdir(exist_ok=True); (dist/'teach'/'index.html').write_text((root/'site'/'teach.html').read_text().replace('<!--SCRIPTS-->', '<script>'+minjs(''.join((src/f).read_text()+'\n' for f in TEACH))+'</script>'))

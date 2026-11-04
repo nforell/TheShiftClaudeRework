@@ -41,7 +41,7 @@
       epi: {
         close: `Marcus walked a full lap of the unit with Denise before he went home on day four, holding his IV pole like the rail on the number 9. A month later a card came to 4 West: a photo of the bus, and on the back, "For the nurse who made me a deal. Ray would've liked you. Still quit. — M."`,
         warm: `Marcus went home on day four. Denise says he walks the block twice a day and complains the whole way, which she counts as a good sign.`,
-        distant: `Marcus went home on day four. He didn't say much at discharge. At his follow-up he admitted he'd barely touched his pain pills, and the surgeon could hear it in his lungs.`,
+        distant: `Marcus went home on day four. He didn't say much at discharge, and nobody found out why he wouldn't take his pain pills. At his follow-up he admitted he'd barely touched them. Too sore to breathe deep at home, and the surgeon could hear it in his lungs.`,
         hard: `Marcus's recovery took longer than it should have. Denise stayed every evening. When he finally went home, he told her the nurses were fine, and didn't say anything else about it.`,
       },
     },

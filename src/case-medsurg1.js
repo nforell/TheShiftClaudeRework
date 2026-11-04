@@ -487,7 +487,7 @@
       },
       pain: () => '"My back hurts, dear." Points to her lower back and right flank. 3/10.',
       skin: (s, P) => P.sev >= 70 ? 'Hot centrally, cool mottled knees. Dry mucous membranes.' : 'Warm and flushed. Dry lips, dry mucous membranes. Skin intact.',
-      gi: (s, P) => { P.k.uop = s.t; return `No void since 05:00. Bladder scan shows 90 mL. Urine output is about ${P.sev > 60 ? '10' : '25'} mL/h, below 0.5 mL/kg/h for her 58 kg.`; },
+      gi: (s, P) => { P.k.uop = s.t; const rate = P.sev > 60 ? 10 : 25, scan = Math.max(20, Math.round(rate * (120 + s.t) / 60 / 5) * 5); return `No void since 05:00. Bladder scan shows ${scan} mL, so she isn't retaining: she's making very little. That's about ${rate} mL/h, below 0.5 mL/kg/h for her 58 kg.`; },   // scan volume follows from the rate since her 05:00 void, so the numbers agree
     },
     interventions: [
       {
@@ -812,9 +812,13 @@
     okafor_later: { who: '414', text: (s) => (s.p['414'].ondAt !== null ? '"Feeling more human. Thank you for sorting out the nausea."' : '"Still queasy. That antibiotic does a number on me every time."') },
     okafor_hypo: { who: '414', text: '"I feel weird. Shaky. Is it hot in here?" Her hands are trembling on the tablet.' },
     whitfield_early: { who: '416', text: '"Is it Tuesday? I have to get home. Biscuit hasn\'t eaten." She\'s plucking at the blanket.', choices: [
+      { label: 'Biscuit will be fine. Let\'s get your vital signs.', next: 'whitfield_brush', fx: J('416-talk', 'comm', 0, 'You moved Mrs. Whitfield past her worry to get to the task.', 'Getting vitals matters, and they matter here. But a promise you can\'t keep doesn\'t settle a delirious patient, and you missed the chance to hear what her normal is.', '416') },
       { label: 'It\'s Wednesday morning. You\'re in the hospital, and I\'m your nurse. Let\'s make sure Biscuit is looked after. I\'ll ask Ruth.', next: 'whitfield_a', fx: J('416-talk', 'comm', 1, 'You reoriented Mrs. Whitfield gently.', 'Brief, calm reorientation without arguing, and addressing the worry underneath, calms delirium better than correcting it.', '416') },
+      { label: 'Tell me about Biscuit. Who usually feeds her?', next: 'whitfield_cat', fx: J('416-talk', 'comm', 1, 'You let Mrs. Whitfield talk about her cat, and heard that this confusion isn\'t her normal.', 'Following the worry, not the facts, calms her and gets her talking. "I always know what day it is" is a cue: if she\'s usually sharp, this is acute delirium, and her daughter can confirm her baseline.', '416') },
       { label: 'There\'s no cat here, Mrs. Whitfield.', next: 'whitfield_b', fx: J('416-talk', 'comm', -1, 'You corrected Mrs. Whitfield instead of reorienting her.', 'Arguing with delirium escalates distress. Orient to time and place, then address the worry.', '416') },
     ] },
+    whitfield_cat: { who: '416', text: '"Biscuit\'s a tabby. Fat thing. I feed her at six, never late, and Ruth checks on us Sundays." She frowns at the window. "I always know what day it is. Why don\'t I know what day it is?"' },
+    whitfield_brush: { who: '416', text: 'She holds out her arm for the cuff, but her eyes stay on the door. "She\'ll be waiting by her bowl."' },
     whitfield_a: { who: '416', text: '"Oh. Good. Ruth\'s a good girl." She settles, for now.' },
     whitfield_b: { who: '416', text: 'She looks frightened. "Then where is she?"' },
     whitfield_scared: { who: '416', text: 'She grips your wrist, hot and dry. "Something\'s wrong, isn\'t it? Am I going to die, dear?"', choices: [

@@ -2,6 +2,27 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 26 — November 2, 2026 (branch `mission-p0`)
+
+Nick's ask: the master improvement mission (reliability and trust first, then the flagship shift). Audit: Days on 4 West played as a first-time student with real taps at 390 px, from the walkthrough through the debrief; desktop at 1280; refresh mid-shift; the review tooling. Kept as is: the shift opening, report and flagging, the hidden-sepsis design, vitals with trends, resume after refresh, the desktop layout, the story conversations, and a debrief that already gives outcomes per patient, the decision that mattered most and a timestamped rationale for every scored call.
+
+### Done
+- **Clinical review now covers the practice content.** Shifts were the only content with review tracking. 128 drill cards, the 55 after-shift NCLEX items, the 202-question bank and 19 case studies (499 items) are now reviewable item by item, in 27 packs of up to 30 at `/review/practice/`. Each item shows its key and why every option is right or wrong, and carries a version fingerprint of its source. Sign-offs go in `src/review-items.json` via `node tools/record_review.js`, which records an Accurate item only at the version the reviewer saw and lists anything flagged or changed. The game's Clinical review sheet shows each group's progress. See docs/CLINICAL-REVIEW.md.
+- **No more "reviewed" claim for unreviewed content.** NCLEX practice said "reviewed for accuracy". It now says it hasn't been checked by a clinical reviewer yet.
+- **Keyboard focus stays inside open dialogs** (walkthrough, SBAR, every sheet). Tab used to reach the screen behind.
+- **Walkthrough report lines** drew their markers as the black logo (a class name clash). Fixed.
+- **Phone: the Next card lands in the room with vital signs in view.** It used to hide the first four assessment rows under the pinned header and tabs.
+- **Finishing the walkthrough skips the coach tours** that repeated it on the first shift. Skipping the walkthrough keeps them.
+- **Mrs. Whitfield:** her bladder scan now follows from the urine output it reports (it said 90 mL, which meant about 37 mL/h, while calling it under 29). Her first conversation has four replies instead of a right and a wrong one; asking about her cat surfaces "I always know what day it is", the cue that this confusion is new.
+- **Mr. Bell's distant epilogue** now says why his lungs suffered at home (nobody found out why he wouldn't take pain pills), so it no longer reads as contradicting his good in-hospital outcome.
+- Reorder arrows read "Mr. Bell is already first" / "Move … down to number 2" instead of "up to 0".
+- `tests/trust.py` covers all of the above and is in `run_all.py`.
+
+### Needs a person
+- RN check of the new Whitfield conversation (two new replies, their scoring and rationale) and the bladder-scan wording.
+- Authorship line in the Clinical review sheet ("Every shift is written by a working psych RN"): Nick's call how to describe it.
+- Recruit reviewers for the 27 practice packs (links on `/review/practice/`).
+
 ## Session 25 — October 17, 2026 (branch `pilot-prep`, built on `beta-audit`; landing changes pushed to `feature/shift-editorial-website`)
 
 Nick's ask: from the beta audit, do everything that doesn't need a person, a device or a live account.

@@ -166,7 +166,9 @@
     OR._o = ui.or; ui.ov = 'orient'; orSave(); TEL.track('orient_open', { from: start ? 'start' : 'help', resumed: !!(was && ui.or.i) }); render(true);
   }
   function closeOrient(finished) {
-    const o = ui.or; markSeen('orient'); try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
+    // Finishing the walkthrough already taught the station and the room; don't repeat it as a second tour on top of
+    // the first real shift. Skipping it keeps the tours as the fallback.
+    const o = ui.or; markSeen('orient'); if (finished) { markSeen('coach:station'); markSeen('coach:room'); } try { localStorage.removeItem(ORK); } catch (e) { /* storage off */ } TEL.track(finished ? 'orient_done' : 'orient_skip', { step: o ? o.i : 0 });
     ui.or = null; ui.ov = null;
     if (o && o.start) return startNew();
     render(true);
@@ -1589,7 +1591,7 @@
         <h3 class="pr-h">By Client Needs category</h3>${NG.CN.map(([id, lab, w]) => bar(St.by.cn[id], lab, `${w} of the exam`, `<button class="btn btn-quiet rd-go" data-act="pset-cn" data-v="${id}">Practice ›</button>`)).join('')}
         <h3 class="pr-h">By clinical judgment step</h3>${CJ.STEPS.map(([id, lab, what]) => bar(St.by.step[id], lab, what, `<button class="btn btn-quiet rd-go" data-act="pset-step" data-v="${id}">Practice ›</button>`)).join('')}`;
     }
-    return `<div class="home prac">${head}<section class="pr-body">${body}</section><div class="homefoot"><span>Written to current US nursing standards and reviewed for accuracy. Practice still varies by state and facility: follow your program and your policies.</span><span>${TERMS ? '<button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div></div>`;
+    return `<div class="home prac">${head}<section class="pr-body">${body}</section><div class="homefoot"><span>Written to current US nursing standards. Not yet checked by a clinical reviewer: see Menu, Clinical review. Practice varies by state and facility: follow your program and your policies.</span><span>${TERMS ? '<button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div></div>`;
   }
   function ovPres() {
     const P = ui.pset; if (!P) return '';
@@ -1656,8 +1658,15 @@
         ${r.reviewers.length ? `<p>${r.reviewers.map((x) => `${esc(x.name)}, ${esc(x.credentials)}${x.role ? ` (${esc(x.role)})` : ''}${x.date ? `, ${esc(x.date)}` : ''}`).join('; ')}</p>` : ''}
         ${r.references.length ? `<ul class="rv-refs">${r.references.map((x) => `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.text)}</a>` : esc(x.text)}</li>`).join('')}</ul>` : ''}
         ${web ? `<a class="rv-go" href="/review/${id}/" target="_blank" rel="noopener">${st.state === 'reviewed' ? 'See what was reviewed' : 'Review this shift'}</a>` : ''}</div>`; }).join('');
+    // Drills and NCLEX practice: reviewed item by item, against each item's version, in packs.
+    const PK = S.reviewPacks || [], pk = (L) => L.reduce((a, p) => ({ n: a.n + p.n, r: a.r + p.reviewed, c: a.c + p.changed }), { n: 0, r: 0, c: 0 });
+    const grp = (label, f) => { const L = PK.filter(f); if (!L.length) return ''; const t = pk(L);
+      return `<div class="rv-row rv-pk"><div class="rv-h"><b>${esc(label)}</b><span class="chip ${t.r === t.n ? 'ok' : 'warn'}">${t.r === t.n ? 'Clinically reviewed' : t.r ? `${t.r} of ${t.n} items reviewed` : 'Awaiting clinical review'}</span></div>
+        ${t.c ? `<p>${t.c} item${t.c === 1 ? '' : 's'} changed since review and need${t.c === 1 ? 's' : ''} another look.</p>` : ''}<p class="muted" style="margin:.2rem 0 0">${t.n} items, reviewed one by one.</p></div>`; };
+    const prac = grp('Drills', (p) => p.id.startsWith('drill-')) + grp('NCLEX questions after each shift', (p) => p.id.startsWith('ngn-shift')) + grp('NCLEX question bank', (p) => p.id.startsWith('bank-')) + grp('NCLEX case studies', (p) => p.id.startsWith('cases-'));
     return sheet('Clinical review', `<p style="margin-top:0">Every shift is written by a working psych RN. Before a shift is marked reviewed, a licensed clinician checks every patient, order and scored decision in it, and signs off on that exact version. If the content changes later, it says so here until it's checked again.</p>
-      ${web ? '<p class="muted">Are you a nurse, educator or pharmacist? You can review a shift: it takes about an hour, and reviewers are credited here.</p>' : ''}${rows}`,
+      ${web ? '<p class="muted">Are you a nurse, educator or pharmacist? You can review a shift: it takes about an hour, and reviewers are credited here.</p>' : ''}${rows}
+      ${prac ? `<h3 class="rv-sub">Drills and NCLEX practice</h3><p class="muted" style="margin-top:0">Every drill card and practice question is checked on its own, so an edit to one card sends only that card back for review.</p>${prac}${web ? '<a class="rv-go rv-pgo" href="/review/practice/" target="_blank" rel="noopener">Review drills or practice questions</a>' : ''}` : ''}`,
       `<button class="btn btn-primary" data-act="close">Done</button>`, { label: 'Clinical review', wide: true });
   }
   function ovAccount() {
@@ -2094,7 +2103,7 @@
     const done = ui.rankDone;
     const body = `<div class="nova-card">${face('nova')}<p class="dlg-text" style="margin:0">${done ? `"${r.every((p, i) => pr.correct[i] === p) ? 'Same order I\'d pick, top to bottom. Now go prove it.' : r[0] === pr.correct[0] ? 'Same first stop as me. We differ after that. I\'ll tell you where at the debrief.' : 'I\'d have started somewhere else. Keep your eyes open, and I\'ll show you my order at the debrief.'}"` : '"Before you move: who are you seeing first? Drag them into order. Don\'t overthink it. Think about who could get hurt fastest."'}</p></div>
       ${done ? '' : '<p class="rank-guide"><span><b>1</b> = see first</span><span class="rank-guide-line" aria-hidden="true"></span><span><b>' + r.length + '</b> = see last</span></p><p class="rank-how">Drag a card by its handle to move it. You can also use the arrows.</p>'}
-      <ol class="rank ${done ? 'done' : ''}" data-sort="rank" aria-describedby="rank-live">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" data-key="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}">${done ? '' : `<span class="grip" aria-hidden="true" title="Drag to reorder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`}<span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(liveDef(d).dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="Move ${d.short} up to ${i}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="Move ${d.short} down to ${i + 2}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol><p class="sr" id="rank-live" aria-live="polite"></p>`;
+      <ol class="rank ${done ? 'done' : ''}" data-sort="rank" aria-describedby="rank-live">${r.map((pid, i) => { const d = def(pid); const right = pr.correct[i] === pid; const ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'][i]; return `<li data-pid="${pid}" data-key="${pid}" class="${done ? (i === 0 ? (right ? 'right' : 'wrong') : 'settled') : ''} ${ui.rankMoved === pid ? 'moved' : ''}">${done ? '' : `<span class="grip" aria-hidden="true" title="Drag to reorder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`}<span class="n" aria-label="${ord}"><b>${i + 1}</b><small>${i === 0 ? 'first' : i === r.length - 1 ? 'last' : ord}</small></span>${pface(pid)}<span class="rk-who"><b>${d.room} ${esc(d.short)}</b> <small class="muted">${ageSex(d)}</small><br><small class="muted">${esc(liveDef(d).dx)}</small>${(() => { const fl = flagsFor(pid); return `<span class="rk-facts">${codeChip(d)}${shortAllergy(d)}${legal(d)}</span>${fl.length ? `<span class="rk-fl">${fl.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : ''}<button class="rk-peek" data-act="rank-peek" data-pid="${pid}" aria-expanded="${ui.peek === pid}">${ui.peek === pid ? 'Hide report' : 'Show report'}</button>${ui.peek === pid ? `<span class="rk-rep">${d.report.map((r, k) => `<span class="${s.brain.includes(pid + ':' + k) ? 'on' : ''}">${esc(r.text)}</span>`).join('')}</span>` : ''}`; })()}</span>${done ? '' : `<span class="mv"><button class="btn mv-up" data-act="rk" data-i="${i}" data-d="-1" aria-label="${i === 0 ? `${d.short} is already first` : `Move ${d.short} up to number ${i}`}" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn mv-dn" data-act="rk" data-i="${i}" data-d="1" aria-label="${i === r.length - 1 ? `${d.short} is already last` : `Move ${d.short} down to number ${i + 2}`}" ${i === r.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>`}</li>`; }).join('')}</ol><p class="sr" id="rank-live" aria-live="polite"></p>`;
     return sheet('Who first?', body, done ? `<button class="btn btn-primary" data-act="rank-go">Start the shift</button>` : `<button class="btn btn-primary" data-act="rank-submit">Lock in my order</button>`, { noClose: true, noScrimClose: true, wide: true });
   }
 
@@ -2496,10 +2505,21 @@
       if (el.dataset.hl) {
         const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = el.dataset.sys ? document.querySelector(`.pane .fs-row[data-sys="${el.dataset.sys}"]`) : null, bs = best ? 99 : 0;
         document.querySelectorAll('.pane .fs-row, .pane .mar-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
-        if (best) { best.classList.add('hl'); if (innerWidth <= 760) best.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); return; }
+        if (best) {
+          best.classList.add('hl');
+          if (innerWidth <= 760) {
+            // Land with the panel's heading just under the pinned header and tabs, so the rows above the pointed-at
+            // one (vital signs first) stay in sight; if the panel is too tall, put that row at the bottom of the view.
+            const pn = document.querySelector('.pane'), pin = pinned(), b = best.getBoundingClientRect();
+            let top = pn ? scrollY + pn.getBoundingClientRect().top - pin : null;
+            if (top === null || b.bottom - (top - scrollY) > innerHeight - 24) top = b.height > innerHeight - pin - 24 ? scrollY + b.top - pin : scrollY + b.bottom - (innerHeight - 24);
+            window.scrollTo({ top: Math.max(0, top), behavior: reduced() ? 'auto' : 'smooth' });
+          }
+          return;
+        }
       }
       // On a phone the panel sits below the scene: bring the chosen tab's content into view.
-      const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < 0) window.scrollTo({ top: scrollY + y - 190, behavior: reduced() ? 'auto' : 'smooth' }); }
+      const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < pinned()) window.scrollTo({ top: scrollY + y - pinned(), behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${lcFirst(x.label)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
@@ -2935,7 +2955,26 @@
     const h = ui.hold; ui.hold = null;
     if (h) { cancelAnimationFrame(h.raf); holdEls(h.k).forEach((b) => { b.classList.remove('holding'); b.style.removeProperty('--hp'); }); }
   }
+  // How much of the top of the screen the pinned header, patient strip and room tabs cover on a phone.
+  function pinned() {
+    let b = 0;
+    document.querySelectorAll('.top, .pstrip, .rail').forEach((x) => { const cs = getComputedStyle(x); if (cs.position === 'sticky' || cs.position === 'fixed') b = Math.max(b, (parseFloat(cs.top) || 0) + x.offsetHeight); });
+    return (b || 60) + 8;
+  }
+  // Keep Tab inside an open modal: the screen behind it is covered, so focus must not wander there.
+  function trapTab(e) {
+    const vis = (x) => { const r = x.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(x).visibility !== 'hidden'; };
+    const m = [...document.querySelectorAll('[role="dialog"][aria-modal="true"],[role="alertdialog"]')].filter(vis).pop(); if (!m) return false;
+    const f = [...m.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select,textarea,summary,[tabindex]:not([tabindex="-1"])')].filter((x) => vis(x) && !x.closest('[inert]'));
+    if (!f.length) return false;
+    const a = document.activeElement, first = f[0], last = f[f.length - 1];
+    if (!m.contains(a)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return true; }
+    if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); return true; }
+    if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); return true; }
+    return false;
+  }
   function onKey(e) {
+    if (e.key === 'Tab' && trapTab(e)) return;
     if (ui.view === 'drill' && DR && !ui.ov && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '') && DR.key(e)) return;
     if (e.key === 'Escape' && ui.ov === 'crit') { handlers['crit-x'](); return; }
     if (e.key === 'Escape' && ui.ov === 'result') { handlers['res-close'](); return; }

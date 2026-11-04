@@ -1,6 +1,6 @@
 /* The Shift — NCLEX question bank: standalone items in every NCLEX-RN Client Needs category (cn) and every clinical
    judgment step, with per-option rationale inline and a tip. Formats as in ngn.js plus mc (single best answer), order
-   (ordered response, all-or-nothing) and num (calculation). Written to current US standards and reviewed; needs nurse
+   (ordered response, all-or-nothing) and num (calculation). Written to current US standards; not yet clinically reviewed, needs nurse
    review before launch (see docs/CLINICAL-UPDATES.md). */
 window.Shift = window.Shift || {};
 window.Shift.ngnBank = [

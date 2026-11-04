@@ -90,6 +90,7 @@ pre{white-space:pre-wrap;background:var(--surface-2);border-radius:8px;padding:.
   if (!id) {   // index: pick a shift
     app.innerHTML = `<a class="home" href="/">The Shift</a><h1>Clinical review</h1>
       <p class="muted">Every patient, order and scored decision in each shift, laid out for a clinician to check. Pick the shift that matches your experience. A full review takes about an hour; you can stop and come back.</p>
+      <p><a href="/review/practice/">Reviewing drills or NCLEX practice questions instead? Those are in shorter packs here.</a></p>
       <div class="shifts">${IDS.map((k) => { const c = E.getCase(k), st = RV.status(k); return `<a href="/review/${k}/"><div class="card"><div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap"><h3>${esc(c.title)} · ${esc(c.level)}</h3><span class="chip ${st.state}">${esc(st.label)}</span></div><p class="muted" style="margin:.3rem 0 0">${esc(c.unit)} · ${c.patients.length} patients · ${ALL[k].length} scored decisions</p></div></a>`; }).join('')}</div>`;
     return;
   }
