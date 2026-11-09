@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Shift — nursing judgment, one decision at a time (beta)</title>
 <meta name="description" content="Free nursing clinical-judgment practice. Three-minute rounds: check before a med pass, decide who you see first, make the SBAR call, talk someone down. Every answer explained. Then work a whole shift.">
-<meta name="theme-color" content="#22406A">
+<meta name="theme-color" content="#2449A8">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#ECE9E1;--surface:#FAF8F3;--paper:#FFFEF9;--ink:#1C2330;--ink-2:#59606B;--line:#D3CEC2;--navy:#22406A;--navy-ink:#fff;--red:#B8281F;--yellow:#F2C12E;--pen:#2B4C8C;--grid:#E4E8EE;
+:root{--bg:#E6EDF0;--surface:#FBFCFC;--paper:#FFFFFF;--ink:#152238;--ink-2:#4D5A6F;--line:#CAD5DB;--navy:#2449A8;--navy-ink:#fff;--red:#B8281F;--yellow:#F2C12E;--pen:#2B4C8C;--grid:#E4E8EE;
   --sans:"Atkinson Hyperlegible Next",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"Atkinson Hyperlegible Mono",ui-monospace,Menlo,monospace;--sign:"Barlow Condensed","Arial Narrow",sans-serif;--hand:"Kalam","Segoe Print",cursive;--max:1120px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161C;--surface:#1A1F27;--paper:#1E242D;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--navy:#93B4E4;--navy-ink:#0F1B2C;--red:#F07A70;--pen:#9DB8EC;--grid:#262D38}}
 :root[data-theme="dark"]{--bg:#12161C;--surface:#1A1F27;--paper:#1E242D;--ink:#E7E4DB;--ink-2:#A0A5AE;--line:#343C48;--navy:#93B4E4;--navy-ink:#0F1B2C;--red:#F07A70;--pen:#9DB8EC;--grid:#262D38}
@@ -36,7 +36,7 @@ img{display:block;max-width:100%;height:auto}
 .top nav a.lnk{font-size:.95rem;color:var(--ink-2);text-decoration:none;padding:.5em .7em}
 .top nav a.lnk:hover{color:var(--ink);text-decoration:underline}
 @media (max-width:640px){.top nav a.lnk{display:none}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:46px;padding:.6em 1.2em;border-radius:3px;border:1px solid var(--ink);background:transparent;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:46px;padding:.6em 1.2em;border-radius:12px;border:1px solid var(--ink);background:transparent;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;color:var(--ink)}
 .btn:hover{background:var(--surface)}
 .btn-primary{background:var(--navy);border-color:var(--navy);color:var(--navy-ink)}
 .btn-primary:hover{background:var(--navy);filter:brightness(1.1)}
@@ -49,7 +49,7 @@ h3{font-size:1.45rem}
 .lede{font-size:1.12rem;color:var(--ink-2);margin:1.1rem 0 0;max-width:34rem}
 .cta{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.6rem;align-items:center}
 .meta{font-size:.92rem;color:var(--ink-2);margin:0}
-.shot{border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:3px;overflow:hidden;background:var(--surface);box-shadow:0 14px 30px -18px rgba(0,0,0,.45)}
+.shot{border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:12px;overflow:hidden;background:var(--surface);box-shadow:0 14px 30px -18px rgba(0,0,0,.45)}
 .cap{font-size:.92rem;color:var(--ink-2);margin:.7rem 0 0}
 .cap b{font-family:var(--mono);font-weight:600;color:var(--ink);font-size:.86rem}
 @media (max-width:860px){.hero{grid-template-columns:1fr}}
@@ -75,7 +75,7 @@ section{padding:clamp(3.5rem,8vw,6rem) 0 0}
 @media (max-width:860px){.tl-row{grid-template-columns:5rem minmax(0,1fr)}.tl-row .shot{grid-column:1/-1}}
 /* hero: the game on a phone */
 .hero-fig{margin:0;display:flex;flex-direction:column;align-items:center}
-.phone{width:min(300px,78vw);padding:10px;border-radius:34px;background:#1C2330;box-shadow:0 26px 50px -24px rgba(0,0,0,.6)}
+.phone{width:min(300px,78vw);padding:10px;border-radius:34px;background:#152238;box-shadow:0 26px 50px -24px rgba(0,0,0,.6)}
 .phone img{width:100%;border-radius:25px}
 .hero-fig .cap{max-width:300px;text-align:center}
 /* drills: four cards */
@@ -110,7 +110,7 @@ section{padding:clamp(3.5rem,8vw,6rem) 0 0}
 .signup h3{font-size:1.4rem}
 .signup>p{margin:.3rem 0 0!important;font-size:.98rem}
 .su-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:.6rem;margin-top:1rem}
-.su-row input,.su-row select{min-height:46px;padding:.5em .8em;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink);font:inherit;min-width:0;width:100%}
+.su-row input,.su-row select{min-height:46px;padding:.5em .8em;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;min-width:0;width:100%}
 @media (max-width:640px){.su-row{grid-template-columns:minmax(0,1fr)}}
 .su-msg{min-height:1.4em;font-size:.95rem!important;margin:.7rem 0 0!important}
 .su-msg.ok{color:var(--navy)!important;font-weight:700}.su-msg.err{color:var(--red)!important}

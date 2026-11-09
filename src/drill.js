@@ -177,7 +177,7 @@
 
   /* ---------- views ---------- */
   function topBar() {
-    const r = X.ui.dr, segs = r.deck.map((c, i) => `<i class="${i < r.i || (i === r.i && r.done) ? 'on' : i === r.i ? 'now' : ''}"></i>`).join('');
+    const r = X.ui.dr, segs = r.deck.map((c, i) => `<i class="${r.res[i] ? (r.res[i].ok ? 'on ok' : 'on no') : i < r.i ? 'on' : i === r.i ? 'now' : ''}"></i>`).join('');
     return `<header class="dr-top">
       <button class="icon-btn dr-x" data-act="dr-quit" aria-label="Quit this round">${X.ICON.close}</button>
       <div class="dr-prog" role="progressbar" aria-label="${KINDS[r.kind].name}, card ${Math.min(r.i + 1, r.deck.length)} of ${r.deck.length}" aria-valuemin="0" aria-valuemax="${r.deck.length}" aria-valuenow="${r.i}">${segs}</div>
@@ -196,6 +196,7 @@
     </footer>`;
   }
   // Adults read like a chart (58M). Children get their age in words, so "2M" is never mistaken for two months.
+  const tint = (id) => { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return 'tn-' + (h % 5); };
   const age = (p) => typeof p.a === 'string' ? p.a : p.k || p.a < 18 ? `${p.a} yr${p.a === 1 ? '' : 's'}` : `${p.a}${p.x || ''}`;
   const notOf = (o) => (o && !o.ok && o.w ? { not: o } : null);
   const who = (p) => `${E(p.n)}<small>${E(age(p))}</small>`;
@@ -208,12 +209,12 @@
         <p class="${checked.ok ? 'hit' : ''}"><span>You checked</span><b>${E(checked.t)}</b>${E(checked.v)}</p>
         ${checked.ok ? '' : `<p class="key"><span>What matters here</span><b>${E(key2.t)}</b>${E(key2.v)}</p>`}
       </div>` : '';
-    const opts = (list, ord, act, sel, done) => `<div class="dr-opts">${ord.map((i, n) => { const o = list[i]; const cls = done ? (o.ok ? 'right' : i === sel ? 'wrong' : 'dim') : ''; return `<button class="dr-opt ${cls}" data-act="${act}" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd><span>${E(o.t)}</span></button>`; }).join('')}</div>`;
+    const opts = (list, ord, act, sel, done) => `<div class="dr-opts">${ord.map((i, n) => { const o = list[i]; const cls = done ? (o.ok ? 'right' : i === sel ? 'wrong' : 'dim') : ''; return `<button class="dr-opt ${cls}" style="--n:${n}" data-act="${act}" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd><span>${E(o.t)}</span></button>`; }).join('')}</div>`;
     const done = st.stage === 'done', ok = done && !!k.pick[st.pick].ok;
     return `<main class="dr-main">
       ${chip('med')}
       <section class="dr-scene">
-        <div class="dr-bust">${X.R.bust(key, v, 'dr-face')}</div>
+        <div class="dr-bust ${tint(k.id)}">${X.R.bust(key, v, 'dr-face')}</div>
         <div class="dr-who"><h2>${who(k.p)}</h2>
           <div class="dr-rx"><span class="dr-pill" aria-hidden="true"></span><span><b>${E(k.med)}</b><small>${E(k.for)}</small></span></div>
           <p class="dr-line">${E(k.line)}</p></div>
@@ -231,7 +232,7 @@
       <p class="dr-where">${E(k.where)}</p>
       <h3 class="dr-q big">${E(k.q)}</h3>
       <div class="dr-four">${st.po.map((i, n) => { const x = k.pts[i], key = face(`dr-${k.id}-${i}`, x.p), cls = done ? (x.ok ? 'right' : i === st.pick ? 'wrong' : 'dim') : '';
-        return `<button class="dr-pt ${cls}" data-act="dr-pick" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd>${X.R.bust(key, done && x.ok && !ok ? { pain: 6, anxious: .6, pale: .4 } : null, 'dr-pface')}<span class="dr-pt-t"><b>${who(x.p)}</b><span>${E(x.line)}</span></span></button>`; }).join('')}</div>
+        return `<button class="dr-pt tn-${(n + k.id.length) % 5} ${cls}" style="--n:${n}" data-act="dr-pick" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd>${X.R.bust(key, done && x.ok && !ok ? { pain: 6, anxious: .6, pale: .4 } : null, 'dr-pface')}<span class="dr-pt-t"><b>${who(x.p)}</b><span>${E(x.line)}</span></span></button>`; }).join('')}</div>
     </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pts[st.pick] && { t: k.pts[st.pick].p.n, w: k.pts[st.pick].w, ok: k.pts[st.pick].ok })) : ''}`;
   }
 
@@ -248,13 +249,13 @@
     return `<main class="dr-main dr-chat">
       ${chip('sbar')}
       <section class="dr-stage">
-        <div class="dr-bust sm">${X.R.bust(key, v, 'dr-face')}</div>
+        <div class="dr-bust sm ${tint(k.id)}">${X.R.bust(key, v, 'dr-face')}</div>
         <div><h2>${who(k.p)}</h2><p class="dr-line">${E(k.setup)}</p><p class="dr-to">Calling <b>${E(k.to)}</b> · ${E(k.at)}</p></div>
       </section>
       <ol class="dr-sbar-steps" aria-label="SBAR progress">${k.steps.map((x, i) => `<li class="${i < st.step || fin ? 'on' : i === st.step ? 'now' : ''}"><b>${E(x.k)}</b><span>${E(NAMES[x.k] || '')}</span></li>`).join('')}</ol>
       <ul class="dr-log">${said}${prompt}${reply}</ul>
       ${s ? (st.miss !== null ? `<div class="dr-miss"><p class="dr-wrongline"><span>You said</span>${E(s.o[st.miss].t)}</p>${s.o[st.miss].w ? `<p class="dr-whynot">${E(s.o[st.miss].w)}</p>` : ''}<p class="dr-betterline"><span>Say this instead</span>${E(s.o.find((o) => o.ok).t)}</p><button class="btn btn-primary btn-go" data-act="dr-fix">Say it this way <span aria-hidden="true">→</span></button></div>`
-        : `<h3 class="dr-q"><span class="dr-sk">${E(s.k)}</span>${E(s.q)}</h3><div class="dr-opts">${st.oo[st.step].map((i, n) => `<button class="dr-opt" data-act="dr-say" data-i="${i}"><kbd>${n + 1}</kbd><span>${E(s.o[i].t)}</span></button>`).join('')}</div>`) : ''}
+        : `<h3 class="dr-q"><span class="dr-sk">${E(s.k)}</span>${E(s.q)}</h3><div class="dr-opts">${st.oo[st.step].map((i, n) => `<button class="dr-opt" style="--n:${n}" data-act="dr-say" data-i="${i}"><kbd>${n + 1}</kbd><span>${E(s.o[i].t)}</span></button>`).join('')}</div>`) : ''}
     </main>${fin ? verdict(ok, ok ? (st.wrong ? 'One line needed fixing, but the call landed.' : 'Clean call: every line earned its place.') : `${st.wrong} lines needed fixing. Read the call above: that's the model.`, k.pearl) : ''}`;
   }
 
@@ -272,12 +273,12 @@
     return `<main class="dr-main dr-chat">
       ${chip('calm')}
       <section class="dr-stage sticky">
-        <div class="dr-bust sm">${X.R.bust(key, vEnd, 'dr-face')}</div>
+        <div class="dr-bust sm ${tint(k.id)}">${X.R.bust(key, vEnd, 'dr-face')}</div>
         <div><h2>${who(k.p)}</h2><p class="dr-where">${E(k.where)}</p>${meter(st.m)}</div>
       </section>
       ${st.log.length ? '' : `<p class="dr-line setup">${E(k.setup)}</p>`}
       <ul class="dr-log">${log}${t ? `<li class="them now">${E(t.say)}</li>` : ''}${fin ? `<li class="them end ${win ? 'ok' : 'no'}">${E(st.crisis ? k.lose : outcomeLine('calm', k, st, win))}</li>` : ''}</ul>
-      ${t ? `<h3 class="dr-q">What do you say?</h3><div class="dr-opts">${st.oo[st.turn].map((i, n) => `<button class="dr-opt" data-act="dr-calm" data-i="${i}"><kbd>${n + 1}</kbd><span>${E(t.o[i].t)}</span></button>`).join('')}</div>` : ''}
+      ${t ? `<h3 class="dr-q">What do you say?</h3><div class="dr-opts">${st.oo[st.turn].map((i, n) => `<button class="dr-opt" style="--n:${n}" data-act="dr-calm" data-i="${i}"><kbd>${n + 1}</kbd><span>${E(t.o[i].t)}</span></button>`).join('')}</div>` : ''}
     </main>${fin ? verdict(win, st.crisis ? 'It tipped into a crisis. Look for the line that raised the meter most, and the better line under it.' : win ? 'You brought it down without force.' : 'It didn\'t settle. The "Better" lines show what would have.', k.pearl) : ''}`;
   }
 
@@ -313,7 +314,14 @@
     let body = '';
     if (r.done) body = vResult();
     else { const c = r.deck[r.i], k = card(c.kind, c.id), st = r.c; body = c.kind === 'med' ? vMed(k, st) : c.kind === 'first' ? vFirst(k, st) : c.kind === 'sbar' ? vSbar(k, st) : vCalm(k, st); }
-    return `<div class="dr k-${KINDS[r.done ? r.kind : r.deck[r.i].kind].color}">${r.done ? `<header class="dr-top"><button class="icon-btn dr-x" data-act="dr-quit" aria-label="Home">${X.ICON.close}</button><div class="dr-prog done">${r.deck.map(() => '<i class="on"></i>').join('')}</div><span></span></header>` : topBar()}${body}</div>`;
+    // A new card, and each new question on it, arrives once: the patient settles in and the options are dealt in order.
+    // A redraw of the same question (a pick, a setting) must not replay it.
+    let fresh = '';
+    if (!r.done) { const st = r.c, c = r.deck[r.i], open = c.kind === 'med' ? st.stage !== 'done' : c.kind === 'first' ? st.pick === null : !st.done;
+      const sig = `${r.i}:${st.stage || ''}:${st.step === undefined ? '' : st.step}:${st.turn === undefined ? '' : st.turn}:${st.miss === undefined ? '' : st.miss}`;
+      if (open && r.dealt !== sig) fresh = ' q-new'; if (r.dealtCard !== r.i) { fresh += ' c-new'; r.dealtCard = r.i; } r.dealt = sig; }
+    else if (!r.resShown) { r.resShown = true; fresh = ' c-new'; }
+    return `<div class="dr k-${KINDS[r.done ? r.kind : r.deck[r.i].kind].color}${fresh}">${r.done ? `<header class="dr-top"><button class="icon-btn dr-x" data-act="dr-quit" aria-label="Home">${X.ICON.close}</button><div class="dr-prog done">${r.deck.map((c, i) => `<i class="on ${r.res[i] ? (r.res[i].ok ? 'ok' : 'no') : ''}"></i>`).join('')}</div><span></span></header>` : topBar()}${body}</div>`;
   }
   /* After a redraw, bring what just happened into view once: the answer panel (with the options above it when it
      fits), or the next question. The first screen of a card starts at the top. */
@@ -345,7 +353,7 @@
   }
   /* The home screen's cast: three patients waiting on you, breathing. */
   function cast() {
-    return ['mp-lispro-low', 'mp-metoprolol', 'mp-morphine-sed'].map((id, i) => { const k = card('med', id); return k ? `<span class="h2-p p${i}">${X.R.bust(face('dr-' + id, k.p), i === 1 ? { pale: .2 } : null, 'dr-face')}</span>` : ''; }).join('');
+    return ['mp-lispro-low', 'mp-metoprolol', 'mp-morphine-sed'].map((id, i) => { const k = card('med', id); return k ? `<span class="h2-p p${i} tn-${[0, 2, 1][i]}">${X.R.bust(face('dr-' + id, k.p), i === 1 ? { pale: .2 } : null, 'dr-face')}</span>` : ''; }).join('');
   }
   /* What the home screen needs. */
   function summary() { return { kinds: ORDER.map((k) => Object.assign({ k }, KINDS[k], mastery(k), { rounds: P().rounds[k] || 0, best: P().best[k] || 0 })), streak: streak(), today: playedToday(), rounds: Object.values(P().rounds).reduce((a, b) => a + b, 0), mix: KINDS.mix, hard: ORDER.reduce((n, k) => n + D()[k].filter((x) => x.lv >= 2).length, 0) }; }
