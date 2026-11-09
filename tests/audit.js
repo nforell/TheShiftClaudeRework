@@ -34,7 +34,7 @@
     if (el instanceof SVGElement && hit && !(el === hit || el.contains(hit))) { for (let gx = 1; gx < 6 && !(el === hit || el.contains(hit)); gx++) for (let gy = 1; gy < 6; gy++) { const h2 = document.elementFromPoint(r.left + r.width * gx / 6, r.top + r.height * gy / 6); if (h2 && (el === h2 || el.contains(h2))) { hit = h2; break; } } }
     if (hit && hit.closest('.toast')) return;
     if (el.classList && el.classList.contains('clue') && document.querySelector(`.lookaround .look[data-id="${el.dataset.id}"]`) && getComputedStyle(document.querySelector('.lookaround')).display !== 'none') return;   // reachable from the Look at chips   // messages pass by; they aren't layout
-    if (hit && hit.closest('.top,.pstrip,.rail') && !el.closest('.top,.pstrip,.rail')) return;   // passing under the sticky header while scrolled
+    if (hit && hit.closest('.top,.pstrip,.rail,.dr-top') && !el.closest('.top,.pstrip,.rail,.dr-top')) return;   // passing under the sticky header while scrolled
     if (hit && !(el === hit || el.contains(hit) || (hit.closest('[data-act]') === el))) { const hc = hit.closest('[data-act]'); if (!(hc && hc !== el && el.contains(hc))) out.covered.push(label(el) + ' under ' + label(hit)); }
     // Target size. WCAG 2.5.8 (AA): every control at least 24×24. On phones (≤480px wide) a thumb needs a 44px-tall box (2.5.5)
     // and at least 24px across. Documented exceptions: scene hotspots inside the room SVG (each one has a full-size "Look at" chip),

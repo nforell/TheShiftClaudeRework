@@ -2942,10 +2942,10 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 /* ---------- Home ---------- */
 .wb{--wb-frame:#C3CCD3;border-radius:22px;border-width:7px;box-shadow:inset 0 0 0 1px #DCE2E6,var(--lift)}
 .wb-tray{border-radius:0 0 14px 14px}
-.wb-faces{gap:.6rem;height:72px}
-.wb-faces .h2-p{width:72px;height:72px;border-radius:22px;background:linear-gradient(var(--tn,var(--tint-0)) 0 70%,color-mix(in srgb,var(--tn,var(--tint-0)) 84%,var(--ink)) 70%);box-shadow:none}
+.wb-faces{gap:.6rem;height:66px}
+.wb-faces .h2-p{width:66px;height:66px;border-radius:20px;background:linear-gradient(var(--tn,var(--tint-0)) 0 70%,color-mix(in srgb,var(--tn,var(--tint-0)) 84%,var(--ink)) 70%);box-shadow:none}
 .wb-faces .h2-p:nth-child(2){transform:translateY(3px) rotate(2deg)}.wb-faces .h2-p:nth-child(1){transform:rotate(-3deg)}.wb-faces .h2-p:nth-child(3){transform:rotate(1.5deg)}
-.h2-play,.h2-shift{min-height:66px;border-radius:18px;padding:.55rem 1.1rem .55rem .65rem}
+.h2-play,.h2-shift{min-height:62px;border-radius:18px;padding:.55rem 1.1rem .55rem .65rem}
 .h2-play b,.h2-shift b{font-size:1.6rem}
 .h2-shift{box-shadow:0 3px 0 #000}
 .h2-shift:active{box-shadow:0 0 0 #000;transform:translateY(3px)}
@@ -2955,7 +2955,7 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 .bb:active{transform:translateY(4px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 0 0 color-mix(in srgb,var(--k) 68%,#000)}
 .bb-bar{height:6px;border-radius:3px}
 .h2-deep{border-top:0;gap:.7rem clamp(.7rem,2vw,1.1rem)}
-.h2-row{padding:.85rem 1rem;border:0;border-radius:16px;background:var(--paper);box-shadow:var(--shadow);transition:transform .09s,box-shadow .15s}
+.h2-row{padding:.7rem 1rem;border:0;border-radius:16px;background:var(--paper);box-shadow:var(--shadow);transition:transform .09s,box-shadow .15s}
 .h2-row:hover{box-shadow:var(--lift)}.h2-row:hover b{text-decoration:none}
 .h2-row:active{transform:translateY(2px)}
 .h2 .homefoot{border-top:0;opacity:.9}
@@ -3005,3 +3005,6 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 :root[data-theme="dark"] .board{border-color:#3E4652;box-shadow:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .board{border-color:#3E4652;box-shadow:none}}
 :root[data-lite] .dr-top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:var(--bg)}
+@media (min-width:861px){.h2-sec{margin-top:2rem}}
+/* the gap between two messages never swallows a tap meant for the page behind it */
+.toasts{pointer-events:none}.toast{pointer-events:auto}
