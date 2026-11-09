@@ -59,7 +59,7 @@ html=f'''<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Shift — a nursing shift simulator</title>
 <meta name="description" content="Work a real nursing shift: med-surg, step-down, ED, mother-baby, psych and peds. Take report, walk the hall, and decide who needs you first. Your patients get better or worse based on what you notice.">
-<meta name="theme-color" content="#22406A">
+<meta name="theme-color" content="#2449A8">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Shift"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta property="og:title" content="The Shift — a nursing shift simulator">

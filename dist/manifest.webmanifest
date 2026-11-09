@@ -7,8 +7,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#ECE9E1",
-  "theme_color": "#22406A",
+  "background_color": "#E6EDF0",
+  "theme_color": "#2449A8",
   "categories": ["education", "medical", "games"],
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

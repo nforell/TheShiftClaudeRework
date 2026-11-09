@@ -90,6 +90,14 @@ Source is plain JavaScript on a global `window.Shift` object:
 | `src/ui.js` | Screens and interaction |
 | `src/styles.css` | Styles and theme tokens |
 
+### Look and feel
+
+The look is "daylight on the unit": cool morning light on the walls, white paper, scrub-blue ink, and the patients as the only warm thing on screen. The tokens are the first lines of `src/styles.css` (colors, `--r`/`--rc` radii, `--shadow`/`--lift`, the five `--tint-*` portrait backdrops), and the last section of that file ("Daylight on the unit") dresses the components. Three rules keep new screens consistent:
+
+- **Round like the characters.** Controls use 12px, cards 16 to 22px, tags are pills. No square corners.
+- **Things you press have an edge.** Buttons and answer cards carry a solid bottom edge (`box-shadow: 0 3px 0 ...`) and move down onto it when pressed. Put this on the base rule (`.btn`, `.dr-opt`), not in a late override, so colored variants keep their own background.
+- **Arrive once.** A new card or question gets `c-new` / `q-new` from `drill.js` for one redraw, so entrances never replay when the same screen is redrawn. Sheets come up from the bottom on phones.
+
 Rebuild after editing:
 
 ```
