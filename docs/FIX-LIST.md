@@ -30,6 +30,7 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 | 13 | **Station is busy on a phone.** Proposal: Next card, skip ahead and the patient list stay; goals, "Everything due", unit phone and the aide/doctor rows fold into the header buttons that already exist for them. | `src/ui.js` station | todo, **needs Nick's OK** |
 | 14 | **Room has six tabs and nine assessments.** Proposal: lead with "Full head-to-toe" and "Vital signs", fold the single systems under "Focused assessment". | `src/ui.js` room | todo, **needs Nick's OK** |
 | 15 | **First run.** The terms sheet is the first thing a new player sees, and the orientation is eight steps with a long first bubble. Proposal: show terms when Play is first tapped (not on load), cut the first orientation bubble to two sentences. Terms wording itself needs a lawyer, not an edit. | `src/ui.js`, `src/orient.js` | todo, **needs Nick's OK** |
+| 17 | **Duplicate option.** Med Pass card `mp-pcn` offered "Temperature" twice. Replaced one; add a duplicate-option check to `tests/drills.py` with the item 5 threshold. | `src/drills-content.js` | done (card); test todo |
 | 16 | **Clinical sign-offs.** `src/review.js` and `src/review-items.json` have no reviewers: all 11 shifts and every practice item show "Awaiting clinical review". Not a code fix. Everything rewritten under items 5 to 8 changes content, so reviewers should get the links after this branch merges. | Nick, reviewers | open |
 
 ## Progress notes
@@ -38,9 +39,9 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 
 Order: SBAR, then De-escalation, then Med Pass checks, then Who's First, file by file. Tick each when its lists are rewritten and `node tools/length_tell.js` shows the file inside target.
 
-- [ ] `src/drills-content.js`: sbar
-- [ ] `src/drills-content.js`: calm
-- [ ] `src/drills-content.js`: med (check lists), first
+- [x] `src/drills-content.js`: sbar
+- [x] `src/drills-content.js`: calm
+- [x] `src/drills-content.js`: med (check lists), first (now: check 35%, sbar 28%, calm 34%, first 33%)
 - [ ] `src/drills-more-1.js`
 - [ ] `src/drills-more-2.js`
 - [ ] `src/drills-nclex-1.js`
@@ -48,5 +49,7 @@ Order: SBAR, then De-escalation, then Med Pass checks, then Who's First, file by
 - [ ] any other `src/drills-*.js`
 - [ ] threshold added to `tests/drills.py`
 - [ ] `docs/DRILLS-REVIEW.md` regenerated (`node tools/drills_doc.js`)
+
+How the rewrites are applied: write a JSON list of `[old text, new text]` pairs (or `[old, new, card id]` for short labels that repeat) and run `python3 tools/apply_rewrites.py src/<file>.js patch.json`. It refuses to write unless every pair matches exactly once, so nothing is half-applied. To see every option with its length: the lists print from `window.Shift.drillData` (see `tools/length_tell.js` for how the files are loaded).
 
 Writing rules for the rewrites: a wrong option stays something a nurse might really say or do; it gets longer by adding a specific that is wrong or beside the point (a real vital sign that isn't the worrying one, a plausible but late plan), never filler. Its `w` explanation must still be true of the new wording. Don't change which option is right, ids, or anything the face/vitals read.
