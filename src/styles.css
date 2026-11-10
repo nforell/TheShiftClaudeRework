@@ -3008,3 +3008,12 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 @media (min-width:861px){.h2-sec{margin-top:2rem}}
 /* the gap between two messages never swallows a tap meant for the page behind it */
 .toasts{pointer-events:none}.toast{pointer-events:auto}
+
+/* Debrief: the detail (score working, skills, every moment, XP, lessons) opens from one button, so the first view is
+   the score, the decision that mattered, the patients and what to do next. */
+.deb-more-b{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:60px;margin:0 0 1.4rem;padding:.8rem 1.1rem;border:1.5px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.deb-more-b b{display:block;font-size:1rem}
+.deb-more-b small{display:block;margin-top:.1rem;color:var(--ink-2);font-size:.85rem}
+.deb-more-c{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-2);font-size:1.3rem;line-height:1}
+.deb-more-b[aria-expanded="true"]{border-color:color-mix(in srgb,var(--teal) 45%,var(--line))}
+@media (hover:hover){.deb-more-b:hover{border-color:var(--teal)}}
