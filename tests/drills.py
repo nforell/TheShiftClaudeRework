@@ -141,5 +141,13 @@ with sync_playwright() as p:
         ctx.close()
     check(not errs, f'no page errors ({errs[:2]})')
     b.close()
+# The right answer must not be guessable by length: per drill, it is the longest option 20 to 50% of the time
+# (chance is 25 to 33%) and averages 0.75 to 1.35 times the length of the wrong ones. See tools/length_tell.js.
+import subprocess, json as _json
+_t = _json.loads(subprocess.run(['node', str(ROOT / 'tools' / 'length_tell.js'), '--json'], capture_output=True, text=True).stdout or '{}')
+for _k, _r in (_t.get('total') or {}).items():
+    check(20 <= _r['longestPct'] <= 50 and 0.75 <= _r['ratio'] <= 1.35, f"{_k}: right answer is the longest {_r['longestPct']}% of the time, length ratio {_r['ratio']}")
+check(bool(_t.get('total')), 'answer-length check ran')
+check(not _t.get('dupes'), f"no option repeated inside one question ({(_t.get('dupes') or [])[:3]})")
 print(('FAIL ' if fails else 'ok   ') + f'drills: {len(fails)} failed')
 sys.exit(1 if fails else 0)

@@ -19,7 +19,7 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 | 2 | **Outcome ignores whether you escalated.** Mr. Ortiz's bradycardia read "resolving" whether or not the provider was ever told. | `src/case-medsurg1.js` | done (this patient) |
 | 3 | **De-escalation ending contradicts the last line.** A round that finished on a line that worked could still end "hold and injection". | `src/drill.js` `outcomeLine` | done |
 | 4 | **SBAR correction "no doses"** on a read-back whose model answer has no doses either. | `src/drills-content.js` | done |
-| 5 | **The longest answer is the right one.** Start of sweep: SBAR 98%, De-escalation 95%, Med Pass "check first" 78%, Who's First 56% (chance is 25 to 33%). Rewrite wrong options so they are as long and as specific as the right one (a plausible but wrong detail, not padding), and trim right answers that over-explain. Target: under 45% per drill, and right-to-wrong length ratio between 0.8 and 1.25. | `src/drills-content.js`, `src/drills-more-*.js`, `src/drills-nclex-*.js` | **in progress** |
+| 5 | **The longest answer is the right one.** Start of sweep: SBAR 98%, De-escalation 95%, Med Pass "check first" 78%, Who's First 56% (chance is 25 to 33%). Rewrite wrong options so they are as long and as specific as the right one (a plausible but wrong detail, not padding), and trim right answers that over-explain. Target: 25 to 45% per drill (0% is a tell too: the right answer must sometimes be the longest), and right-to-wrong length ratio between 0.8 and 1.25. | `src/drills-content.js`, `src/drills-more-*.js`, `src/drills-nclex-*.js` | done |
 | 6 | Same tell in the full shifts: in-shift SBAR recommendations and dialog choices. Measure first, then fix the worst. | `src/case-*.js`, `src/stories/*.js` | todo |
 | 7 | Same tell in NCLEX practice (bank, case studies, challenge and focus items). Measure first. | `src/ngn-*.js` | todo |
 | 8 | **Outcome audit, every shift.** For each patient outcome with fixed wording after a player error, check it reads differently when the error was reported and treated versus never called (as item 2 did for one patient). | `src/case-*.js` `outcome()` | todo |
@@ -30,7 +30,7 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 | 13 | **Station is busy on a phone.** Proposal: Next card, skip ahead and the patient list stay; goals, "Everything due", unit phone and the aide/doctor rows fold into the header buttons that already exist for them. | `src/ui.js` station | todo, **needs Nick's OK** |
 | 14 | **Room has six tabs and nine assessments.** Proposal: lead with "Full head-to-toe" and "Vital signs", fold the single systems under "Focused assessment". | `src/ui.js` room | todo, **needs Nick's OK** |
 | 15 | **First run.** The terms sheet is the first thing a new player sees, and the orientation is eight steps with a long first bubble. Proposal: show terms when Play is first tapped (not on load), cut the first orientation bubble to two sentences. Terms wording itself needs a lawyer, not an edit. | `src/ui.js`, `src/orient.js` | todo, **needs Nick's OK** |
-| 17 | **Duplicate option.** Med Pass card `mp-pcn` offered "Temperature" twice. Replaced one; add a duplicate-option check to `tests/drills.py` with the item 5 threshold. | `src/drills-content.js` | done (card); test todo |
+| 17 | **Duplicate option.** Med Pass card `mp-pcn` offered "Temperature" twice. Replaced one; add a duplicate-option check to `tests/drills.py` with the item 5 threshold. | `src/drills-content.js` | done |
 | 16 | **Clinical sign-offs.** `src/review.js` and `src/review-items.json` have no reviewers: all 11 shifts and every practice item show "Awaiting clinical review". Not a code fix. Everything rewritten under items 5 to 8 changes content, so reviewers should get the links after this branch merges. | Nick, reviewers | open |
 
 ## Progress notes
@@ -42,13 +42,15 @@ Order: SBAR, then De-escalation, then Med Pass checks, then Who's First, file by
 - [x] `src/drills-content.js`: sbar
 - [x] `src/drills-content.js`: calm
 - [x] `src/drills-content.js`: med (check lists), first (now: check 35%, sbar 28%, calm 34%, first 33%)
-- [ ] `src/drills-more-1.js`
+- [x] `src/drills-more-1.js` (check 35%, first 29%; give/hold/call picks 55%, left as is)
 - [x] `src/drills-more-2.js` (now: sbar 38%, calm 44%)
-- [ ] `src/drills-nclex-1.js`
-- [ ] `src/drills-nclex-2.js`
-- [ ] any other `src/drills-*.js`
-- [ ] threshold added to `tests/drills.py`
-- [ ] `docs/DRILLS-REVIEW.md` regenerated (`node tools/drills_doc.js`)
+- [x] `src/drills-nclex-1.js`
+- [x] `src/drills-nclex-2.js` (now: sbar 35%, calm about 38%)
+- [x] any other `src/drills-*.js` (none)
+- [x] threshold added to `tests/drills.py` (20 to 50% longest, ratio 0.75 to 1.35, no repeated option)
+- [x] `docs/DRILLS-REVIEW.md` regenerated (`node tools/drills_doc.js`)
+
+End state, all drills: Med Pass checks 34%, give/hold/call 32%, Who's First 33%, SBAR 33%, De-escalation 39%. About 430 wrong options were lengthened; no right answer, id or explanation logic changed except four `w` lines that had to follow their option. **These rewrites are new clinical wording and need the same nurse review as the rest (item 16).**
 
 How the rewrites are applied: write a JSON list of `[old text, new text]` pairs (or `[old, new, card id]` for short labels that repeat) and run `python3 tools/apply_rewrites.py src/<file>.js patch.json`. It refuses to write unless every pair matches exactly once, so nothing is half-applied. To see every option with its length: the lists print from `window.Shift.drillData` (see `tools/length_tell.js` for how the files are loaded).
 

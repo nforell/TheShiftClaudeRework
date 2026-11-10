@@ -19,14 +19,14 @@ function add(bucket, key, o) {
   const L = o.map((x) => txt(x).length), n = txt(g[0]).length, s = (bucket[key] = bucket[key] || { n: 0, longest: 0, ratio: 0 });
   s.n++; if (n === Math.max(...L) && L.filter((x) => x === n).length === 1) s.longest++; s.ratio += n / ((L.reduce((a, b) => a + b) - n) / (o.length - 1));
 }
-const total = {};
+const total = {}, dupes = [];
 for (const f of files) {
   const seen = {}; for (const k in (window.Shift.drillData || {})) seen[k] = window.Shift.drillData[k].length;
   eval(fs.readFileSync(path.join(SRC, f), 'utf8'));
   const D = window.Shift.drillData || {}; per[f] = {};
-  for (const k in D) D[k].slice(seen[k] || 0).forEach((c) => lists(c, k).forEach(([key, o]) => { add(per[f], key, o); add(total, key, o); }));
+  for (const k in D) D[k].slice(seen[k] || 0).forEach((c) => lists(c, k).forEach(([key, o]) => { add(per[f], key, o); add(total, key, o); const t = o.map(txt); if (new Set(t).size !== t.length) dupes.push(c.id + ' ' + key); }));
 }
 const row = (s) => ({ lists: s.n, longestPct: Math.round(100 * s.longest / s.n), ratio: +(s.ratio / s.n).toFixed(2) });
-const out = { total: Object.fromEntries(Object.entries(total).map(([k, s]) => [k, row(s)])), files: Object.fromEntries(Object.entries(per).map(([f, b]) => [f, Object.fromEntries(Object.entries(b).map(([k, s]) => [k, row(s)]))])) };
+const out = { dupes, total: Object.fromEntries(Object.entries(total).map(([k, s]) => [k, row(s)])), files: Object.fromEntries(Object.entries(per).map(([f, b]) => [f, Object.fromEntries(Object.entries(b).map(([k, s]) => [k, row(s)]))])) };
 if (process.argv.includes('--json')) console.log(JSON.stringify(out));
-else { for (const [f, b] of [['ALL', out.total], ...Object.entries(out.files)]) { console.log(f); for (const [k, r] of Object.entries(b)) console.log('  ' + k.padEnd(10), String(r.lists).padStart(4), 'lists   right is longest', String(r.longestPct).padStart(3) + '%   length right/wrong', r.ratio); } }
+else { if (dupes.length) console.log('DUPLICATE OPTIONS:', dupes.join(', ')); for (const [f, b] of [['ALL', out.total], ...Object.entries(out.files)]) { console.log(f); for (const [k, r] of Object.entries(b)) console.log('  ' + k.padEnd(10), String(r.lists).padStart(4), 'lists   right is longest', String(r.longestPct).padStart(3) + '%   length right/wrong', r.ratio); } }
