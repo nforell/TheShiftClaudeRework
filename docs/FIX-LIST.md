@@ -20,8 +20,8 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 | 3 | **De-escalation ending contradicts the last line.** A round that finished on a line that worked could still end "hold and injection". | `src/drill.js` `outcomeLine` | done |
 | 4 | **SBAR correction "no doses"** on a read-back whose model answer has no doses either. | `src/drills-content.js` | done |
 | 5 | **The longest answer is the right one.** Start of sweep: SBAR 98%, De-escalation 95%, Med Pass "check first" 78%, Who's First 56% (chance is 25 to 33%). Rewrite wrong options so they are as long and as specific as the right one (a plausible but wrong detail, not padding), and trim right answers that over-explain. Target: 25 to 45% per drill (0% is a tell too: the right answer must sometimes be the longest), and right-to-wrong length ratio between 0.8 and 1.25. | `src/drills-content.js`, `src/drills-more-*.js`, `src/drills-nclex-*.js` | done |
-| 6 | Same tell in the full shifts: in-shift SBAR recommendations and dialog choices. Measure first, then fix the worst. | `src/case-*.js`, `src/stories/*.js` | todo |
-| 7 | Same tell in NCLEX practice (bank, case studies, challenge and focus items). Measure first. | `src/ngn-*.js` | todo |
+| 6 | Same tell in the full shifts: in-shift SBAR recommendations, dialog choices, floor calls. Not measured yet: these use other shapes (`choices` with `judge`, SBAR `recs`), so `tools/length_tell_all.js` needs a reader for each before it can count them. Measure, then fix the worst files. | `src/case-*.js`, `src/floor*.js`, `src/stories/*.js` | todo |
+| 7 | Same tell in NCLEX practice. Measured: the bank's 53 single-answer questions have the right answer longest 64% of the time (ratio 1.37). Not yet measured: case studies, challenge and focus items, and the select-all / matrix / bowtie formats (`tools/length_tell_all.js` only recognizes lists with one `ok` option; extend it per format before rewriting). | `src/ngn-*.js` | **next up** |
 | 8 | **Outcome audit, every shift.** For each patient outcome with fixed wording after a player error, check it reads differently when the error was reported and treated versus never called (as item 2 did for one patient). | `src/case-*.js` `outcome()` | todo |
 | 9 | **Stale result banner.** The last assessment's result ("07:23 → 07:26 · +3 min …") stays at the top of the room tabs after later actions and after a provider call. Clear it on the next action or tab change. | `src/ui.js` | todo |
 | 10 | **Hover styles stick on touch screens.** 71 `:hover` rules, none behind `@media (hover: hover)`; in the phone emulator an answer card under the last tap looks pre-selected. Wrap them. Check on a real phone. | `src/styles.css` | todo |
@@ -32,6 +32,10 @@ Measuring the answer-length tell (item 5): `node tools/length_tell.js` prints, p
 | 15 | **First run.** The terms sheet is the first thing a new player sees, and the orientation is eight steps with a long first bubble. Proposal: show terms when Play is first tapped (not on load), cut the first orientation bubble to two sentences. Terms wording itself needs a lawyer, not an edit. | `src/ui.js`, `src/orient.js` | todo, **needs Nick's OK** |
 | 17 | **Duplicate option.** Med Pass card `mp-pcn` offered "Temperature" twice. Replaced one; add a duplicate-option check to `tests/drills.py` with the item 5 threshold. | `src/drills-content.js` | done |
 | 16 | **Clinical sign-offs.** `src/review.js` and `src/review-items.json` have no reviewers: all 11 shifts and every practice item show "Awaiting clinical review". Not a code fix. Everything rewritten under items 5 to 8 changes content, so reviewers should get the links after this branch merges. | Nick, reviewers | open |
+
+## Where this stopped (Nov 10)
+
+Items 1 to 5 and 17 are done, built, tested and pushed. Next is item 7 (the bank's 53 single-answer questions first, same method as item 5), then 6, 8, 9, 10, 11. Items 12 to 15 wait for Nick's OK. The full suite (`python3 tests/run_all.py`) was last run clean before this branch; since then `drills`, `guide`, `debrief_truth`, `pacing`, `review`, `practice`, the Shift 1 follow-up check and a Shift 1 phone sweep have been rerun clean. Run the full suite before opening the pull request.
 
 ## Progress notes
 
