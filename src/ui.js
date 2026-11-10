@@ -2374,7 +2374,8 @@
     const run = (k) => {
       if (k === 'vitals') {
         const pv = P.vit.filter((x) => x.by === 'You').pop();
-        if (pv && s.t - pv.t <= 8 && d.status(s, P, A()) === 'stable') { const nv = A().vitals(d.id); if (['HR', 'SBP', 'RR', 'SpO2'].every((q) => Math.abs(nv[q] - pv[q]) <= 3)) A().judge(d.id + '-repeat', 'time', -1, `You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.`, 'Recheck vitals when you expect a change: after a med, an intervention, or a new symptom. Otherwise the time goes to someone who needs it.', d.id); }
+        const ordered = (s.watch || []).some((w) => { if (w.pid !== d.id || !w.vitals) return false; const h = P.vit.filter((x) => x.t > w.from); return h.length < w.times && s.t >= (h.length ? h[h.length - 1].t + w.every : w.from) - 5; });   // a check the order asks for now
+        if (pv && !ordered && s.t - pv.t <= 8 && d.status(s, P, A()) === 'stable') { const nv = A().vitals(d.id); if (['HR', 'SBP', 'RR', 'SpO2'].every((q) => Math.abs(nv[q] - pv[q]) <= 3)) A().judge(d.id + '-repeat', 'time', -1, `You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.`, 'Recheck vitals when you expect a change: after a med, an intervention, or a new symptom. Otherwise the time goes to someone who needs it.', d.id); }
         const v = A().recordVitals(d.id, 'You'); P.k.hrAt = s.t; P.k.hr = v.HR; if (v.poss) P.k.possAt = s.t;
         const txt = `T ${fT(v.T)} °C, HR ${v.HR}${v.rhythm ? ' (' + v.rhythm + ')' : ''}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}% on ${o2txt(v.O2)}${v.poss ? ', sedation ' + v.poss.split(',')[0] : ''}. Pain ${v.pain}/10.`;
         logHere(d.id, txt, 'find'); s.log[s.log.length - 1].label = 'Vital signs'; return txt;

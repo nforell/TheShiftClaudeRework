@@ -546,7 +546,7 @@
         { k: '✓', q: 'Close the loop.', say: '"Continuous albuterol, ipratropium, IV magnesium, and get rapid response. I\'m coming."', o: [
           { t: 'Read back: continuous albuterol, ipratropium, IV magnesium, rapid response called. See you now.', ok: 1 },
           { t: 'Read back: albuterol every hour, ipratropium, IV magnesium.', w: 'She said continuous albuterol, and rapid response.' },
-          { t: 'Okay, albuterol and magnesium.', w: 'Incomplete and no doses.' }] },
+          { t: 'Okay, albuterol and magnesium.', w: 'Incomplete: no ipratropium, no rapid response, and "okay" isn\'t a read-back.' }] },
       ],
       win: 'By 21:00 he\'s wheezing again, which is the good news, and asking for his tablet.',
       lose: 'He tires out. The PICU team intubates him at 20:25.',
