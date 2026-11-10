@@ -43,7 +43,7 @@ Order: SBAR, then De-escalation, then Med Pass checks, then Who's First, file by
 - [x] `src/drills-content.js`: calm
 - [x] `src/drills-content.js`: med (check lists), first (now: check 35%, sbar 28%, calm 34%, first 33%)
 - [ ] `src/drills-more-1.js`
-- [ ] `src/drills-more-2.js`
+- [x] `src/drills-more-2.js` (now: sbar 38%, calm 44%)
 - [ ] `src/drills-nclex-1.js`
 - [ ] `src/drills-nclex-2.js`
 - [ ] any other `src/drills-*.js`
