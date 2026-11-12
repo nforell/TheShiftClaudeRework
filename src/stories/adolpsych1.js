@@ -48,7 +48,7 @@
           choices: [
             { label: `What's the case he's working on right now?`, rap: 1, reply: `"A snail lost its shell and won't tell anyone, because it's embarrassed." They look at you sideways. "It's not about me. Obviously."` },
             { label: `These are really good.`, rap: 0, reply: `"Thanks." They mean it, a little.` },
-            { label: `You should draw happier stuff.`, rap: -1, reply: `"He IS happy. He's just in the rain." The sketchbook closes.` },
+            { label: `You should draw happier stuff. It might cheer you up.`, rap: -1, reply: `"He IS happy. He's just in the rain." The sketchbook closes.` },
           ] },
         { need: 1, learn: `Their mom died when they were ten. Their dad "got hard" after that.`,
           text: `"My mom would've been fine with Jordan. She let me cut my own hair when I was eight." They touch the uneven fringe. "She died when I was ten. Dad got... hard, after. Like if he loosened up, everything would fall apart."`,
@@ -92,14 +92,14 @@
           choices: [
             { label: `That sounds like a lot of disappointment with nowhere to go. What was the solo?`, rap: 1, reply: `"'Saints.' The drum break." He taps the first few bars on his knee. "I nailed it. Nobody I wanted there heard it."` },
             { label: `Next time try counting to ten.`, rap: 0, reply: `"I know about counting to ten." He's heard it a hundred times.` },
-            { label: `You can't punch windows just because you're mad.`, rap: -1, reply: `"I KNOW." The anger is back, fast.` },
+            { label: `You can't punch windows just because you're mad. Everyone gets disappointed sometimes.`, rap: -1, reply: `"I KNOW." The anger is back, fast.` },
           ] },
         { need: 2, learn: `Wants to play his solo for his little sister Zuri at visiting.`,
           text: `"Can my drumsticks come? Not to play here. Just... Zuri's coming Saturday. I could play her the solo on a practice pad. In the family room." He looks at you like he's expecting a no.`,
           choices: [
             { label: `Let's ask the team together. I think that's a great plan.`, rap: 1, reply: `"Really?" He hugs the T. rex. "She's gonna say it's too loud. It's supposed to be loud."` },
             { label: `Maybe. We'll see.`, rap: 0, reply: `"That means no." He's used to "we'll see."` },
-            { label: `Instruments aren't allowed on the unit.`, rap: -1, reply: `"Of course." He doesn't ask for anything else today.` },
+            { label: `Instruments aren't allowed on the unit. It's a safety thing, sorry.`, rap: -1, reply: `"Of course." He doesn't ask for anything else today.` },
           ] },
       ],
       epi: {
@@ -127,7 +127,7 @@
           text: `"My brother's nine. Gabe. I walk him to school every day. He's scared of the crossing guard." A faint smile. "Who's walking him now?"`,
           choices: [
             { label: `You've been taking care of him. It sounds like you worry about him a lot.`, rap: 1, reply: `"Somebody has to." She says it fast, and then looks like she wishes she hadn't.` },
-            { label: `I'm sure your mom's got it covered.`, rap: 0, reply: `"Yeah." She doesn't sound sure at all.` },
+            { label: `I'm sure your mom's got it covered. That's her job, not yours, so try to let it go.`, rap: 0, reply: `"Yeah." She doesn't sound sure at all.` },
             { label: `Focus on yourself for now.`, rap: -1, reply: `She doesn't answer. Gabe is not something she can stop focusing on.` },
           ] },
         { need: 2, learn: `Wants to go to her abuela's when she leaves, with Gabe.`,

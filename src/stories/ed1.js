@@ -13,7 +13,7 @@
           choices: [
             { label: `New tiredness and not being able to walk your usual distance can be your heart, especially with diabetes. That's important. I'm telling the doctor.`, rap: 1, reply: `"Huh." She looks at the monitor differently. "Nobody ever told me that."` },
             { label: `Sixty-four isn't old.`, rap: 0, reply: `"Tell that to my knees."` },
-            { label: `Probably just age.`, rap: -1, reply: `"That's what I said." She closes her eyes.` },
+            { label: `It\'s probably just age catching up. Most people slow down in their sixties, and a little tiredness is nothing to be embarrassed about. Let\'s see what the tests say.`, rap: -1, reply: `"That's what I said." She closes her eyes.` },
           ] },
         { need: 1, learn: `She quit smoking twice before and wants to try again.`,
           text: `"Bev's going to make me quit smoking now. I quit twice already. Never stuck."`,

@@ -18,7 +18,7 @@
           choices: [
             { label: `What would it take to keep you home, and safe?`, rap: 1, reply: `"A step stool with a handle. And a lower shelf." She laughs. "Lord, it's that simple, isn't it? I'll make my son move the hymnal. That'll hurt him more than me."` },
             { label: `Your son just wants you to be safe.`, rap: 0, reply: `"Everybody wants me safe. Nobody asks what I want." She says it gently.` },
-            { label: `Falls at your age are really dangerous.`, rap: -1, reply: `"Mm-hm." She looks at the ceiling. "So I hear."` },
+            { label: `Falls at your age are really dangerous. He\'s right to worry.`, rap: -1, reply: `"Mm-hm." She looks at the ceiling. "So I hear."` },
           ] },
         { need: 2, learn: `Was afraid she'd hurt someone while she was confused.`,
           text: `"The nurse before you said I tried to climb out of this bed." She looks ashamed. "I don't remember. Did I swing at anybody? I would never. I'm a deaconess."`,
@@ -52,7 +52,7 @@
           text: `"Four letters. '43,560 square feet.'" He doesn't wait. "Acre. The constructor's being lazy tonight." He sets the pen down. "Thirty-four years surveying for the county. I'm constitutionally unable to leave a wrong measurement alone."`,
           choices: [
             { label: `What was the strangest job you surveyed?`, rap: 1, reply: `"A farmhouse where the property line ran straight through the kitchen. Two brothers, one stove, forty years of not speaking." He grins. "I gave them each half the oven."` },
-            { label: `I can't read a map to save my life.`, rap: 0, reply: `"Nobody's bad at maps. Plenty of people had bad maps." He points the pen at you. "Different thing."` },
+            { label: `I can't read a map to save my life. I'd be lost without my phone.`, rap: 0, reply: `"Nobody's bad at maps. Plenty of people had bad maps." He points the pen at you. "Different thing."` },
             { label: `That's a long career.`, rap: 0, reply: `"Long enough." He picks the pen back up.` },
           ] },
         { need: 1, learn: `His wife Helen died four years ago. He still leaves her half of the crossword blank.`,
@@ -140,7 +140,7 @@
           text: `"Thirty years on the 22. Downtown to the lake and back, eleven times a day." Both hands on an invisible wheel, every word crisp. "Best mechanic at the yard was a guy named Bell. Could fix a transmission with a coat hanger and bad language."`,
           choices: [
             { label: `What was the best part of the route?`, rap: 1, reply: `"The 6:40 run. Same folks every morning. A nurse going to her shift, a kid with a tuba, an old man who fed the pigeons." He smiles. "You get to know people by where they get off."` },
-            { label: `I think I've ridden the 22.`, rap: 0, reply: `"Then you owe me a dollar twenty-five." He holds out his palm, laughing.` },
+            { label: `I think I've ridden the 22 once or twice myself.`, rap: 0, reply: `"Then you owe me a dollar twenty-five." He holds out his palm, laughing.` },
             { label: `Thirty years is a long time.`, rap: 0, reply: `"Went by like a green light." He grins.` },
           ] },
         { need: 1, learn: `Grows tomatoes from seeds his late wife Carmen saved.`,
@@ -155,7 +155,7 @@
           choices: [
             { label: `It sounds like she wants to be there. Have you asked her how she feels about it?`, rap: 1, reply: `"Asked her? No." He thinks about it. "She'd say, 'Pop, you raised me, shut up.'" He laughs. "She would. I'll ask anyway."` },
             { label: `She's your daughter. She loves you.`, rap: 0, reply: `"I know." He looks at the door. "I know."` },
-            { label: `Maybe you could get some help at home so she doesn't have to do everything.`, rap: 0, reply: `"Maybe." He doesn't love the idea.` },
+            { label: `Maybe you could get some help at home so she doesn't have to do everything herself.`, rap: 0, reply: `"Maybe." He doesn't love the idea.` },
           ] },
         { need: 3, learn: `Promised you a Cherokee Purple in August.`,
           text: `"August. Come by the house, the one with the tomatoes eating the fence. I'll give you a Cherokee Purple." He points at you. "Ugly as sin. You eat it standing over the sink with salt, and you'll understand everything."`,
@@ -188,7 +188,7 @@
           choices: [
             { label: `What's the worst thing that's ever happened on taco day?`, rap: 1, reply: `"The Great Guacamole Incident of 2019." She's crying laughing, clutching the pillow. "Stop. I'm not allowed to laugh. Doctor's orders."` },
             { label: `That sounds exhausting.`, rap: 0, reply: `"It's the best job in the world. Don't tell anyone." She smiles.` },
-            { label: `You should rest. You just had surgery.`, rap: 0, reply: `"I am resting. This is my resting face." She makes a very principal face.` },
+            { label: `You should rest instead of thinking about work. You just had surgery.`, rap: 0, reply: `"I am resting. This is my resting face." She makes a very principal face.` },
           ] },
         { need: 1, learn: `Carl had a heart attack last spring. She's used to being the one who worries.`,
           text: `She glances at Carl, dozing upright in the chair. "He had a heart attack last spring. Forty-seven. I found him in the garage." She keeps her voice low. "Ever since, I'm the one who watches. This is the first time I'm the one in the bed. He doesn't know what to do with his hands."`,
