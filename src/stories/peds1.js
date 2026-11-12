@@ -12,14 +12,14 @@
           choices: [
             { label: `You've been taking care of him all night. What do you need, for you? Coffee? Food? A real chair that reclines?`, rap: 1, reply: `She looks surprised, like nobody has asked her that. "...Coffee. And maybe the chair." When you bring both, she holds the cup with both hands and closes her eyes for a second. "Gracias. Of course, gracias."` },
             { label: `He's lucky to have you here.`, rap: 0, reply: `"Thank you." She nods and turns back to him.` },
-            { label: `You should go home and rest. We'll watch him.`, rap: -1, reply: `"No." She doesn't need the interpreter for that one. She doesn't move.` },
+            { label: `You should go home and rest. We'll watch him, and you're no good to him if you're exhausted. He won't even know you're gone.`, rap: -1, reply: `"No." She doesn't need the interpreter for that one. She doesn't move.` },
           ] },
         { need: 1, learn: `Sofía, 11, translates for her mother everywhere and wants to be a doctor.`,
           text: `Sofía is doing homework at the foot of the crib, but she's watching the high-flow machine more than her worksheet. Lucía, through the interpreter: "She translates for me everywhere. The bank, the doctor, the school. She's eleven." She strokes Sofía's hair. "She wants to be a doctor."`,
           choices: [
             { label: `(To Sofía) Want me to show you how this machine helps your brother breathe? No translating needed. Just for you.`, rap: 1, reply: `Sofía's face lights up. You show her the warm, wet air, the flow number, how the prongs sit. "So it's like... a breeze that helps him push?" Exactly. Lucía watches her daughter ask questions, and looks proud enough to cry.` },
             { label: `She's such a big help to you.`, rap: 0, reply: `Sofía shrugs, a little embarrassed. "I'm used to it."` },
-            { label: `She can keep translating, then. It's faster.`, rap: -1, reply: `Sofía's shoulders fall a little. The interpreter frowns at the phone.` },
+            { label: `She can keep translating, then. It's faster than waiting for the interpreter, and she clearly understands what's going on.`, rap: -1, reply: `Sofía's shoulders fall a little. The interpreter frowns at the phone.` },
           ] },
         { need: 2, learn: `Before Sofía, Lucía lost a baby boy who lived four days. She's terrified of this room.`,
           text: `It's quiet now, and Sofía has gone for a snack. Lucía speaks slowly, and the interpreter's voice softens. "Before Sofía, I had a boy. He was born too early. He lived four days, in a room like this, with the same sounds." She touches the monitor wire. "When the machine beeps, I'm back there."`,
@@ -49,7 +49,7 @@
           text: `"I'm first chair clarinet." She says it like it's a secret she's proud of. "Cold makes crises happen, so football games are the worst. Mr. Reyes brings a sleeping bag for me. I play from inside a sleeping bag. Like a burrito with a clarinet."`,
           choices: [
             { label: `A clarinet burrito. I need to see a picture of this.`, rap: 1, reply: `She laughs, which hurts, and she laughs anyway. She finds the photo: a purple sleeping bag, a clarinet sticking out, and the whole woodwind section giving thumbs-up. "They all signed it after homecoming."` },
-            { label: `It's great your director helps you out.`, rap: 0, reply: `"Yeah. He's cool." She puts the earbud back in.` },
+            { label: `It's great your director helps you out with that. Not all of them would.`, rap: 0, reply: `"Yeah. He's cool." She puts the earbud back in.` },
             { label: `Maybe you should skip the cold games.`, rap: -1, reply: `"I'm not quitting band." Her voice is very flat.` },
           ] },
         { need: 1, learn: `An ED nurse once said "You again." She's never forgotten it.`,
@@ -89,7 +89,7 @@
           text: `Leo holds up a green T. rex with one eye missing. "Rexy has a owie." He points to Rexy's tummy, right where Leo's own pain is.`,
           choices: [
             { label: `Oh no. Can I check Rexy first? Then maybe you, after?`, rap: 1, reply: `You listen to Rexy's tummy with your stethoscope, very seriously. "Rexy is being so brave." Leo nods, pleased. Then he pulls up his own shirt for you. That's therapeutic play: now he knows what's coming.` },
-            { label: `Rexy looks like a very good dinosaur.`, rap: 0, reply: `"He is." Leo holds Rexy tighter.` },
+            { label: `Rexy looks like a very good dinosaur. He can watch while I check you.`, rap: 0, reply: `"He is." Leo holds Rexy tighter.` },
             { label: `Let's look at your tummy now, okay?`, rap: -1, reply: `Leo starts to cry and hides behind Min-ji.` },
           ] },
         { need: 1, learn: `Rexy has tiny arms but a big bite. Rexy is scared of shots.`,
@@ -126,7 +126,7 @@
           text: `"I'm twenty." He says it like an excuse, or an apology. "I load trucks at four in the morning. His mom works days. We hand him off in the Walgreens parking lot at three." He looks at Noah. "Nobody told me it'd be this hard. Everyone just said 'congratulations.'"`,
           choices: [
             { label: `It is hard, especially without sleep. How are you doing, really?`, rap: 1, reply: `He's quiet for a second. "Honestly? I'm scared all the time. I don't know if I'm doing it right." He rubs his face. "Nobody asks me that. They ask about him."` },
-            { label: `You're doing a lot for a twenty-year-old.`, rap: 0, reply: `"I guess." He shrugs.` },
+            { label: `You're doing a lot for a twenty-year-old. Most guys your age wouldn't even be here.`, rap: 0, reply: `"I guess." He shrugs.` },
             { label: `Well, you're a dad now.`, rap: -1, reply: `"Yeah. I know." He goes back to his phone.` },
           ] },
         { need: 1, learn: `Travis asked whether it was bad to put Noah in his crib and step outside when he wouldn't stop crying.`,
@@ -174,7 +174,7 @@
           choices: [
             { label: `Three hearts! Which one does Olive use to open jars?`, rap: 1, reply: `Zoe giggles. "Not her HEARTS, her ARMS! You're silly." She explains for five minutes, happily, and only stops for a breath twice.` },
             { label: `That's really cool.`, rap: 0, reply: `"I know." She goes back to her book.` },
-            { label: `Let's focus on your breathing now.`, rap: -1, reply: `"Okay." She puts the book down and looks worried.` },
+            { label: `That's neat, but let's focus on your breathing now, okay?`, rap: -1, reply: `"Okay." She puts the book down and looks worried.` },
           ] },
         { need: 1, learn: `She hides her inhaler at school because a boy named Brayden calls her Darth Vader.`,
           text: `Zoe whispers. "I don't use my inhaler at school." She looks at the door. "Brayden says I sound like Darth Vader when I use it. Everyone laughed. So I keep it in my backpack. In the bottom."`,

@@ -11,7 +11,7 @@
           text: `"Ernesto, my husband, his heart just stopped. In the garden, eight years ago. I found him with the hose still running." She smooths the blanket. "So when mine does this, I think: here it comes."`,
           choices: [
             { label: `No wonder this is so frightening. Your heart is different from his: it's beating fast and irregularly, not stopping, and we can slow it. What do you most want to know?`, rap: 1, reply: `"Whether I'll see Rafael get married in June." She laughs a little. "That's not a medical question, is it." "It's a fair one," you say.` },
-            { label: `That was a long time ago. Try not to think about it.`, rap: -1, reply: `"I'll try." She doesn't.` },
+            { label: `That was a long time ago, and medicine has come a long way since then. Try not to think about it; worrying will only push your heart rate up further, and that\'s the last thing you need.`, rap: -1, reply: `"I'll try." She doesn't.` },
             { label: `I'm sorry. That must have been awful.`, rap: 0, reply: `"It was." She nods, and goes quiet.` },
           ] },
         { need: 1, learn: `She'd been sleeping in her recliner for weeks and told no one.`,

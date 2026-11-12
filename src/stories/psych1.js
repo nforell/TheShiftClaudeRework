@@ -108,7 +108,7 @@
           text: `"People think I'm a nuisance about the lithium. Twenty years." He's looking at the ceiling. "Before it, I lost a year. 2005. I don't remember most of it. Carol does. She says I painted the whole house at three in the morning and then couldn't get out of bed until Easter." He swallows. "That wasn't me. The lithium gave me back."`,
           choices: [
             { label: `So the lithium feels like part of what keeps you yourself. That's why this has been so scary.`, rap: 1, reply: `"Yeah." It comes out rough. "Today I thought, what if they take it away? What if I lose another year?" He looks at you. "They're not going to take it away, right? Just fix it?"` },
-            { label: `We'll get the dose right, and you'll be back on track.`, rap: 0, reply: `"Hope so." He grips the basin a little tighter.` },
+            { label: `We'll get the dose right, and you'll be back on track in no time. These things just take a little adjusting.`, rap: 0, reply: `"Hope so." He grips the basin a little tighter.` },
             { label: `Well, that's why you have to watch the water pills.`, rap: -1, reply: `"I didn't KNOW about the water pills." He's hurt. "Nobody told me."` },
           ] },
         { need: 2, learn: `Builds a birdhouse for every grandchild. Number five, a yellow house with blue shutters, is due in March.`,
@@ -138,7 +138,7 @@
           choices: [
             { label: `Bend so they don't break. Tell me more about how that works.`, rap: 1, reply: `And for five whole minutes, Miguel explains tension and load to you, clearly and patiently. He's a good teacher. He forgets to watch the door.` },
             { label: `You miss your dad.`, rap: 0, reply: `He shrugs, which could mean anything. He keeps drawing.` },
-            { label: `That's good. Keep your mind busy.`, rap: -1, reply: `"My mind IS busy." He crumples the napkin.` },
+            { label: `That's good. Keep your mind busy; it helps to have something to do with your hands.`, rap: -1, reply: `"My mind IS busy." He crumples the napkin.` },
           ] },
         { need: 1, learn: `Deep down he's afraid something is wrong with his mind, not just with the food.`,
           text: `It comes out quietly, like he's been holding it. "Sometimes I think... what if it's not them. What if it's me? What if something's wrong in here." He touches his temple. "That's scarier. If it's them, I can check the seals. If it's me, I can't check anything."`,
@@ -184,7 +184,7 @@
           choices: [
             { label: `Eleven years to the penny. That takes real focus. What was that job like for you?`, rap: 1, reply: `"Quiet. Orderly. Everything added up." She looks at the cups. "Nothing adds up in my head anymore. But out here, it can." She straightens the last one.` },
             { label: `You must miss it.`, rap: 0, reply: `She nods and doesn't say more.` },
-            { label: `Maybe someday you could work again.`, rap: 0, reply: `"Maybe." She's heard it before. It's not a no.` },
+            { label: `Maybe someday you could work again, once things are more settled. Lots of people do.`, rap: 0, reply: `"Maybe." She's heard it before. It's not a no.` },
           ] },
         { need: 2, learn: `The water feels like it "washes out" the committee. Spearmint gum and ice chips help her resist.`,
           text: `She speaks very quietly, like the committee might hear. "Do you know why I drink the water? It washes them out. For a minute, it's quiet in there." She looks at the pitcher on the desk with its lines for each hour. "When you took the sink, they got louder."`,

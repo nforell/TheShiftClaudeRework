@@ -335,7 +335,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "accepted the client assignment",
-     "completed the incident report",
+     "completed the unit's incident report",
      "read the fall risk policy"
     ],
     "ans": 0,
@@ -820,7 +820,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "restate the key points and action items and ask any questions",
-     "read the PACU record later when time allows",
+     "read the PACU record and the anesthesia notes later when time allows",
      "sign the transfer form without comment"
     ],
     "ans": 0,
@@ -1690,7 +1690,7 @@ window.Shift.ngnBank = [
     "opts": [
      "a friction-reducing device with enough staff",
      "the client's arms to pull her up",
-     "one nurse pushing from the foot of the bed"
+     "one strong nurse pushing from the foot of the bed"
     ],
     "ans": 0,
     "whys": [
@@ -3214,7 +3214,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "add the ibuprofen to the list and report it to the surgical team",
-     "leave it off the list because it is sold over the counter",
+     "leave it off the list because it is sold over the counter without a prescription",
      "tell the client to stop his warfarin today"
     ],
     "ans": 0,
@@ -3452,7 +3452,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "notify the provider about the metformin and the eGFR so further doses are held",
-     "give the evening metformin dose early so it clears before the scan",
+     "give the evening metformin dose a few hours early so it clears before the scan",
      "cancel the scan because metformin is a contraindication to contrast"
     ],
     "ans": 0,
@@ -3480,7 +3480,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "48 hours after the scan if repeat kidney function is stable",
-     "the same evening once she is eating",
+     "the same evening once she is eating and drinking normally again",
      "after 7 days regardless of lab results"
     ],
     "ans": 0,
@@ -6623,7 +6623,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "an expected early response to a major loss",
-     "a sign of psychosis that needs medication",
+     "a sign of psychosis that needs antipsychotic medication",
      "a refusal of treatment to document"
     ],
     "ans": 0,
@@ -6834,7 +6834,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "repositioning at least every 2 hours with offloading of bony prominences",
-     "massaging reddened areas over bony prominences",
+     "massaging reddened areas over bony prominences to improve the circulation",
      "placing a ring-shaped cushion under the sacrum"
     ],
     "ans": 0,
@@ -7035,7 +7035,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "within 15 minutes before she starts eating",
-     "30 to 60 minutes before the meal",
+     "30 to 60 minutes before the meal tray arrives",
      "only if her glucose is above 250 mg/dL"
     ],
     "ans": 0,
@@ -7378,7 +7378,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "loss of hydrochloric acid through gastric suction",
-     "hyperventilation from incisional pain",
+     "hyperventilation from uncontrolled incisional pain",
      "loss of bicarbonate through the bowel"
     ],
     "ans": 0,
@@ -7392,7 +7392,7 @@ window.Shift.ngnBank = [
    {
     "opts": [
      "the potassium of 3 mEq/L, which raises the risk of dysrhythmias",
-     "the PaCO₂ of 45 mm Hg, which signals respiratory failure",
+     "the PaCO₂ of 45 mm Hg, which signals impending respiratory failure",
      "the chloride of 92 mEq/L, which causes seizures"
     ],
     "ans": 0,

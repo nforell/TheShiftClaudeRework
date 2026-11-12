@@ -11,14 +11,14 @@
           choices: [
             { label: `What did you say to a driver who was panicking?`, rap: 1, reply: `"Slow down. Tell me what you see. We'll handle it one thing at a time." She hears herself. "Huh. That's the breathing thing, isn't it? The lips thing." She tries it without being asked.` },
             { label: `You're doing fine.`, rap: 0, reply: `"Am I?" She eyes the oxygen monitor like it might argue.` },
-            { label: `That sounds like a stressful job.`, rap: 0, reply: `"The best kind." She settles back against the pillows.` },
+            { label: `That sounds like a stressful job. I couldn\'t do it.`, rap: 0, reply: `"The best kind." She settles back against the pillows.` },
           ] },
         { need: 1, learn: `Blames herself for forty-five years of smoking.`,
           text: `"Forty-five years I smoked. Quit at sixty." She holds up the oxygen tubing. "So this is my fault. You can say it. Everybody's thinking it."`,
           choices: [
             { label: `I'm not thinking that. You quit, and that took real strength. What matters now is keeping you breathing well.`, rap: 1, reply: `She blinks fast. "My sister says I did this to myself." A long breath out through pursed lips. "Thank you for not saying it."` },
             { label: `Quitting at sixty still helped a lot.`, rap: 0, reply: `"Tell that to my lungs." But she seems a little lighter.` },
-            { label: `Well, smoking is the main cause of COPD.`, rap: -1, reply: `"I know." She turns to the window. The cardinal isn't there.` },
+            { label: `Well, smoking is the main cause of COPD, so it\'s fair to say the cigarettes did this. The important thing is that you\'ve stopped now.`, rap: -1, reply: `"I know." She turns to the window. The cardinal isn't there.` },
           ] },
         { need: 2, learn: `Terrified of dying breathless, at night, alone.`,
           text: `It's quiet. She says it to the window. "Nights are the worst. I wake up and I can't get the air out and I think, this is it. This is how it goes. Alone in the dark, drowning." She presses a hand to her chest. "That's why I ask for the pill."`,
@@ -55,13 +55,13 @@
           choices: [
             { label: `What's the secret nobody gets right?`, rap: 1, reply: `"Rock sugar. Just a little. People think it's too sweet, but it's balance." He grins for the first time. "Don't tell anybody. My mom will know it was you."` },
             { label: `You'll be eating again soon.`, rap: 0, reply: `"Yeah. Clear liquids. Great." He almost laughs.` },
-            { label: `Nine hours? That's dedication.`, rap: 0, reply: `"That's pho." He shrugs, a little proud.` },
+            { label: `Nine hours? That's dedication. I can barely manage pasta.`, rap: 0, reply: `"That's pho." He shrugs, a little proud.` },
           ] },
         { need: 1, learn: `Started drinking heavily after his divorce, when he lost the house and the dog.`,
           text: `"The divorce. Everybody asks." He looks at his hands, which are steadier now. "It wasn't dramatic. We just stopped talking. She kept the house. The dog picked her too." A dry laugh. "So I'd close the kitchen and have a beer. Then it was six. Then I stopped counting."`,
           choices: [
             { label: `That's a lot of loss in one year. Thank you for trusting me with it.`, rap: 1, reply: `He's quiet. "Nobody says it like that. They say, 'You gotta stop drinking.' Like I don't know that."` },
-            { label: `Have you ever tried going to a meeting?`, rap: 0, reply: `"Yeah, yeah." He shrugs. It wasn't the moment.` },
+            { label: `That\'s a lot. Have you ever tried going to a meeting, or talking to someone about it?`, rap: 0, reply: `"Yeah, yeah." He shrugs. It wasn't the moment.` },
             { label: `That's not a good reason to drink.`, rap: -1, reply: `"Never said it was." He turns toward the wall.` },
           ] },
         { need: 2, learn: `Once woke up on a kitchen floor after quitting cold turkey: a possible withdrawal seizure he never told anyone about.`,
@@ -114,7 +114,7 @@
           text: `"Emi is eleven. She plays Chopin like she's angry at him." Bea laughs. "Her recital is on the twenty-first. The Nocturne in E-flat. She asked me to turn her pages." A pause. "Hiro would find that very funny."`,
           choices: [
             { label: `Then we have a deadline. Let's get your blood count up so you're turning pages on the twenty-first.`, rap: 1, reply: `"On time," she says firmly. "Unlike some people." She taps the IV pole like a metronome.` },
-            { label: `That sounds wonderful.`, rap: 0, reply: `"It will be." She says it like a promise to herself.` },
+            { label: `That sounds wonderful. I\'m sure it will go beautifully whether you\'re there or not, and someone can always record it for you.`, rap: 0, reply: `"It will be." She says it like a promise to herself.` },
             { label: `Chopin is beautiful.`, rap: 0, reply: `"It's sad, dear. Beautiful and sad. That's why eleven-year-olds love it."` },
           ] },
         { need: 3, learn: `Taught you the first three bars of the nocturne on the bedside table.`,
@@ -203,7 +203,7 @@
           choices: [
             { label: `Schools have ways to handle medical absences. I'll ask the team for a letter so you can email your professor tonight.`, rap: 1, reply: `"A letter. Okay." She's already typing with one thumb. "Professor Delacroix is nice. She'll let me make it up." She looks at her mother. "Hooyo. It's okay."` },
             { label: `Your health comes first.`, rap: 0, reply: `"I know." She says it the way people do when they don't feel it.` },
-            { label: `One semester isn't the end of the world.`, rap: 0, reply: `"It kind of is, for us." She puts the phone down.` },
+            { label: `One semester isn't the end of the world. Plenty of people take time off and go back, and your professors will understand once they hear you had surgery.`, rap: 0, reply: `"It kind of is, for us." She puts the phone down.` },
           ] },
       ],
       epi: {

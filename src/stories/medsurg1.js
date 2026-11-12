@@ -11,7 +11,7 @@
           choices: [
             { label: `Two weeks without a cigarette is already helping. More oxygen gets to that incision. Your timing is better than it feels.`, rap: 1, reply: `"Huh." He looks down at his belly like it might be listening. "Don't tell Denise she was right. She'll frame it."` },
             { label: `The universe owes you one, then.`, rap: 0, reply: `"Put it on my tab." He unmutes the game.` },
-            { label: `Honestly, the smoking probably didn't help your gut either.`, rap: -1, reply: `His face goes flat. "Yeah. Heard that one." The TV comes back on.` },
+            { label: `Honestly, the smoking probably didn't help your gut either. It slows healing everywhere, so the best thing you can do now is stay quit for good.`, rap: -1, reply: `His face goes flat. "Yeah. Heard that one." The TV comes back on.` },
           ] },
         { need: 1, learn: `His brother Ray died of an overdose at 49. That is why pain pills scare him.`,
           text: `"You asked about the pain pills. My brother Ray hurt his back at the plant, got a bottle of pills, then got everything else. We buried him at forty-nine." He turns his wedding ring. "So when somebody says 'oxycodone,' I hear Ray."`,
@@ -55,7 +55,7 @@
           text: `She holds up a lab report covered in red pen. "Seventh grade. This one says plants eat dirt. Very confident. Terrible handwriting." She caps the pen. "Sorry. Grading calms me down. Everything in here beeps."`,
           choices: [
             { label: `What do you tell a kid who's sure plants eat dirt?`, rap: 1, reply: `She lights up. "You weigh the dirt before and after you grow the bean. He's going to be so mad when it doesn't change." For a minute she isn't a patient at all.` },
-            { label: `You should really rest instead of working.`, rap: 0, reply: `"This is resting." She uncaps the pen again.` },
+            { label: `You should really rest instead of working on those right now.`, rap: 0, reply: `"This is resting." She uncaps the pen again.` },
             { label: `Twenty-eight of those? Rather you than me.`, rap: 0, reply: `She laughs. "Twenty-seven. I'm very efficient when I'm scared."` },
           ] },
         { need: 1, learn: `Stopped checking her feet months ago. She can't feel them, and she's afraid to look.`,
@@ -72,7 +72,7 @@
           choices: [
             { label: `That's a lot to carry. What would make those weekends even a little easier on your own health?`, rap: 1, reply: `She thinks like a scientist. "Pack my meals on Friday. Put the glucometer by her coffee maker, where I'll see it." She writes it on the back of a lab report. "Hypothesis."` },
             { label: `You have to put yourself first sometimes.`, rap: 0, reply: `"Everybody says that. Nobody says how." She goes back to grading.` },
-            { label: `Nine point eight is really high. You need to take this seriously.`, rap: -1, reply: `"I said I know what it means." The pen scratches harder.` },
+            { label: `Nine point eight is really high. You need to take this seriously, whatever else is going on at home.`, rap: -1, reply: `"I said I know what it means." The pen scratches harder.` },
           ] },
         { need: 3, learn: `Her students built her a get-well DNA model out of gummy bears.`,
           text: `She turns her tablet around. A photo: a lopsided double helix made of gummy bears and toothpicks, and a sign in marker: GET WELL MS. O. WE DID IT WRONG ON PURPOSE. Her eyes are wet. "Adenine only pairs with thymine. They know that. I taught them that."`,
@@ -108,7 +108,7 @@
           choices: [
             { label: `Let's find out right now. Would you like me to dial Ruth for you?`, rap: 1, set: { biscuitFed: true }, reply: `"Would you? My fingers are all thumbs today." Ruth answers on the first ring. Biscuit has been fed, and is furious about the delay. Eleanor closes her eyes, relieved.` },
             { label: `I'm sure someone's taking care of him.`, rap: 0, reply: `"I'm sure." She isn't. She glances at the phone on the table.` },
-            { label: `Try not to worry about the cat right now.`, rap: -1, reply: `"He isn't 'the cat,' dear. He's Biscuit." She folds her hands and says nothing more.` },
+            { label: `Try not to worry about the cat right now. Cats are tough, and you need your strength.`, rap: -1, reply: `"He isn't 'the cat,' dear. He's Biscuit." She folds her hands and says nothing more.` },
           ] },
         { need: 2, learn: `Afraid Ruth will make her give up the house she's lived in for fifty-one years.`,
           text: `"Ruth wants me to move in with her. She's been working up to it for a year, and now she has her proof." She taps the IV. "I've lived in that house fifty-one years. I know which stair creaks. I'm not ready to be somebody's project."`,

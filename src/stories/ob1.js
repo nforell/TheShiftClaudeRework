@@ -11,7 +11,7 @@
           text: `"Can I tell you something? With Nia, I kept saying something was wrong after she came out. They said I was being dramatic. Turned out I'd torn and nobody had checked." She looks at you. "So when you came in and actually looked, I almost cried."`,
           choices: [
             { label: `I'm sorry that happened. You know your body. If something feels wrong today, tell me, and I'll check, every time.`, rap: 1, reply: `"Every time. I'm holding you to that." She settles back. "Desmond's going to like you."` },
-            { label: `That sounds frustrating. Things are different here.`, rap: 0, reply: `"Hope so." She nods, unconvinced, but not unfriendly.` },
+            { label: `That sounds frustrating. Things are different here, and I\'m sure it was a misunderstanding; nobody ignores a patient on purpose.`, rap: 0, reply: `"Hope so." She nods, unconvinced, but not unfriendly.` },
             { label: `I'm sure they had their reasons.`, rap: -1, reply: `"Sure." She turns to the baby.` },
           ] },
         { need: 1, learn: `She teaches seventh-grade math and plans to explain blood loss in grams to her class.`,

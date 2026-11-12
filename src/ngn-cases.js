@@ -822,7 +822,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "pulmonary congestion from left-sided failure",
-       "pneumonia",
+       "a bilateral lower-lobe pneumonia with consolidation",
        "a collapsed lung"
       ],
       "ans": 0,
@@ -1343,7 +1343,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "ketoacids building up in the blood",
-       "chloride lost through vomiting",
+       "chloride and acid lost through repeated vomiting",
        "a laboratory error"
       ],
       "ans": 0,
@@ -1357,7 +1357,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "potassium shifting out of cells, with a low total body potassium",
-       "too much potassium in her diet",
+       "too much potassium in her diet and supplements over the past several weeks",
        "kidney failure"
       ],
       "ans": 0,
@@ -1893,7 +1893,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "sudden dyspnea and pleuritic pain after signs of a calf DVT",
-       "confusion with a petechial rash on the chest",
+       "new confusion with a petechial rash across the chest and axillae",
        "a temperature of 37.7 °C (99.9 °F)"
       ],
       "ans": 0,
@@ -2385,7 +2385,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "hypovolemic shock from ongoing blood loss",
-       "hepatic encephalopathy",
+       "hepatic encephalopathy from a rising ammonia level",
        "fluid excess from ascites"
       ],
       "ans": 0,
@@ -2399,7 +2399,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "blood pressure falling to 84/50 as heart rate rises to 128",
-       "a distended abdomen with shifting dullness",
+       "a tense, distended abdomen with shifting dullness and a fluid wave",
        "spider angiomas on the chest"
       ],
       "ans": 0,
@@ -2828,7 +2828,7 @@ window.Shift.ngnCases = [
       "opts": [
        "hypoglycemia from glipizide",
        "hyperkalemia",
-       "dehydration"
+       "dehydration from poor oral intake"
       ],
       "ans": 0,
       "whys": [
@@ -3763,7 +3763,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "metabolic acidosis from bicarbonate lost in stool and poor perfusion",
-       "metabolic alkalosis from vomiting",
+       "metabolic alkalosis from vomiting and loss of stomach acid over two days",
        "respiratory acidosis from hypoventilation"
       ],
       "ans": 0,
@@ -4217,7 +4217,7 @@ window.Shift.ngnCases = [
       "opts": [
        "pulse oximetry overestimates oxygenation in carbon monoxide poisoning",
        "tissue oxygenation is adequate",
-       "the carboxyhemoglobin is within the normal range"
+       "the carboxyhemoglobin is within the normal range for a nonsmoking adult"
       ],
       "ans": 0,
       "whys": [
@@ -4741,7 +4741,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "alcohol withdrawal with hallucinations",
-       "delirium tremens",
+       "delirium tremens with autonomic instability",
        "a new dementia"
       ],
       "ans": 0,
@@ -4755,7 +4755,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "seizures and progression to delirium tremens",
-       "compartment syndrome of the right ankle",
+       "compartment syndrome developing in the right ankle",
        "dehydration from sweating"
       ],
       "ans": 0,
@@ -5154,7 +5154,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "blocking prostaglandins that dilate the afferent arteriole",
-       "directly obstructing the ureters",
+       "directly obstructing the ureters and raising pressure in the kidney",
        "dilating the efferent arteriole"
       ],
       "ans": 0,
@@ -6464,7 +6464,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "hemorrhage progressing toward hypovolemic shock",
-       "early sepsis from a surgical site infection",
+       "early sepsis from a deep surgical site infection",
        "opioid-induced respiratory depression"
       ],
       "ans": 0,
@@ -6492,7 +6492,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "call the rapid response team and notify the surgeon",
-       "encourage her to use the PCA more often",
+       "encourage her to use the PCA button more often for her pain",
        "recheck her vital signs in 1 hour"
       ],
       "ans": 0,
@@ -6893,7 +6893,7 @@ window.Shift.ngnCases = [
       "opts": [
        "rising intracranial pressure with impending herniation",
        "alcohol intoxication wearing off",
-       "a postictal state after an unwitnessed seizure"
+       "a postictal state after an unwitnessed generalized seizure"
       ],
       "ans": 0,
       "whys": [
@@ -7724,7 +7724,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "give antenatal corticosteroids and magnesium sulfate before birth",
-       "stop labor until she reaches 37 weeks",
+       "stop labor with tocolytics and bed rest until she reaches 37 weeks",
        "induce birth before the infection worsens"
       ],
       "ans": 0,
@@ -8128,7 +8128,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "give the first antibiotic doses right after the blood culture is drawn",
-       "wait for the lumbar puncture results before giving antibiotics",
+       "wait for the lumbar puncture results before giving the first antibiotics",
        "give acetaminophen and recheck the temperature in 1 hour"
       ],
       "ans": 0,
@@ -8499,7 +8499,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "dopamine blockade from the higher haloperidol dose",
-       "anticholinergic toxicity from benztropine",
+       "anticholinergic toxicity from the added benztropine",
        "excess serotonin activity"
       ],
       "ans": 0,
@@ -8653,7 +8653,7 @@ window.Shift.ngnCases = [
      {
       "opts": [
        "a falling CK and creatinine with a normal temperature",
-       "the CK rise between 08:00 and 14:00 on day 7",
+       "the CK rise between 08:00 and 14:00 on hospital day 7",
        "his ongoing paranoid thoughts"
       ],
       "ans": 0,
@@ -8668,7 +8668,7 @@ window.Shift.ngnCases = [
       "opts": [
        "at least 2 weeks after symptoms resolve, then start at a low dose",
        "until his temperature has been normal for 24 hours",
-       "no time at all, because the psychosis needs treatment now"
+       "no time at all, because the psychosis needs treatment right now to keep him safe"
       ],
       "ans": 0,
       "whys": [
