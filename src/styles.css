@@ -3043,3 +3043,10 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 .fs-fold>summary span{color:var(--ink-2);font-size:.88rem}
 .fs-fold[open]>summary{border-bottom:1px solid var(--line)}
 .fs-fold>.fs{padding:.4rem}
+
+/* SBAR drill on a phone: five step names don't fit at a readable size, so only the current step shows its name. */
+@media (max-width:520px){
+  .dr-sbar-steps li span{display:none}
+  .dr-sbar-steps li.now{flex:2.8}
+  .dr-sbar-steps li.now span{display:block;font-size:.78rem}
+}
