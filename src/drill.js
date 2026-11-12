@@ -115,6 +115,8 @@
     if (kind === 'med') return ok ? k.goodLine : k.badLine;
     if (kind === 'first') return ok ? 'You went to the right room first.' : `${(k.pts.find((x) => x.ok) || {}).p.n} needed you first.`;
     if (kind === 'sbar') return ok ? k.win : k.lose;
+    const last = st.log && st.log[st.log.length - 1];
+    if (!st.crisis && st.m >= 7 && last && last.ok) return 'It ends without a hold, but only just. The earlier lines made it harder than it had to be.';
     return st.m <= 3 ? k.win : st.m >= 7 || st.crisis ? k.lose : 'Nobody got hurt, but it\'s still tense.';
   }
   function next() {

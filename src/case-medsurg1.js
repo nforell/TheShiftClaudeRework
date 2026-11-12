@@ -781,7 +781,7 @@
     status: (s, P) => ortizBrady(s, P) || P.fl >= 62 ? 'urgent' : P.fl >= 57 ? 'watch' : 'stable',
     outcome(s, P) {
       if (P.fl >= 62 && P.lasixAt === null) return { tone: 'bad', title: 'Worsening pulmonary edema', text: 'His diuretic never went in. He\'s working to breathe on 4 L. The night shift inherits a likely ICU consult.' };
-      if (P.metoAt !== null && P.metoHR < 55) return { tone: 'mixed', title: 'Bradycardia after metoprolol', text: 'Heart rate dropped into the 40s with a soft pressure after a dose that should have been held. Resolving, but avoidable.' };
+      if (P.metoAt !== null && P.metoHR < 55) return { tone: 'mixed', title: 'Bradycardia after metoprolol', text: 'Heart rate dropped into the 40s with a soft pressure after a dose that should have been held. ' + (P.bradyOrder ? 'You called it in, and he was watched with atropine and pads at the bedside until it wore off. Resolving, but avoidable.' : 'Nobody told the provider, so he rode it out for two hours with no plan if he got worse. It wore off on its own. Avoidable, and it should have been called.') };
       return { tone: 'good', title: 'Diuresing, rate controlled', text: 'Metoprolol held for his rate, furosemide in, urine flowing. ' + (P.educated ? 'Rosa is packing low-sodium caldo tomorrow.' : 'The soda is still on the table.') };
     },
   };

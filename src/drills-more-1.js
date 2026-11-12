@@ -7,7 +7,7 @@
   D.med.push(
     { id: 'mp-heparin-xa', p: { n: 'Helen Brandt', a: 69, x: 'F', sk: 1, h: ['bob', '#C9C2B8'], c: GOWN, e: ['glasses', 'wrinkles'], sm: .2 },
       med: 'Heparin infusion, continue current rate', for: 'Pulmonary embolism', line: 'The 6-hour level just posted. She mentions her gums bled when she brushed.',
-      check: [{ t: 'Anti-Xa level against the protocol goal', v: 'Anti-Xa 0.95. The goal is 0.3 to 0.7.', ok: 1 }, { t: 'Blood pressure', v: 'BP 128/74.' }, { t: 'Oxygen saturation', v: 'SpO₂ 95% on room air.' }],
+      check: [{ t: 'Anti-Xa level against the protocol goal', v: 'Anti-Xa 0.95. The goal is 0.3 to 0.7.', ok: 1 }, { t: 'Blood pressure and heart rate now', v: 'BP 128/74.' }, { t: 'Oxygen saturation on room air', v: 'SpO₂ 95% on room air.' }],
       pick: [{ t: 'Pause and lower the rate per the protocol, check for bleeding, report', ok: 1 }, { t: 'Keep the rate and recheck the level in 6 hours', w: 'Above goal with bleeding needs the protocol\'s pause and rate change now, not another level at the same rate.' }, { t: 'Stop the infusion and ask for protamine', w: 'Protamine is for major bleeding. Gum bleeding with a high level is handled by the protocol.' }],
       why: 'Her level is above the goal and she is bleeding from her gums. The heparin protocol tells you how long to pause and how much to lower the rate.',
       pearl: 'Heparin drips run on the protocol. Above goal: pause and lower as written, look for bleeding, recheck on time. A bolus is only for a level under goal.',
@@ -16,7 +16,7 @@
 
     { id: 'mp-lispro-npo', p: { n: 'Arturo Medina', a: 61, x: 'M', sk: 5, h: ['short', '#3A302A'], c: GOWN, e: ['mustache'], sm: .3 },
       med: 'Insulin lispro 8 units SubQ, with breakfast', for: 'Type 2 diabetes', line: 'He\'s going to the OR at 10:00 for a hernia repair.',
-      check: [{ t: 'His diet order today', v: 'Nothing by mouth since midnight. No tray is coming.', ok: 1 }, { t: 'His A1c', v: 'A1c 8.1%.' }, { t: 'His potassium', v: 'K 4.2.' }],
+      check: [{ t: 'His diet order today', v: 'Nothing by mouth since midnight. No tray is coming.', ok: 1 }, { t: 'His A1c from this admission', v: 'A1c 8.1%.' }, { t: 'His morning potassium', v: 'K 4.2.' }],
       pick: [{ t: 'Hold the mealtime dose, check his glucose, ask about his basal dose', ok: 1 }, { t: 'Give it and ask for a dextrose infusion to cover it', w: 'That treats a problem you created. No meal, no mealtime insulin.' }, { t: 'Give half to cover stress hyperglycemia before surgery', w: 'High glucose from stress is covered by correction insulin, if ordered, not by mealtime insulin.' }],
       why: 'Mealtime insulin covers a meal. With no meal, it only drops his glucose, and he will be under anesthesia where nobody can see the symptoms.',
       pearl: 'Mealtime insulin follows the meal. NPO? Hold it, check glucose often, and ask what to do with the long-acting dose.',
@@ -34,7 +34,7 @@
 
     { id: 'mp-oxy-er', p: { n: 'Walter Grimes', a: 80, x: 'M', sk: 1, h: ['balding', '#E4DED6'], c: GOWN, e: ['wrinkles'], sm: .1 },
       med: 'Oxycodone ER 10 mg PO', for: 'Chronic back pain', line: 'After his stroke he can\'t swallow whole pills. You were about to crush it into applesauce.',
-      check: [{ t: 'Whether this tablet can be crushed', v: 'Extended release. The label says do not crush.', ok: 1 }, { t: 'His pain score', v: 'Pain 5.' }, { t: 'His blood pressure', v: 'BP 142/80.' }],
+      check: [{ t: 'Whether this tablet can be crushed', v: 'Extended release. The label says do not crush.', ok: 1 }, { t: 'His pain score at rest and moving', v: 'Pain 5.' }, { t: 'His blood pressure', v: 'BP 142/80.' }],
       pick: [{ t: 'Don\'t crush it. Ask for a form he can take safely', ok: 1 }, { t: 'Cut it in half and give both halves in applesauce', w: 'Cutting breaks the extended-release design just like crushing does.' }, { t: 'Give it whole in applesauce', w: 'He can\'t safely swallow whole pills after his stroke. That\'s an aspiration risk.' }],
       why: 'Crushing an extended-release opioid releases the whole 12-hour dose at once. That can stop his breathing.',
       pearl: 'ER, XR, SR, LA, CR: never crush, cut or chew unless the label says you can. Ask pharmacy for another form.',
@@ -43,7 +43,7 @@
 
     { id: 'mp-tramadol-ss', p: { n: 'Diane Kowalski', a: 52, x: 'F', sk: 1, h: ['ponytail', '#8A5A3A'], c: GOWN, e: [], sm: 0 },
       med: 'Tramadol 50 mg PO, as needed', for: 'Pain after surgery', line: 'She takes sertraline at home. She\'s sweating, restless, and her legs keep jerking.',
-      check: [{ t: 'Temperature, heart rate and a neuro check', v: 'T 38.6, HR 122. Twitching that keeps going when you tap her ankle (clonus).', ok: 1 }, { t: 'Pain score', v: 'Pain 6.' }, { t: 'Her potassium', v: 'K 3.9.' }],
+      check: [{ t: 'Temperature, heart rate and a neuro check', v: 'T 38.6, HR 122. Twitching that keeps going when you tap her ankle (clonus).', ok: 1 }, { t: 'Pain score and where it hurts most', v: 'Pain 6.' }, { t: 'Her morning potassium level', v: 'K 3.9.' }],
       pick: [{ t: 'Hold it. Report possible serotonin syndrome', ok: 1 }, { t: 'Give it, then recheck her temperature in an hour', w: 'Tramadol adds to the serotonin load that\'s causing the fever and clonus.' }, { t: 'Hold the tramadol and give acetaminophen for the fever', w: 'Holding is right, but this is a possible drug toxicity and needs the provider now, not just a fever treatment.' }],
       why: 'Tramadol raises serotonin, and so does sertraline. Fever, a fast pulse, sweating and clonus point to serotonin syndrome. More tramadol makes it worse.',
       pearl: 'Serotonin syndrome: agitation, sweating, fever, fast heart, clonus. Common culprits with SSRIs: tramadol, linezolid, triptans, ondansetron in high doses. Stop the drug and call.',
@@ -52,7 +52,7 @@
 
     { id: 'mp-haldol-qtc', p: { n: 'Peter Lam', a: 67, x: 'M', sk: 3, h: ['short', '#3A3330'], c: GOWN, e: ['glasses'], sm: 0 },
       med: 'Haloperidol 2 mg IV, as needed', for: 'Agitation in delirium', line: 'He\'s pulling at his oxygen. This morning\'s ECG is in the chart.',
-      check: [{ t: 'The QTc on this morning\'s ECG', v: 'QTc 528 ms.', ok: 1 }, { t: 'His blood pressure', v: 'BP 146/84.' }, { t: 'His glucose', v: '132.' }],
+      check: [{ t: 'The QTc on this morning\'s ECG', v: 'QTc 528 ms.', ok: 1 }, { t: 'His blood pressure, lying in bed', v: 'BP 146/84.' }, { t: 'His fingerstick glucose', v: '132.' }],
       pick: [{ t: 'Hold it, reorient him, call about the QTc', ok: 1 }, { t: 'Give half the dose', w: 'Any dose adds to the risk at a QTc of 528.' }, { t: 'Give it IM instead, which is gentler on the heart', w: 'IM haloperidol prolongs the QT too. The route doesn\'t fix a QTc over 500.' }],
       why: 'A QTc over 500 raises the risk of a deadly rhythm called torsades. Haloperidol, especially IV, prolongs the QT further.',
       pearl: 'Before QT-prolonging drugs (haloperidol, ondansetron, many antibiotics), check the QTc, potassium and magnesium. Over 500: hold and call.',
@@ -61,7 +61,7 @@
 
     { id: 'mp-mag-tox', p: { n: 'Keisha Monroe', a: 27, x: 'F', sk: 7, h: ['bun', '#120C09'], c: GOWN, e: ['studs'], sm: 0 },
       med: 'Magnesium sulfate 2 g/hour IV, continue', for: 'Preeclampsia with severe features', line: 'Six hours after birth. She\'s hard to rouse and her catheter bag has barely changed.',
-      check: [{ t: 'Reflexes, breathing and urine output', v: 'No knee reflex. RR 10. 40 mL of urine in 2 hours.', ok: 1 }, { t: 'Fundus', v: 'Firm, at the umbilicus.' }, { t: 'Temperature', v: '37.0.' }],
+      check: [{ t: 'Reflexes, breathing and urine output', v: 'No knee reflex. RR 10. 40 mL of urine in 2 hours.', ok: 1 }, { t: 'Fundal height and firmness', v: 'Firm, at the umbilicus.' }, { t: 'Her temperature this hour', v: '37.0.' }],
       pick: [{ t: 'Stop the infusion, call now, get calcium gluconate ready', ok: 1 }, { t: 'Keep it running and give calcium gluconate', w: 'The antidote doesn\'t make the infusion safe. Stop the magnesium first.' }, { t: 'Slow it to 1 g/hour and recheck her reflexes in an hour', w: 'No reflexes and a respiratory rate of 10 mean she\'s toxic now. Stop it.' }],
       why: 'Magnesium leaves through the kidneys. Low urine output lets it build up; lost reflexes and slow breathing are signs of toxicity.',
       pearl: 'Magnesium checks: reflexes, breathing (12 or more), urine (30 mL/hr or more), level of consciousness. Toxic? Stop it, call, calcium gluconate is the antidote.',
@@ -70,7 +70,7 @@
 
     { id: 'mp-pit-up', p: { n: 'Sofia Ramirez', a: 30, x: 'F', sk: 4, h: ['long', '#1A120E'], c: GOWN, e: ['hoops'], sm: 0 },
       med: 'Oxytocin: increase by 2 milliunits/min per protocol', for: 'Induction of labor', line: 'The titration is due. She says the contractions are "one on top of the other."',
-      check: [{ t: 'The contraction pattern and fetal heart tracing', v: '6 contractions in 10 minutes. Late decelerations with the last three.', ok: 1 }, { t: 'Her pain score', v: 'Pain 8.' }, { t: 'Her temperature', v: '37.2.' }],
+      check: [{ t: 'The contraction pattern and fetal heart tracing', v: '6 contractions in 10 minutes. Late decelerations with the last three.', ok: 1 }, { t: 'Her pain score and how she\'s coping', v: 'Pain 8.' }, { t: 'Her temperature this hour', v: '37.2.' }],
       pick: [{ t: 'Don\'t increase. Stop the oxytocin, turn her on her side, fluid bolus, call', ok: 1 }, { t: 'Decrease it by half and reposition her', w: 'With late decelerations, protocols stop oxytocin, not just lower it.' }, { t: 'Hold the increase and recheck in 30 minutes', w: 'Late decelerations with tachysystole need action now, not a recheck.' }],
       why: 'More than 5 contractions in 10 minutes is tachysystole. With late decelerations, the baby isn\'t getting enough oxygen between contractions.',
       pearl: 'Tachysystole with a worrying tracing: stop oxytocin, lateral position, IV fluid, notify. An order to titrate never overrides the tracing.',
@@ -79,7 +79,7 @@
 
     { id: 'mp-gent-cr', p: { n: 'Ray Holloway', a: 72, x: 'M', sk: 2, h: ['swoop', '#C8C0B6'], c: GOWN, e: ['wrinkles'], sm: .1 },
       med: 'Gentamicin IV, scheduled', for: 'Urinary sepsis', line: 'Day 4. His urine output has been dropping.',
-      check: [{ t: 'Creatinine trend and drug level', v: 'Creatinine 2.1, up from 1.0. Trough above range.', ok: 1 }, { t: 'His temperature', v: '37.3.' }, { t: 'His blood pressure', v: 'BP 132/76.' }],
+      check: [{ t: 'Creatinine trend and drug level', v: 'Creatinine 2.1, up from 1.0. Trough above range.', ok: 1 }, { t: 'His temperature curve since day 1', v: '37.3.' }, { t: 'His blood pressure trend', v: 'BP 132/76.' }],
       pick: [{ t: 'Hold it and call the provider and pharmacy', ok: 1 }, { t: 'Give it and ask pharmacy to recheck a level tomorrow', w: 'A doubled creatinine and a high trough mean it\'s accumulating now.' }, { t: 'Give it with an extra liter of fluid to protect his kidneys', w: 'Fluid doesn\'t make a toxic level safe.' }],
       why: 'Gentamicin can damage the kidneys and the ear. A doubling creatinine and a high trough mean it\'s building up.',
       pearl: 'Aminoglycosides and vancomycin: watch creatinine, urine output and levels. Rising creatinine? Hold and call before the next dose.',
@@ -88,7 +88,7 @@
 
     { id: 'mp-alendronate', p: { n: 'June Whitaker', a: 77, x: 'F', sk: 0, h: ['curls', '#D8D2CA'], c: 'blouse', e: ['glasses', 'wrinkles'], sm: .4 },
       med: 'Alendronate 70 mg PO, weekly', for: 'Osteoporosis', line: '06:30. She\'s sitting up in the chair. Breakfast arrives at 07:30. She asks for it with her coffee.',
-      check: [{ t: 'Whether she can stay upright and wait to eat', v: 'She can sit up for the next hour. Nothing to eat or drink yet.', ok: 1 }, { t: 'Calcium level', v: '9.2. Normal.' }, { t: 'Blood pressure', v: 'BP 134/78.' }],
+      check: [{ t: 'Whether she can stay upright and wait to eat', v: 'She can sit up for the next hour. Nothing to eat or drink yet.', ok: 1 }, { t: 'Her most recent calcium level', v: '9.2. Normal.' }, { t: 'Blood pressure, sitting in the chair', v: 'BP 134/78.' }],
       pick: [{ t: 'Give it now with a full glass of plain water. Upright 30 minutes, then breakfast', ok: 1 }, { t: 'Give it with her coffee, since she\'ll stay upright', w: 'Anything but plain water blocks absorption.' }, { t: 'Give it now, then help her back to bed to rest', w: 'Lying down within 30 minutes risks esophageal injury.' }],
       why: 'Alendronate absorbs poorly with anything but water, and it can burn the esophagus if she lies down.',
       pearl: 'Bisphosphonates: first thing in the morning, full glass of plain water, upright 30 minutes, nothing else by mouth for 30 minutes.',
@@ -97,7 +97,7 @@
 
     { id: 'mp-vanco-rate', p: { n: 'Marcus Webb', a: 45, x: 'M', sk: 6, h: ['buzz', '#120C09'], c: GOWN, e: ['goatee'], sm: 0 },
       med: 'Vancomycin 1.5 g IV, infusing', for: 'Cellulitis', line: 'Ten minutes in, his face and neck are red and he says he\'s itchy. He\'s breathing fine.',
-      check: [{ t: 'The infusion rate', v: 'It\'s set to run over 30 minutes.', ok: 1 }, { t: 'His temperature', v: '37.4.' }, { t: 'His glucose', v: '118.' }],
+      check: [{ t: 'The infusion rate', v: 'It\'s set to run over 30 minutes.', ok: 1 }, { t: 'His temperature right now', v: '37.4.' }, { t: 'His glucose', v: '118.' }],
       pick: [{ t: 'Stop it, tell the provider, restart over at least 90 minutes', ok: 1 }, { t: 'Keep it running and give PRN diphenhydramine', w: 'The rate is the cause. Stop the infusion first.' }, { t: 'Stop it and list vancomycin as an allergy', w: 'Flushing from a fast infusion is a rate reaction, not usually an allergy. Labeling it an allergy can take away an antibiotic he needs.' }],
       why: 'Flushing and itching from a fast vancomycin infusion is an infusion reaction, not usually a true allergy. It\'s about speed: run 1.5 g over 90 minutes or more.',
       pearl: 'Vancomycin: no faster than about 1 g an hour. Flushing above the waist? Stop, treat as ordered, restart slower. Wheeze, swelling or low BP is anaphylaxis: call a rapid response.',
@@ -106,7 +106,7 @@
 
     { id: 'mp-blood-abo', p: { n: 'Esther Nwosu', a: 63, x: 'F', sk: 8, h: ['bob', '#1A120E'], c: GOWN, e: ['glasses'], sm: .2 },
       med: '1 unit packed red blood cells', for: 'Hemoglobin 6.8', line: 'The unit is here. You and another nurse are at the bedside for the check.',
-      check: [{ t: 'Her ID band against the unit tag, together', v: 'Name and record number match. The unit is A positive. Her type is B positive.', ok: 1 }, { t: 'Her pre-transfusion vital signs', v: 'T 36.9, HR 98, BP 118/70.' }, { t: 'The IV size', v: '20 gauge in her forearm.' }],
+      check: [{ t: 'Her ID band against the unit tag, together', v: 'Name and record number match. The unit is A positive. Her type is B positive.', ok: 1 }, { t: 'Her pre-transfusion vital signs', v: 'T 36.9, HR 98, BP 118/70.' }, { t: 'The IV size and whether it flushes', v: '20 gauge in her forearm.' }],
       pick: [{ t: 'Don\'t hang it. Return it to the blood bank and call them', ok: 1 }, { t: 'Call the blood bank, but hang it while you wait', w: 'Nothing mismatched goes up, ever.' }, { t: 'Hang it slowly and stay for the first 15 minutes', w: 'Watching doesn\'t make a mismatched unit safe.' }],
       why: 'Type A cells given to a type B patient can cause a fatal hemolytic reaction within minutes. The bedside check is the last stop before that happens.',
       pearl: 'Blood: two licensed people check patient and unit at the bedside, every time. Any mismatch, it doesn\'t go up. Stay with them for the first 15 minutes.',
@@ -124,7 +124,7 @@
 
     { id: 'mp-peds-ibu', p: { n: 'Mila Torres', a: 2, x: 'F', sk: 4, h: ['ponytail', '#1E1612'], c: 'onesie', e: [], sm: 0, k: .76 },
       med: 'Ibuprofen 10 mg/kg PO', for: 'Fever, 38.8', line: 'Gastroenteritis. She\'s been vomiting since last night.',
-      check: [{ t: 'Her hydration and urine output', v: 'No wet diaper in 10 hours. Dry lips, no tears.', ok: 1 }, { t: 'Her weight', v: '12 kg.' }, { t: 'Her ears', v: 'Normal.' }],
+      check: [{ t: 'Her hydration and urine output', v: 'No wet diaper in 10 hours. Dry lips, no tears.', ok: 1 }, { t: 'Her weight in kilograms for the dose', v: '12 kg.' }, { t: 'Her ears and throat', v: 'Normal.' }],
       pick: [{ t: 'Hold the ibuprofen and call about fluids', ok: 1 }, { t: 'Give it and start oral rehydration', w: 'She\'s too dry and still vomiting. She needs fluids before an NSAID.' }, { t: 'Give it with a small sip of fluid to protect her stomach', w: 'The concern isn\'t her stomach; it\'s the kidneys of a dehydrated child.' }],
       why: 'A child who is this dry is at risk of kidney injury, and NSAIDs reduce blood flow to the kidneys. She needs fluids before anything else.',
       pearl: 'Kids: count the wet diapers. Dehydration plus an NSAID can hurt the kidneys. Fluids first; ask about acetaminophen for the fever.',
@@ -133,7 +133,7 @@
 
     { id: 'mp-olz-benzo', p: { n: 'Andre Tillman', a: 39, x: 'M', sk: 7, h: ['buzz', '#120C09'], c: 'tee', e: ['beard'], sm: 0 },
       med: 'Olanzapine 10 mg IM, as needed', for: 'Severe agitation', line: 'He\'s calmer than an hour ago but still yelling. A colleague grabs the olanzapine.',
-      check: [{ t: 'What he\'s had in the last few hours', v: 'Lorazepam 2 mg IM 40 minutes ago.', ok: 1 }, { t: 'His blood pressure', v: 'BP 128/78.' }, { t: 'His oxygen saturation', v: 'SpO₂ 97%.' }],
+      check: [{ t: 'What he\'s had in the last few hours', v: 'Lorazepam 2 mg IM 40 minutes ago.', ok: 1 }, { t: 'His blood pressure and heart rate now', v: 'BP 128/78.' }, { t: 'His oxygen saturation', v: 'SpO₂ 97%.' }],
       pick: [{ t: 'Hold it. Keep watching his breathing and call the prescriber', ok: 1 }, { t: 'Give it, since the lorazepam was 40 minutes ago', w: 'That\'s too soon after an injected benzodiazepine.' }, { t: 'Give it and check his vitals every 15 minutes', w: 'Monitoring is for a decision that\'s already safe. This combination is warned against.' }],
       why: 'IM olanzapine soon after an injected benzodiazepine can cause dangerous low blood pressure and slowed breathing.',
       pearl: 'Before any PRN for agitation, read what was already given. IM olanzapine and an injected benzodiazepine are not given close together.',
@@ -142,7 +142,7 @@
 
     { id: 'mp-dystonia', p: { n: 'Jordan Ellis', a: 19, x: 'M', sk: 3, h: ['shag', '#1A1410'], c: 'hoodie', e: [], sm: 0 },
       med: 'Haloperidol 5 mg PO, scheduled', for: 'First-episode psychosis', line: 'He started it yesterday. Staff say he\'s "acting out": his neck is twisted and his eyes keep rolling up.',
-      check: [{ t: 'Look closely at his neck, jaw and eyes', v: 'Neck held to one side, jaw clenched, eyes fixed upward. He says he can\'t stop it.', ok: 1 }, { t: 'His blood pressure', v: 'BP 124/78.' }, { t: 'His pulse', v: 'HR 96.' }],
+      check: [{ t: 'Look closely at his neck, jaw and eyes', v: 'Neck held to one side, jaw clenched, eyes fixed upward. He says he can\'t stop it.', ok: 1 }, { t: 'His blood pressure, sitting and standing', v: 'BP 124/78.' }, { t: 'His pulse for a full minute', v: 'HR 96.' }],
       pick: [{ t: 'Hold it, give the PRN benztropine or diphenhydramine, call', ok: 1 }, { t: 'Give it, along with a dose of benztropine', w: 'Treat the dystonia first and tell the prescriber. Giving the same dose again may bring it right back.' }, { t: 'Hold it and give lorazepam for the agitation', w: 'He isn\'t agitated; his muscles are in spasm. Benztropine or diphenhydramine treats it.' }],
       why: 'This is an acute dystonic reaction to haloperidol. It\'s frightening and painful, and it can affect the airway. An anticholinergic fixes it within minutes.',
       pearl: 'New antipsychotic plus a twisted neck, rolled eyes or a locked jaw: acute dystonia, not behavior. Benztropine or diphenhydramine, and tell the prescriber.',
@@ -151,7 +151,7 @@
 
     { id: 'mp-ciwa-low', p: { n: 'Dale Hutchins', a: 48, x: 'M', sk: 1, h: ['short', '#6B5440'], c: GOWN, e: ['beard'], sm: .1 },
       med: 'Lorazepam 1 mg PO, as needed for CIWA 10 or more', for: 'Alcohol withdrawal', line: 'He asks for "something to take the edge off." Last drink: about 30 hours ago.',
-      check: [{ t: 'His withdrawal score (CIWA) right now', v: 'CIWA 6: mild anxiety and a slight tremor.', ok: 1 }, { t: 'His glucose', v: '102.' }, { t: 'His liver tests', v: 'Mildly up.' }],
+      check: [{ t: 'His withdrawal score (CIWA) right now', v: 'CIWA 6: mild anxiety and a slight tremor.', ok: 1 }, { t: 'His fingerstick glucose right now', v: '102.' }, { t: 'His liver tests from this morning\'s labs', v: 'Mildly up.' }],
       pick: [{ t: 'Hold it. Offer a quiet room and fluids, rescore in an hour', ok: 1 }, { t: 'Give it, since he\'s at risk for withdrawal seizures', w: 'Symptom-triggered dosing protects him by scoring often, not by dosing under the threshold.' }, { t: 'Give half a dose to keep him ahead of it', w: 'The order doesn\'t cover partial doses below the threshold.' }],
       why: 'His score is below the line on the order. Symptom-triggered dosing works because it\'s given for the score, not the request. You can still help him.',
       pearl: 'Symptom-triggered orders: score, then dose. Under the threshold, comfort measures and a rescore. Withdrawal peaks at 24 to 72 hours, so keep scoring.',
@@ -160,7 +160,7 @@
 
     { id: 'mp-enox-epi', p: { n: 'Nancy Ferguson', a: 68, x: 'F', sk: 1, h: ['short', '#D0C8BE'], c: GOWN, e: ['glasses'], sm: .2 },
       med: 'Enoxaparin 40 mg SubQ', for: 'Clot prevention after knee replacement', line: 'Her epidural catheter is coming out at 10:00. It\'s 08:00.',
-      check: [{ t: 'The timing against the epidural removal', v: 'Removal is in 2 hours. Her last dose was 20 hours ago.', ok: 1 }, { t: 'Her platelets', v: '214,000.' }, { t: 'Her pain score', v: 'Pain 3.' }],
+      check: [{ t: 'The timing against the epidural removal', v: 'Removal is in 2 hours. Her last dose was 20 hours ago.', ok: 1 }, { t: 'Her platelets from this morning\'s labs', v: '214,000.' }, { t: 'Her pain score with the epidural running', v: 'Pain 3.' }],
       pick: [{ t: 'Hold it and check timing with anesthesia', ok: 1 }, { t: 'Give it now so it\'s done before the catheter comes out', w: 'That\'s exactly the timing that risks a spinal hematoma.' }, { t: 'Give it and ask anesthesia to push the removal back', w: 'Anesthesia sets the timing. Ask before you give, not after.' }],
       why: 'Removing an epidural catheter while enoxaparin is working can cause a spinal bleed that paralyses. The catheter usually comes out 12 hours after a dose, and the next dose waits about 4 hours after removal.',
       pearl: 'Anticoagulants and epidurals: line up the dose times with catheter placement and removal. If you\'re unsure, hold and ask anesthesia.',
@@ -169,7 +169,7 @@
 
     { id: 'mp-kcl-po', p: { n: 'Lorraine Biggs', a: 58, x: 'F', sk: 6, h: ['curlyshort', '#2A1E18'], c: GOWN, e: ['hoops'], sm: .4 },
       med: 'Potassium chloride 20 mEq PO', for: 'K 3.4', line: 'She\'s eating breakfast. "These pills are huge."',
-      check: [{ t: 'Her urine output and kidney function', v: 'Urinating normally. Creatinine 0.8.', ok: 1 }, { t: 'Her temperature', v: '36.8.' }, { t: 'Her oxygen', v: 'SpO₂ 97%.' }],
+      check: [{ t: 'Her urine output and kidney function', v: 'Urinating normally. Creatinine 0.8.', ok: 1 }, { t: 'Her temperature this morning, by mouth', v: '36.8.' }, { t: 'Her oxygen saturation', v: 'SpO₂ 97%.' }],
       pick: [{ t: 'Give it with breakfast and a full glass of water', ok: 1 }, { t: 'Give it on an empty stomach so it absorbs better', w: 'Oral potassium irritates the stomach. Give it with food.' }, { t: 'Crush it into her oatmeal so it\'s easier to swallow', w: 'Many potassium tablets are extended release and can\'t be crushed. Ask for the liquid form.' }],
       why: 'Her kidneys work and her potassium is low. Taken with food and water, oral potassium is less likely to upset or injure her stomach.',
       pearl: 'Oral potassium: with food and a full glass of water, swallowed whole. Many tablets are extended release. If the pill is too big, ask for the liquid.',
@@ -178,7 +178,7 @@
 
     { id: 'mp-ng-check', p: { n: 'Gerald Fox', a: 76, x: 'M', sk: 2, h: ['balding', '#C9C2B8'], c: GOWN, e: ['wrinkles'], sm: .1 },
       med: 'Medications through the NG tube', for: 'After a stroke', line: 'The tape is loose. The mark at his nose read 55 cm yesterday.',
-      check: [{ t: 'The tube\'s mark at the nose', v: 'It now reads 47 cm. The tube has slid out 8 cm.', ok: 1 }, { t: 'His blood pressure', v: 'BP 150/88.' }, { t: 'His gastric residual', v: '30 mL.' }],
+      check: [{ t: 'The tube\'s mark at the nose', v: 'It now reads 47 cm. The tube has slid out 8 cm.', ok: 1 }, { t: 'His blood pressure before the feeding', v: 'BP 150/88.' }, { t: 'His gastric residual', v: '30 mL.' }],
       pick: [{ t: 'Don\'t use it. Report it and confirm placement before anything goes in', ok: 1 }, { t: 'Advance it back to 55 cm and give the meds', w: 'Advancing a tube blindly doesn\'t confirm where the tip is.' }, { t: 'Test the pH of an aspirate and give the meds if it\'s acidic', w: 'After a tube has moved 8 cm, follow policy to reconfirm placement (usually an X-ray) before anything goes in. pH alone isn\'t enough here.' }],
       why: 'A tube that has moved may now end in the esophagus or the airway. Anything you push could go into his lungs.',
       pearl: 'Before every use: check the external length. If it has moved, stop and reconfirm placement per policy (X-ray is the standard). Never push a tube back in blindly.',
@@ -202,7 +202,7 @@
         { p: { n: 'Ms. Kim', a: 26, x: 'F', sk: 3, h: ['bob', '#151010'] }, line: 'Lower belly pain, period is 6 weeks late. Dizzy. Pain in her right shoulder.', ok: 1 },
         { p: { n: 'Mr. Shaw', a: 41, x: 'M', sk: 2, h: ['short', '#3A2A22'] }, line: 'Migraine like his usual ones. Pain 8, vomited once.', w: 'A familiar pattern; treat soon.' },
         { p: { n: 'Ms. Fox', a: 33, x: 'F', sk: 0, h: ['ponytail', '#C08A4E'], e: ['freckles'] }, line: 'Hives after a new antibiotic. Lips normal, breathing fine.', w: 'Watch for anaphylaxis, but no airway or circulation signs right now.' },
-        { p: { n: 'Mr. Okoro', a: 60, x: 'M', sk: 8, h: ['balding', '#2A2220'] }, line: 'Ran out of blood pressure pills. BP 188/104. No headache or chest pain.', w: 'Very high, but no signs of organ damage: urgent, not an emergency.' },
+        { p: { n: 'Mr. Okoro', a: 60, x: 'M', sk: 8, h: ['balding', '#2A2220'] }, line: 'Ran out of blood pressure pills a week ago. BP 188/104. No headache or chest pain.', w: 'Very high, but no signs of organ damage: urgent, not an emergency.' },
       ],
       why: 'A missed period, belly pain, dizziness and shoulder-tip pain point to a ruptured ectopic pregnancy bleeding into the abdomen.',
       pearl: 'Any person of childbearing age with belly pain gets a pregnancy test. Shoulder-tip pain plus dizziness can mean blood under the diaphragm.' },
@@ -220,7 +220,7 @@
     { id: 'wf-vent', where: 'ICU, 10:00', q: 'Who first?',
       pts: [
         { p: { n: 'Mr. Ruiz', a: 58, x: 'M', sk: 5, h: ['short', '#1E1814'], e: ['mustache'] }, line: 'On the ventilator. High-pressure alarm, SpO₂ 84% and falling.', ok: 1 },
-        { p: { n: 'Mrs. Kane', a: 70, x: 'F', sk: 1, h: ['curls', '#D8D2CA'] }, line: 'Norepinephrine bag empty in 15 minutes. MAP 68.', w: 'Get the next bag ready soon. A patient desaturating on the vent is happening now.' },
+        { p: { n: 'Mrs. Kane', a: 70, x: 'F', sk: 1, h: ['curls', '#D8D2CA'] }, line: 'Norepinephrine bag will be empty in about 15 minutes. MAP 68 and steady.', w: 'Get the next bag ready soon. A patient desaturating on the vent is happening now.' },
         { p: { n: 'Mr. Bell', a: 66, x: 'M', sk: 7, h: ['balding', '#2A2220'] }, line: 'Sedation pause in progress. Awake, following commands.', w: 'Expected during a pause; reassess for a breathing trial.' },
         { p: { n: 'Mrs. Wu', a: 81, x: 'F', sk: 3, h: ['bob', '#B8B0A6'] }, line: 'Urine output 25 mL/hr for the last 2 hours.', w: 'Low and needs reporting, but not seconds-to-minutes.' },
       ],
@@ -232,7 +232,7 @@
         { p: { n: 'Leon', a: 33, x: 'M', sk: 6, h: ['buzz', '#120C09'], c: 'tee' }, line: 'Started haloperidol 3 days ago. T 39.4, stiff arms, confused, sweating.', ok: 1 },
         { p: { n: 'Maya', a: 24, x: 'F', sk: 2, h: ['long', '#4A3A2C'], c: 'hoodie' }, line: 'Manic. Hasn\'t slept in two nights, pacing.', w: 'Needs sleep and limit-setting; not a medical emergency right now.' },
         { p: { n: 'Gus', a: 58, x: 'M', sk: 1, h: ['balding', '#B6A58E'], c: 'flannel' }, line: 'Lithium level 1.4 this morning. Mild hand tremor.', w: 'Slightly high: hold and report. Not as urgent as NMS.' },
-        { p: { n: 'Rina', a: 41, x: 'F', sk: 4, h: ['bob', '#1E1612'], c: 'blouse' }, line: 'On clozapine. Drooling at night. Bowel movement yesterday.', w: 'Expected clozapine side effect; stable.' },
+        { p: { n: 'Rina', a: 41, x: 'F', sk: 4, h: ['bob', '#1E1612'], c: 'blouse' }, line: 'On clozapine for two months. Drooling at night. Bowel movement yesterday, eating well.', w: 'Expected clozapine side effect; stable.' },
       ],
       why: 'Fever, rigid muscles and confusion after starting an antipsychotic point to neuroleptic malignant syndrome. It can kill through high fever, kidney failure and unstable vital signs.',
       pearl: 'NMS: fever, "lead-pipe" rigidity, confusion, unstable vitals. Stop the antipsychotic, cool, fluids, and get a medical team now. Check a CK.' },
@@ -252,7 +252,7 @@
         { p: { n: 'Mr. Pratt', a: 64, x: 'M', sk: 2, h: ['swoop', '#9C8F80'] }, line: 'Got insulin at 07:30, ate two bites of breakfast. Now sweaty and confused.', ok: 1 },
         { p: { n: 'Mrs. Ames', a: 59, x: 'F', sk: 6, h: ['bob', '#2A1E18'] }, line: 'Day 1 after gallbladder surgery. Pain 7, BP 150/88.', w: 'Pain to treat soon; she\'s alert and stable.' },
         { p: { n: 'Ms. Ray', a: 37, x: 'F', sk: 3, h: ['long', '#151010'] }, line: 'Pneumonia. SpO₂ 92% on 2 L, temp 38.3.', w: 'Expected with pneumonia on treatment.' },
-        { p: { n: 'Mr. Dunn', a: 72, x: 'M', sk: 1, h: ['balding', '#C9C2B8'] }, line: 'Heart failure. Up 1 kg since yesterday, mild ankle swelling.', w: 'Report the gain; not an emergency right now.' },
+        { p: { n: 'Mr. Dunn', a: 72, x: 'M', sk: 1, h: ['balding', '#C9C2B8'] }, line: 'Heart failure. Up 1 kg since yesterday, mild ankle swelling, breathing easily.', w: 'Report the gain; not an emergency right now.' },
       ],
       why: 'Insulin without food, then sweating and confusion: hypoglycemia. The brain runs on glucose, and he can seize if it keeps falling.',
       pearl: 'Sweaty and confused on insulin: check a glucose now, and treat a low before anything else. If he can\'t swallow, IV dextrose or glucagon.' },
@@ -271,7 +271,7 @@
       pts: [
         { p: { n: 'Mr. Clay', a: 45, x: 'M', sk: 1, h: ['short', '#6B5440'] }, line: 'Singed nose hair, soot in his mouth, voice getting hoarse.', ok: 1 },
         { p: { n: 'Ms. Clay', a: 42, x: 'F', sk: 1, h: ['ponytail', '#8A5A3A'] }, line: 'Blistered burns over 15% of her body. Pain 9.', w: 'Needs fluids and pain control soon, but a burned airway can close first.' },
-        { p: { n: 'Teddy Clay', a: 12, x: 'M', sk: 1, h: ['short', '#8A5A3A'], c: 'hoodie', k: .9 }, line: 'Coughing. SpO₂ 97%. Carbon monoxide level pending.', w: 'Give high-flow oxygen while the level comes back; he\'s protecting his airway.' },
+        { p: { n: 'Teddy Clay', a: 12, x: 'M', sk: 1, h: ['short', '#8A5A3A'], c: 'hoodie', k: .9 }, line: 'Coughing after the fire. SpO₂ 97% on room air. Carbon monoxide level pending.', w: 'Give high-flow oxygen while the level comes back; he\'s protecting his airway.' },
         { p: { n: 'Mr. Pike', a: 70, x: 'M', sk: 2, h: ['balding', '#C9C2B8'] }, line: 'Neighbor. Mild cough, no burns, SpO₂ 98%.', w: 'Stable; keep an eye on him.' },
       ],
       why: 'Hoarseness and soot after a fire mean the airway is burned and swelling. It can close within hours, and intubating gets harder every minute.',
@@ -282,7 +282,7 @@
         { p: { n: 'Mr. Owusu', a: 31, x: 'M', sk: 7, h: ['buzz', '#120C09'] }, line: 'Spinal cord injury at T4. Pounding headache, flushed face, BP 212/112.', ok: 1 },
         { p: { n: 'Mrs. Kline', a: 68, x: 'F', sk: 1, h: ['short', '#D0C8BE'] }, line: 'Stroke rehab. Coughing during lunch, voice sounds wet.', w: 'Possible aspiration: stop the meal and assess soon. But 212/112 can cause a stroke now.' },
         { p: { n: 'Mr. Vega', a: 50, x: 'M', sk: 5, h: ['short', '#1E1814'] }, line: 'Amputation. Small spot of drainage on the stump dressing.', w: 'Mark and monitor.' },
-        { p: { n: 'Ms. Ito', a: 40, x: 'F', sk: 3, h: ['bob', '#151010'] }, line: 'Brain injury rehab. Restless, pulling at her helmet strap.', w: 'Redirect her soon; she\'s safe.' },
+        { p: { n: 'Ms. Ito', a: 40, x: 'F', sk: 3, h: ['bob', '#151010'] }, line: 'Brain injury rehab. Restless this afternoon, pulling at her helmet strap, easily redirected.', w: 'Redirect her soon; she\'s safe.' },
       ],
       why: 'A spinal cord injury at T6 or above, a pounding headache and a very high blood pressure is autonomic dysreflexia. It can cause a stroke.',
       pearl: 'Autonomic dysreflexia: sit them up, loosen anything tight, find the trigger (usually a full bladder or bowel), and call. The cause below the injury is the treatment.' },
@@ -312,7 +312,7 @@
         { p: { n: 'Mrs. Moss', a: 61, x: 'F', sk: 2, h: ['short', '#8E8378'] }, line: '15 minutes into a blood transfusion. Chills, back pain, temp 38.6.', ok: 1 },
         { p: { n: 'Mr. Lin', a: 55, x: 'M', sk: 3, h: ['balding', '#2A2220'] }, line: 'Platelets 22,000. A few new bruises.', w: 'Bleeding precautions and report; no active bleeding.' },
         { p: { n: 'Ms. Ray', a: 47, x: 'F', sk: 6, h: ['bun', '#120C09'] }, line: 'Nausea 6, vomited once. Antiemetic due.', w: 'Treat soon; stable.' },
-        { p: { n: 'Mr. Day', a: 73, x: 'M', sk: 1, h: ['swoop', '#C9C2B8'] }, line: 'Port site red and tender. Temp 37.9.', w: 'Possible line infection to report and culture. A hemolytic reaction worsens every minute.' },
+        { p: { n: 'Mr. Day', a: 73, x: 'M', sk: 1, h: ['swoop', '#C9C2B8'] }, line: 'Port site red and tender since this morning. Temp 37.9, feels well otherwise.', w: 'Possible line infection to report and culture. A hemolytic reaction worsens every minute.' },
       ],
       why: 'Chills, fever and back pain early in a transfusion suggest a hemolytic reaction. Every extra milliliter makes it worse.',
       pearl: 'Transfusion reaction: stop the blood, keep the line open with saline through new tubing, check vitals, call, and send the bag back to the blood bank.' },
@@ -322,7 +322,7 @@
         { p: { n: 'Marcus', a: 15, x: 'M', sk: 8, h: ['curlyshort', '#120C09'], c: 'hoodie', k: .95 }, line: 'Sickle cell crisis. New chest pain, temp 38.4, SpO₂ 90%.', ok: 1 },
         { p: { n: 'Sara', a: 7, x: 'F', sk: 2, h: ['ponytail', '#6B5440'], c: 'sun', k: .84 }, line: 'Appendectomy yesterday. Temp 38.2, pain 5.', w: 'Low-grade fever after surgery: deep breathing and monitoring.' },
         { p: { n: 'Ben', a: 3, x: 'M', sk: 0, h: ['curlyshort', '#C8A070'], c: 'onesie2', k: .76 }, line: 'Croup, improving. Barky cough, no stridor at rest.', w: 'Improving; keep watching.' },
-        { p: { n: 'Ava', a: 11, x: 'F', sk: 4, h: ['long', '#1E1612'], c: 'tee', k: .88 }, line: 'Type 1 diabetes. Glucose 285, small ketones.', w: 'Needs insulin per orders and fluids; she\'s alert and talking.' },
+        { p: { n: 'Ava', a: 11, x: 'F', sk: 4, h: ['long', '#1E1612'], c: 'tee', k: .88 }, line: 'Type 1 diabetes. Glucose 285, small ketones, alert and drinking.', w: 'Needs insulin per orders and fluids; she\'s alert and talking.' },
       ],
       why: 'Chest pain, fever and low oxygen in sickle cell disease is acute chest syndrome, a leading cause of death in sickle cell.',
       pearl: 'Sickle cell: new chest pain, fever, cough or low SpO₂ is acute chest syndrome until proven otherwise. Oxygen, pain control, incentive spirometry, and call.' }

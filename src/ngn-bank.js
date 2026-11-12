@@ -30,7 +30,7 @@ window.Shift.ngnBank = [
     "why": "No: hyperglycemia before breakfast needs coverage per orders, but 248 mg/dL in an alert client is not immediately life-threatening and can wait a few minutes."
    },
    {
-    "t": "Client D, who is waiting for discharge",
+    "t": "Client D, who is waiting for discharge teaching",
     "ok": false,
     "why": "No: discharge is a stable, predictable task. Seeing this client first to clear a bed is a common new-graduate trap that delays care of the unstable client."
    }
@@ -54,7 +54,7 @@ window.Shift.ngnBank = [
     "why": "Yes: ambulating a stable client with a predictable response is a routine task within UAP training. The nurse still tells the UAP what to report, such as dizziness or pain."
    },
    {
-    "t": "Take the first set of vital signs and check the groin site of a client just back from cardiac catheterization",
+    "t": "Take the first set of vital signs and check the groin site and pedal pulses of a client just back from cardiac catheterization",
     "ok": false,
     "why": "No: the client is in the immediate post-procedure period and could bleed or lose a pulse. Checking the site is assessment, which the RN cannot delegate."
    },
@@ -186,7 +186,7 @@ window.Shift.ngnBank = [
     "why": "Yes: the client is at high risk of aspiration, so the unsafe task must be stopped immediately. Clear, specific direction to the UAP is part of supervising delegated care."
    },
    {
-    "t": "Let the UAP feed small bites of soft food while the nurse watches for coughing",
+    "t": "Let the UAP feed small bites of soft food slowly while the nurse stays in the room and watches closely for coughing",
     "ok": false,
     "why": "No: watching for coughing does not replace a swallow screen, and silent aspiration is common after stroke. This also violates the NPO order."
    },
@@ -274,7 +274,7 @@ window.Shift.ngnBank = [
     "why": "No: a minor family member may omit, soften or misunderstand serious news and should not carry that burden. Family interpreting risks errors and breaches the client's privacy."
    },
    {
-    "t": "Have the provider speak slowly in simple English and ask the client to nod if she understands",
+    "t": "Have the provider speak slowly in simple English, pause often, and ask the client to nod each time if she understands",
     "ok": false,
     "why": "No: nodding does not show understanding, especially across a language barrier. This approach invites the client to agree without comprehending."
    },
@@ -303,7 +303,7 @@ window.Shift.ngnBank = [
     "why": "Yes: a valid POLST is an actionable medical order reflecting the client's own wishes. The nurse honors it, involves the provider, and supports the distressed family member."
    },
    {
-    "t": "Prepare for intubation because a family member has requested it",
+    "t": "Prepare for intubation because a family member at the bedside has requested it, and review the POLST with the family afterward",
     "ok": false,
     "why": "No: a family member who is not the decision-maker cannot override the client's documented wishes. Intubating against a valid POLST violates the client's autonomy."
    },
@@ -399,7 +399,7 @@ window.Shift.ngnBank = [
     "why": "No: exploring the reason for refusal is appropriate. Side effects can often be managed, which may change the client's decision."
    },
    {
-    "t": "Documenting the refusal and the client's reason, then notifying the provider",
+    "t": "Documenting the refusal and the client's stated reason in the record, then notifying the provider",
     "ok": false,
     "why": "No: this is correct. The provider needs to know about the refusal and the side effect so the plan can be reviewed."
    },
@@ -732,7 +732,7 @@ window.Shift.ngnBank = [
     "why": "Yes: the priority is protecting clients from an impaired nurse. The charge nurse or supervisor can remove the coworker and start the facility's fitness-for-duty process."
    },
    {
-    "t": "Talk privately with the coworker after the shift about getting help",
+    "t": "Talk privately with the coworker after the shift about what you noticed and encourage them to get help on their own",
     "ok": false,
     "why": "No: waiting until after the shift lets an impaired nurse care for critically ill clients for 12 hours. Client safety cannot wait."
    },
@@ -1068,7 +1068,7 @@ window.Shift.ngnBank = [
     "why": "No: rescanning on another device is a workaround that ignores what the alert means and may not catch a true mismatch."
    },
    {
-    "t": "Give the dose and document the scanner problem in the client's chart",
+    "t": "Give the dose because it is due, and document the scanner problem in the client's chart and in a work order",
     "ok": false,
     "why": "No: giving the dose first exposes the client to the error the alert may be warning about. Equipment problems are reported to IT, not charted."
    }
@@ -1150,7 +1150,7 @@ window.Shift.ngnBank = [
     "why": "No: dedicated equipment stays in the room so spores are not carried to other clients. This is correct practice."
    },
    {
-    "t": "Wipes the bedside table with the bleach-based disinfectant wipes from the isolation cart",
+    "t": "Wipes the bedside table and call light with the bleach-based disinfectant wipes from the isolation cart",
     "ok": false,
     "why": "No: a sporicidal agent such as a bleach-based product is needed to kill C. difficile spores on surfaces. This is correct."
    }
@@ -1395,7 +1395,7 @@ window.Shift.ngnBank = [
     "why": "No: the site is marked by the person performing the procedure after verification, not changed by the client or nurse. This adds a second conflicting mark."
    },
    {
-    "t": "Document the client's statement and let the surgical team address it during the time-out",
+    "t": "Document the client's statement in the record and let the surgical team address the discrepancy during the time-out in the operating room",
     "ok": false,
     "why": "No: the time-out is a final check, not the place to first resolve a known conflict. The client may be sedated by then and unable to confirm."
    }
@@ -1522,7 +1522,7 @@ window.Shift.ngnBank = [
     "why": "No: the provider must be told promptly, but the nurse should first assess so she can report the client's current heart rate and blood pressure."
    },
    {
-    "t": "Check the second client's armband using his name and date of birth",
+    "t": "Check the second client's armband using his name and date of birth, then give him the dose",
     "ok": false,
     "why": "No: the other client still needs his dose, but the immediate risk is to the client who received a beta blocker he was not prescribed."
    }
@@ -2109,7 +2109,7 @@ window.Shift.ngnBank = [
     "why": "Yes: newborns have little vitamin K and lack the gut bacteria that make it, so a single dose prevents vitamin K deficiency bleeding."
    },
    {
-    "t": "\"Since I'm breastfeeding, my milk will give the baby enough vitamin K.\"",
+    "t": "\"Since I'm breastfeeding, my milk will give the baby all the vitamin K he needs for clotting.\"",
     "ok": false,
     "why": "No: breast milk is low in vitamin K, so exclusively breastfed infants are at higher risk of bleeding without the injection."
    },
@@ -2610,7 +2610,7 @@ window.Shift.ngnBank = [
     "why": "Yes: Naloxone wears off in 30 to 90 minutes, often before the opioid does, so respiratory depression can return. This needs repeat assessment and treatment now."
    },
    {
-    "t": "He rates his hip pain 6 on a 0 to 10 scale",
+    "t": "He rates his hip pain 6 on a 0 to 10 scale and asks for more medicine",
     "ok": false,
     "why": "No: Some pain is expected when an opioid is reversed. It needs a careful plan, but it is not the immediate safety threat."
    },
@@ -2683,7 +2683,7 @@ window.Shift.ngnBank = [
     "why": "No: Cured meats and aged cheese are high in tyramine and can trigger a hypertensive crisis with an MAOI."
    },
    {
-    "t": "Stir-fried tofu with soy sauce and a bowl of miso soup",
+    "t": "Stir-fried tofu with soy sauce and a small bowl of miso soup",
     "ok": false,
     "why": "No: Soy sauce and miso are fermented soy products high in tyramine. The trap is thinking only of cheese and wine."
    },
@@ -3314,7 +3314,7 @@ window.Shift.ngnBank = [
     "why": "Yes: Low potassium lets digoxin bind more strongly to heart muscle, raising the risk of toxicity and dangerous dysrhythmias even when the digoxin dose is unchanged."
    },
    {
-    "t": "Fluid volume excess from sodium retention",
+    "t": "Fluid volume excess from sodium and water retention",
     "ok": false,
     "why": "No: The sodium is normal and furosemide removes sodium and water. The trap is assuming every heart failure lab change means fluid overload."
    },
@@ -3599,7 +3599,7 @@ window.Shift.ngnBank = [
     "why": "No: Breathing and oxygenation improved after fluid removal, which is the expected outcome of the procedure."
    },
    {
-    "t": "A small amount of serous drainage on the dressing",
+    "t": "A small amount of serous drainage on the dressing over the puncture site",
     "ok": false,
     "why": "No: Scant clear drainage at the puncture site is expected. Report bloody or increasing drainage."
    },
@@ -3843,7 +3843,7 @@ window.Shift.ngnBank = [
     "why": "Yes: The magnetic field can affect a pacemaker and its leads. The device type must be confirmed and a special protocol arranged, or the scan cannot be done."
    },
    {
-    "t": "A porcelain crown on a back tooth",
+    "t": "A porcelain crown on a back tooth, placed last year",
     "ok": false,
     "why": "No: Porcelain is not magnetic and dental crowns do not create a safety risk in the scanner."
    },
@@ -3960,7 +3960,7 @@ window.Shift.ngnBank = [
     "why": "Yes: A new tachycardia, systolic pressure under 90 and restlessness point to hemorrhage and shock. These meet common rapid response criteria and need immediate help."
    },
    {
-    "t": "A 70-year-old on post-op day 2 with temperature 37.8 °C (100.0 °F) and diminished breath sounds in both bases",
+    "t": "A 70-year-old on post-op day 2 with temperature 37.8 °C (100.0 °F), a weak cough and diminished breath sounds in both bases",
     "ok": false,
     "why": "No: This suggests atelectasis. The nurse encourages incentive spirometry, deep breathing and walking, and reports it, but it is not an emergency."
    },
@@ -4805,7 +4805,7 @@ window.Shift.ngnBank = [
     "why": "Yes: sitting upright pools blood in the legs and lowers blood pressure right away, buying time to find the trigger."
    },
    {
-    "t": "Check his bladder for distention and his catheter for kinks",
+    "t": "Check his bladder for distention and his catheter tubing for kinks or clots",
     "ok": false,
     "why": "No: a full bladder is the most common trigger and is checked next, but the BP is lowered by positioning first."
    },

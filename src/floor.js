@@ -30,7 +30,7 @@
         { t: 'Write it down, read back the name, value and time, then call the provider now and tell {rn}', v: 2, fb: 'Read-back closes the loop, and a critical value goes to someone who can act on it now, not when {rn} is free.' },
         { t: 'Take the result and leave {rn} a note', v: 0, fb: 'Once you take it, it\'s yours. A note isn\'t notification, and a potassium of 6.4 can\'t wait for a dressing change.' },
         { t: 'Ask the lab to call back when {rn} is out', v: -1, fb: 'Critical values run on a notification clock. With a potassium of 6.4, that wait is time for an arrhythmia.' },
-        { t: 'Take it, read it back, and have {rn} call the provider when she\'s done', v: 1, fb: 'Read-back was right. But whoever takes a critical value owns getting it to a provider promptly. Waiting for {rn} adds delay.' },
+        { t: 'Take it, read it back, write down the name, value and time, and have {rn} call the provider when she\'s done', v: 1, fb: 'Read-back was right. But whoever takes a critical value owns getting it to a provider promptly. Waiting for {rn} adds delay.' },
       ],
       teach: 'Critical results are read back, then reported to the responsible provider within a set time (a Joint Commission safety goal). Whoever takes the call owns it until a provider has it.',
       miss: { text: 'A critical potassium sat on the line until Nova picked it up.', why: 'Critical values can\'t wait for someone to be free. If you can\'t take it, hand it to someone who can, right away.' } },
@@ -41,7 +41,7 @@
       opts: [
         { t: 'Don\'t confirm or deny anything. Offer to take a message', v: 2, fb: 'Privacy starts with whether they\'re here at all. A message lets the patient, or the parents, decide.' },
         { t: 'Give a general update. She\'s family', v: 0, fb: 'Family isn\'t automatically authorized. Without permission or a privacy code, you can\'t share anything.' },
-        { t: 'Confirm they\'re here, but say you can\'t share details', v: 0, fb: 'Confirming someone is a patient is itself a disclosure, and psych and substance-use units have even stricter rules.' },
+        { t: 'Confirm they\'re here, but say you can\'t share details over the phone', v: 0, fb: 'Confirming someone is a patient is itself a disclosure, and psych and substance-use units have even stricter rules.' },
         { t: 'Ask her for the date of birth, then give an update', v: 0, fb: 'Knowing a birthday doesn\'t make someone authorized. Identity isn\'t permission.' },
       ],
       teach: 'Share health information only with people the patient (or a minor\'s parent or guardian) has authorized. Many hospitals use a privacy code. When in doubt, take a message.' },
@@ -74,7 +74,7 @@
       opts: [
         { t: 'Decline: you didn\'t see it. Offer to take one of her tasks instead', v: 2, fb: 'A co-signature says you independently checked the dose. Signing afterward makes the record false and the check meaningless.' },
         { t: 'Sign it. She\'s reliable, and it\'s only 8 units', v: -1, fb: 'Insulin is a high-alert drug. Signing a check you didn\'t do falsifies the record, and the check exists because reliable people make errors.' },
-        { t: 'Sign it, and tell her to wait for you next time', v: 0, fb: 'Kind, but it\'s still a false record. Help her some other way.' },
+        { t: 'Sign it this once, since you trust her, and tell her to wait for you next time', v: 0, fb: 'Kind, but it\'s still a false record. Help her some other way.' },
       ],
       teach: 'An independent double check means a second nurse verifies the order, drug, dose and syringe or pump before the drug is given. You can\'t verify something after the fact.' },
     { id: 'impaired', k: ['med', 'psych', 'peds', 'ob', 'ed'], from: 'fl-clerk', title: 'A colleague', dom: 'safety', cost: 2, exp: 18,
@@ -85,7 +85,7 @@
         { t: 'Tell Nova now, so Craig is kept away from patients', v: 2, fb: 'Patients first. The charge nurse or supervisor removes him from care and follows policy; most states offer a path to treatment.' },
         { t: 'Talk to him privately after the shift', v: 0, fb: 'Too late: he\'d have patients for four hours. Speak up now.' },
         { t: 'Keep an eye on his patients yourself', v: 0, fb: 'You can\'t watch two extra patients on top of yours. Covering for impairment puts patients at risk.' },
-        { t: 'Call the board of nursing yourself, right now', v: 1, fb: 'A report may come later. The first step is getting him away from patients, through the chain of command.' },
+        { t: 'Call the board of nursing yourself, right now, before he leaves', v: 1, fb: 'A report may come later. The first step is getting him away from patients, through the chain of command.' },
       ],
       teach: 'Suspected impairment: remove the person from patient care right away through the charge nurse or supervisor, then follow policy on reporting.' },
     { id: 'label', k: ['med', 'psych', 'peds', 'ob', 'ed'], from: 'fl-rn', title: 'Specimen labels', dom: 'safety', cost: 2, exp: 18,
@@ -94,7 +94,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Stop her. If she can\'t be certain which tubes are whose, both get redrawn, labeled at the bedside', v: 2, fb: 'Label at the bedside, in front of the patient, with two identifiers. Unlabeled tubes away from the patient are how wrong-blood-in-tube errors happen.' },
-        { t: 'Help her match the tubes to the labels', v: 0, fb: 'Matching from memory is the error. If it isn\'t certain, it\'s a redraw.' },
+        { t: 'Help her match the tubes to the labels by checking the draw times and the tube colors against each order', v: 0, fb: 'Matching from memory is the error. If it isn\'t certain, it\'s a redraw.' },
         { t: 'Let her. The lab catches mismatches', v: -1, fb: 'The lab can\'t catch a correctly labeled tube holding the wrong patient\'s blood. That\'s how transfusion reactions start.' },
       ],
       teach: 'Two identifiers, labeled at the bedside, in front of the patient, before you leave the room.' },
@@ -105,7 +105,7 @@
       opts: [
         { t: 'Stay with him, call for help, and check for injury (head strike, pain, new weakness) before moving him', v: 2, fb: 'Assess before you move. On an anticoagulant, any head strike needs neuro checks and usually a CT.' },
         { t: 'Help him up into a wheelchair', v: 0, fb: 'Moving him before you assess can worsen a hip or spine injury, and one person lifting risks two injuries.' },
-        { t: 'Put a pillow under his head and go find the provider', v: 0, fb: 'Don\'t leave him. Call for help and stay.' },
+        { t: 'Put a pillow under his head, cover him with a blanket so he stays warm, and go find the provider yourself right away', v: 0, fb: 'Don\'t leave him. Call for help and stay.' },
         { t: 'Get the lift, then assess him once he\'s in bed', v: 1, fb: 'The lift is right, but assess for injury first, on the floor.' },
       ],
       teach: 'After a fall: stay, call for help, assess for injury, move with a lift or enough staff, notify the provider, and start neuro checks if a head strike is possible, especially on anticoagulants.' },
@@ -117,7 +117,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Hold the heparin and call the provider about possible HIT', v: 2, fb: 'A platelet drop of 50% or more, 5 to 10 days into heparin, is the classic pattern of heparin-induced thrombocytopenia. Stop the exposure and get the team involved.' },
-        { t: 'Give it. Low platelets are common in hospital patients', v: -1, fb: 'HIT causes clots, not bleeding. More heparin can trigger a thrombosis.' },
+        { t: 'Give it. Low platelets are common in hospital patients on heparin', v: -1, fb: 'HIT causes clots, not bleeding. More heparin can trigger a thrombosis.' },
         { t: 'Switch him to enoxaparin instead', v: 0, fb: 'Low-molecular-weight heparin cross-reacts with HIT antibodies. Suspected HIT means no heparin products at all; the provider chooses a non-heparin anticoagulant.' },
       ],
       teach: 'HIT: platelets fall by half or more, usually on days 5–10 of heparin. Stop all heparin, including flushes, notify the provider, and expect a non-heparin anticoagulant such as argatroban.' },
@@ -127,7 +127,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Go assess her now (symptoms, full vitals), then call the provider', v: 2, fb: 'Treat the patient, not the monitor. Stable or unstable decides everything that follows.' },
-        { t: 'Ask the tech to keep watching and call if it gets worse', v: 0, fb: 'A new rhythm at 140 needs eyes on the patient now.' },
+        { t: 'Ask the tech to keep watching the monitor and call you if it gets worse', v: 0, fb: 'A new rhythm at 140 needs eyes on the patient now.' },
         { t: 'Give her scheduled metoprolol early', v: 0, fb: 'Not before you assess. Rate control depends on her blood pressure and symptoms, and a new rhythm needs the provider.' },
         { t: 'Call a rapid response right away', v: 1, fb: 'Right if she\'s unstable, but you don\'t know that yet. A thirty-second look tells you.' },
       ],
@@ -138,7 +138,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Stop. Get him re-banded per policy before the check: no band, no blood', v: 2, fb: 'The band links this patient to the blood bank\'s crossmatch. Without it, the check can\'t happen.' },
-        { t: 'Ask his name and date of birth: that\'s two identifiers', v: 0, fb: 'Spoken identifiers alone aren\'t enough for blood. The check matches the band to the unit and the paperwork, and confused or sedated patients answer wrong.' },
+        { t: 'Ask his name and date of birth and check them against the chart: that\'s two identifiers', v: 0, fb: 'Spoken identifiers alone aren\'t enough for blood. The check matches the band to the unit and the paperwork, and confused or sedated patients answer wrong.' },
         { t: 'Tape the old band to the bed rail', v: -1, fb: 'A band on the bed identifies the bed, not the patient.' },
       ],
       teach: 'Blood: two qualified people check at the bedside, matching the patient\'s ID band, the unit tag and the order. ABO mismatch is one of the deadliest preventable errors.' },
@@ -149,7 +149,7 @@
       opts: [
         { t: 'Suspect low calcium: vitals, call the surgeon, and have IV calcium gluconate ready', v: 2, fb: 'Chvostek\'s sign after thyroid surgery points to low calcium from parathyroid injury. It can progress to tetany and laryngospasm.' },
         { t: 'Reassure her: it\'s post-op anxiety', v: -1, fb: 'Tingling around the mouth after a thyroidectomy is low calcium until proven otherwise.' },
-        { t: 'Check her airway and the incision for swelling', v: 1, fb: 'Worth doing, since a neck hematoma can threaten the airway, but this picture is calcium. Do both, and call.' },
+        { t: 'Check her airway and the incision for swelling or a hematoma, and recheck her in 30 minutes', v: 1, fb: 'Worth doing, since a neck hematoma can threaten the airway, but this picture is calcium. Do both, and call.' },
       ],
       teach: 'After thyroidectomy: watch for low calcium (tingling, Chvostek\'s and Trousseau\'s signs, tetany) and neck hematoma. Keep calcium gluconate and a trach tray close.' },
     { id: 'hypo', k: ['med'], from: '@cna', title: 'Low glucose', dom: 'judgment', cost: 3, exp: 15,
@@ -160,7 +160,7 @@
         { t: 'Give 15 g of fast sugar (4 oz of juice), recheck in 15 minutes', v: 2, fb: 'The rule of 15. He\'s awake and can swallow, so oral is right. Recheck, and repeat if he\'s still under 70.' },
         { t: 'Wait for his lunch tray', v: -1, fb: 'Forty minutes at 52 can become a glucose of 30. Treat it now.' },
         { t: 'Give D50 IV push', v: 0, fb: 'D50 is for patients who can\'t safely swallow. He can; juice is faster to give and gentler on his veins.' },
-        { t: 'Give his mealtime insulin with the juice', v: -1, fb: 'No insulin into a low blood sugar.' },
+        { t: 'Give the juice, then give his mealtime insulin since lunch is on its way', v: -1, fb: 'No insulin into a low blood sugar.' },
       ],
       teach: 'Glucose under 70: 15 g of fast carbs if alert and able to swallow, recheck in 15 minutes, repeat as needed, then a snack with protein. Can\'t swallow: IV dextrose or glucagon.' },
     { id: 'kcl', k: ['med'], from: 'fl-rn', title: 'Potassium', dom: 'meds', cost: 2, exp: 18,
@@ -170,7 +170,7 @@
       opts: [
         { t: 'Don\'t push it. Clarify the order: IV potassium is diluted and runs on a pump', v: 2, fb: 'IV push potassium can stop the heart. Peripheral infusions usually run no faster than 10 mEq an hour.' },
         { t: 'Push it slowly, over 5 minutes', v: -1, fb: 'A slow push is still a push. Potassium never goes IV push.' },
-        { t: 'Dilute it in a 10 mL flush, then push', v: -1, fb: 'Still a bolus to the heart.' },
+        { t: 'Dilute it in a 10 mL saline flush, then push it slowly over at least ten minutes', v: -1, fb: 'Still a bolus to the heart.' },
       ],
       teach: 'Potassium chloride is never given IV push. It comes premixed and runs on a pump, typically 10 mEq an hour peripherally, faster only through a central line with monitoring per policy.' },
     { id: 'evisc', k: ['med'], from: 'fl-rn', title: '"Something popped"', dom: 'safety', cost: 4, exp: 10,
@@ -190,7 +190,7 @@
       opts: [
         { t: 'Stay, get a 12-lead ECG now, and call the provider or a rapid response', v: 2, fb: 'Chest pressure spreading to the jaw: an ECG within 10 minutes is the standard. Time is heart muscle.' },
         { t: 'Give her an antacid and recheck in 30 minutes', v: -1, fb: 'Assuming indigestion delays an MI diagnosis. Women often have less typical symptoms.' },
-        { t: 'Put her on 4 L of oxygen and wait for the provider', v: 0, fb: 'Her SpO₂ is 95%. Routine oxygen doesn\'t help a normal saturation. The ECG is what changes her care.' },
+        { t: 'Put her on 4 L of oxygen, sit her up, and wait for the provider to come by on rounds', v: 0, fb: 'Her SpO₂ is 95%. Routine oxygen doesn\'t help a normal saturation. The ECG is what changes her care.' },
         { t: 'Give sublingual nitroglycerin', v: 0, fb: 'Not without an order, and not before an ECG: a right-sided MI or low blood pressure makes nitro dangerous.' },
       ],
       teach: 'Possible ACS: 12-lead ECG within 10 minutes, vitals, provider or rapid response, then aspirin and nitro per order. Oxygen only if SpO₂ is under 90%.' },
@@ -213,7 +213,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Hold the next dose, call the psychiatrist now, and assess her: neuro, hydration, vitals', v: 2, fb: 'The usual range is about 0.6 to 1.2. At 1.9 with vomiting and a coarse tremor she\'s toxic, and vomiting dehydrates her, which pushes the level higher.' },
-        { t: 'Give the next dose with food to settle her stomach', v: -1, fb: 'More lithium into toxicity.' },
+        { t: 'Give the next dose with food to settle her stomach, and ask the psychiatrist about it on rounds tomorrow', v: -1, fb: 'More lithium into toxicity.' },
         { t: 'Push fluids and recheck the level tomorrow', v: 0, fb: 'Fluids help, but a level of 1.9 with symptoms needs the prescriber today and the dose held.' },
       ],
       teach: 'Lithium toxicity: vomiting and diarrhea, coarse tremor, confusion, unsteady gait. Hold, notify, check electrolytes and kidney function. Dehydration, NSAIDs, ACE inhibitors and thiazides raise the level.' },
@@ -233,7 +233,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Check it against policy: hold the charger and the drawstring, give the rest', v: 2, fb: 'Cords and strings are ligature risks. Most units store them and return them at discharge.' },
-        { t: 'Give it all to him. It\'s his stuff', v: -1, fb: 'Unchecked items on a locked unit are how ligatures and contraband get in.' },
+        { t: 'Give it all to him. It\'s his stuff, and he has a right to his own belongings on the unit', v: -1, fb: 'Unchecked items on a locked unit are how ligatures and contraband get in.' },
         { t: 'Refuse the whole bag', v: 1, fb: 'Safe, but more restrictive than it needs to be. Patients do better with their own clothes and books.' },
       ],
       teach: 'Everything coming onto a locked unit is checked: cords, strings, belts, glass, sharps, medications and plastic bags are held.' },
@@ -253,7 +253,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Remove it, stay with her, ask her directly about suicidal thoughts, and get her nurse and the psychiatrist', v: 2, fb: 'A prepared ligature is a plan. Asking directly doesn\'t plant the idea; it opens the door.' },
-        { t: 'Remove it and tell her nurse at the end of the shift', v: -1, fb: 'A plan in progress needs action now, and closer observation until she\'s reassessed.' },
+        { t: 'Remove it quietly so she isn\'t embarrassed, keep an eye on her, and tell her nurse about it at the end of the shift', v: -1, fb: 'A plan in progress needs action now, and closer observation until she\'s reassessed.' },
         { t: 'Leave it where it is and watch her', v: -1, fb: 'Never leave the means in place.' },
       ],
       teach: 'Found means: remove it, keep direct observation, assess suicide risk (C-SSRS), notify the provider, and search the room per policy.' },
@@ -265,7 +265,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Don\'t give it: about 40 mg/kg is too much. Hold it and clarify with the provider', v: 2, fb: 'Acetaminophen is 10 to 15 mg/kg per dose: 120 to 180 mg for 12 kg. 480 mg looks like an adult-sized error.' },
-        { t: 'Give it. Pharmacy verified it', v: -1, fb: 'Pharmacy isn\'t the last check. You are. Check every weight-based dose yourself.' },
+        { t: 'Give it. Pharmacy verified it, and the provider wrote it for a child of this size and weight', v: -1, fb: 'Pharmacy isn\'t the last check. You are. Check every weight-based dose yourself.' },
         { t: 'Give half: 240 mg', v: 0, fb: 'Changing a dose on your own is out of scope, and 240 mg is still too high.' },
       ],
       teach: 'Pediatric doses are weight-based: check mg/kg every time. Acetaminophen is 10–15 mg/kg every 4–6 hours, no more than 75 mg/kg a day or the adult maximum.' },
@@ -285,7 +285,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Gently wake her, put the baby on his back in the crib, and ask how you can help her rest', v: 2, fb: 'Safe sleep: alone, on the back, in a crib with nothing else in it. An exhausted parent in a recliner is a real suffocation risk.' },
-        { t: 'Let them sleep. Skin to skin is good for bonding', v: -1, fb: 'Skin to skin is great while mom is awake. Asleep, it\'s a suffocation and fall risk.' },
+        { t: 'Let them sleep. Skin to skin is good for bonding, and she has been awake all night with him', v: -1, fb: 'Skin to skin is great while mom is awake. Asleep, it\'s a suffocation and fall risk.' },
         { t: 'Move the blanket off his face and leave them', v: 0, fb: 'Better, but a baby face down on a sleeping adult is still unsafe.' },
       ],
       teach: 'The ABCs of safe sleep: Alone, on the Back, in a Crib, with no soft bedding, bumpers or adults. Model it in the hospital; this is where families learn it.' },
@@ -296,7 +296,7 @@
       opts: [
         { t: 'Stop the infusion, take out the IV, elevate the hand, notify the provider and document', v: 2, fb: 'Infiltration. Pumps push past it without alarming, and in a baby a small space fills fast. Stop, remove, elevate, assess.' },
         { t: 'Flush it to check that it\'s patent', v: 0, fb: 'Flushing pushes more fluid into the tissue.' },
-        { t: 'Slow the rate and recheck in an hour', v: -1, fb: 'Fluid is still going into the tissue. This needs action now.' },
+        { t: 'Slow the rate by half, put a warm pack on the hand, and recheck the site again in an hour', v: -1, fb: 'Fluid is still going into the tissue. This needs action now.' },
       ],
       teach: 'Check pediatric IV sites at least hourly: look, touch, compare sides. Infiltration is cool, pale, swollen and tight. Stop, remove, elevate. Some drugs need an antidote per policy.' },
     { id: 'report', k: ['peds'], from: 'fl-rn', title: 'Bruises', dom: 'judgment', cost: 3, exp: 18,
@@ -305,7 +305,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Document exactly what you see, tell the provider, and report to child protective services per policy', v: 2, fb: 'Nurses are mandated reporters: you report reasonable suspicion, and investigating is CPS\'s job. Bruises on a baby who can\'t move himself, with a story that doesn\'t fit, are red flags.' },
-        { t: 'Ask dad more questions until the story makes sense', v: 0, fb: 'Investigating isn\'t your role, and it can make the child less safe.' },
+        { t: 'Ask dad more questions, and then mom separately, until the story makes sense before you involve anyone else', v: 0, fb: 'Investigating isn\'t your role, and it can make the child less safe.' },
         { t: 'Wait for the skeletal survey before reporting', v: 0, fb: 'Suspicion is enough. Waiting for proof delays protection.' },
       ],
       teach: 'Mandated reporting runs on suspicion, not proof. Document objectively, with quotes, and report per state law and hospital policy, usually with social work.' },
@@ -316,7 +316,7 @@
       opts: [
         { t: 'Normal for his age while crying. Recheck when he\'s calm', v: 2, fb: 'For an infant, a heart rate of about 100–160 and breathing at 30–60 are normal, and crying pushes both up.' },
         { t: 'Call a rapid response', v: 0, fb: 'Those numbers are normal for a 6-month-old.' },
-        { t: 'Give acetaminophen for the heart rate', v: 0, fb: 'There\'s nothing to treat here.' },
+        { t: 'Give acetaminophen for the heart rate and recheck in an hour', v: 0, fb: 'There\'s nothing to treat here.' },
       ],
       teach: 'Know pediatric norms by age. Babies breathe and beat fast; an adult\'s "normal" breathing rate of 16 would be alarming in an infant.' },
     /* ---------- mother-baby ---------- */
@@ -359,7 +359,7 @@
       q: 'What do you do?',
       opts: [
         { t: 'Gently move the baby to the bassinet on his back, raise the rail, and help her rest', v: 2, fb: 'Skin to skin is great while mom is awake. Asleep, an exhausted mother in a hospital bed is a fall and suffocation risk.' },
-        { t: 'Let them sleep. Skin to skin is good for breastfeeding', v: -1, fb: 'In-hospital newborn falls and suffocation events happen exactly like this: a sleeping, exhausted mother.' },
+        { t: 'Let them sleep. Skin to skin is good for breastfeeding, and waking her would undo an hour of settling', v: -1, fb: 'In-hospital newborn falls and suffocation events happen exactly like this: a sleeping, exhausted mother.' },
         { t: 'Move the blanket off the baby\'s face and leave them', v: 0, fb: 'Better, but a baby face down on a sleeping adult is still unsafe.' },
       ],
       teach: 'Safe sleep starts on the first day: Alone, on the Back, in a Crib (or bassinet), with nothing soft. Encourage skin to skin when mom is awake and alert, and check on her during the night.' },
@@ -371,7 +371,7 @@
       opts: [
         { t: 'Bring him back to a bed now, get a 12-lead ECG within 10 minutes, and upgrade him to ESI 2', v: 2, fb: 'Possible ACS is high-risk: ESI 2, ECG within 10 minutes of arrival. "Heartburn" with sweating and jaw pain is the classic disguise.' },
         { t: 'Give him an antacid and recheck in an hour', v: -1, fb: 'If this is an MI, an hour is heart muscle. ECG first.' },
-        { t: 'Tell the triage nurse to recheck his vitals', v: 0, fb: 'Rechecking doesn\'t change the risk. He needs an ECG and a bed.' },
+        { t: 'Tell the triage nurse he looks worse and ask her to recheck his vitals when she finishes with her current patient', v: 0, fb: 'Rechecking doesn\'t change the risk. He needs an ECG and a bed.' },
         { t: 'Get an ECG in the lobby, then decide', v: 1, fb: 'The ECG is right, but a sweaty man with chest symptoms belongs on a monitor in a bed.' },
       ],
       teach: 'Emergency Severity Index: ESI 2 is a high-risk situation, new confusion or lethargy, or severe pain or distress. Chest pain that could be ACS gets an ECG within 10 minutes of arrival.',

@@ -77,7 +77,9 @@
   const shiftFacts = (k) => { const n = k.patients.filter((x) => !x.arrives).length, a = k.patients.length - n; return `${n} patients${a ? ` + ${a} ${k.arrivalNoun || 'admission'}${a > 1 ? 's' : ''}` : ''} · ${k.novaCredits || 3} hints · about ${k.minutes || 15} min`; };
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
+  try { document.documentElement.classList.toggle('hov', !window.matchMedia || window.matchMedia('(hover: hover)').matches); } catch (e) { document.documentElement.classList.add('hov'); }
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
+  const TERMS_FREE = new Set(['terms', 'terms-ok', 'settings', 'account', 'menu', 'theme', 'set', 'close', 'x']);   // readable before agreeing
   // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
   let _A = null, _As = null;
   const A = () => (_As === s && _A ? _A : (_As = s, _A = E.api(s)));
@@ -677,7 +679,7 @@
       : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
     const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
     const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip" title="Moves the clock forward. It stops the moment a message, task or patient needs you.">${ICON.ff}<span><b>Skip ahead in time</b><small>${nx ? `Fast-forward to ${E.clock(nx.t)}: ${esc(nx.text)}` : 'Fast-forward up to 30 min; stops if anything needs you'}</small></span></button>`;
-    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
+    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${(() => { const g = RW.goals(s, C(), A()), dn = g.filter((x) => x.st === 'done').length; return `<details class="goals-fold" ${ui.goalsOpen ? 'open' : ''}><summary data-act="goals-t"><b>Shift goals</b><span>${dn} of ${g.length} done</span></summary>${goalsHTML(g)}</details>`; })()}</section>`;
   }
   /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
   function skipAhead() {
@@ -930,11 +932,16 @@
   const stamped = (label) => !!(ui.stampRow && ui.stampRow.label === label && Date.now() - ui.stampRow.born < 2200);
   const lastFind = (pid, label) => { const l = s.log.slice().reverse().find((x) => x.pid === pid && x.label === label); return l || null; };
   function paneAssess(d, P) {
-    return `<ul class="fs">${SYS.map(([id, label, c]) => {
+    // Keep it simple: vital signs and the full head-to-toe lead; the single systems sit one tap away, and stay open
+    // once you've used one on this patient.
+    const row = ([id, label, c]) => {
       const L = sysL(id, label), at = id === 'vitals' ? (P.vit.filter((v) => v.by === 'You').pop() || {}).t : id === 'full' ? null : P.assessAt[id];
       const lf = id === 'full' ? null : lastFind(d.id, id === 'vitals' ? 'Vital signs' : L);
       return `<li><button class="fs-row ${at !== undefined && at !== null ? 'has' : ''} ${stamped(L) ? 'stamped' : ''}" style="${stamped(L) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="assess" data-sys="${id}"><span class="fs-l"><b>${esc(L)}</b>${lf ? `<small>${esc(clip(lf.text, 120))}</small>` : `<small>${id === 'full' ? 'Every system, one after another' : 'Not documented this shift'}</small>`}</span><span class="fs-t">${at !== undefined && at !== null ? `${ICON.tick}${E.clock(at)}` : ''}</span><span class="fs-c">${c} min</span></button></li>`;
-    }).join('')}</ul>`;
+    };
+    const lead = SYS.filter((x) => x[0] === 'vitals' || x[0] === 'full'), foc = SYS.filter((x) => x[0] !== 'vitals' && x[0] !== 'full');
+    const used = foc.filter((x) => P.assessAt[x[0]] !== undefined && P.assessAt[x[0]] !== null).length, open = ui.focOpen === undefined ? used > 0 : ui.focOpen;
+    return `<ul class="fs">${lead.map(row).join('')}</ul><details class="fs-fold" ${open ? 'open' : ''}><summary data-act="foc-t"><b>Focused assessment</b><span>${used ? `${used} of ${foc.length} done` : 'One system at a time'}</span></summary><ul class="fs">${foc.map(row).join('')}</ul></details>`;
   }
   const RISKY = /restrain|seclu|stop the (insulin|pca)|stop the infusion|straight cath|massage|search his room|1:1|pause the insulin|release/i;
   const ROUND = { ld: ['Labor round', 'Strip through a few contractions, position, comfort, ice chips, partner'], med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'], ob: ['Hourly round', 'Fundus, pad, pain, bathroom, baby on their back'], ed: ['Hourly round', 'Pain, what they\'re waiting on, things in reach'] };
@@ -1079,6 +1086,7 @@
   addEventListener('resize', () => { if (ui.view === 'room') placeBubbles(); });
 
   function receiptHTML(d) {
+    if (ui.receipt && ui.receipt.at !== undefined && s && s.t !== ui.receipt.at) ui.receipt = null;   // the clock has moved since: it's stale
     const r = ui.receipt; if (!r || r.pid !== d.id) return '';
     return `<div class="receipt" role="status"><div class="rc-h"><b>${esc(r.label)}</b><span class="rc-t">${E.clock(r.t0)} → ${E.clock(r.t1)} · +${r.t1 - r.t0} min</span><button class="rc-x" data-act="rc-x" aria-label="Dismiss">${ICON.close}</button></div>${r.text ? `<p class="rc-tx">${esc(r.text)}</p>` : ''}${vitDelta(r, d)}</div>`;
   }
@@ -1365,7 +1373,7 @@
   function vDebrief() {
     const d = E.debrief(s), cj = CJ ? CJ.score(d.judg) : null; focusPlan(cj);
     if (!ui.mOpen || ui.mOpenFor !== (ui.fx && ui.fx.key)) {   // first look: open the weakest area in each view
-      ui.mOpen = {}; ui.mOpenFor = ui.fx && ui.fx.key;
+      ui.mOpen = {}; ui.mOpenFor = ui.fx && ui.fx.key; ui.debMore = false;
       const low = (L) => L.filter((x) => x.score !== null).sort((a, b) => a.score - b.score)[0];
       const a = low(d.dom), b = cj && low(cj); if (a) ui.mOpen['k:' + a.id] = 1; if (b) ui.mOpen['c:' + b.id] = 1;
     }
@@ -1384,6 +1392,8 @@
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-acts">${nx ? `<button class="btn btn-nx" data-act="dtab" data-v="nclex"><span><b>NCLEX review</b><small>${nx.left ? `${nx.left} question${nx.left === 1 ? '' : 's'} from this shift and your weakest steps` : 'Your steps, step by step'}</small></span> <span aria-hidden="true">→</span></button>` : ''}${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
       ${nx ? nclexCta(nx) : ''}
+      <button class="deb-more-b" data-act="deb-more" aria-expanded="${!!ui.debMore}"><span><b>${ui.debMore ? 'Hide the detail' : 'More from this shift'}</b><small>How the score was built, each skill, every moment, XP and lessons</small></span><span class="deb-more-c" aria-hidden="true">${ui.debMore ? '−' : '+'}</span></button>
+      ${!ui.debMore ? '' : `<div class="deb-more">
       ${scoreWhyHTML(d)}
       ${rewardHTML()}${learnHTML()}
       <div class="deb-grid">
@@ -1397,7 +1407,7 @@
           <div class="filter" role="group" aria-label="Filter moments">${[['all', 'All'], ['good', 'What went well'], ['bad', 'What to rethink']].map(([k, l]) => `<button class="btn ${ui.filter === k ? 'btn-primary' : ''}" data-act="filter" data-k="${k}" aria-pressed="${ui.filter === k}">${l}</button>`).join('')}</div>
           <ul class="moments">${items.map((j) => `<li class="${j.delta > 0 ? 'good' : j.delta < 0 ? 'bad' : 'neutral'}"><span class="tm">${E.clock(j.t)}${j.pid ? '<br>' + j.pid : ''}</span><div><span class="mk">${j.delta > 0 ? 'Strong' : j.delta < 0 ? 'Rethink' : 'Note'}${CJ ? `<span class="cj-tag"> · ${esc(CJ.STEPS.find((x) => x[0] === CJ.step(j))[1])}</span>` : ''}</span><b>${esc(j.text)}</b><p>${esc(j.why)}</p><button class="rpt-btn" data-act="rpt" data-k="${esc(j.key || '')}" data-t="${j.t}" aria-label="Report a problem with this feedback">Report a problem</button></div></li>`).join('') || '<li><span></span><span class="muted">Nothing here.</span></li>'}</ul>
         </section>
-      </div>${nx ? '' : ngnHTML()}</div>${fbCard()}</div></main>`;
+      </div></div>`}${nx ? '' : ngnHTML()}</div>${fbCard()}</div></main>`;
   }
 
   /* ------------ debrief: the NCLEX review tab ------------ */
@@ -2271,7 +2281,8 @@
     else if (ov === 'pack') h += ovPack();
     else if (ov === 'review' && RV) h += ovReviewInfo();
     else if (ov === 'terms' && TERMS) h += ovTerms(false);
-    if (!ov && TERMS && !termsOk() && (ui.view === 'home' || ui.view === 'shifts' || ui.view === 'drill' || !s)) h += ovTerms(true);
+    // The agreement waits for the first tap that starts something, so a new player sees the game before the legal sheet.
+    if (!ov && TERMS && !termsOk() && (ui.termsAsk || ui.view === 'shifts' || ui.view === 'drill' || (!s && ui.view !== 'home'))) h += ovTerms(true);
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
@@ -2374,7 +2385,8 @@
     const run = (k) => {
       if (k === 'vitals') {
         const pv = P.vit.filter((x) => x.by === 'You').pop();
-        if (pv && s.t - pv.t <= 8 && d.status(s, P, A()) === 'stable') { const nv = A().vitals(d.id); if (['HR', 'SBP', 'RR', 'SpO2'].every((q) => Math.abs(nv[q] - pv[q]) <= 3)) A().judge(d.id + '-repeat', 'time', -1, `You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.`, 'Recheck vitals when you expect a change: after a med, an intervention, or a new symptom. Otherwise the time goes to someone who needs it.', d.id); }
+        const ordered = (s.watch || []).some((w) => { if (w.pid !== d.id || !w.vitals) return false; const h = P.vit.filter((x) => x.t > w.from); return h.length < w.times && s.t >= (h.length ? h[h.length - 1].t + w.every : w.from) - 5; });   // a check the order asks for now
+        if (pv && !ordered && s.t - pv.t <= 8 && d.status(s, P, A()) === 'stable') { const nv = A().vitals(d.id); if (['HR', 'SBP', 'RR', 'SpO2'].every((q) => Math.abs(nv[q] - pv[q]) <= 3)) A().judge(d.id + '-repeat', 'time', -1, `You re-took ${d.short}'s vitals minutes after the last set, with nothing changed.`, 'Recheck vitals when you expect a change: after a med, an intervention, or a new symptom. Otherwise the time goes to someone who needs it.', d.id); }
         const v = A().recordVitals(d.id, 'You'); P.k.hrAt = s.t; P.k.hr = v.HR; if (v.poss) P.k.possAt = s.t;
         const txt = `T ${fT(v.T)} °C, HR ${v.HR}${v.rhythm ? ' (' + v.rhythm + ')' : ''}, BP ${v.SBP}/${v.DBP}, RR ${v.RR}, SpO₂ ${v.SpO2}% on ${o2txt(v.O2)}${v.poss ? ', sedation ' + v.poss.split(',')[0] : ''}. Pain ${v.pain}/10.`;
         logHere(d.id, txt, 'find'); s.log[s.log.length - 1].label = 'Vital signs'; return txt;
@@ -2422,7 +2434,7 @@
     if (!crit) reviewSound(review);
     // A routine result (nothing changed, nothing to learn from, nothing new) doesn't need a modal: it shows at the top of the panel.
     const routine = !crit && !alerts.length && st0 === st1 && !meanwhile.length && ui.res.msgs <= 0 && !(fbNow() && review.length) && !(prof.settings.results === 'card');
-    if (routine) { const r = Object.assign({ born: Date.now() }, ui.res); handlers['res-close'](); ui.receipt = r; render(); save(); return; }
+    if (routine) { const r = Object.assign({ born: Date.now(), at: s.t }, ui.res); handlers['res-close'](); ui.receipt = r; render(); save(); return; }
     ui.receipt = null;
     ui.ov = 'result'; ui.caption = null; ui.flash = dir > 0 ? 'worse' : dir < 0 ? 'better' : null;
     if (crit === 'worse') setTimeout(() => FX.play('crit'), 100); else if (dir) setTimeout(() => FX.play(dir > 0 ? 'worse' : 'better'), 380);
@@ -2457,7 +2469,7 @@
     'or-open'() { if (ui.or) { ui.ov = 'orient'; render(true); } else openOrient(false); },
     or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); orSave(); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
     terms() { ui.ov = 'terms'; render(); },
-    'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
+    'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; ui.termsAsk = false; const go = ui.afterTerms; ui.afterTerms = null; render(); if (go && handlers[go.a]) handlers[go.a]({ dataset: go.ds, closest: () => null, getAttribute: () => null }); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
     close() { if (ui.ov === 'report' && ui.rp && ui.rp.back === 'ngn' && ui.ngn) { ui.rp = null; ui.ov = 'ngn'; return render(); } if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
@@ -2498,14 +2510,18 @@
       const h = handlers[r.go.act]; if (h) h({ dataset: { id: r.go.id, pid, hl: r.go.act === 'dock' ? (r.hl || r.text) : undefined, sys: r.go.act === 'dock' ? r.sys : undefined } });
     },
     tl() { ui.tlOpen = !ui.tlOpen; render(); },
+    'goals-t'() { ui.goalsOpen = !ui.goalsOpen; render(); },
+    'foc-t'(el) { const dt = el.closest && el.closest('details'); ui.focOpen = !(dt && dt.open); render(); },
     back() { ui.ov = null; ui.receipt = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) {
+      if (ui.receipt && ui.dock !== el.dataset.id && Date.now() - ui.receipt.born > 4000) ui.receipt = null;
       ui.dock = el.dataset.id; render();
       // Coming from a task in the brain: point at the action that does it.
       if (el.dataset.hl) {
         const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = el.dataset.sys ? document.querySelector(`.pane .fs-row[data-sys="${el.dataset.sys}"]`) : null, bs = best ? 99 : 0;
         document.querySelectorAll('.pane .fs-row, .pane .mar-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
         if (best) {
+          const fold = best.closest('details'); if (fold && !fold.open) { fold.open = true; ui.focOpen = true; }
           best.classList.add('hl');
           if (innerWidth <= 760) {
             // Land with the panel's heading just under the pinned header and tabs, so the rows above the pointed-at
@@ -2556,8 +2572,9 @@
     ref() { ui.refCard = null; ui.ov = 'ref'; render(); },
     'ref-card'(el) { ui.refCard = el.dataset.id; TEL.track('ref_card', { id: el.dataset.id }); render(); const sb = document.querySelector('.sheet-b'); if (sb) sb.scrollTop = 0; },
     'ref-back'() { ui.refCard = null; render(); },
-    meter(el) { ui.mOpen = ui.mOpen || {}; const k = el.dataset.k; if (ui.mOpen[k]) delete ui.mOpen[k]; else ui.mOpen[k] = 1; render(); },
-    'sc-why'() { ui.scWhy = !ui.scWhy; if (ui.scWhy) TEL.track('debrief_score_why', { case: s ? s.caseId : caseId }); render(); },
+    'deb-more'() { ui.debMore = !ui.debMore; render(); },
+    meter(el) { ui.debMore = true; ui.mOpen = ui.mOpen || {}; const k = el.dataset.k; if (ui.mOpen[k]) delete ui.mOpen[k]; else ui.mOpen[k] = 1; render(); },
+    'sc-why'() { ui.debMore = true; ui.scWhy = !ui.scWhy; if (ui.scWhy) TEL.track('debrief_score_why', { case: s ? s.caseId : caseId }); render(); },
     'ngn-pick'(el) {
       const q = ui.ngn, it = ngnList()[q.i], k = el.dataset.k, v = +el.dataset.v; if (q.checked) return;
       if (k === 'c' || k === 'm') q.a[k] = v;
@@ -2805,7 +2822,7 @@
 
   /* Feedback. Answers get a pop and a moment to register; commitments get a chime and a stamp.
      None of it says whether the choice was right: that stays in the debrief. */
-  const SELECT = new Set(['dtab', 'cj-go', 'ptab', 'pf', 'cs-tab', 'ngn-move', 'ref-card', 'meter', 'sc-why', 'aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
+  const SELECT = new Set(['deb-more', 'dtab', 'cj-go', 'ptab', 'pf', 'cs-tab', 'ngn-move', 'ref-card', 'meter', 'sc-why', 'aw-tab', 'les-f', 'awards', 'aw-back', 'away', 'away-ho', 'away-fam', 'away-back', 'report', 'rep-go', 'roster', 'prio', 'rank-peek', 'calls', 'brain-all', 'here', 'sbar-req', 'dose', 'hreason', 'pick-case', 'rk', 'filter', 'set', 'assess', 'prep', 'h-go', 'dock', 'poke', 'clue', 'cast', 'msg']);
   const TOGGLE = new Set(['sbar-pick', 'flag', 'away-pick', 'rep-pick']);
   const COMMIT = new Set(['reset-yes', 'doc-sign', 'away-ho-send', 'away-note', 'away-upd', 'rep-send', 'bell', 'round', 'crit-x', 'reset-tips', 'med-give', 'med-hold', 'med-declined', 'sbar-send', 'int', 'comm', 'rrt-generic', 'nova-ask', 'rank-go', 'end-yes', 'new-yes', 'catchup']);
   const NAV = new Set(['crit-go', 'goto', 'do-next', 'back', 'msg', 'rank-go', 'h-done', 'new', 'new-yes', 'resume', 'home', 'end-yes', 'next-case', 'intro-go']);
@@ -2884,6 +2901,7 @@
     const h = handlers[a]; if (!h) return;
     e.preventDefault();
     if (ui.busy) return;
+    if (TERMS && !termsOk() && ui.view === 'home' && !ui.ov && !ui.termsAsk && !TERMS_FREE.has(a)) { ui.termsAsk = true; ui.afterTerms = { a, ds: Object.assign({}, el.dataset) }; return render(); }
     if (el.getAttribute('aria-disabled') === 'true') {
       // Nope: shake, a low double thud, and the reason.
       const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el;

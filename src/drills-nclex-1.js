@@ -17,7 +17,7 @@
 
     { id: 'mp-h-lisinopril-give', lv: 2, p: { n: 'Maria Santos', a: 64, x: 'F', sk: 4, h: ['bob', '#3A302A'], c: GOWN, e: ['hoops'], sm: .4 },
       med: 'Lisinopril 10 mg PO (hold for SBP under 100)', for: 'Hypertension and diabetic kidney disease', line: 'She feels well and wants to walk to the window.',
-      check: [{ t: 'Blood pressure, against the hold parameter', v: 'BP 104/64. No dizziness sitting or standing.', ok: 1 }, { t: 'Potassium', v: 'K 4.6.' }, { t: 'Creatinine', v: '1.1, stable.' }],
+      check: [{ t: 'Blood pressure, against the hold parameter', v: 'BP 104/64. No dizziness sitting or standing.', ok: 1 }, { t: 'This morning\'s potassium level', v: 'K 4.6.' }, { t: 'Creatinine against her baseline', v: '1.1, stable.' }],
       pick: [{ t: 'Give it', ok: 1 }, { t: 'Hold it: 104 is too close to the line', w: 'Parameters exist so you don\'t have to guess. She\'s above it, without symptoms, and the drug also protects her kidneys.' }, { t: 'Give half the dose', w: 'Changing a dose isn\'t a nursing decision. Either the parameter is met or it isn\'t.' }],
       why: 'Her pressure is above the hold line, she has no symptoms of low blood pressure, and her potassium and kidney function are fine. Holding without a reason is a missed dose.',
       pearl: 'Hold parameters cut both ways: under the line, hold and report; over it, give. Check orthostatic symptoms if you\'re unsure.',
@@ -26,7 +26,7 @@
 
     { id: 'mp-h-enox-plt', lv: 2, p: { n: 'Owen Price', a: 70, x: 'M', sk: 1, h: ['short', '#B8B0A6'], c: GOWN, e: ['wrinkles'], sm: .3 },
       med: 'Enoxaparin 40 mg SubQ', for: 'Clot prevention after hip surgery', line: 'Day 2 after surgery. A colleague wonders if he should get it with his platelets down.',
-      check: [{ t: 'Platelets, against his baseline', v: '141,000, from 168,000 before surgery.', ok: 1 }, { t: 'Creatinine', v: '0.9.' }, { t: 'Look at the incision and his skin', v: 'Dressing dry. No new bruising.' }],
+      check: [{ t: 'Platelets, against his baseline', v: '141,000, from 168,000 before surgery.', ok: 1 }, { t: 'Creatinine, for the dose', v: '0.9.' }, { t: 'Look at the incision and his skin', v: 'Dressing dry. No new bruising.' }],
       pick: [{ t: 'Give it', ok: 1 }, { t: 'Hold it and report possible HIT', w: 'HIT drops platelets by half or more, usually 5 to 10 days after heparin starts. A small dip on day 2 after surgery isn\'t that pattern.' }, { t: 'Hold it until tomorrow\'s platelet count', w: 'Skipping clot prevention after hip surgery raises the risk of a DVT or PE, and nothing here calls for it.' }],
       why: 'A 16% drop two days after surgery is expected from blood loss and dilution. He isn\'t bleeding, and his kidneys clear the drug normally.',
       pearl: 'Think HIT when platelets fall by half or more, 5 to 10 days in (sooner if exposed in the last 100 days), or a new clot forms. Small early dips are common after surgery.',
@@ -35,7 +35,7 @@
 
     { id: 'mp-h-oxy-poss2', lv: 2, p: { n: 'Darius King', a: 47, x: 'M', sk: 7, h: ['buzz', '#120C09'], c: GOWN, e: ['beard'], sm: 0 },
       med: 'Oxycodone 5 mg PO, every 4 hours as needed', for: 'Pain after a hernia repair', line: 'Pain 7 of 10. He has dozed off twice while you talked. His last dose was 4 hours ago.',
-      check: [{ t: 'Sedation level and breathing', v: 'Drowsy but wakes easily to your voice and stays awake. RR 14, SpO₂ 96% on room air.', ok: 1 }, { t: 'Blood pressure', v: 'BP 138/84.' }, { t: 'Bowel sounds', v: 'Present in all four quadrants.' }],
+      check: [{ t: 'Sedation level and breathing', v: 'Drowsy but wakes easily to your voice and stays awake. RR 14, SpO₂ 96% on room air.', ok: 1 }, { t: 'Blood pressure, lying and sitting', v: 'BP 138/84.' }, { t: 'Bowel sounds and last stool', v: 'Present in all four quadrants.' }],
       pick: [{ t: 'Give it, and recheck his sedation and breathing in 30 to 60 minutes', ok: 1 }, { t: 'Hold it, because he keeps dozing off', w: 'Drowsy but easy to rouse is an acceptable sedation level. Untreated pain keeps him from breathing deeply and walking.' }, { t: 'Give half the dose to be safe', w: 'He\'s safe for the ordered dose. A partial dose isn\'t ordered, and undertreating pain has its own risks.' }],
       why: 'Sedation that\'s easy to reverse with your voice, with normal breathing, is acceptable for an opioid. Sedation you can\'t interrupt, or drifting off mid-sentence, is when you hold.',
       pearl: 'Use a sedation scale (like POSS). 1 to 2 (awake or drowsy, easy to rouse): give and monitor. 3 (falls asleep mid-conversation): hold, rouse, report. 4: emergency.',
@@ -44,7 +44,7 @@
 
     { id: 'mp-h-levo-hr', lv: 2, p: { n: 'Linda Park', a: 58, x: 'F', sk: 3, h: ['bob', '#1E1612'], c: GOWN, e: ['glasses'], sm: 0 },
       med: 'Levothyroxine 150 mcg PO', for: 'Hypothyroidism (dose raised last week)', line: '06:00. She says her heart has been "racing" and she can\'t sleep.',
-      check: [{ t: 'Apical pulse and how she looks', v: 'HR 118, regular. Fine tremor of the hands. Sweaty.', ok: 1 }, { t: 'Last TSH', v: 'Low-normal, a month ago, before the dose went up.' }, { t: 'Temperature', v: '37.2.' }],
+      check: [{ t: 'Apical pulse and how she looks', v: 'HR 118, regular. Fine tremor of the hands. Sweaty.', ok: 1 }, { t: 'Her last TSH and when it was drawn', v: 'Low-normal, a month ago, before the dose went up.' }, { t: 'Her temperature', v: '37.2.' }],
       pick: [{ t: 'Hold it and report the symptoms', ok: 1 }, { t: 'Give it: last month\'s TSH was normal', w: 'That TSH was before the dose went up. Her symptoms now point to too much thyroid hormone.' }, { t: 'Give it and ask for a beta blocker for the heart rate', w: 'Treating the symptom while giving more of the cause doesn\'t make sense. Report first.' }],
       why: 'A racing heart, tremor, sweating and insomnia after a dose increase are signs of too much thyroid hormone. In older adults this can trigger atrial fibrillation or angina.',
       pearl: 'Levothyroxine: hold and report signs of excess (tachycardia, palpitations, tremor, heat intolerance, insomnia), especially after a dose change.',
@@ -53,7 +53,7 @@
 
     { id: 'mp-h-ssri-teen', lv: 2, p: { n: 'Emma Walsh', a: 16, x: 'F', sk: 0, h: ['long', '#8A5A3A'], c: 'hoodie', e: ['freckles'], sm: 0, k: .94 },
       med: 'Sertraline 50 mg PO', for: 'Depression, started 2 weeks ago', line: 'She tells you quietly she\'s been thinking about death more since starting it.',
-      check: [{ t: 'Ask her directly about suicide', v: '"I think about not being here. I don\'t have a plan."', ok: 1 }, { t: 'Her weight', v: 'Down 1 kg since admission.' }, { t: 'Her sleep', v: 'About 6 hours a night.' }],
+      check: [{ t: 'Ask her directly about suicide', v: '"I think about not being here. I don\'t have a plan."', ok: 1 }, { t: 'Her weight since admission', v: 'Down 1 kg since admission.' }, { t: 'How she\'s been sleeping and eating', v: 'About 6 hours a night.' }],
       pick: [{ t: 'Give it, keep her safe, and report the suicidal thoughts now', ok: 1 }, { t: 'Hold it: antidepressants cause suicidal thoughts in teens', w: 'The warning is to watch closely, not to stop on your own. Stopping is the prescriber\'s call; her safety and the report are yours.' }, { t: 'Give it and pass it on to the morning team', w: 'New or worse suicidal thoughts are reported now, with a safety check now.' }],
       why: 'Young people starting an antidepressant need close watching for new or worse suicidal thinking, especially in the first weeks. The response is a safety assessment and an urgent report, not a nurse-initiated stop.',
       pearl: 'Antidepressants under 25: watch for new suicidal thoughts, agitation or unusual changes, especially early or after a dose change. Ask directly, keep them safe, report now.',
@@ -80,7 +80,7 @@
 
     { id: 'mp-h-lithium-give', lv: 2, p: { n: 'Sam Ortega', a: 29, x: 'M', sk: 4, h: ['shag', '#1A120E'], c: 'tee', e: [], sm: .2 },
       med: 'Lithium carbonate 300 mg PO', for: 'Bipolar disorder, started 5 days ago', line: 'He says his hands are a bit shaky and he felt queasy after breakfast. He wants to stop it.',
-      check: [{ t: 'Lithium level and what the tremor looks like', v: 'Level 0.8. Fine tremor holding a cup. No vomiting or diarrhea. Alert.', ok: 1 }, { t: 'Sodium', v: 'Na 139.' }, { t: 'Urine output', v: 'Normal, clear.' }],
+      check: [{ t: 'Lithium level and what the tremor looks like', v: 'Level 0.8. Fine tremor holding a cup. No vomiting or diarrhea. Alert.', ok: 1 }, { t: 'Sodium level', v: 'Na 139.' }, { t: 'Urine output and how much he\'s drinking', v: 'Normal, clear.' }],
       pick: [{ t: 'Give it with food, and explain these effects often ease', ok: 1 }, { t: 'Hold it: tremor and nausea are signs of toxicity', w: 'A fine tremor and mild nausea at a level of 0.8 are common early side effects. Toxicity looks like a coarse tremor, vomiting, diarrhea, confusion or unsteadiness.' }, { t: 'Hold it because he wants to stop', w: 'His concern deserves a conversation and a report to the prescriber, but holding a mood stabilizer on day 5 without that conversation isn\'t the answer.' }],
       why: 'His level is in range and his symptoms are the expected early ones. Taking it with food helps the nausea. Tell the prescriber he\'s thinking of stopping.',
       pearl: 'Lithium: fine tremor and mild nausea early are common. Coarse tremor, vomiting, diarrhea, confusion or ataxia is toxicity. Keep fluids and salt steady.',
@@ -89,7 +89,7 @@
 
     { id: 'mp-h-furosemide-give', lv: 2, p: { n: 'Betty Clarke', a: 81, x: 'F', sk: 1, h: ['curls', '#E4DED6'], c: GOWN, e: ['wrinkles', 'cannula'], sm: .2 },
       med: 'Furosemide 40 mg IV', for: 'Heart failure exacerbation', line: 'Weight up 1.2 kg. Crackles at both bases. Her pressure is lower than yesterday.',
-      check: [{ t: 'Blood pressure and how she feels', v: 'BP 104/62, no dizziness. Yesterday 132/78.', ok: 1 }, { t: 'Potassium', v: 'K 3.8.' }, { t: 'Creatinine', v: '1.2, stable.' }],
+      check: [{ t: 'Blood pressure and how she feels', v: 'BP 104/62, no dizziness. Yesterday 132/78.', ok: 1 }, { t: 'This morning\'s potassium level', v: 'K 3.8.' }, { t: 'Creatinine against yesterday\'s value', v: '1.2, stable.' }],
       pick: [{ t: 'Give it', ok: 1 }, { t: 'Hold it: her pressure is soft', w: '104 without symptoms isn\'t a hold, and she\'s carrying extra fluid. The fluid is what\'s hurting her.' }, { t: 'Give it orally instead to make it gentler', w: 'Changing the route is a new order, and gut swelling in heart failure makes oral absorption less reliable.' }],
       why: 'She\'s fluid overloaded with crackles and weight gain. Her pressure is lower but adequate, potassium and kidneys are fine. Diuresis is the treatment.',
       pearl: 'In heart failure, a modest pressure drop is common with treatment. Hold for symptomatic hypotension, low potassium or worsening kidney function, not for a number that still meets the order.',

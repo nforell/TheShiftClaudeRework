@@ -871,7 +871,7 @@ window.Shift = window.Shift || {};
     return (s.watch || []).filter((w) => w.pid === d.id).map((w) => {
       const hits = watchHits(s, d, P, w), n = hits.length, done = n >= w.times;
       const t = n ? hits[n - 1] + w.every : w.from + (w.first !== undefined ? w.first : w.every);
-      return { key: 'w:' + w.id + ':' + Math.min(n, w.times), t, late: !done && s.t > t + Math.max(10, Math.round(w.every / 2)), done, text: w.times > 1 ? `${w.text}: ${Math.min(n + 1, w.times)} of ${w.times}` : w.text, sub: done ? 'Done' : `Ordered ${A.clock(w.from)}`, go: { act: 'dock', id: w.tab || 'assess' }, sys: w.sys || (w.vitals ? 'vitals' : undefined) };
+      return { key: 'w:' + w.id + ':' + Math.min(n, w.times), t, notBefore: !done && n > 0 && s.t < t - 5, late: !done && s.t > t + Math.max(10, Math.round(w.every / 2)), done, text: w.times > 1 ? `${w.text}: ${Math.min(n + 1, w.times)} of ${w.times}` : w.text, sub: done ? 'Done' : `Ordered ${A.clock(w.from)}`, go: { act: 'dock', id: w.tab || 'assess' }, sys: w.sys || (w.vitals ? 'vitals' : undefined) };
     });
   }
   function roundRow(s, A, d, P) {
