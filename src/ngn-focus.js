@@ -137,7 +137,7 @@ window.Shift.ngnFocus = [
    {
     "opts": [
      "maternal antibodies are coating and breaking down the newborn's red blood cells",
-     "the newborn's liver is too immature to process bilirubin",
+     "the newborn's liver is too immature to process bilirubin in the first days after birth",
      "the newborn is dehydrated from poor feeding"
     ],
     "ans": 0,
@@ -310,7 +310,7 @@ window.Shift.ngnFocus = [
     "opts": [
      "withhold lorazepam for now and continue CIWA-Ar assessments per protocol",
      "give another 2 mg now to prevent seizures",
-     "stop the CIWA-Ar assessments because withdrawal has resolved"
+     "stop the CIWA-Ar assessments because the withdrawal has now fully resolved"
     ],
     "ans": 0,
     "whys": [
@@ -608,7 +608,7 @@ window.Shift.ngnFocus = [
     "opts": [
      "please come see him now; should I bring the defibrillator for synchronized cardioversion?",
      "could you order something to help him sleep tonight?",
-     "I will recheck his vital signs in 4 hours and call if anything changes"
+     "I will recheck his vital signs in 4 hours and call you back if anything changes before then"
     ],
     "ans": 0,
     "whys": [
@@ -937,7 +937,7 @@ window.Shift.ngnFocus = [
    {
     "opts": [
      "a heart rate under 40 with near-fainting signals medical instability that can progress to a fatal arrhythmia",
-     "a slow heart rate is expected in clients who restrict food and exercise",
+     "a slow heart rate is expected in clients who restrict food and exercise heavily, so it can wait for morning rounds",
      "throwing an object predicts an imminent assault on staff"
     ],
     "ans": 0,
