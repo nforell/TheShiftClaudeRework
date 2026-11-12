@@ -3017,3 +3017,20 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 .deb-more-c{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-2);font-size:1.3rem;line-height:1}
 .deb-more-b[aria-expanded="true"]{border-color:color-mix(in srgb,var(--teal) 45%,var(--line))}
 @media (hover:hover){.deb-more-b:hover{border-color:var(--teal)}}
+
+/* Station, kept simple: goals sit behind a one-line summary, and on a phone the side panel shows only what
+   still needs an answer (the header's message button opens the full inbox). */
+.goals-fold{margin-top:.6rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.goals-fold>summary{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.7rem 1rem;cursor:pointer;list-style:none;min-height:44px}
+.goals-fold>summary::-webkit-details-marker{display:none}
+.goals-fold>summary b{font-weight:700}
+.goals-fold>summary span{color:var(--ink-2);font-size:.88rem}
+.goals-fold[open]>summary{border-bottom:1px solid var(--line)}
+.goals-fold .goals{border:0;padding:.3rem .6rem .5rem}
+@media (max-width:700px){
+  .st-intro p{display:none}
+  .side .phone .msg:not(.unread):not(.urgent){display:none}
+  .side .phone .msgs:not(:has(.msg.unread,.msg.urgent,.empty))::after{content:"Nothing new. Earlier messages are under the message button at the top.";display:block;padding:.7rem 1rem;color:var(--ink-2);font-size:.9rem}
+  .tools{grid-template-columns:1fr 1fr}
+  .tools .btn{min-height:52px}
+}

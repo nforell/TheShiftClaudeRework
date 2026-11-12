@@ -677,7 +677,7 @@
       : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
     const calls = open.map((x) => { const v = FL.view(s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
     const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip" title="Moves the clock forward. It stops the moment a message, task or patient needs you.">${ICON.ff}<span><b>Skip ahead in time</b><small>${nx ? `Fast-forward to ${E.clock(nx.t)}: ${esc(nx.text)}` : 'Fast-forward up to 30 min; stops if anything needs you'}</small></span></button>`;
-    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${goalsHTML(RW.goals(s, C(), A()))}</section>`;
+    return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}${(() => { const g = RW.goals(s, C(), A()), dn = g.filter((x) => x.st === 'done').length; return `<details class="goals-fold" ${ui.goalsOpen ? 'open' : ''}><summary data-act="goals-t"><b>Shift goals</b><span>${dn} of ${g.length} done</span></summary>${goalsHTML(g)}</details>`; })()}</section>`;
   }
   /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
   function skipAhead() {
@@ -2501,6 +2501,7 @@
       const h = handlers[r.go.act]; if (h) h({ dataset: { id: r.go.id, pid, hl: r.go.act === 'dock' ? (r.hl || r.text) : undefined, sys: r.go.act === 'dock' ? r.sys : undefined } });
     },
     tl() { ui.tlOpen = !ui.tlOpen; render(); },
+    'goals-t'() { ui.goalsOpen = !ui.goalsOpen; render(); },
     back() { ui.ov = null; ui.receipt = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) {
       ui.dock = el.dataset.id; render();
