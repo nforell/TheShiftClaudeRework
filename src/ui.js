@@ -930,11 +930,16 @@
   const stamped = (label) => !!(ui.stampRow && ui.stampRow.label === label && Date.now() - ui.stampRow.born < 2200);
   const lastFind = (pid, label) => { const l = s.log.slice().reverse().find((x) => x.pid === pid && x.label === label); return l || null; };
   function paneAssess(d, P) {
-    return `<ul class="fs">${SYS.map(([id, label, c]) => {
+    // Keep it simple: vital signs and the full head-to-toe lead; the single systems sit one tap away, and stay open
+    // once you've used one on this patient.
+    const row = ([id, label, c]) => {
       const L = sysL(id, label), at = id === 'vitals' ? (P.vit.filter((v) => v.by === 'You').pop() || {}).t : id === 'full' ? null : P.assessAt[id];
       const lf = id === 'full' ? null : lastFind(d.id, id === 'vitals' ? 'Vital signs' : L);
       return `<li><button class="fs-row ${at !== undefined && at !== null ? 'has' : ''} ${stamped(L) ? 'stamped' : ''}" style="${stamped(L) ? `--gd:-${Date.now() - ui.stampRow.born}ms` : ''}" data-act="assess" data-sys="${id}"><span class="fs-l"><b>${esc(L)}</b>${lf ? `<small>${esc(clip(lf.text, 120))}</small>` : `<small>${id === 'full' ? 'Every system, one after another' : 'Not documented this shift'}</small>`}</span><span class="fs-t">${at !== undefined && at !== null ? `${ICON.tick}${E.clock(at)}` : ''}</span><span class="fs-c">${c} min</span></button></li>`;
-    }).join('')}</ul>`;
+    };
+    const lead = SYS.filter((x) => x[0] === 'vitals' || x[0] === 'full'), foc = SYS.filter((x) => x[0] !== 'vitals' && x[0] !== 'full');
+    const used = foc.filter((x) => P.assessAt[x[0]] !== undefined && P.assessAt[x[0]] !== null).length, open = ui.focOpen === undefined ? used > 0 : ui.focOpen;
+    return `<ul class="fs">${lead.map(row).join('')}</ul><details class="fs-fold" ${open ? 'open' : ''}><summary data-act="foc-t"><b>Focused assessment</b><span>${used ? `${used} of ${foc.length} done` : 'One system at a time'}</span></summary><ul class="fs">${foc.map(row).join('')}</ul></details>`;
   }
   const RISKY = /restrain|seclu|stop the (insulin|pca)|stop the infusion|straight cath|massage|search his room|1:1|pause the insulin|release/i;
   const ROUND = { ld: ['Labor round', 'Strip through a few contractions, position, comfort, ice chips, partner'], med: ['Hourly round', 'Pain, position, bathroom, things in reach'], psych: ['Check-in round', 'Face to face, room safety scan, needs'], peds: ['Hourly round', 'Comfort, IV site, rails, parent needs'], ob: ['Hourly round', 'Fundus, pad, pain, bathroom, baby on their back'], ed: ['Hourly round', 'Pain, what they\'re waiting on, things in reach'] };
@@ -2502,6 +2507,7 @@
     },
     tl() { ui.tlOpen = !ui.tlOpen; render(); },
     'goals-t'() { ui.goalsOpen = !ui.goalsOpen; render(); },
+    'foc-t'(el) { const dt = el.closest && el.closest('details'); ui.focOpen = !(dt && dt.open); render(); },
     back() { ui.ov = null; ui.receipt = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) {
       ui.dock = el.dataset.id; render();
@@ -2510,6 +2516,7 @@
         const w = el.dataset.hl.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3); let best = el.dataset.sys ? document.querySelector(`.pane .fs-row[data-sys="${el.dataset.sys}"]`) : null, bs = best ? 99 : 0;
         document.querySelectorAll('.pane .fs-row, .pane .mar-row').forEach((b) => { const l = (b.querySelector('b') || b).textContent.toLowerCase(), n = w.filter((x) => l.includes(x)).length; if (n > bs) { bs = n; best = b; } });
         if (best) {
+          const fold = best.closest('details'); if (fold && !fold.open) { fold.open = true; ui.focOpen = true; }
           best.classList.add('hl');
           if (innerWidth <= 760) {
             // Land with the panel's heading just under the pinned header and tabs, so the rows above the pointed-at

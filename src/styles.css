@@ -3021,7 +3021,7 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 /* Station, kept simple: goals sit behind a one-line summary, and on a phone the side panel shows only what
    still needs an answer (the header's message button opens the full inbox). */
 .goals-fold{margin-top:.6rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.goals-fold>summary{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.7rem 1rem;cursor:pointer;list-style:none;min-height:44px}
+.goals-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1rem;cursor:pointer;list-style:none;min-height:44px}
 .goals-fold>summary::-webkit-details-marker{display:none}
 .goals-fold>summary b{font-weight:700}
 .goals-fold>summary span{color:var(--ink-2);font-size:.88rem}
@@ -3034,3 +3034,12 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
   .tools{grid-template-columns:1fr 1fr}
   .tools .btn{min-height:52px}
 }
+
+/* Room, Assess tab: vital signs and the full head-to-toe lead; single systems fold under "Focused assessment". */
+.fs-fold{margin-top:.6rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.fs-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.75rem 1rem;cursor:pointer;list-style:none;min-height:48px}
+.fs-fold>summary::-webkit-details-marker{display:none}
+.fs-fold>summary b{font-weight:700}
+.fs-fold>summary span{color:var(--ink-2);font-size:.88rem}
+.fs-fold[open]>summary{border-bottom:1px solid var(--line)}
+.fs-fold>.fs{padding:.4rem}
