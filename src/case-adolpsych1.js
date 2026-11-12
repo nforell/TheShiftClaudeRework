@@ -661,7 +661,7 @@
       P.rickIn = true; A.msg({ from: 'desk', pid: '407', text: `407's visitors, Diane Ruiz and Rick Dawson, are back with her now.` }); } },
     { id: 'kay-after', when: (s) => { const P = s.p['407']; return P.rickIn && P.visit !== null && s.t >= P.visit + 15 && !P.shaken; }, run(s, A) { const P = s.p['407']; P.shaken = true; A.msg({ from: 'tasha', pid: '407', urgent: true, text: `407 came out of the visit shaking and locked herself in the bathroom. She won't talk to me. Her mom's partner was standing really close to her the whole time.`, replies: [{ label: 'Go to 407', act: 'goto', pid: '407' }] }); } },
     { id: 'float', when: (s) => { const Jo = s.p['403']; return Jo.oneToOne && Jo.floatAt !== null && s.t >= Jo.floatAt; }, run(s, A) { A.msg({ from: 'nova', pid: '403', text: `Sam from float is taking over 403's line-of-sight. Tasha's back on the hall.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Half an hour to report. Marco's on tonight. Who would you worry about at 2 a.m.? Make sure he hears it from you.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Half an hour to report. Marco's on tonight. Who would you worry about at 2 a.m.? Make sure he hears it from you.` }); } },
   ];
 
   const replies = {
@@ -761,7 +761,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On an adolescent unit, report is full of labels: "testing," "dramatic," "a privacy thing." Those are the lines to question.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On an adolescent unit, report is full of labels: "testing," "dramatic," "a privacy thing." Those are the lines to question.`); }
   }
 
   const PREP = { '405-dph': ['vitals'], '409-apap': ['pain'] };

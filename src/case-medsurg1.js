@@ -77,7 +77,7 @@
       neuro: (s, P) => 'Alert and oriented to person, place, time, situation. POSS ' + (bellSedated(s, P) ? '2, drowsy but easily aroused.' : '1, awake and alert.'),
       pain: (s, P, A) => {
         const p = bellPain(s, P);
-        if (P.oxyAt !== null && s.t - P.oxyAt >= 25 && s.t - P.oxyAt <= 100) A.judge('412-reassess', 'judgment', 1, 'You reassessed Mr. Bell\'s pain and sedation after his oxycodone.', 'Evaluating the outcome is the last step of every intervention. After an oral opioid, reassess in 30 to 60 minutes: did it work, and is he over-sedated? In a patient with sleep apnea, both answers matter.', '412');
+        if (P.oxyAt !== null && s.t - P.oxyAt >= 20 && s.t - P.oxyAt <= 100) A.judge('412-reassess', 'judgment', 1, 'You reassessed Mr. Bell\'s pain and sedation after his oxycodone.', 'Evaluating the outcome is the last step of every intervention. After an oral opioid, reassess in 30 to 60 minutes: did it work, and is he over-sedated? In a patient with sleep apnea, both answers matter.', '412');
         return `Pain ${p}/10 at the incision, sharp, worse when he coughs or moves. ${p >= 7 ? 'He says he "can\'t take a deep breath."' : 'He says he could walk on this.'} Sedation (POSS) ${bellSedated(s, P) ? '2' : '1'}. His goal is 4/10, enough to walk.`;
       },
       skin: () => 'Midline incision: edges well approximated, scant serosanguineous drainage on the dressing, no redness or odor. Skin warm and dry.',
@@ -406,6 +406,8 @@
       },
     },
     scene: (s, P) => ({ tray: s.t >= 75 ? (s.t >= 88 ? 'barely' : 'full') : 'none', iv: P.cefAt !== null && s.t - P.cefAt < 30 ? 'running' : 'lock', elevated: true, tablet: true, gingerale: true }),
+    // Looking at the tray in the room is checking her intake: the insulin dialog shouldn't make you look twice.
+    onClue(id, s, P) { if (id === 'tray' && s.t >= 88) P.intakeKnown = true; },
     clues(s, P) {
       return {
         tray: s.t >= 88 ? 'Breakfast tray: eggs nearly untouched, half a slice of toast, tea. About 20% eaten.' : 'Breakfast tray, just delivered. She hasn\'t touched it.',
@@ -540,6 +542,7 @@
     meds: [
       {
         id: '416-cef', name: 'Ceftriaxone', dose: '1 g', route: 'IV', freq: 'Every 24 h', due: 60, initStatus: 'verify',
+        eta: (s, P) => P.abxAvail,
         checks: (s, P) => [{ label: 'Allergy', value: P.allergyInfo ? 'Penicillin: childhood rash. Tolerated cephalexin in 2024.' : 'Penicillin, reaction unknown', ok: P.allergyInfo ? true : null }],
         give(s, P, A) {
           P.abxAt = s.t;
@@ -870,7 +873,7 @@
     { id: 'wh-drowsy', when: (s) => { const P = s.p['416']; return !P.escalated && !P.icu && P.sev >= 40; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: 'Heads up: 416 is a lot sleepier than she was at 7, and she didn\'t touch her breakfast. Her face looks flushed.', replies: [{ label: 'Go to 416', act: 'goto', pid: '416' }] }); } },
     { id: 'wh-turn', when: (s) => { const P = s.p['416']; return !P.icu && P.bundle && P.abxAt !== null && s.t - P.abxAt >= 30 && P.sev < 30; }, run(s, A) { A.msg({ from: 'luis', pid: '416', text: '416 just asked me to call Ruth and make sure Biscuit got fed. She knew the cat\'s name and what day it is. She\'s way more with it. Whatever you did, it worked.' }); A.log('416', 'She\'s more awake, pinker, and asking about Biscuit by name.', 'info'); } },
     { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Thirty minutes to handoff. Anyone you haven\'t laid eyes on in the last hour? Do that before you give report.' }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: 'Thirty minutes to handoff. Anyone you haven\'t laid eyes on in the last hour? Do that before you give report.' }); } },
   ];
 
   /* ---------- delegation ---------- */
@@ -949,7 +952,8 @@
     });
     const B = s.p['412'];
     if (B.foleyOut === null && s.t >= 120) A.judge('412-foley-left', 'safety', -1, 'Mr. Bell\'s Foley was never removed despite an 08:00 order.', 'Catheter days drive infection risk.', '412');
-    if (B.oxyAt !== null && !A.hasJudg('412-reassess')) A.judge('412-noreassess', 'judgment', -1, 'You didn\'t reassess Mr. Bell\'s pain and sedation after his opioid.', 'Intervene, then evaluate. Otherwise you don\'t know whether it worked or whether he is over-sedated.', '412');
+    // Same rule as the task list ("Reassess after Oxycodone: done"): any assessment 20 minutes or more after the dose.
+    if (B.oxyAt !== null && !A.hasJudg('412-reassess') && !s.log.some((l) => l.pid === '412' && l.kind === 'find' && l.t >= B.oxyAt + 20)) A.judge('412-noreassess', 'judgment', -1, 'You didn\'t reassess Mr. Bell\'s pain and sedation after his opioid.', 'Intervene, then evaluate. Otherwise you don\'t know whether it worked or whether he is over-sedated.', '412');
     const O = s.p['414'];
     if (O.bgAt === null && s.t >= 120) A.judge('414-nobg', 'assess', -1, 'Mrs. Okafor\'s pre-breakfast glucose was never checked.', 'Every insulin decision at breakfast starts with a point-of-care glucose. It can be delegated, but it can\'t be skipped.', '414');
     if (O.prandHeld && !O.notifiedHold) A.judge('414-hold-notify', 'comm', -1, 'You held Mrs. Okafor\'s mealtime insulin but didn\'t notify the provider as ordered.', 'Holds with a "notify" clause aren\'t finished until the loop is closed, and her nausea needed treatment anyway.', '414');
@@ -965,7 +969,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.'); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Report is noisy. Separating "she\'s sweet" from "she only voided once, dark" is the first act of clinical judgment on every shift.'); }
   }
 
 

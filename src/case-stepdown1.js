@@ -576,7 +576,7 @@
     { id: 'dol-out', when: (s) => { const P = s.p['605']; return !P.gone && P.foot >= 1.15; }, run(s, A) { const P = s.p['605']; P.gone = true; P.goneAt = s.t; P.goneText = 'To interventional radiology for an arterial clot'; A.judge('605-clot', 'safety', -3, `Mrs. Price developed an arterial clot from HIT.`, `Platelets down 57% on day 5 of heparin, and the heparin kept running. HIT causes clots, not bleeding.`, '605'); A.msg({ from: 'nova', pid: '605', urgent: true, text: `605's left foot is white and pulseless. Vascular's taking her to IR. They're asking why she's still on heparin with platelets of 98.` }); } },
     { id: 'hep-restart', when: (s) => { const P = s.p['605']; return P.holdUntil !== null && s.t >= P.holdUntil && !P.restartNoted && P.stopped === null; }, run(s, A) { s.p['605'].restartNoted = true; A.log('605', `Heparin restarted at ${s.p['605'].rate} units/kg/h per nomogram.`, 'act'); } },
     { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: `It's almost eight and you haven't been in a room. Three drips and a fresh stent on your hall. Go look.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Ari's taking your patients. Every drip rate and every changed order, out loud.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Ari's taking your patients. Every drip rate and every changed order, out loud.` }); } },
   ];
 
   const replies = {
@@ -650,7 +650,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On step-down, report is drip rates, results and procedures. The lines that matter are the ones that should change an order.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On step-down, report is drip rates, results and procedures. The lines that matter are the ones that should change an order.`); }
   }
 
   const PREP = { '601-dilt': ['strip', 'vitals'], '603-meto': ['vitals'], '603-morph': ['pain', 'vitals'], '603-tica': ['vitals'], '605-hep': ['labs'], '607-cital': ['strip'], '607-ond': ['strip'] };

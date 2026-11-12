@@ -43,6 +43,26 @@ Left: newborn art (item 11, waits for commissioned art), and nurse sign-offs (it
 
 To list any file's conversations with lengths, adapt `tools/length_tell_dialogs.py -v`; to apply reviewed rewrites, `tools/apply_rewrites.py`.
 
+## Tester feedback, Nov 12 (fresh player, live site, Shift 1, 78/100)
+
+Branch `fix/tester-feedback`. Each row was checked against the code before changing anything.
+
+| # | Report | What was actually wrong | Status |
+|---|---|---|---|
+| T1 | Floor call missed inside a dialog, still docked 0.5 | Calls arrived only as a toast, and toasts hide while any dialog is open. | done: a waiting call now has its own bar at the top of the station and every room, with minutes left, until answered. A call is only scored as missed if that bar was actually on screen (`q.shown`); the toast is dropped in favor of the bar. Applies to every shift |
+| T2a | "You didn't get to know any of your patients" after talking to all of them | The note counted only "Sit and talk" story beats, but trust also rises from ordinary conversations and call lights. | done: note shows only for patients with no story beat and no trust, and says what it means ("sit and talk") |
+| T2b | "You didn't reassess Mr. Bell" though the task list says "Done by you" | Two rules: the task list accepted any assessment 20+ min after the dose, the score needed a pain check 25 to 100 min after. A check at 20 to 24 min was done in one and missing in the other. | done: scoring uses the task list's rule. Only Shift 1 had its own rule; the other shifts use the shared one |
+| T2c | "cues during handoff" (it was report) | Wording, in all 11 shifts. | done: "during report" |
+| T3 | Walkthrough pre-answers Shift 1 (its sepsis case is Mrs. Whitfield with the names changed) | True: orientation's Mrs. Alvarez has confusion, fever, lactate 4.2 and an unhung ceftriaxone. | **open, needs Nick:** the walkthrough runs before all 11 shifts, so "use the shift's patients" only fits Shift 1. Cheaper fix: give the walkthrough a different teaching case (for example a post-op patient with a low respiratory rate on a PCA), keep the eight steps |
+| T4 | "Next here" opens a tab instead of doing the task | True for every task type. | done for assessments: the bar now does the assessment in one tap and shows what it is and its cost ("Vital signs now · 4 min"). Medications and procedures still open their sheet, because those need a decision |
+| T5 | Ceftriaxone "awaiting pharmacy" reads as stuck | The hold is the puzzle (pharmacy needs the allergy history), but the notice didn't say it waits on the player, and after the call it gave no time. | done: notice says it stays on hold until pharmacy gets what they need and where to call; once pharmacy is verifying, it shows the expected release time (`eta` on the med; set for Shift 1's ceftriaxone) |
+| T6 | Tray checked in the room didn't count in the insulin dialog | Looking at the tray object showed "20% eaten" but only the Care-tab action recorded it. | done for Mrs. Okafor (Shift 1). **Todo:** look for the same pattern on other shifts (an object you can look at that duplicates a "check" action) |
+| T7 | Old toasts linger; "Mark all read" leaves the phone open | Messages with a reply button kept their toast forever. | done: routine toasts go after 20 game minutes (they stay in the phone); "Mark all read" clears them and closes the phone |
+| T8 | "Thirty minutes to handoff" after report was given | No check for report already given. | done on all shifts, for the 30- and 60-minute nudges |
+| T9 | No build label | True. | done: home footer and debrief header show "v0.7.0-beta · build abc1234". The stamp is a fingerprint of the source, written by `build.py`, so the same source always gives the same stamp |
+| T10 | "More from this shift" click failed once with a browser error | Could not reproduce: six real clicks in a row, no page or console error. Possibly the tester's browser tooling. | watch. Separately, since the tester called the moments log the best feedback in the game and it now sits inside that fold, the button is relabeled "Every moment that mattered (38)" |
+| T10b | Ending at 11:48 felt odd | By design (nothing due, handoff offered). | no change |
+
 ## Progress notes
 
 ### Item 5 (answer length), by file

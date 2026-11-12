@@ -439,7 +439,7 @@
       const it = item(x.id), m = s.inbox.find((mm) => mm.floor === x.id); if (m) { m.done = true; m.read = true; }
       // Close the loop the call opened ("two admissions are coming"), so nobody waits for something that won't happen.
       A.msg({ from: 'nova', floorMiss: x.id, text: `I took the ${it.title.toLowerCase()} call from ${(c.staff[fromKey(c, it)] || {}).name || 'the desk'}. It's handled.${it.after ? ' ' + fill(c, it.after.replace(/^Nova:\s*/, '').replace(/^"|"$/g, '')) : ''}` });
-      if (it.miss) A.judge('floor-' + x.id, it.dom, -0.5, `Floor call you didn't get to${where(it)}: ${fill(c, it.miss.text)}`, fill(c, it.miss.why));
+      if (it.miss && x.shown) A.judge('floor-' + x.id, it.dom, -0.5, `Floor call you didn't get to${where(it)}: ${fill(c, it.miss.text)}`, fill(c, it.miss.why));
     });
     if (F.n >= F.order.length || s.t < F.next || s.t > c.length - 25) return;
     if (F.q.some((x) => !x.done) || busy(s, A, c)) { F.next = s.t + 6; return; }

@@ -1,5 +1,18 @@
 import pathlib, os, subprocess
 src=pathlib.Path(__file__).parent/'src'
+# Build stamp: a fingerprint of everything in src (ignoring the stamp line itself), written into config.js before
+# anything reads it. Same source, same stamp, so the committed dist stays reproducible; shown on the home screen
+# and the debrief so a playtester can report which build they played.
+import hashlib as _hl, re as _re
+def _stamp():
+    cfg=src/'config.js'; h=_hl.sha1()
+    for f in sorted(p for p in src.rglob('*') if p.is_file()):
+        b=f.read_bytes()
+        if f==cfg: b=_re.sub(rb"build: '[^']*'", b"build: ''", b)
+        h.update(f.relative_to(src).as_posix().encode()); h.update(b)
+    t=cfg.read_text(encoding='utf8'); n=_re.sub(r"build: '[^']*'", "build: '%s'" % h.hexdigest()[:7], t, count=1)
+    if n!=t: cfg.write_text(n, encoding='utf8')
+_stamp()
 # Minify with a pinned esbuild (tools/minify), so every machine builds byte-identical dist/. One-time setup:
 #   cd tools/minify && npm ci
 # SHIFT_NO_MINIFY=1 skips it for a quick local build (dist/ will then differ from the committed one).

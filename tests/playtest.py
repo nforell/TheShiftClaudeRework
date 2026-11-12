@@ -87,10 +87,16 @@ with sync_playwright() as p:
 
     # 7. Floor calls in the debrief say they were someone else's patient.
     start('icu-3w-1')
-    J("(()=>{const s=Shift.ui._state();const it=Shift.floor.POOL.find(x=>x.id==='icu-aline');s.floor.q.push({id:'icu-aline',at:s.t,exp:s.t+1,done:null})})()")
+    J("(()=>{const s=Shift.ui._state();const it=Shift.floor.POOL.find(x=>x.id==='icu-aline');s.floor.q.push({id:'icu-aline',at:s.t,exp:s.t+1,done:null,shown:true})})()")
     for _ in range(2): H('catchup'); clr()
     t = J("(Shift.ui._state().judg.find(j=>j.key==='floor-icu-aline')||{}).text||''")
     check(t.startswith('Floor call') and 'not your patient' in t, f'a missed floor call is labeled as one ({t[:70]}…)')
+    # 7b. A call the player never had in front of them (it came and went inside one long action) costs nothing.
+    start('icu-3w-1')
+    J("(()=>{const s=Shift.ui._state();s.floor.q.push({id:'icu-aline',at:s.t,exp:s.t+1,done:null})})()")
+    for _ in range(2): H('catchup'); clr()
+    q = J("(()=>{const s=Shift.ui._state();return [(s.floor.q.find(x=>x.id==='icu-aline')||{}).done, !!s.judg.find(j=>j.key==='floor-icu-aline')]})()")
+    check(q[0] == 'missed' and not q[1], f'a floor call that was never on screen is not scored ({q})')
 
     # 8. New-player audit: ordered bundle items are tasks, the allergy header learns, counts agree, reset works.
     start('medsurg-4w-1'); J("(()=>{const s=Shift.ui._state(),P=s.p['416'];P.bundle=true;P.escalated=true;s.p['416'].orders.push({t:s.t,text:'Sepsis bundle',isNew:true});P.allergyInfo=true})()"); go('416')

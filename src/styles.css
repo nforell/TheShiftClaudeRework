@@ -3050,3 +3050,13 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
   .dr-sbar-steps li.now{flex:2.8}
   .dr-sbar-steps li.now span{display:block;font-size:.78rem}
 }
+
+/* A floor call that's waiting: stays at the top of the station and every room until it's answered. */
+.callbar{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:.7rem;align-items:center;width:min(1180px,calc(100% - 1.6rem));margin:.6rem auto 0;padding:.6rem .8rem;border:1.5px solid var(--amber,#c98a1b);border-radius:16px;background:var(--amber-bg,color-mix(in srgb,#f0b34a 16%,var(--surface)));color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.callbar .callbar-t b{display:block;font-size:.98rem}
+.callbar .callbar-t small{display:block;color:var(--ink-2);font-size:.85rem}
+.callbar-go{padding:.45rem .8rem;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:.88rem;white-space:nowrap}
+.callbar.hurry{border-color:var(--coral,#d2553f);animation:pulse 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.callbar.hurry{animation:none}}
+@media (max-width:520px){.callbar{grid-template-columns:32px minmax(0,1fr)}.callbar-go{grid-column:1/-1;text-align:center}}
+.buildtag{font-size:.78rem;color:var(--ink-2);opacity:.85;white-space:nowrap}
