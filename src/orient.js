@@ -187,7 +187,7 @@
 
   /* Nova's narration for each chapter. */
   const SAY = {
-    clock: (o) => `Welcome. I'm Nova, your charge nurse. Before your first shift, let's walk through one together on the practice unit, with three made-up patients. Take your time: Next always moves on, Skip ends the walkthrough, and if you leave, it picks up where you stopped. First thing: the clock only moves when you do something. Looking is free. Everything else costs minutes, and you see the cost before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. Spend them on what matters most.' : ''}`,
+    clock: (o) => `I'm Nova, your charge nurse. The clock only moves when you do something: looking is free, and everything else costs minutes you see before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. Spend them on what matters most.' : ''}`,
     report: () => `Every shift starts with report from the nurse going home. It's long and most of it is noise. Tap the lines that would change what you do in your first hour. They go on your brain sheet in highlighter, and the game tracks what you caught.`,
     rank: () => `Before you leave report, decide who you'll see first. Ask yourself who could get hurt fastest. Unstable beats scheduled, and scheduled beats stable. Drag the magnets on the board into order.`,
     station: () => `This is your home base between rooms. Doors show who's waiting; a yellow light is a call light. The phone is how the lab, pharmacy, doctors and your aide reach you, and some messages need an answer. Try answering these two. You can also tap a door.`,

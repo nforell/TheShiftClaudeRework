@@ -78,6 +78,7 @@
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
+  const TERMS_FREE = new Set(['terms', 'terms-ok', 'settings', 'account', 'menu', 'theme', 'set', 'close', 'x']);   // readable before agreeing
   // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
   let _A = null, _As = null;
   const A = () => (_As === s && _A ? _A : (_As = s, _A = E.api(s)));
@@ -2278,7 +2279,8 @@
     else if (ov === 'pack') h += ovPack();
     else if (ov === 'review' && RV) h += ovReviewInfo();
     else if (ov === 'terms' && TERMS) h += ovTerms(false);
-    if (!ov && TERMS && !termsOk() && (ui.view === 'home' || ui.view === 'shifts' || ui.view === 'drill' || !s)) h += ovTerms(true);
+    // The agreement waits for the first tap that starts something, so a new player sees the game before the legal sheet.
+    if (!ov && TERMS && !termsOk() && (ui.termsAsk || ui.view === 'shifts' || ui.view === 'drill' || (!s && ui.view !== 'home'))) h += ovTerms(true);
     if (ui.intro !== null && ui.intro !== undefined && s && ui.view === 'handoff') h += ovIntro();
     if (!h || !h.trim()) { ui.view = 'home'; ui.ov = null; h = vHome(); }   // never a blank screen
     const T1 = performance.now(); RC = null;
@@ -2465,7 +2467,7 @@
     'or-open'() { if (ui.or) { ui.ov = 'orient'; render(true); } else openOrient(false); },
     or(el) { const o = ui.or; if (!o) return; const i0 = o.i, r = OR.act(o, el.dataset); if (r === 'done') return closeOrient(true); if (r === 'skip') return closeOrient(false); orSave(); if (r === 'ref') { ui.ov = 'help'; return render(); } render(); if (o.i !== i0) { const st = document.querySelector('.or-body'); if (st) st.scrollTop = 0; window.scrollTo(0, 0); const h2 = document.querySelector('.or-head h2'); if (h2) h2.focus({ preventScroll: true }); } else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.or-list')) document.activeElement.blur(); }, settings() { ui.ov = 'settings'; render(); },
     terms() { ui.ov = 'terms'; render(); },
-    'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; render(); },
+    'terms-ok'() { prof.terms = TERMS.version; prof.termsAt = new Date().toISOString(); E.store.saveProfile(prof); TEL.track('terms_accept', { version: TERMS.version }); ui.ov = null; ui.termsAsk = false; const go = ui.afterTerms; ui.afterTerms = null; render(); if (go && handlers[go.a]) handlers[go.a]({ dataset: go.ds, closest: () => null, getAttribute: () => null }); },
     set(el) { prof.settings[el.dataset.k] = el.dataset.v; E.store.saveProfile(prof); render(); },
     close() { if (ui.ov === 'report' && ui.rp && ui.rp.back === 'ngn' && ui.ngn) { ui.rp = null; ui.ov = 'ngn'; return render(); } if (ui.ov === 'report') ui.rp = null; if (ui.ov === 'dialog') { ui.dlg = null; ui.dlgReview = null; ui.said = null; } if (ui.ov === 'rank') return; ui.ov = null; ui.chart = null; ui.med = null; ui.sbar = null; ui.nova = null; render(); },
     flag(el) { const k = el.dataset.k; const i = s.brain.indexOf(k); if (i >= 0) s.brain.splice(i, 1); else s.brain.push(k); save(); render(); },
@@ -2896,6 +2898,7 @@
     const h = handlers[a]; if (!h) return;
     e.preventDefault();
     if (ui.busy) return;
+    if (TERMS && !termsOk() && ui.view === 'home' && !ui.ov && !ui.termsAsk && !TERMS_FREE.has(a)) { ui.termsAsk = true; ui.afterTerms = { a, ds: Object.assign({}, el.dataset) }; return render(); }
     if (el.getAttribute('aria-disabled') === 'true') {
       // Nope: shake, a low double thud, and the reason.
       const tgt = el.tagName === 'INPUT' ? el.closest('.opt') || el : el;
