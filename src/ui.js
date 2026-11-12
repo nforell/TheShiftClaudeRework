@@ -77,6 +77,7 @@
   const shiftFacts = (k) => { const n = k.patients.filter((x) => !x.arrives).length, a = k.patients.length - n; return `${n} patients${a ? ` + ${a} ${k.arrivalNoun || 'admission'}${a > 1 ? 's' : ''}` : ''} · ${k.novaCredits || 3} hints · about ${k.minutes || 15} min`; };
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
+  try { document.documentElement.classList.toggle('hov', !window.matchMedia || window.matchMedia('(hover: hover)').matches); } catch (e) { document.documentElement.classList.add('hov'); }
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
   const TERMS_FREE = new Set(['terms', 'terms-ok', 'settings', 'account', 'menu', 'theme', 'set', 'close', 'x']);   // readable before agreeing
   // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
@@ -1085,6 +1086,7 @@
   addEventListener('resize', () => { if (ui.view === 'room') placeBubbles(); });
 
   function receiptHTML(d) {
+    if (ui.receipt && ui.receipt.at !== undefined && s && s.t !== ui.receipt.at) ui.receipt = null;   // the clock has moved since: it's stale
     const r = ui.receipt; if (!r || r.pid !== d.id) return '';
     return `<div class="receipt" role="status"><div class="rc-h"><b>${esc(r.label)}</b><span class="rc-t">${E.clock(r.t0)} → ${E.clock(r.t1)} · +${r.t1 - r.t0} min</span><button class="rc-x" data-act="rc-x" aria-label="Dismiss">${ICON.close}</button></div>${r.text ? `<p class="rc-tx">${esc(r.text)}</p>` : ''}${vitDelta(r, d)}</div>`;
   }
@@ -2432,7 +2434,7 @@
     if (!crit) reviewSound(review);
     // A routine result (nothing changed, nothing to learn from, nothing new) doesn't need a modal: it shows at the top of the panel.
     const routine = !crit && !alerts.length && st0 === st1 && !meanwhile.length && ui.res.msgs <= 0 && !(fbNow() && review.length) && !(prof.settings.results === 'card');
-    if (routine) { const r = Object.assign({ born: Date.now() }, ui.res); handlers['res-close'](); ui.receipt = r; render(); save(); return; }
+    if (routine) { const r = Object.assign({ born: Date.now(), at: s.t }, ui.res); handlers['res-close'](); ui.receipt = r; render(); save(); return; }
     ui.receipt = null;
     ui.ov = 'result'; ui.caption = null; ui.flash = dir > 0 ? 'worse' : dir < 0 ? 'better' : null;
     if (crit === 'worse') setTimeout(() => FX.play('crit'), 100); else if (dir) setTimeout(() => FX.play(dir > 0 ? 'worse' : 'better'), 380);
@@ -2512,6 +2514,7 @@
     'foc-t'(el) { const dt = el.closest && el.closest('details'); ui.focOpen = !(dt && dt.open); render(); },
     back() { ui.ov = null; ui.receipt = null; spend(1, () => {}); if (s.ended) return; ui.view = 'station'; s.view = 'station'; s.loc = 'station'; ui.caption = null; save(); render(true); },
     dock(el) {
+      if (ui.receipt && ui.dock !== el.dataset.id && Date.now() - ui.receipt.born > 4000) ui.receipt = null;
       ui.dock = el.dataset.id; render();
       // Coming from a task in the brain: point at the action that does it.
       if (el.dataset.hl) {

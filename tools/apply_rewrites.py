@@ -15,6 +15,10 @@ for row in json.loads(pathlib.Path(sys.argv[2]).read_text(encoding='utf8')):
         o, n = esc(old), esc(new)
         if s.count("'" + o + "'") == 1: s = s.replace("'" + o + "'", "'" + n + "'"); break
         if s.count('`' + o + '`') == 1: s = s.replace('`' + o + '`', '`' + n + '`'); break
-    else: bad += 1; print('NOT APPLIED:', old[:90])
+    else:
+        for asc in (False, True):   # JSON-style files: double-quoted, maybe \u-escaped
+            o, n = json.dumps(old, ensure_ascii=asc), json.dumps(new, ensure_ascii=asc)
+            if s.count(o) == 1: s = s.replace(o, n); break
+        else: bad += 1; print('NOT APPLIED:', old[:90])
 if bad: sys.exit(f'{bad} pairs did not apply; file left unchanged')
 f.write_text(s, encoding='utf8'); print('applied')
