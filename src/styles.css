@@ -2775,7 +2775,8 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 @media (min-width:1101px){.vmini{display:none}}
 /* phones: the hallway picture and the reward chrome step back; the next step leads */
 @media (max-width:700px){
-  .hall-wrap{display:none}
+  /* the hallway stays on a phone as a banner: the clock panel is cropped off so the four doors fill the width */
+  .hall-wrap{display:block;margin-bottom:.8rem}
   .top .mark{display:none}
   .top .xp{display:none}
   .goals{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -3086,3 +3087,7 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
   .facts .prio-chip{display:none}
   .doc .vstrip,.doc .vcap{display:none}
 }
+
+/* Hallway doors: each window shows who's inside. */
+svg.hall svg.portrait{overflow:hidden}
+@media (min-width:701px){svg.hall{max-height:200px}}

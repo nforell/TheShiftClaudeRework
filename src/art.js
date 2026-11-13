@@ -136,9 +136,10 @@
   }
 
   /* Hallway with four doors. */
-  function hallway(s, doors) {
+  // compact: on a phone the clock panel is left out so the doors fill the width.
+  function hallway(s, doors, compact) {
     const gid = 'h' + (++uid);
-    const n = doors.length, x0 = 170, span = 1060 - x0 - 20, dw = Math.min(150, (span - (n - 1) * 30) / n), gap = n > 1 ? (span - n * dw) / (n - 1) : 0;
+    const n = doors.length, x0 = compact ? 30 : 170, span = 1060 - x0 - 20, dw = Math.min(compact ? 210 : 150, (span - (n - 1) * 30) / n), gap = n > 1 ? (span - n * dw) / (n - 1) : 0;
     const d = doors.map((o, i) => {
       const x = x0 + i * (dw + gap);
       if (o.pending) return `<g class="door pending" aria-label="Room ${o.room}, admission arriving">
@@ -150,8 +151,12 @@
       return `<g class="door ${o.state || ''}" data-act="goto" data-pid="${o.pid}" tabindex="0" role="button" aria-label="Enter room ${o.room}, ${o.name}${o.alert ? ', ' + o.alert : ''}">
         <rect x="${x - 10}" y="58" width="${dw + 20}" height="232" rx="4" fill="var(--scene-trim)"/>
         <rect x="${x}" y="68" width="${dw}" height="222" rx="2" fill="var(--door)"/>
-        <rect x="${x + dw - 46}" y="92" width="30" height="80" rx="2" fill="${o.gone ? 'var(--scene-wall)' : 'var(--door-glass)'}" opacity=".85"/>
-        <rect x="${x + 16}" y="176" width="10" height="26" rx="3" fill="#a3aaa8"/>
+        <ellipse cx="${x + dw / 2}" cy="6" rx="${dw * .3}" ry="5" fill="#fff" opacity=".8"/><ellipse cx="${x + dw / 2}" cy="40" rx="${dw * .75}" ry="70" fill="#fff" opacity=".07"/>
+        <rect x="${x + dw / 2 - 44}" y="84" width="88" height="92" rx="12" fill="${o.gone ? 'var(--scene-wall)' : 'var(--door-glass)'}" stroke="var(--scene-trim)" stroke-width="4"/>
+        ${o.face && !o.gone ? o.face.replace('<svg ', `<svg x="${x + dw / 2 - 40}" y="90" width="80" height="86" `) : ''}
+        <rect x="${x + dw / 2 - 50}" y="186" width="100" height="24" rx="5" fill="var(--scene-panel)"/>
+        <text x="${x + dw / 2}" y="203" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible, system-ui, sans-serif">${o.gone ? 'Off unit' : (o.short || '')}</text>
+        <rect x="${x + 10}" y="222" width="9" height="26" rx="3" fill="#a3aaa8"/>
         <rect x="${x + dw / 2 - 30}" y="24" width="60" height="22" rx="3" fill="var(--scene-panel)"/>
         <text x="${x + dw / 2}" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible Mono, monospace">${o.room}</text>
         <circle cx="${x + dw / 2 + 44}" cy="35" r="7" fill="${o.light ? '#f0b64a' : 'var(--line)'}" class="${o.light ? 'blink' : ''}"/>
@@ -163,9 +168,9 @@
       <defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="-400" x2="530" y1="0" y2="0"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset="1" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
       <rect x="-2000" width="5060" height="300" fill="var(--scene-wall)"/><rect x="-2000" y="290" width="5060" height="10" fill="var(--scene-floor)"/>
       <rect x="-2000" y="206" width="5060" height="6" fill="var(--scene-trim)"/>
-      <rect x="18" y="80" width="112" height="200" rx="4" fill="var(--scene-panel)"/><rect x="30" y="92" width="88" height="54" rx="3" fill="#0f1b1f"/>
+      ${compact ? '<g display="none">' : '<g>'}<rect x="18" y="80" width="112" height="200" rx="4" fill="var(--scene-panel)"/><rect x="30" y="92" width="88" height="54" rx="3" fill="#0f1b1f"/>
       <text x="74" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#9fe0b8" font-family="Atkinson Hyperlegible Mono, monospace">${S.engine.clock(s.t)}</text>
-      <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Atkinson Hyperlegible Mono, monospace">${unit}</text>
+      <text x="74" y="176" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Atkinson Hyperlegible Mono, monospace">${unit}</text></g>
       ${d}
       <rect x="-2000" width="5060" height="300" fill="url(#${gid})" pointer-events="none"/>
     </svg>`;
