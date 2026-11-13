@@ -3077,3 +3077,12 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
   .station .side .phone{display:none}
   .station .pt-row .dx{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 }
+
+/* ---- Room on a phone, decluttered ----
+   The scene, who this is, and the one next step come first. Things shown twice are shown once: the Chart button
+   (it's a tab just below), the priority chip (it's on the station list), and the second vitals grid at the bottom. */
+@media (max-width:700px){
+  .plate-btns [data-act="chart"]{display:none}
+  .facts .prio-chip{display:none}
+  .doc .vstrip,.doc .vcap{display:none}
+}

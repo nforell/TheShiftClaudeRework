@@ -1784,7 +1784,7 @@
       { sel: '[data-act="dock"][data-id="assess"]', text: 'Open Assess. Vital signs and body-system checks live here.', until: () => ui.dock === 'assess', try: true },
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
       { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
-      { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
+      { sel: '.plate-btns [data-act="chart"]', alt: '.rt-chart', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
       { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap their speech bubble. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
@@ -1808,7 +1808,8 @@
     const c = coachFor(), id = c ? c.key + ':' + c.i : '';
     let card = document.querySelector('.coach'), ring = document.querySelector('.coach-ring');
     if (!c) { if (card) card.remove(); if (ring) ring.remove(); return; }
-    const a = document.querySelector(typeof c.step.sel === 'function' ? c.step.sel() : c.step.sel) || (c.step.alt && document.querySelector(c.step.alt)); if (!a) return;
+    const shown = (q) => { const e = q && document.querySelector(q); return e && e.getBoundingClientRect().width ? e : null; };   // a target that's hidden at this width doesn't count
+    const a = shown(typeof c.step.sel === 'function' ? c.step.sel() : c.step.sel) || shown(c.step.alt); if (!a) return;
     let r = a.getBoundingClientRect(); if (!r.width) return;
     if (!card || card.dataset.id !== id) {
       if (card) card.remove(); if (ring) ring.remove();
@@ -2223,7 +2224,8 @@
     const touring = (ui.view === 'station' && !seen('coach:station')) || (ui.view === 'room' && !seen('coach:room'));
     // A waiting floor call has its own bar at the top, and a routine message more than 20 minutes old has had its
     // moment: both stay in the phone, neither keeps a toast on screen.
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (m.floor && !m.done) || (!m.urgent && s.t - m.t > 20) || (!m.urgent && ui.view === 'station' && window.innerWidth > 700) ||   /* at the station on a wide screen the phone panel already shows it */
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (m.floor && !m.done) || (!m.urgent && s.t - m.t > 20) || (!m.urgent && ui.view === 'station' && window.innerWidth > 700) ||
+        (!m.urgent && ui.view === 'room' && (m.pid ? m.pid !== s.loc : s.t - m.t > 3)) ||   /* in a room, only what's about this patient or just arrived */   /* at the station on a wide screen the phone panel already shows it */
         ((ui.ov || touring) && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
       // Routine messages step aside after a few seconds of being seen (they stay in the phone); urgent ones wait for the player.
       if (!m.urgent && !m.toastAt && !(m.replies && !m.done)) { m.toastAt = Date.now(); const expire = () => { if (ui.hold) { setTimeout(expire, 700); return; } if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }; setTimeout(expire, 7000); }
