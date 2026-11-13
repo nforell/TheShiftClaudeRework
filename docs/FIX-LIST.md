@@ -63,6 +63,22 @@ Branch `fix/tester-feedback`. Each row was checked against the code before chang
 | T10 | "More from this shift" click failed once with a browser error | Could not reproduce: six real clicks in a row, no page or console error. Possibly the tester's browser tooling. | watch. Separately, since the tester called the moments log the best feedback in the game and it now sits inside that fold, the button is relabeled "Every moment that mattered (38)" |
 | T10b | Ending at 11:48 felt odd | By design (nothing due, handoff offered). | no change |
 
+## Station declutter (Nov 12, branch `fix/station-declutter`)
+
+Nick: the nurses' station is still overwhelming for a new player. What a first-time player saw on a phone: the four patients twice (room strip and list), the same next task five times (Next card, a count line, a label on every row, strip badges, "Everything due"), Luis four times (header, phone panel, tools, toast), 17 buttons, 1,488px of page.
+
+Changed, on every screen size unless noted:
+- The room strip is hidden at the station (it stays in rooms, where it's how you switch).
+- The "Work waiting in 4 rooms, 4 tasks" line shows only when something is overdue.
+- Patient rows lose the Allergy chip and the Chart button (both one tap away in the room).
+- The phone panel shows only when a message needs an answer; on a phone it's gone (header button, toasts and the call bar cover it). On a wide screen the toast no longer repeats what the panel shows.
+- Shift goals move below the patients, under the team buttons.
+- The tutorial's phone step now points at the header phone button.
+
+Result on a phone: 11 buttons, 998px, all four patients on the first screen under one Next card.
+
+Not changed, worth a decision later: the hallway doors on desktop repeat the patient list (kept for the sense of place); every row saying "NEXT Shift assessment" at 07:15 is true but repetitive.
+
 ## Progress notes
 
 ### Item 5 (answer length), by file

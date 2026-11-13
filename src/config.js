@@ -5,7 +5,7 @@
 window.Shift = window.Shift || {};
 window.Shift.config = Object.assign({
   version: '0.7.0-beta',
-  build: 'a06ce29',   // written by build.py: a short fingerprint of the source, so a tester can say which build they played
+  build: '43acd19',   // written by build.py: a short fingerprint of the source, so a tester can say which build they played
   posthogKey: 'phc_tisU8pDBvqfZjZj4Xhdur9yhtnhzqAAcmDwByf35n3Rc',
   posthogHost: 'https://us.i.posthog.com',
   feedbackEmail: 'nicholasforell@gmail.com',
