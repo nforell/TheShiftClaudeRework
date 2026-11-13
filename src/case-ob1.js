@@ -723,7 +723,7 @@
     { id: 'sarah-says', when: (s) => { const P = s.p['218']; return s.t >= 140 && (P.asked === null || (!P.si && (P.dismissed || P.leading))); }, run(s, A) { const P = s.p['218']; P.disclosed = true; A.msg({ from: 'mei', pid: '218', urgent: true, text: `218 was crying when I did her vitals. She said Tom and the baby would be better off without her. I didn't know what to say.`, replies: [{ label: 'Stay with her. I\'m coming now.', act: 'sarah-go' }, { label: 'New moms get emotional. She\'ll be okay.', act: 'sarah-blues' }] }); } },
     { id: 'tom', when: (s) => s.t >= 180, run(s, A) { const P = s.p['218']; A.msg({ from: 'mei', pid: '218', text: P.called !== null ? `218's husband is here. He's sitting with her.` : `218's husband is here. He's asking when they can leave.` }); } },
     { id: 'nova-idle', when: (s) => s.t >= 45 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: `It's almost eight and you haven't been in a room. On mother-baby the dangerous things are quiet: a soft uterus, a sleepy baby. Go put your hands on them.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Maya's taking your rooms. Mothers and babies both, every number.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Maya's taking your rooms. Mothers and babies both, every number.` }); } },
   ];
 
   const replies = {
@@ -808,7 +808,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On mother-baby, report is risk factors: how long the labor, how big the baby, what's overdue, and what a screen showed.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `On mother-baby, report is risk factors: how long the labor, how big the baby, what's overdue, and what a screen showed.`); }
   }
 
   const PREP = { '212-meth': ['fundus', 'vitals'], '212-oxy': ['fundus'], '212-carbo': ['fundus'], '214-mag': ['mgcheck'], '214-ca': ['mgcheck'], '214-lab': ['bp'], '214-apap': ['bp'], '216-gel': ['glu'], '218-oxy': ['itm', 'pain'] };

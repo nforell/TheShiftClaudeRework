@@ -914,7 +914,7 @@
     { id: 'dar-code', when: (s) => darnellK(s, s.p['427']) >= 6.9 && !recent(s, s.p['427'].caAt, 60) && !s.p['427'].icu, run(s, A) { const P = s.p['427']; P.arrhythmia = true; P.icu = true; A.judge('427-code', 'safety', -3, 'Mr. Brooks arrested from hyperkalemia.', 'A critical potassium with peaked T waves is a treat-now emergency: calcium to protect the heart, insulin with dextrose to shift the potassium, then binders or dialysis. The lab call was the warning.', '427'); A.msg({ from: 'jae', pid: '427', urgent: true, text: 'CODE BLUE 427. Wide complex, now V-fib. Team is on the way.' }); } },
     { id: 'k-recheck', when: (s) => s.p['427'].insAt !== null && s.t >= s.p['427'].insAt + 120, run(s, A) { const k = darnellK(s, s.p['427']); A.addLab('427', { name: 'Potassium (2 h)', val: k, unit: 'mmol/L', ref: '3.5–5.0', flag: k > 5 ? 'H' : '' }); A.msg({ from: 'lab', pid: '427', text: `427 Brooks potassium ${k} on recheck.` }); } },
     { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: 'Hey. It\'s been almost an hour and you haven\'t been in a single room. Report is not an assessment. Go lay eyes on somebody.' }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to handoff. Look at every patient once more with fresh eyes. Who would you worry about at 3 a.m.?' }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to handoff. Look at every patient once more with fresh eyes. Who would you worry about at 3 a.m.?' }); } },
   ];
 
   /* ---------- delegation ---------- */
@@ -990,7 +990,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing. The skill is choosing: what here could hurt someone in the next few hours?');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.'); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'Separating "he coaches basketball" from "potassium was 5.8 with a repeat pending" is the first act of clinical judgment on every shift.'); }
   }
 
   /* Bedside prep shortcuts offered inside the medication review. */

@@ -631,7 +631,7 @@
     { id: 'ali-rupture', when: (s) => { const P = s.p['23']; return !P.gone && P.hemo >= 1.1; }, run(s, A) { const P = s.p['23']; P.rupture = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the OR in hemorrhagic shock'; A.judge('23-shock', 'safety', -3, `Ms. Moreno went into hemorrhagic shock from a ruptured ectopic.`, `Positive hCG, shoulder pain, dizziness and a heart rate climbing for hours. Young patients hold their pressure until they collapse.`, '23'); A.msg({ from: 'nova', pid: '23', urgent: true, text: `23 passed out. BP 70s. Massive transfusion's started; GYN is taking her straight to the OR.` }); } },
     { id: 'har-herniate', when: (s) => { const P = s.p['25']; return P.arrived && !P.gone && P.bleed >= 1; }, run(s, A) { const P = s.p['25']; P.herniate = true; P.icu = true; P.gone = true; P.goneAt = s.t; P.goneText = 'To the OR for emergency craniotomy'; A.judge('25-herniate', 'safety', -3, `Mr. Jensen's subdural expanded until he herniated.`, `A slow bleed on warfarin: the neuro checks show it, and reversal stops it.`, '25'); A.msg({ from: 'nova', pid: '25', urgent: true, text: `25 is GCS 7 with a blown left pupil. Intubating; neurosurgery's taking him to the OR.` }); } },
     { id: 'nova-idle', when: (s) => s.t >= 30 && s.t < 90 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: `Half an hour in and you haven't touched a patient. You have a stroke alert in 22. Go.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes. Jo's taking your bays at eight. Pending results, pending transfers, everything.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes. Jo's taking your bays at eight. Pending results, pending transfers, everything.` }); } },
   ];
 
   const replies = {
@@ -703,7 +703,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In the ED, report is what's pending and what the clock is: a test due, a time someone was last normal, a result not yet back.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In the ED, report is what's pending and what the clock is: a test due, a time someone was last normal, a result not yet back.`); }
   }
 
   const PREP = { '21-ntg': ['vitals'], '22-lab': ['vitals'], '22-tpa': ['lkw', 'vitals'], '23-morph': ['pain', 'vitals'], '24-epi': ['airway'], '25-ond': ['gcs'], '25-warf': ['gcs'] };

@@ -883,7 +883,7 @@
     { id: 'lin-stat', when: (s) => { const P = s.p['309']; return P.statAt !== null && !P.statDone && s.t >= P.statAt + 30; }, run(s, A) { const P = s.p['309']; P.statDone = true; const na = Math.round(P.na); A.addLab('309', { name: 'Sodium', val: na, unit: 'mmol/L', ref: '135–145', flag: 'L' }); if (na <= 125.5) { if (P.reported) { P.gone = true; P.goneText = 'Transferred to medicine'; A.msg({ from: 'iyer', pid: '309', text: `309's sodium is ${na}. Medicine is taking her for a monitored correction. Thanks for staying on it.` }); } else A.msg({ from: 'lab', pid: '309', urgent: true, text: `Critical value: 309 Fairweather sodium ${na} mmol/L.`, replies: [{ label: 'Call Dr. Iyer about 309', act: 'sbar', pid: '309' }] }); } else A.msg({ from: 'lab', pid: '309', text: `309 Fairweather STAT BMP: sodium ${na}.` }); } },
     { id: 'lin-seize', when: (s) => { const P = s.p['309']; return !P.gone && !P.icu && P.na <= 121.5; }, run(s, A) { const P = s.p['309']; P.icu = true; P.goneText = 'Sent to the ED after a seizure'; A.addLab('309', { name: 'Sodium', val: Math.round(P.na), unit: 'mmol/L', ref: '135–145', flag: 'L' });   /* drawn by the rapid response team; the debrief quotes it */ A.judge('309-seize', 'safety', -3, 'Linda seized from water intoxication.', 'Weight gain, a falling sodium, a headache and confusion in a patient with known polydipsia. The protocol existed for exactly this.', '309'); A.msg({ from: 'andre', pid: '309', urgent: true, text: 'Medical emergency 309! Linda is seizing by the sink.' }); } },
     { id: 'lin-worse', when: (s) => { const P = s.p['309']; return P.na < 125.5 && !P.restricted && !P.gone; }, run(s, A) { A.msg({ from: 'andre', pid: '309', text: '309 threw up and she\'s really confused. She keeps asking me where the committee meeting is. Still going to the sink.', replies: [{ label: 'Go to 309', act: 'goto', pid: '309' }] }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to report. Who on this hall would you worry about going home today? Make sure the afternoon nurse hears it from you.' }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: 'Half an hour to report. Who on this hall would you worry about going home today? Make sure the afternoon nurse hears it from you.' }); } },
   ];
 
   const replies = {
@@ -978,7 +978,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'On psych, report is full of reassurance. "He seems so much better" and "probably a stomach bug" are the lines to question.'); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn\'t matter` : ''}.`, 'On psych, report is full of reassurance. "He seems so much better" and "probably a stomach bug" are the lines to question.'); }
   }
 
   const PREP = { '305-hctz': ['vitals'], '309-apap': ['pain'] };

@@ -11,9 +11,9 @@
 
   /* ---------- practice patients ---------- */
   const PT = {
-    'or-a': { name: 'Esther Alvarez', short: 'Mrs. Alvarez', room: '101', age: '82F', dx: 'Urinary tract infection, new confusion',
+    'or-a': { name: 'Esther Alvarez', short: 'Mrs. Alvarez', room: '101', age: '82F', dx: 'Day 2 after a hip repair, on a blood thinner',
       look: { skin: '#D6A684', shade: '#B88864', lip: '#A0594C', blush: '#DC8E74', iris: '#3A2616', head: { w: 55, h: 60, jaw: .2 }, eye: 9.2, hair: { style: 'bun', color: '#D9D2CB' }, brow: { w: 2.8, color: '#B8B0A8' }, body: { w: 78, cloth: 'gown' }, extras: ['wrinkles', 'gold'], smile: .1 } },
-    'or-b': { name: 'Henry Ostrowski', short: 'Mr. Ostrowski', room: '103', age: '71M', dx: 'Heart failure, metoprolol due',
+    'or-b': { name: 'Henry Ostrowski', short: 'Mr. Ostrowski', room: '103', age: '71M', dx: 'Atrial fibrillation, digoxin due',
       look: { skin: '#EBC9AE', shade: '#CFA88C', lip: '#A9655B', blush: '#E2958A', iris: '#4E6E8E', head: { w: 57, h: 63, jaw: .55 }, eye: 9, hair: { style: 'balding', color: '#BDB6AE' }, brow: { w: 4, color: '#9E968E' }, body: { w: 84, cloth: 'gown' }, extras: ['glasses', 'wrinkles'], glasses: '#2E2A28', smile: .35 } },
     'or-c': { name: 'Lorraine Abernathy', short: 'Ms. Abernathy', room: '105', age: '45F', dx: 'Day 2 after a knee replacement',
       look: { skin: '#EBC6A2', shade: '#CFA582', lip: '#B06A5E', blush: '#E8977F', iris: '#1E140C', head: { w: 54, h: 60, jaw: .25 }, eye: 9.8, hair: { style: 'bob', color: '#1A1410' }, brow: { w: 3.2, color: '#140E0A' }, body: { w: 78, cloth: 'gown' }, extras: [], smile: .45 } },
@@ -56,56 +56,56 @@
 
   /* ---------- chapter stages ---------- */
   const ACTIONS = [
-    { id: 'look', label: 'Look at the patient', min: 0, out: 'Mrs. Alvarez is picking at her blanket and calls you by her daughter\'s name.' },
-    { id: 'vitals', label: 'Take vital signs', min: 4, out: 'T 38.6, HR 112, BP 98/58, RR 22, SpO₂ 95%.' },
-    { id: 'chart', label: 'Read the chart', min: 2, out: 'Ceftriaxone ordered at 04:00. Not given yet.' },
-    { id: 'med', label: 'Give a medication', min: 5, out: 'Ceftriaxone 1 g IV started.' },
-    { id: 'call', label: 'Call the provider', min: 6, out: 'Dr. Chen is on her way, with orders for cultures and fluids.' },
+    { id: 'look', label: 'Look at the patient', min: 0, out: 'Mrs. Alvarez is pale. She says the room spins when she lifts her head.' },
+    { id: 'vitals', label: 'Take vital signs', min: 4, out: 'T 36.8, HR 112, BP 98/58, RR 20, SpO₂ 96%.' },
+    { id: 'chart', label: 'Read the chart', min: 2, out: 'Hemoglobin 10.4 yesterday. Enoxaparin due at 08:00.' },
+    { id: 'med', label: 'Give a medication', min: 5, out: 'Her scheduled pantoprazole is in.' },
+    { id: 'call', label: 'Call the provider', min: 6, out: 'Dr. Chen is on her way, with orders for a blood count and a type and crossmatch.' },
     { id: 'walk', label: 'Walk to another room', min: 1, out: 'You\'re in 103.' },
   ];
   const REPORT = [
-    { t: 'Esther Alvarez, 82, here for a UTI. Day 1 of antibiotics.', key: false },
-    { t: 'She got confused around three. She\'s usually sharp as a tack.', key: true, why: 'New confusion in an older adult with an infection is an early sign of sepsis.' },
-    { t: 'She spiked to 38.6 at six.', key: true, why: 'Fever with a fast heart rate fits the same picture.' },
-    { t: 'Her first ceftriaxone dose didn\'t get hung. Pharmacy was slow.', key: true, why: 'An antibiotic delay matters most in the first hours of sepsis.' },
+    { t: 'Esther Alvarez, 82, day 2 after a hip repair. Pain\'s been fine.', key: false },
+    { t: 'She had two black, tarry stools overnight.', key: true, why: 'Black, tarry stool is digested blood: bleeding somewhere in the gut until proven otherwise.' },
+    { t: 'Heart rate\'s been creeping up: 88 at midnight, 112 at six.', key: true, why: 'A rising heart rate is the body making up for lost volume, often before the pressure drops.' },
+    { t: 'Her morning enoxaparin is due at eight.', key: true, why: 'A blood thinner on top of a bleed makes it worse. That dose needs a decision before it\'s given.' },
     { t: 'Her daughter Dena visits at noon.', key: false, why: 'Nice to know. It won\'t change your first hour.' },
-    { t: 'Only 30 mL of urine since midnight.', key: true, why: 'Low urine output means her kidneys aren\'t getting enough blood flow.' },
+    { t: 'She got dizzy when I sat her up at five.', key: true, why: 'Dizziness on sitting up means there isn\'t enough volume to keep her pressure up.' },
     { t: 'She likes her coffee black.', key: false, why: 'Noise. Report is full of it.' },
   ];
   const BOARD = {
-    'or-a': 'New confusion, fever, HR 112, soft pressure, antibiotic late',
-    'or-b': 'Heart failure. Metoprolol due at 09:00; ask for an apical pulse first',
+    'or-a': 'Black stools overnight, dizzy, HR 112, soft pressure, blood thinner due',
+    'or-b': 'Atrial fibrillation. Digoxin due at 09:00; needs an apical pulse first',
     'or-c': 'Pain 3 out of 10, walking with physical therapy, stable all night',
   };
   const RIGHT = ['or-a', 'or-b', 'or-c'];
   const PHONE = [
-    { id: 'lab', from: 'Lab', who: null, text: 'Calling a critical value: 101 Alvarez, lactate 4.2.', opts: [{ id: 'read', t: 'Read it back: 101 Alvarez, lactate 4.2', v: 2, fb: 'Read-back closes the loop on a critical value. Now it\'s yours to act on: this one goes straight to the provider.' }, { id: 'later', t: 'Thanks, I\'ll look at it later', v: 0, fb: 'Critical values can\'t wait, and you never repeated it back. Read back, then act.' }] },
+    { id: 'lab', from: 'Lab', who: null, text: 'Calling a critical value: 101 Alvarez, hemoglobin 7.4.', opts: [{ id: 'read', t: 'Read it back: 101 Alvarez, hemoglobin 7.4', v: 2, fb: 'Read-back closes the loop on a critical value. Now it\'s yours to act on: this one goes straight to the provider.' }, { id: 'later', t: 'Thanks, I\'ll look at it later', v: 0, fb: 'Critical values can\'t wait, and you never repeated it back. Read back, then act.' }] },
     { id: 'aide', from: 'Luis (aide)', who: 'luis', text: '103 wants to walk to the bathroom. Okay to help him?', opts: [{ id: 'yes', t: 'Yes, he\'s stable. Thanks, Luis.', v: 2, fb: 'Walking a stable patient is a perfect aide task. You keep the assessments.' }, { id: 'wait', t: 'No, wait for me', v: 0, fb: 'He\'d have waited for nothing. Hand off what\'s safe to hand off.' }] },
   ];
   const TABS = {
     assess: { label: 'Assess', text: 'Vital signs and a body-system check, one system at a time. Each one shows its cost in minutes.', rows: [['Vital signs', 4], ['Heart and lungs', 2], ['Neuro', 2], ['Pain', 1]] },
     care: { label: 'Care', text: 'Things you do with your hands: reposition, start an IV, check a site, apply oxygen. Some only appear when they\'re needed.', rows: [['Reposition and pad his heels', 3], ['Count an apical pulse', 1], ['Daily weight', 2]] },
-    meds: { label: 'Meds', text: 'The medication record. Every dose is a decision: give it, or hold it with a reason. Read the checks first.', rows: [['Metoprolol 25 mg PO, due 09:00', 5], ['Furosemide 40 mg IV, due 09:00', 5]] },
+    meds: { label: 'Meds', text: 'The medication record. Every dose is a decision: give it, or hold it with a reason. Read the checks first.', rows: [['Digoxin 0.125 mg PO, due 09:00', 5], ['Apixaban 5 mg PO, due 09:00', 5]] },
     talk: { label: 'Talk', text: 'Talk with the patient and family, call the provider, or ask for help. Patients tell you things the chart doesn\'t.', rows: [['Talk with Mr. Ostrowski', 3], ['Call Dr. Chen (SBAR)', 6], ['Call a rapid response', 3]] },
   };
   const SB = [
-    { id: 'conf', t: 'New confusion since 03:00', key: true },
-    { id: 'vs', t: 'T 38.6, HR 112, BP 98/58', key: true },
-    { id: 'uo', t: '30 mL of urine since midnight', key: true },
-    { id: 'abx', t: 'First antibiotic dose never given', key: true },
-    { id: 'lac', t: 'Lactate 4.2', key: true },
+    { id: 'conf', t: 'Two black, tarry stools overnight', key: true },
+    { id: 'vs', t: 'HR 112, up from 88 at midnight; BP 98/58', key: true },
+    { id: 'uo', t: 'Dizzy when she sits up', key: true },
+    { id: 'abx', t: 'Enoxaparin due at 08:00, not given yet', key: true },
+    { id: 'lac', t: 'Hemoglobin 7.4, down from 10.4 yesterday', key: true },
     { id: 'cof', t: 'Likes her coffee black', key: false },
     { id: 'ruth', t: 'Daughter visits at noon', key: false },
   ];
   const SBREQ = [
-    { id: 'sepsis', t: 'I think she\'s septic. Can you see her now, and can I get blood cultures, a fluid bolus and the antibiotic in?' },
+    { id: 'act', t: 'I think she\'s bleeding into her gut. Can you see her now, and can I hold the enoxaparin and send a type and crossmatch?' },
     { id: 'fyi', t: 'Just keeping you updated.' },
   ];
   const TASKS = [
     { id: 'v', t: 'Vital signs on Ms. Abernathy (stable, walking)', ok: 'aide', why: 'Measuring is an aide task when the patient is stable. You interpret the numbers.' },
-    { id: 'a', t: 'Assess Mrs. Alvarez\'s new confusion', ok: 'me', why: 'Assessment and judgment stay with the RN. A new change always does.' },
+    { id: 'a', t: 'Assess Mrs. Alvarez\'s new dizziness', ok: 'me', why: 'Assessment and judgment stay with the RN. A new change always does.' },
     { id: 'w', t: 'Walk Mr. Ostrowski to the bathroom', ok: 'aide', why: 'Helping a stable patient move is within the aide\'s scope.' },
-    { id: 'm', t: 'Give Mr. Ostrowski his 09:00 metoprolol', ok: 'me', why: 'Medications are yours, after you check his pulse.' },
+    { id: 'm', t: 'Give Mr. Ostrowski his 09:00 digoxin', ok: 'me', why: 'Medications are yours, after you check his pulse.' },
   ];
 
   function stage(o) {
@@ -122,7 +122,7 @@
       return `<div class="or-scene or-s-report">
         <div class="or-giver">${icon('dana')}<p><b>Dana</b>, night RN, giving report on 101</p></div>
         <div class="or-brain" role="group" aria-label="Report lines">${REPORT.map((r, k) => { const on = o.hl.includes(k); const st = o.hlChecked ? (r.key ? (on ? 'hit' : 'miss') : on ? 'noise' : '') : ''; return `<button class="or-line ${on ? 'on' : ''} ${st}" data-act="or" data-do="hl" data-k="${k}" aria-pressed="${on}"><span class="or-mk" aria-hidden="true"></span><span class="txt">${esc(r.t)}</span>${o.hlChecked && (r.key || on) ? `<small class="why">${esc(r.why || '')}</small>` : ''}</button>`; }).join('')}</div>
-        ${o.hlChecked ? `<p class="or-verdict ${hits === keys && !noise ? 'good' : ''}">You flagged ${hits} of ${keys} that matter${noise ? `, and ${noise} that don't` : ''}. ${hits === keys && !noise ? 'That\'s a sepsis picture, and you heard it in report.' : 'Together they add up to sepsis. Flag what would change your first hour.'}</p>` : `<button class="btn or-check" data-act="or" data-do="hlcheck" ${o.hl.length ? '' : 'disabled data-why="Tap a line or two first."'}>Check my highlights</button>`}
+        ${o.hlChecked ? `<p class="or-verdict ${hits === keys && !noise ? 'good' : ''}">You flagged ${hits} of ${keys} that matter${noise ? `, and ${noise} that don't` : ''}. ${hits === keys && !noise ? 'That\'s a bleeding picture, and you heard it in report.' : 'Together they add up to a bleed. Flag what would change your first hour.'}</p>` : `<button class="btn or-check" data-act="or" data-do="hlcheck" ${o.hl.length ? '' : 'disabled data-why="Tap a line or two first."'}>Check my highlights</button>`}
       </div>`;
     }
     if (c.id === 'rank') {
@@ -147,25 +147,25 @@
     if (c.id === 'room') {
       const T = TABS[o.tab];
       return `<div class="or-scene or-s-room">
-        <div class="or-roomtop">${bust('or-b')}<div class="or-plate"><b>Henry Ostrowski</b> 71M, 103<br><small>Heart failure</small><span class="chip">Full code</span> <span class="chip alert">Allergy: penicillin</span></div></div>
+        <div class="or-roomtop">${bust('or-b')}<div class="or-plate"><b>Henry Ostrowski</b> 71M, 103<br><small>Atrial fibrillation</small><span class="chip">Full code</span> <span class="chip alert">Allergy: penicillin</span></div></div>
         <div class="or-dock" role="tablist">${Object.entries(TABS).map(([k, t]) => `<button role="tab" aria-selected="${o.tab === k}" class="${o.tab === k ? 'on' : ''}" data-act="or" data-do="tab" data-k="${k}">${esc(t.label)}</button>`).join('')}</div>
         <div class="or-pane"><p>${esc(T.text)}</p><ul>${T.rows.map(([l, m]) => `<li><span>${esc(l)}</span><b>${m} min</b></li>`).join('')}</ul></div>
-        <div class="or-med"><p class="or-med-h"><b>Metoprolol tartrate 25 mg PO</b>, due 09:00. <span class="or-param">Hold for apical pulse under 55.</span></p>
-          <ul class="or-checks"><li><span>Apical pulse</span><b>${o.apical ? '52, counted for a full minute' : '?'}</b>${o.apical ? '<i class="bad">under 55</i>' : ''}</li><li><span>Blood pressure</span><b>108/66</b><i class="ok">ok</i></li></ul>
-          ${o.med ? `<p class="or-fb ${o.med === 'hold' ? 'good' : ''}">${o.med === 'hold' ? 'Held, with a reason, and you\'ll tell the provider. The order said what to do; you checked the number first.' : o.apical ? 'The pulse was 52. The hold parameter says under 55: this dose could drop him lower.' : 'You gave it without the number the order asks for. Check the apical pulse first, every time.'}</p>` : `<div class="or-rep">${o.apical ? '' : '<button class="btn" data-act="or" data-do="apical">Count an apical pulse <small>1 min</small></button>'}<button class="btn" data-act="or" data-do="med" data-v="give">Give it</button><button class="btn" data-act="or" data-do="med" data-v="hold">Hold it</button></div>`}
+        <div class="or-med"><p class="or-med-h"><b>Digoxin 0.125 mg PO</b>, due 09:00. <span class="or-param">Hold for apical pulse under 60.</span></p>
+          <ul class="or-checks"><li><span>Apical pulse</span><b>${o.apical ? '52, counted for a full minute' : '?'}</b>${o.apical ? '<i class="bad">under 60</i>' : ''}</li><li><span>Blood pressure</span><b>108/66</b><i class="ok">ok</i></li></ul>
+          ${o.med ? `<p class="or-fb ${o.med === 'hold' ? 'good' : ''}">${o.med === 'hold' ? 'Held, with a reason, and you\'ll tell the provider. The order said what to do; you checked the number first.' : o.apical ? 'The pulse was 52. The hold parameter says under 60: this dose could slow him further.' : 'You gave it without the number the order asks for. Check the apical pulse first, every time.'}</p>` : `<div class="or-rep">${o.apical ? '' : '<button class="btn" data-act="or" data-do="apical">Count an apical pulse <small>1 min</small></button>'}<button class="btn" data-act="or" data-do="med" data-v="give">Give it</button><button class="btn" data-act="or" data-do="med" data-v="hold">Hold it</button></div>`}
         </div>
       </div>`;
     }
     if (c.id === 'sbar') {
       const sb = o.sbar, keys = SB.filter((x) => x.key && sb.picked.includes(x.id)).length, noise = SB.filter((x) => !x.key && sb.picked.includes(x.id)).length;
-      const reply = !sb.sent ? '' : sb.req === 'fyi' ? 'Okay, thanks. Call me if anything changes.' : keys >= 4 ? 'I\'m coming up. Cultures, 30 mL/kg of fluid, and hang the ceftriaxone now. Recheck the lactate in two hours.' : 'Septic? What are her vitals, and what\'s her lactate?';
+      const reply = !sb.sent ? '' : sb.req === 'fyi' ? 'Okay, thanks. Call me if anything changes.' : keys >= 4 ? 'I\'m coming up. Hold the enoxaparin, type and cross two units, and get a second IV in. Repeat the hemoglobin in an hour.' : 'Bleeding? What are her vitals, and what\'s her hemoglobin?';
       return `<div class="or-scene or-s-sbar">
         <div class="or-sbar"><p class="or-sbar-h"><span>S</span><span>B</span><span>A</span><span>R</span> Calling Dr. Chen about 101</p>
           <p class="or-lab">Pick what she needs to hear:</p>
           <div class="or-chips">${SB.map((x) => { const on = sb.picked.includes(x.id); return `<button class="or-chip ${on ? 'on' : ''} ${sb.sent ? (x.key ? (on ? 'hit' : 'miss') : on ? 'noise' : '') : ''}" data-act="or" data-do="sb" data-k="${x.id}" aria-pressed="${on}" ${sb.sent ? 'disabled' : ''}>${esc(x.t)}</button>`; }).join('')}</div>
           <p class="or-lab">And what you want:</p>
           <div class="or-reqs">${SBREQ.map((x) => `<button class="or-req ${sb.req === x.id ? 'on' : ''}" data-act="or" data-do="sbreq" data-k="${x.id}" aria-pressed="${sb.req === x.id}" ${sb.sent ? 'disabled' : ''}>${esc(x.t)}</button>`).join('')}</div>
-          ${sb.sent ? `<div class="or-reply">${icon('chen')}<p>"${esc(reply)}"</p></div><p class="or-verdict ${keys >= 4 && !noise && sb.req === 'sepsis' ? 'good' : ''}">${keys} of 5 key findings${noise ? `, ${noise} that didn't matter` : ''}. Lead with what changed and what you measured, then say what you need.</p>` : `<button class="btn btn-primary or-check" data-act="or" data-do="sbsend" ${sb.picked.length && sb.req ? '' : `disabled data-why="${sb.picked.length ? 'Choose what you want from her.' : 'Pick at least one finding.'}"`}>Call <small>6 min</small></button>`}
+          ${sb.sent ? `<div class="or-reply">${icon('chen')}<p>"${esc(reply)}"</p></div><p class="or-verdict ${keys >= 4 && !noise && sb.req === 'act' ? 'good' : ''}">${keys} of 5 key findings${noise ? `, ${noise} that didn't matter` : ''}. Lead with what changed and what you measured, then say what you need.</p>` : `<button class="btn btn-primary or-check" data-act="or" data-do="sbsend" ${sb.picked.length && sb.req ? '' : `disabled data-why="${sb.picked.length ? 'Choose what you want from her.' : 'Pick at least one finding.'}"`}>Call <small>6 min</small></button>`}
         </div>
       </div>`;
     }
@@ -181,7 +181,7 @@
     return `<div class="or-scene or-s-deb ${o.deb ? 'go' : ''}">
       <div class="or-deb-top"><p class="or-score"><b>86</b><small>Safe, solid shift</small></p><p class="or-stars" aria-label="Three stars"><i></i><i></i><i></i></p></div>
       <div class="or-meters"><div><h4>By skill</h4>${met.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div><div><h4>By NCLEX clinical judgment step</h4>${steps.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k + 6}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div></div>
-      <div class="or-outs"><div class="or-out good">${icon('or-a')}<p><b>Sepsis caught early</b> Antibiotic in by 07:40, fluids, lactate clearing. Home on day 5 with Dena.</p></div><div class="or-out good">${icon('or-b')}<p><b>Metoprolol held, rate recovered</b> Dose lowered by cardiology.</p></div><div class="or-out mixed">${icon('or-c')}<p><b>Pain under control, call light late</b> She waited 25 minutes at 10:40.</p></div></div>
+      <div class="or-outs"><div class="or-out good">${icon('or-a')}<p><b>Bleed caught early</b> Enoxaparin held, two units in by 09:30, hemoglobin steady. Home on day 6 with Dena.</p></div><div class="or-out good">${icon('or-b')}<p><b>Digoxin held, level came back high</b> Dose lowered by cardiology.</p></div><div class="or-out mixed">${icon('or-c')}<p><b>Pain under control, call light late</b> She waited 25 minutes at 10:40.</p></div></div>
     </div>`;
   }
 
@@ -191,7 +191,7 @@
     report: () => `Every shift starts with report from the nurse going home. It's long and most of it is noise. Tap the lines that would change what you do in your first hour. They go on your brain sheet in highlighter, and the game tracks what you caught.`,
     rank: () => `Before you leave report, decide who you'll see first. Ask yourself who could get hurt fastest. Unstable beats scheduled, and scheduled beats stable. Drag the magnets on the board into order.`,
     station: () => `This is your home base between rooms. Doors show who's waiting; a yellow light is a call light. The phone is how the lab, pharmacy, doctors and your aide reach you, and some messages need an answer. Try answering these two. You can also tap a door.`,
-    room: () => `In a room, look at the patient first, then work through the tabs: assess, care, meds, talk. Before you give anything, check what the order asks you to check. Mr. Ostrowski's metoprolol is due. Decide.`,
+    room: () => `In a room, look at the patient first, then work through the tabs: assess, care, meds, talk. Before you give anything, check what the order asks you to check. Mr. Ostrowski's digoxin is due. Decide.`,
     sbar: () => `When something's wrong, you call the provider with an SBAR: situation, background, assessment, recommendation. Pick only what she needs to make a decision, then ask for what you want. Mrs. Alvarez can't wait.`,
     team: () => `You have an aide, Luis. He can measure and help patients move. He can't assess, decide, or give meds. Assign each task: Luis or you.`,
     debrief: () => `At the end of the shift you give report to the next nurse, then see what happened to every patient, scored by skill and by the six NCLEX clinical judgment steps. Every decision has a reason you can read. Patients have stories too: the more time you spend with them, the more they tell you. That's it. You're ready.`,
@@ -238,7 +238,7 @@
       case 'med': o.med = d.v; o.roomMin = (o.roomMin || 0) + 5; FX.play(d.v === 'hold' && o.apical ? 'right' : 'nope'); break;
       case 'sb': { const sb = o.sbar; if (sb.sent) break; const i = sb.picked.indexOf(d.k); if (i >= 0) sb.picked.splice(i, 1); else sb.picked.push(d.k); FX.play('tap'); break; }
       case 'sbreq': if (!o.sbar.sent) { o.sbar.req = d.k; FX.play('tap'); } break;
-      case 'sbsend': o.sbar.sent = true; FX.play(o.sbar.req === 'sepsis' ? 'right' : 'commit'); break;
+      case 'sbsend': o.sbar.sent = true; FX.play(o.sbar.req === 'act' ? 'right' : 'commit'); break;
       case 'dg': if (!o.delegChecked) { o.deleg[d.k] = d.v; FX.play('tap'); } break;
       case 'dgcheck': o.delegChecked = true; FX.play(TASKS.every((x) => o.deleg[x.id] === x.ok) ? 'right' : 'commit'); break;
       default: break;

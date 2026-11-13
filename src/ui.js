@@ -78,6 +78,7 @@
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
   try { document.documentElement.classList.toggle('hov', !window.matchMedia || window.matchMedia('(hover: hover)').matches); } catch (e) { document.documentElement.classList.add('hov'); }
+  const buildTag = () => { const c = S.config || {}; return `v${c.version || '?'} · build ${c.build || 'dev'}`; };
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
   const TERMS_FREE = new Set(['terms', 'terms-ok', 'settings', 'account', 'menu', 'theme', 'set', 'close', 'x']);   // readable before agreeing
   // The engine API only closes over the game state, so one object per game is enough (it was rebuilt on every call).
@@ -428,7 +429,7 @@
         ${NG && NG.bank ? more('practice', 'NCLEX practice', `${NG.count.cases()} case studies and ${NG.count.bank()} questions, every answer explained`, 'hn-px') : ''}
         ${S.ref ? more('ref', 'Pocket reference', 'Quick cards for the floor and the exam') : ''}
       </div></section>` : ''}
-      <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : ''}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div>
+      <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : ''}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''} <span class="buildtag">${esc(buildTag())}</span></span></div>
     </div>`;
   }
   /* ------------ full shifts: the shift picker ------------ */
@@ -489,7 +490,7 @@
           <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">More shifts on every unit.</span></span></div></article>
         </div>
         ${careerHTML()}
-        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''}</span></div>
+        <div class="homefoot"><span>${prof.runs.length ? `Shifts completed: ${prof.runs.length}.` : 'No shifts completed yet.'}${CL ? ` <button class="acct-link" data-act="account">${CL.user() ? 'Saved to your account' : 'Save your progress'}</button>` : ''}</span><span>An educational game, not clinical advice. Never use it for real patient care.${TERMS ? ' <button class="acct-link" data-act="terms">Terms</button>' : ''}${RV ? ` <button class="acct-link rv-${RV.status(caseId).state}" data-act="review">${esc(RV.status(caseId).label)}</button>` : ''} <span class="buildtag">${esc(buildTag())}</span></span></div>
       </div>
     </div>`;
   }
@@ -692,8 +693,8 @@
       if (pts().length > arr) { const d = pts()[pts().length - 1]; return { pid: d.id, text: d.arrivedText || `${d.room} ${d.name} is up from the ED.` }; }
       if (!cnaAway() && ss.deleg.filter((x) => x.done && !x.dropped).length > dl) return { from: C().cna || 'luis', text: `${cna().name} is back and free.` };
       const nk = nowRows().find((r) => !base.has(r.pid + '|' + r.key)); if (nk) return { pid: nk.pid, text: `${rowLabel(nk)}: due now` };
-      if (ss.t === L - 60) return { from: 'nova', text: 'One hour left. Start thinking about report.' };
-      if (ss.t === L - 30) return { from: 'nova', text: 'Thirty minutes to handoff.' };
+      if (ss.t === L - 60 && !handedOff(ss)) return { from: 'nova', text: 'One hour left. Start thinking about report.' };
+      if (ss.t === L - 30 && !handedOff(ss)) return { from: 'nova', text: 'Thirty minutes to handoff.' };
       return null;
     });
     // Near the end, say why the clock stopped short of handoff: report is still owed, and End shift is how to finish.
@@ -1148,7 +1149,8 @@
   /* What to do in this room, right now: the top of the To-do list as one button. Done here? Point at the next room. */
   function nextHere(d, P) {
     const r = nextFor(d.id);
-    if (r) return `<div class="nh ${r.late && !r.blocked ? 'late' : r.stat ? 'stat' : ''}"><span class="nh-k">${r.late && !r.blocked ? 'Overdue here' : r.stat ? 'Needs you now' : 'Next here'}</span>${r.go ? `<button class="nh-go"${goData(r)}><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(clip(r.sub, 90))}</small>` : ''}<span aria-hidden="true">›</span></button>` : `<p class="nh-go static"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(clip(r.sub, 90))}</small>` : ''}</p>`}</div>`;
+    if (r) return `<div class="nh ${r.late && !r.blocked ? 'late' : r.stat ? 'stat' : ''}"><span class="nh-k">${r.late && !r.blocked ? 'Overdue here' : r.stat ? 'Needs you now' : 'Next here'}</span>${r.go ? (() => { const dsys = r.go.act === 'dock' && r.go.id === 'assess' && r.sys && !r.blocked ? SYS.find((x) => x[0] === r.sys) : null;   // an assessment is one tap: the bar does it, and says what it costs
+      return `<button class="nh-go"${dsys ? ` data-act="nh-assess" data-sys="${esc(r.sys)}"` : goData(r)}><b>${esc(r.text)}</b><small>${dsys ? `${esc(dsys[1])} now · ${dsys[2]} min` : r.sub ? esc(clip(r.sub, 90)) : ''}</small><span aria-hidden="true">›</span></button>`; })() : `<p class="nh-go static"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(clip(r.sub, 90))}</small>` : ''}</p>`}</div>`;
     const o = nowRows().find((x) => x.pid !== d.id && !x.blocked);
     return `<div class="nh ok"><span class="nh-k">Caught up here</span>${o ? `<button class="nh-go" data-act="do-next" data-pid="${o.pid}"><b>${o.rp ? 'Give report' : `${esc(def(o.pid).room)} ${esc(def(o.pid).short)} needs you next`}</b><small>${esc(o.text)}</small><span aria-hidden="true">›</span></button>` : `<button class="nh-go" data-act="back"><b>Back to the station</b><small>Nothing due anywhere right now. You can skip ahead from there.</small><span aria-hidden="true">›</span></button>`}</div>`;
   }
@@ -1388,11 +1390,11 @@
     return `<main><div class="deb">
       ${hero}${tabs}<div id="dp" role="tabpanel" aria-labelledby="dt-shift">
       ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
-      ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); return e && !e.heard && e.total; }).length; return n ? `<p class="muted st-note">You didn't get to know ${n === d.outcomes.length ? 'any of your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. Talking with patients once they're stable fills them in.</p>` : ''; })()}
+      ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(s, C(), def(o.id), s.p[o.id], o.tone); return e && !e.heard && e.total && !e.trust; }).length; return n ? `<p class="muted st-note">You didn't get time to sit and talk with ${n === d.outcomes.length ? 'your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. "Sit and talk" in a room, once they're stable, fills them in.</p>` : ''; })()}
       <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
       <div class="deb-acts">${nx ? `<button class="btn btn-nx" data-act="dtab" data-v="nclex"><span><b>NCLEX review</b><small>${nx.left ? `${nx.left} question${nx.left === 1 ? '' : 's'} from this shift and your weakest steps` : 'Your steps, step by step'}</small></span> <span aria-hidden="true">→</span></button>` : ''}${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
       ${nx ? nclexCta(nx) : ''}
-      <button class="deb-more-b" data-act="deb-more" aria-expanded="${!!ui.debMore}"><span><b>${ui.debMore ? 'Hide the detail' : 'More from this shift'}</b><small>How the score was built, each skill, every moment, XP and lessons</small></span><span class="deb-more-c" aria-hidden="true">${ui.debMore ? '−' : '+'}</span></button>
+      <button class="deb-more-b" data-act="deb-more" aria-expanded="${!!ui.debMore}"><span><b>${ui.debMore ? 'Hide the detail' : `Every moment that mattered${d.judg && d.judg.length ? ` (${d.judg.length})` : ''}`}</b><small>Each decision with the time and the evidence, plus how the score was built, your skills, XP and lessons</small></span><span class="deb-more-c" aria-hidden="true">${ui.debMore ? '−' : '+'}</span></button>
       ${!ui.debMore ? '' : `<div class="deb-more">
       ${scoreWhyHTML(d)}
       ${rewardHTML()}${learnHTML()}
@@ -1601,7 +1603,7 @@
         <h3 class="pr-h">By Client Needs category</h3>${NG.CN.map(([id, lab, w]) => bar(St.by.cn[id], lab, `${w} of the exam`, `<button class="btn btn-quiet rd-go" data-act="pset-cn" data-v="${id}">Practice ›</button>`)).join('')}
         <h3 class="pr-h">By clinical judgment step</h3>${CJ.STEPS.map(([id, lab, what]) => bar(St.by.step[id], lab, what, `<button class="btn btn-quiet rd-go" data-act="pset-step" data-v="${id}">Practice ›</button>`)).join('')}`;
     }
-    return `<div class="home prac">${head}<section class="pr-body">${body}</section><div class="homefoot"><span>Written to current US nursing standards. Not yet checked by a clinical reviewer: see Menu, Clinical review. Practice varies by state and facility: follow your program and your policies.</span><span>${TERMS ? '<button class="acct-link" data-act="terms">Terms</button>' : ''}</span></div></div>`;
+    return `<div class="home prac">${head}<section class="pr-body">${body}</section><div class="homefoot"><span>Written to current US nursing standards. Not yet checked by a clinical reviewer: see Menu, Clinical review. Practice varies by state and facility: follow your program and your policies.</span><span>${TERMS ? '<button class="acct-link" data-act="terms">Terms</button>' : ''} <span class="buildtag">${esc(buildTag())}</span></span></div></div>`;
   }
   function ovPres() {
     const P = ui.pset; if (!P) return '';
@@ -1899,7 +1901,8 @@
     if (ui.med.note) body += `<div class="warnbox" role="status">${esc(ui.med.note)}</div>`;
     if (block) body += `<div class="warnbox">${esc(block)}</div>`;
     if (refuse) body += `<div class="warnbox">${esc(refuse)}</div>${m.prn ? '' : '<p class="muted" style="margin:.4rem 0 0;font-size:.88rem">You can come back and offer it again, or hold it and document the refusal.</p>'}`;
-    if (verify) { const ph = (d.interventions || []).concat(d.comms || []).find((x) => /pharmac/i.test(x.label) && (!x.avail || x.avail(s, P, Ax))), tab = ph && (d.interventions || []).includes(ph) ? 'Care' : 'Talk & call'; body += `<div class="warnbox">Pharmacy has not verified this order. It can't be dispensed yet.${ph ? ` To find out what they need, use <b>${esc(ph.label)}</b> on the ${tab} tab.` : ' Check your messages: pharmacy usually says what they need to release it.'}</div>`; }
+    if (verify) { const ph = (d.interventions || []).concat(d.comms || []).find((x) => /pharmac/i.test(x.label) && (!x.avail || x.avail(s, P, Ax))), tab = ph && (d.interventions || []).includes(ph) ? 'Care' : 'Talk & call'; const eta = m.eta ? m.eta(s, P) : null;   // a case can say when pharmacy will release it
+      body += eta !== null && eta !== undefined ? `<div class="warnbox">Pharmacy is verifying this order now. Expect it to be released about ${E.clock(eta)}; you'll get a message when it is.</div>` : `<div class="warnbox">On hold at pharmacy: they haven't verified this order, so it can't be dispensed, and it stays on hold until they get what they need.${ph ? ` To find out what they need, use <b>${esc(ph.label)}</b> on the ${tab} tab.` : ' Check your messages: pharmacy usually says what they need to release it.'}</div>`; }
     if (done) body += `<div class="warnbox">${st.status === 'given' ? 'Given' : 'Held'} at ${E.clock(st.at)}.${st.note ? ' ' + esc(st.note) : ''}</div>`;
     if (m.doses && !block && !verify && !refuse) body += `<fieldset style="border:0;padding:0;margin:.6rem 0"><legend style="font-weight:600;margin-bottom:.2rem">Dose</legend>${m.doses.map((x) => `<label class="opt"><input type="radio" name="dose" value="${x.id}" ${ui.med.dose == x.id ? 'checked' : ''} data-act="dose" data-v="${x.id}"><span>${esc(x.label)}</span></label>`).join('')}</fieldset>`;
     // Before the reason: say plainly when nothing on the checks meets the order's hold criteria.
@@ -2090,6 +2093,15 @@
     return sheet('Your shift so far', top + dec, `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Your shift so far', wide: true });
   }
   /* ------------ floor calls ------------ */
+  /* A floor call that's waiting stays on screen, at the top of the station and every room, until it's answered or
+     someone else takes it. A call only counts against the player once this bar has actually been in front of them. */
+  const handedOff = (ss) => !!ss.report && C().patients.every((d) => { const P = ss.p[d.id]; return !P || (d.arrives && !P.arrived) || P.gone || P.icu || ss.report[d.id]; });   // report already given on everyone still here
+  function callBar() {
+    const q = FL && s && s.floor && s.floor.q.find((x) => !x.done); if (!q) return '';
+    const v = FL.view(s, C(), q.id), left = Math.max(0, q.exp - s.t);
+    if (!ui.ov) q.shown = true;
+    return `<button class="callbar ${left <= 3 ? 'hurry' : ''}" data-act="floor" data-id="${q.id}">${faceOf(v.from)}<span class="callbar-t"><b>Call waiting: ${esc(v.title)}</b><small>${esc(who(v.from).name)} · ${left} min before someone else takes it</small></span><span class="callbar-go">Take the call</span></button>`;
+  }
   function openFloor(id) { ui.fl = { id }; ui.ov = 'floor'; ui.chart = null; render(); }
   function ovFloor() {
     const v = FL.view(s, C(), ui.fl.id), w = who(v.from), left = Math.max(0, v.exp - s.t), answered = v.done === 'answered', missed = v.done === 'missed';
@@ -2208,7 +2220,9 @@
     if (!ui.toasts.length || !s) return '';
     // One thing at a time: while a tour tip is up, routine messages wait in the phone. Urgent ones still interrupt.
     const touring = (ui.view === 'station' && !seen('coach:station')) || (ui.view === 'room' && !seen('coach:room'));
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || ((ui.ov || touring) && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
+    // A waiting floor call has its own bar at the top, and a routine message more than 20 minutes old has had its
+    // moment: both stay in the phone, neither keeps a toast on screen.
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (m.floor && !m.done) || (!m.urgent && s.t - m.t > 20) || ((ui.ov || touring) && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
       // Routine messages step aside after a few seconds of being seen (they stay in the phone); urgent ones wait for the player.
       if (!m.urgent && !m.toastAt && !(m.replies && !m.done)) { m.toastAt = Date.now(); const expire = () => { if (ui.hold) { setTimeout(expire, 700); return; } if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }; setTimeout(expire, 7000); }
       const w = who(m.from); const go = m.replies && !m.done ? m.replies[0] : null; return `<div class="toast tap ${m.urgent ? 'urgent' : ''}" role="alert" data-act="msg" data-m="${m.id}">${faceOf(m.from)}<p><b>${esc(w.name)}, ${E.clock(m.t)}</b>${esc(m.text)}</p><span class="tb">${m.bell && go ? m.replies.map((r, i) => `<button class="btn sm" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.act === 'bell-cna' ? 'Ask ' + cna().name : r.label)}</button>`).join('') : go && m.replies.length > 1 ? `<button class="btn" data-act="msg" data-m="${m.id}">See replies</button>` : go ? `<button class="btn" data-act="reply" data-m="${m.id}" data-i="0">${esc(go.label.length > 22 ? 'Respond' : go.label)}</button>` : ''}<button class="btn" data-act="toast-x" data-m="${m.id}" aria-label="Dismiss">${ICON.close}</button></span></div>`; }).join('')}</div>`;
@@ -2240,8 +2254,8 @@
     else if (ui.view === 'home' || !s) h = vHome();
     else {
       h = (ui.view === 'debrief' ? '' : header());
-      if (ui.view === 'debrief') h += `<header class="top"><button class="mark" data-act="home">The Shift</button><div class="where">Debrief</div></header>`;
-      if (ui.view === 'station' || ui.view === 'room') h += ptStrip();
+      if (ui.view === 'debrief') h += `<header class="top"><button class="mark" data-act="home">The Shift</button><div class="where">Debrief <span class="buildtag">${esc(buildTag())}</span></div></header>`;
+      if (ui.view === 'station' || ui.view === 'room') h += ptStrip() + callBar();
       h += ui.view === 'handoff' ? vHandoff() : ui.view === 'station' ? vStation() : ui.view === 'room' ? vRoom() : vDebrief();
       h += toasts();
       if (ui.stamp) h += `<div class="stamp" role="status" aria-live="polite">${ICON.tick}<span><b>${esc(ui.stamp.text)}</b>${ui.stamp.sub ? `<small>${esc(ui.stamp.sub)}</small>` : ''}</span></div>`;
@@ -2538,6 +2552,7 @@
       const pn = document.querySelector('.pane'); if (pn && innerWidth <= 760) { const y = pn.getBoundingClientRect().top; if (y > innerHeight * .55 || y < pinned()) window.scrollTo({ top: scrollY + y - pinned(), behavior: reduced() ? 'auto' : 'smooth' }); }
     },
     assess(el) { doAssess(el.dataset.sys); if (!s.ended) render(); },
+    'nh-assess'(el) { ui.dock = 'assess'; doAssess(el.dataset.sys); if (!s.ended) render(); },
     int(el) { const d = def(s.loc), P = s.p[d.id], x = d.interventions.find((i) => i.id === el.dataset.id); if (x.form) { ui.doc = { pid: d.id, id: x.id, a: {} }; ui.ov = 'doc'; TEL.track('doc_open', { case: s.caseId, doc: x.id }); return render(); } doAct(x.label, x.cost, (Ax) => { const k0 = s.judg.length; const t = x.run(s, P, Ax); F.recordErrors(s, Ax, d, `${lcFirst(x.label)} at ${E.clock(s.t)}`, k0, false, fbNow()); logHere(d.id, t || x.label, 'find'); s.log[s.log.length - 1].label = x.label; return t; }); if (!s.ended) render(); },
     poke() { const d = def(s.loc), line = sayNow(d); R.poke('room:' + d.id); if (line) { ui.captionPoke = true; ui.captionRaw = line.text; ui.caption = sayText(line.text, !line.quiet); ui.captionQuiet = !!line.quiet; } render(); },
     clue(el) { const d = def(s.loc), P = s.p[d.id]; if (d.onClue) d.onClue(el.dataset.id, s, P, A()); const cl = d.clues(s, P, A()); const t = cl[el.dataset.id] || genericClue(el.dataset.id, d, P, el); if (t) { ui.caption = t; ui.captionQuiet = false; ui.captionPoke = false; if (!s.log.some((l) => l.pid === d.id && l.text === t)) { logHere(d.id, t, 'clue'); } save(); } render(); },
@@ -2696,7 +2711,7 @@
     nova() { ui.nova = null; ui.ov = 'nova'; render(); },
     'nova-ask'() { if (s.nova <= 0) return; s.nova -= 1; ui.nova = C().novaHint(s, A()); s.novaLog.push({ t: s.t, text: ui.nova }); save(); render(); },
     inbox() { ui.ov = 'inbox'; render(); s.inbox.forEach((m) => { m.read = true; }); save(); },
-    readall() { s.inbox.forEach((m) => { m.read = true; }); save(); render(); },
+    readall() { s.inbox.forEach((m) => { m.read = true; }); ui.toasts = ui.toasts.filter((id) => { const m = s.inbox.find((x) => x.id === id); return m && (m.urgent || (m.replies && !m.done)); }); if (ui.ov === 'inbox') ui.ov = null; save(); render(); },
     reply(el) { const m = s.inbox.find((x) => x.id === +el.dataset.m); if (!m || !m.replies) return; ui.toasts = ui.toasts.filter((x) => x !== m.id); ui.ov = null; onReply(m, m.replies[+el.dataset.i]); },
     'toast-x'(el) { const id = +el.dataset.m; ui.toasts = ui.toasts.filter((x) => x !== id); const m = s.inbox.find((x) => x.id === id); if (m) m.read = true; render(); },
     chart(el) { ui.guideChart = true; ui.chart = { pid: el.dataset.pid, tab: el.dataset.tab || (ui.chart && ui.chart.pid !== el.dataset.pid ? ui.chart.tab : 'overview') }; if (!el.dataset.tab && !(ui.ov === 'chart')) ui.chart.tab = 'overview'; ui.ov = 'chart'; render(); },

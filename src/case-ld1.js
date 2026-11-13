@@ -851,7 +851,7 @@
     { id: 'g-sepsis', when: (s) => { const P = s.p['224']; return !P.gone && P.ampAt === null && P.inf >= 1.4; }, run(s, A) { const P = s.p['224']; P.gone = true; P.goneAt = s.t; P.goneText = 'Cesarean for maternal sepsis'; A.judge('224-sepsis', 'safety', -3, `Ms. Donnelly's intraamniotic infection progressed to sepsis.`, `Fever with a long rupture, maternal and fetal tachycardia and a tender uterus was treatable with antibiotics at 08:45. It needed a call.`, '224'); A.msg({ from: 'adeyemi', pid: '224', urgent: true, text: `224 is septic: temp 39.4, pressure 88/46, FHR 180 with no variability. Starting ampicillin and gentamicin and taking her for a cesarean. Who was watching her?` }); } },
 
     { id: 'nova-idle', when: (s) => s.t >= 40 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: `It's almost eight and you haven't been in a room. Four monitors, four babies. Go read a strip.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Every oxytocin rate, every strip category, and who's going where.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Every oxytocin rate, every strip category, and who's going where.` }); } },
   ];
 
   const replies = {
@@ -967,7 +967,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In labor and delivery, report is drips, strips, risk factors and what's due. The lines that matter change what you do in the first hour.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In labor and delivery, report is drips, strips, risk factors and what's due. The lines that matter change what you do in the first hour.`); }
   }
 
   const PREP = { '221-oxy': ['efm'], '221-terb': ['vitals'], '222-phenyl': ['vitals'], '222-oxypp': ['fundus'], '223-fent': ['pain'], '224-apap': ['vitals'], '224-amp': ['vitals'] };

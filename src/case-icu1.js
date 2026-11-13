@@ -810,7 +810,7 @@
     { id: 'jo-son', when: (s) => { const P = s.p['714']; return P.decision !== null && s.t >= P.decision + 10 && s.t <= 285; }, run(s, A) { A.msg({ from: 'kofi', pid: '714', text: `Can I ask you something, just us? You can't let him suffer. Can't you just give him enough morphine to end it? Nobody would have to know.`, replies: [{ label: 'I can\'t give medicine to end his life. I will give whatever he needs to be comfortable, even if it might slow his breathing; the goal is his comfort, never to hasten death. Can I ask the chaplain and Dr. Siddiqui to talk with you too?', act: 'son-de' }, { label: 'I\'ll give him a bigger dose when he\'s off the vent. It\'s kinder', act: 'son-yes' }, { label: 'That\'s euthanasia. I could report you for asking', act: 'son-no' }] }); } },
     { id: 'jo-dist', when: (s) => { const P = s.p['714']; return P.extAt !== null && s.t >= P.extAt + 6 && P.dist >= .3; }, run(s, A) { A.msg({ from: 'tomas', pid: '714', text: `714's breathing fast and the family says he looks like he's struggling.`, replies: [{ label: 'Go to 714', act: 'goto', pid: '714' }] }); } },
     { id: 'nova-idle', when: (s) => s.t >= 50 && s.t < 120 && A0(s), run(s, A) { A.msg({ from: 'nova', urgent: true, text: `It's almost eight and you haven't been in a room. A pressor, a vent, a fresh heart and a family. Go look.` }); } },
-    { id: 'nova-30', when: (s) => s.t >= 270, run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Rosa's coming on. Every drip rate, every vent setting, and where each family is.` }); } },
+    { id: 'nova-30', when: (s) => s.t >= 270 && !(s.report && Object.keys(s.report).length), run(s, A) { A.msg({ from: 'nova', text: `Thirty minutes to handoff. Rosa's coming on. Every drip rate, every vent setting, and where each family is.` }); } },
   ];
 
   const replies = {
@@ -917,7 +917,7 @@
     const hit = keys.filter((k) => s.brain.includes(k)).length;
     if (s.brain.length) { const noise = s.brain.length - hit, precise = hit / s.brain.length;
       if (noise >= 4 && precise < .7) A.judge('brain', 'assess', -1, `You flagged ${s.brain.length} lines in report, ${noise} of them noise.`, 'Flagging everything is the same as flagging nothing.');
-      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during handoff${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In the ICU, report is drips, devices, results and plans. The lines that matter change what you do in the first hour.`); }
+      else A.judge('brain', 'assess', hit / keys.length >= 0.6 && precise >= .7 ? 1 : 0, `You flagged ${hit} of ${keys.length} critical cues during report${noise ? `, plus ${noise} that didn't matter` : ''}.`, `In the ICU, report is drips, devices, results and plans. The lines that matter change what you do in the first hour.`); }
   }
 
   const PREP = { '711-ne': ['vitals'], '711-phent': ['site'], '712-prop': ['vitals'], '712-fent': ['pain'], '713-ins': ['bg'], '713-meto': ['vitals'], '713-lasix': ['vitals'], '713-alb': ['vitals'], '714-morph': ['resp'] };
