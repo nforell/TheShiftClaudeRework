@@ -2223,7 +2223,8 @@
     const touring = (ui.view === 'station' && !seen('coach:station')) || (ui.view === 'room' && !seen('coach:room'));
     // A waiting floor call has its own bar at the top, and a routine message more than 20 minutes old has had its
     // moment: both stay in the phone, neither keeps a toast on screen.
-    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (m.floor && !m.done) || (!m.urgent && s.t - m.t > 20) || (!m.urgent && ui.view === 'station' && window.innerWidth > 700) ||   /* at the station on a wide screen the phone panel already shows it */
+    return `<div class="toasts" aria-live="assertive">${ui.toasts.map((id) => { const m = s.inbox.find((x) => x.id === id); if (!m || (m.floor && !m.done) || (!m.urgent && s.t - m.t > 20) || (!m.urgent && ui.view === 'station' && window.innerWidth > 700) ||
+        (!m.urgent && ui.view === 'room' && (m.pid ? m.pid !== s.loc : s.t - m.t > 3)) ||   /* in a room, only what's about this patient or just arrived */   /* at the station on a wide screen the phone panel already shows it */
         ((ui.ov || touring) && !m.urgent) || (ui.view === 'station' && !m.urgent && !(m.replies && !m.done))) return '';
       // Routine messages step aside after a few seconds of being seen (they stay in the phone); urgent ones wait for the player.
       if (!m.urgent && !m.toastAt && !(m.replies && !m.done)) { m.toastAt = Date.now(); const expire = () => { if (ui.hold) { setTimeout(expire, 700); return; } if (ui.toasts.includes(m.id)) { ui.toasts = ui.toasts.filter((x) => x !== m.id); if (s && ui.view !== 'home' && ui.view !== 'debrief') render(); } }; setTimeout(expire, 7000); }

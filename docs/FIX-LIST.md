@@ -79,6 +79,19 @@ Result on a phone: 11 buttons, 998px, all four patients on the first screen unde
 
 Not changed, worth a decision later: the hallway doors on desktop repeat the patient list (kept for the sense of place); every row saying "NEXT Shift assessment" at 07:15 is true but repetitive.
 
+## Room declutter (Nov 12, branch `fix/room-declutter`)
+
+A first-time player entering a room on a phone met 35 buttons and 1,672px: the scene, the plate, a Next bar, "Look at", six tabs, the open tab, then a second copy of the vitals and a documentation card, with an old station toast on top.
+
+Changed, phone only unless noted:
+- The plate's Chart button is hidden (Chart is a tab just below) and so is the "#1 on your list" chip.
+- The second vitals grid under the tabs is hidden (the plate shows the same numbers).
+- All sizes: a routine toast no longer follows you into a room unless it is about that patient or arrived in the last 3 minutes.
+
+Result: 31 buttons, 1,533px; the first screen is the scene, who this is, the next step and the things to look at, with the tabs peeking.
+
+Not changed: the six tabs. "To do" repeats what the Next bar, MAR and Care show; merging tabs is a bigger design change and would need the tutorial and several tests reworked.
+
 ## Progress notes
 
 ### Item 5 (answer length), by file
