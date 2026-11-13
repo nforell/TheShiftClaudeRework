@@ -1784,7 +1784,7 @@
       { sel: '[data-act="dock"][data-id="assess"]', text: 'Open Assess. Vital signs and body-system checks live here.', until: () => ui.dock === 'assess', try: true },
       { sel: '[data-act="assess"][data-sys="vitals"]', text: 'Take a set of vital signs. Every check shows what it costs in minutes, and the clock moves when you commit.', until: () => youVitals() > (ui.guide0 || 0), try: true },
       { sel: '.vstrip', alt: '.feed', text: 'Your findings land here, with the time you got them. Compare them with what you heard in report, and look at the trend, not just this set.' },
-      { sel: '.plate-btns [data-act="chart"]', alt: '[data-act="chart"]', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
+      { sel: '.plate-btns [data-act="chart"]', alt: '.rt-chart', text: 'Before you give or hold anything, check the chart: labs, orders and the medication record (MAR). Open it now.', until: () => ui.ov === 'chart' || !!ui.guideChart, try: true },
       { sel: '[data-act="dock"][data-id="care"]', alt: '[data-act="dock"]', text: () => `Care, meds and talking work the same way: pick it, see the cost, commit. To talk with ${def(s.loc).short}, tap their speech bubble. When this room is handled, go back to the station: ${Math.max(0, pts().length - 1)} more patients are waiting.` },
       { sel: '[data-act="nova"]', text: 'Stuck? Nova, your charge nurse, gives a few nudges a shift. She points; she won\'t answer for you.' },
     ],
@@ -1808,7 +1808,8 @@
     const c = coachFor(), id = c ? c.key + ':' + c.i : '';
     let card = document.querySelector('.coach'), ring = document.querySelector('.coach-ring');
     if (!c) { if (card) card.remove(); if (ring) ring.remove(); return; }
-    const a = document.querySelector(typeof c.step.sel === 'function' ? c.step.sel() : c.step.sel) || (c.step.alt && document.querySelector(c.step.alt)); if (!a) return;
+    const shown = (q) => { const e = q && document.querySelector(q); return e && e.getBoundingClientRect().width ? e : null; };   // a target that's hidden at this width doesn't count
+    const a = shown(typeof c.step.sel === 'function' ? c.step.sel() : c.step.sel) || shown(c.step.alt); if (!a) return;
     let r = a.getBoundingClientRect(); if (!r.width) return;
     if (!card || card.dataset.id !== id) {
       if (card) card.remove(); if (ring) ring.remove();
