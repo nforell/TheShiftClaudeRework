@@ -727,13 +727,13 @@
     requestAnimationFrame(step); el.addEventListener('click', done);
   }
   function vStation() {
-    const doors = C().patients.map((d) => { const P = s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
+    const doors = C().patients.map((d) => { const P = s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, short: d.short, face: pface(d.id), light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
     const pending = C().patients.filter((d) => !here(d));
     const due = dueList();
     return `<main>
       <div class="st-intro"><h1>Nurses' station</h1>${prof.runs.length ? '' : `<p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>Tap the blue Next card, or any patient, to walk to their room.</b></p>`}</div>
       ${cmdBar()}
-      <div class="hall-wrap">${A_.hallway(s, doors)}</div>
+      <div class="hall-wrap">${A_.hallway(s, doors, window.innerWidth <= 700)}</div>
       <div class="station">
         <section class="board" aria-labelledby="bh">
           <div class="board-h"><h2 id="bh">Your patients</h2>${s.prio ? `<button class="btn btn-quiet" data-act="roster" style="font-size:.85rem">Change order</button>` : ''}</div>

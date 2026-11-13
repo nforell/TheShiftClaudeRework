@@ -92,6 +92,14 @@ Result: 31 buttons, 1,533px; the first screen is the scene, who this is, the nex
 
 Not changed: the six tabs. "To do" repeats what the Next bar, MAR and Care show; merging tabs is a bigger design change and would need the tutorial and several tests reworked.
 
+## Station look (Nov 12, branch `fix/station-look`)
+
+Nick: the station is boring to look at. The hallway was four blank brown doors, and on a phone it was hidden.
+
+- Each door's window now shows the patient inside (the same live portrait as everywhere else, so it reflects how they're doing), with a name plate under it and a ceiling light above. An empty window and "Off unit" when they've left.
+- The hallway shows on phones too, drawn without the clock panel so the doors fill the width. Doors were already tappable and already blink for a call light.
+- `art.hallway(s, doors, compact)`; the door data gains `short` and `face`.
+
 ## Progress notes
 
 ### Item 5 (answer length), by file
