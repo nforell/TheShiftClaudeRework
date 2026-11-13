@@ -3060,3 +3060,20 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 @media (prefers-reduced-motion:reduce){.callbar.hurry{animation:none}}
 @media (max-width:520px){.callbar{grid-template-columns:32px minmax(0,1fr)}.callbar-go{grid-column:1/-1;text-align:center}}
 .buildtag{font-size:.78rem;color:var(--ink-2);opacity:.85;white-space:nowrap}
+
+/* ---- Station, decluttered ----
+   One next step, then the people. Everything that repeated something already on screen is gone or folded:
+   the room strip (it is the patient list again), the task count (unless something is overdue), the Chart button
+   (one tap away inside the room), and the phone panel when nothing in it needs an answer. */
+.pstrip.at-st{display:none}
+.cmd-st.nx:not(.late) .nx-h{display:none}
+.station .pt-row .go .btn:not(.btn-primary){display:none}
+.station .side{display:flex;flex-direction:column;gap:.8rem}
+.station .side .tools{order:1}
+.station .side .phone{order:2}
+.station .side .goals-fold{order:3;margin-top:0}
+.station .side .phone:not(:has(.msg.unread,.msg.urgent)){display:none}
+@media (max-width:700px){
+  .station .side .phone{display:none}
+  .station .pt-row .dx{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+}
