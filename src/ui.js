@@ -78,6 +78,10 @@
   /* Terms of use: the game asks once, and again whenever src/terms.json gets a new version. */
   const TERMS = S.terms || null;
   try { document.documentElement.classList.toggle('hov', !window.matchMedia || window.matchMedia('(hover: hover)').matches); } catch (e) { document.documentElement.classList.add('hov'); }
+  // Focus rings follow the input: a key that moves focus turns them on (html.kbd), a pointer or touch turns them off.
+  // Focus is restored after every redraw, so without this a tapped button (the menu, a reply) keeps a stray outline.
+  addEventListener('keydown', (e) => { if (/^(Tab|Arrow|Enter$| $|Escape$|Home$|End$|Page)/.test(e.key) && !e.metaKey && !e.ctrlKey) document.documentElement.classList.add('kbd'); }, true);
+  addEventListener('pointerdown', () => document.documentElement.classList.remove('kbd'), true);
   const buildTag = () => { const c = S.config || {}; return `v${c.version || '?'} · build ${c.build || 'dev'}`; };
   const termsOk = () => !TERMS || String(prof.terms || '') >= TERMS.version;
   const TERMS_FREE = new Set(['terms', 'terms-ok', 'settings', 'account', 'menu', 'theme', 'set', 'close', 'x']);   // readable before agreeing
@@ -2311,6 +2315,8 @@
     const kept = steady ? [...root.querySelectorAll(SCROLLERS)].map((el) => el.scrollTop) : null;
     ui.lastOvSig = ovSig;
     root.innerHTML = h;
+    if (ui.ov === 'chart' && ui.lastOv === 'chart') root.querySelectorAll('.scrim, .drawer').forEach((el) => el.classList.add('steady'));
+    ui.lastOv = ui.ov;
     if (steady) { root.querySelectorAll('.scrim, .sheet, .drawer').forEach((el) => el.classList.add('steady')); root.querySelectorAll(SCROLLERS).forEach((el, i) => { if (kept[i]) el.scrollTop = kept[i]; }); }
     const T2 = performance.now();
     if (ui.view !== ui.lastView) { const v = root.querySelector('.dr, main, .home'); if (v) v.classList.add('view-in'); ui.lastView = ui.view; }
@@ -2850,7 +2856,7 @@
   const reduced = () => prof.settings.motion === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Punch: a flash ring and a ripple from the tap point, drawn outside #app so it survives re-render. */
   function zap(el, e, kind) {
-    if (!el || !el.getBoundingClientRect || el.dataset.scrim) return;
+    if (!el || !el.getBoundingClientRect || el.dataset.scrim || reduced()) return;
     const r = el.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
     const big = r.width * r.height > innerWidth * innerHeight * .45;
     const z = document.createElement('div'); z.className = 'zap' + (kind ? ' ' + kind : '') + (big ? ' big' : '');
