@@ -38,7 +38,7 @@ Memory is not the constraint. The two costs that matter are:
 - **No backdrop blur on full-screen layers.** Small bars are fine; a full-screen blur over the animated scene is the likeliest cause of the September 29 blank screens.
 - **Every loop must stop.** Any `requestAnimationFrame`, `setInterval` or audio loop must stop when its screen is gone and when the tab is hidden. The character loop and the audio already do.
 - **Characters: at most about 8 animated on screen.** Extra portraits should be static icons.
-- **Compute once per redraw.** Anything derived from state (task rows, statuses) goes through the per-render cache in `ui.js` (`RC`). Do not call `brainRows` in a loop outside render without thinking about cost.
+- **Compute once per redraw.** Anything derived from state (task rows, statuses) goes through the per-render cache in `src/ui/` (`G.RC`). Do not call `brainRows` in a loop outside render without thinking about cost.
 - **Bound anything saved.** Lists written to the profile need a cap (the lesson log keeps at most 300).
 - **Content is data.** A new shift is a case file registered with the engine. Engine and UI changes should be rare and tested with the sweep.
 
@@ -64,7 +64,7 @@ Every patient has a short arc in `src/stories/<case>.js`, run by `src/story.js`.
 
 ## Guardrails already built in
 
-- **Crash guard** (`safe`/`crashed` in `ui.js`): any error in a click, redraw or timer shows a "Something went wrong" card with Keep playing, Home and Copy details. The error is also stored as `theshift.lastError`.
+- **Crash guard** (`safe`/`crashed` in `src/ui/actions.js`): any error in a click, redraw or timer shows a "Something went wrong" card with Keep playing, Home and Copy details. The error is also stored as `theshift.lastError`.
 - **Browser refusals aren't crashes.** A rejected promise (Safari declining audio or the clipboard, a failed network call, the install prompt) is logged to `theshift.lastAsync`, the Health check and PostHog `error_async`, and never shows the crash card. Thrown errors in game code still do; errors from browser-extension scripts are ignored.
 - **Profiles are repaired on load** (`cleanProfile` in `engine.js`): wrong types from an older version or a cloud copy can't stop a redraw.
 - **The selected card never leaks into a game.** Outside the home screen, `C()` is the shift in progress, and game views resync to it on every render.

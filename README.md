@@ -87,7 +87,7 @@ Source is plain JavaScript on a global `window.Shift` object:
 | `src/case-*.js` | Case content (patients, meds, events, dialogs, end checks) |
 | `src/rig.js` | Procedural SVG character rig driven by vitals |
 | `src/art.js` | Room and hallway scenes |
-| `src/ui.js` | Screens and interaction |
+| `src/ui/` | Screens and interaction: ES modules (`ctx`, `core`, `home`, `handoff`, `floor`, `room`, `chart`, `sbar`, `drills`, `debrief`, `practice`, `awards`, `sheets`, `render`, `actions`, entry `index.js`) bundled by esbuild in `build.py` |
 | `src/styles.css` | Styles and theme tokens |
 
 ### Look and feel

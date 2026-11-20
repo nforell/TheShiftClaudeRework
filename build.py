@@ -18,14 +18,21 @@ _stamp()
 # SHIFT_NO_MINIFY=1 skips it for a quick local build (dist/ will then differ from the committed one).
 ESB = pathlib.Path(__file__).parent/'tools'/'minify'/'node_modules'/'.bin'/('esbuild.cmd' if os.name == 'nt' else 'esbuild')
 NOMIN = os.environ.get('SHIFT_NO_MINIFY') == '1'
-if not NOMIN and not ESB.exists():
-    sys_ = __import__('sys'); sys_.stderr.write('The minifier is not installed. Run:  cd tools/minify && npm ci\n(or set SHIFT_NO_MINIFY=1 for a quick unminified local build)\n'); sys_.exit(1)
+if not ESB.exists():
+    sys_ = __import__('sys'); sys_.stderr.write('esbuild (the bundler and minifier) is not installed. Run:  cd tools/minify && npm ci\n'); sys_.exit(1)
 def _esb(code, loader):
     if NOMIN: return code
     r = subprocess.run([str(ESB), '--minify', '--loader=' + loader, '--target=es2020', '--charset=utf8', '--legal-comments=none', '--log-level=error'], input=code.encode('utf-8'), capture_output=True)
     if r.returncode: raise SystemExit('esbuild failed: ' + r.stderr.decode()[:2000])
     return r.stdout.decode('utf-8').rstrip('\n')
 minjs = lambda code: _esb(code, 'js').replace('</script', '<\\/script')
+# The UI is ES modules (src/ui/), bundled into one script with the same pinned esbuild. Bundling is not minifying:
+# it runs even with SHIFT_NO_MINIFY=1, and the bundle is minified with the rest below.
+def bundle_ui():
+    if not ESB.exists(): raise SystemExit('esbuild is needed to bundle src/ui/. Run:  cd tools/minify && npm ci')
+    r = subprocess.run([str(ESB), str(src/'ui'/'index.js'), '--bundle', '--format=iife', '--target=es2020', '--charset=utf8', '--legal-comments=none', '--log-level=error'], capture_output=True)
+    if r.returncode: raise SystemExit('esbuild bundle failed: ' + r.stderr.decode()[:2000])
+    return r.stdout.decode('utf-8')
 mincss = lambda code: _esb(code, 'css')
 css=mincss((src/'styles.css').read_text())
 # Clinical review: each shift's content hash (its case file + story file), so the game can tell a reviewed shift
@@ -66,7 +73,8 @@ lazy = ('window.Shift.ngnMeta = ' + json.dumps(meta) + ';\n'
   "(function (S) { ['ngnWhy', 'ngnFocus', 'ngnBank', 'ngnCases'].forEach(function (k) { var v; Object.defineProperty(S, k, { configurable: true, enumerable: true, "
   "get: function () { if (v === undefined) { var el = document.getElementById('sd-' + k); try { v = el ? JSON.parse(el.textContent) : undefined; (S.dataParsed = S.dataParsed || []).push(k); } catch (e) { v = undefined; } if (v === undefined) v = k === 'ngnWhy' ? {} : []; } return v; }, "
   "set: function (x) { v = x; } }); }); })(window.Shift);\n")
-js=minjs(pre+lazy+''.join((src/f).read_text()+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn-challenge.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui.js']))
+_rd = lambda f: bundle_ui() if f == 'ui' else (src/f).read_text()
+js=minjs(pre+lazy+''.join(_rd(f)+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn-challenge.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui']))
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

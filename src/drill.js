@@ -1,12 +1,12 @@
 /* The Shift — drills. One patient, one moment, one decision.
    Short rounds (about two minutes) built from src/drills-content.js: Med Pass, Who's First, SBAR, De-escalation,
    and a daily round that mixes them. Every answer gets the patient's reaction, one line of why, and a pearl.
-   The UI module (ui.js) owns render(); this file owns ui.dr, its own handlers (all prefixed dr-) and its markup.
+   The UI (src/ui/) owns render(); this file owns ui.dr, its own handlers (all prefixed dr-) and its markup.
    Progress lives in the profile under prof.drills: { cards: { id: [times seen, last right 0/1, last seen ms] },
    days: ['YYYY-MM-DD', ...], rounds: { kind: n }, best: { kind: percent } }. */
 (function (S) {
   const D = () => S.drillData || { med: [], first: [], sbar: [], calm: [] };
-  let X = null;   // context from ui.js: { ui, esc, render, prof, saveProf, R, FX, TEL, ICON }
+  let X = null;   // context from src/ui/drills.js: { ui, esc, render, prof, saveProf, R, FX, TEL, ICON }
 
   const KINDS = {
     med: { name: 'Med Pass', verb: 'Give, hold, or call?', blurb: 'Check what matters, then decide.', n: 4, color: 'mp' },
