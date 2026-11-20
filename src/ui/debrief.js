@@ -1,7 +1,7 @@
 /* The Shift — UI: The end-of-shift debrief, its working, and the NCLEX review tab. */
 import { reduced } from './actions.js';
 import { learnHTML, rewardHTML } from './awards.js';
-import { C, CASES, CJ, E, F, FX, G, NG, RW, STY, def, diffLabel, esc, meta, pface, specOf, ui } from './ctx.js';
+import { C, CASES, CJ, DR, E, F, FX, G, NG, RW, STY, def, diffLabel, esc, meta, pface, specOf, ui } from './ctx.js';
 import { SPC, SPN, STEPNAME, lastOf, ngnHTML } from './practice.js';
 import { trustDots } from './room.js';
 import { fbCard } from './sheets.js';
@@ -82,6 +82,29 @@ export function meterHTML(x, T, step, d) {
   if (x.score === null && !step) return `<div class="meter">${head}</div>`;
   return `<div class="meter ${open ? 'open' : ''}"><button class="meter-b" data-act="meter" data-k="${k}" aria-expanded="${open}"${x.what ? ` title="${esc(x.what)}"` : ''}>${head}</button>${open ? `<div class="meter-w">${step && x.what ? `<p class="mw-what">${esc(x.what)}</p>` : ''}${x.score !== null ? workHTML(T) : ''}${step ? guideHTML(x.id) : ''}</div>` : ''}</div>`;
 }
+/* Debrief to drill: each skill the shift caught you out on points at the two-minute round that practices it, one
+   tap away. Medication safety and assessment are Med Pass (what to check, then give, hold or call); prioritization,
+   time and safety are Who's First; communication is SBAR; on the psych units, a miss around agitation, restraint or
+   a threat is De-escalation. The two drills with the most missed points are offered. */
+export const DRILL_FOR = { meds: 'med', assess: 'med', priority: 'first', time: 'first', safety: 'first', deleg: 'first', judgment: 'first', comm: 'sbar' };
+const CALM_RX = /agitat|escalat|de-?escal|restrain|seclu|aggress|threat|weapon|hostile|calm (?:him|her|them)|least.restrictive|emergency (?:IM|med)/i;
+export function drillPicks(d) {
+  if (!DR || !d || !d.judg) return [];
+  const psych = ['psy', 'teen'].includes(meta(G.s.caseId).sp), by = {};
+  d.judg.filter((j) => j.delta < 0).forEach((j) => {
+    let k = DRILL_FOR[j.domain] || 'first';
+    if (psych && CALM_RX.test(`${j.key || ''} ${j.text || ''} ${j.why || ''}`)) k = 'calm';
+    const b = by[k] = by[k] || { k, pts: 0, n: 0, doms: [] }; b.pts -= j.delta; b.n += 1;
+    const lab = (d.dom.find((x) => x.id === j.domain) || {}).label; if (lab && !b.doms.includes(lab)) b.doms.push(lab);
+  });
+  return Object.values(by).sort((a, b) => b.pts - a.pts || b.n - a.n).slice(0, 2);
+}
+export function drillHTML(d) {
+  const P = drillPicks(d); if (!P.length) return '';
+  const K = DR.KINDS;
+  return `<section class="deb-drill" aria-labelledby="ddh"><h2 id="ddh">Practice what you missed</h2>
+    <div class="dd-list">${P.map((x) => `<button class="btn dd-go k-${K[x.k].color}" data-act="deb-drill" data-k="${x.k}" data-dom="${esc(x.doms.join(', '))}"><span class="dd-k">${esc(K[x.k].name)}</span><span class="dd-t"><b>Practice this skill</b><small>${x.n} miss${x.n === 1 ? '' : 'es'} in ${esc(x.doms.join(' and ').toLowerCase())} · about 2 min</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>`;
+}
 export function vDebrief() {
   const d = E.debrief(G.s), cj = CJ ? CJ.score(d.judg) : null; focusPlan(cj);
   if (!ui.mOpen || ui.mOpenFor !== (ui.fx && ui.fx.key)) {   // first look: open the weakest area in each view
@@ -90,7 +113,7 @@ export function vDebrief() {
     const a = low(d.dom), b = cj && low(cj); if (a) ui.mOpen['k:' + a.id] = 1; if (b) ui.mOpen['c:' + b.id] = 1;
   }
   const prior = G.prof.runs.filter((r) => r.caseId === G.s.caseId).slice(1), best = prior.length ? Math.max(...prior.map((r) => r.score)) : null;
-  const nextId = CASES[CASES.indexOf(G.s.caseId) + 1], next = nextId ? E.getCase(nextId) : null;
+  const nextId = CASES[CASES.indexOf(G.s.caseId) + 1], next = nextId ? E.caseMeta(nextId) : null;
   const items = d.judg.filter((j) => ui.filter === 'all' || (ui.filter === 'good' ? j.delta > 0 : j.delta < 0));
   const nx = NG && CJ && cj ? nclexSummary(cj) : null, tab = nx && ui.dtab === 'nclex' ? 'nclex' : 'shift';
   const tabs = nx ? `<div class="dtabs" role="tablist" aria-label="Debrief">${[['shift', 'Your shift', `${d.outcomes.length} patients`], ['nclex', 'NCLEX review', nx.left ? `${nx.left} question${nx.left === 1 ? '' : 's'} waiting` : 'All answered']].map(([k, l, sub]) => `<button role="tab" id="dt-${k}" class="dtab dt-${k}" aria-selected="${tab === k}" aria-controls="dp" data-act="dtab" data-v="${k}"><b>${l}</b><small>${sub}</small></button>`).join('')}</div>` : '';
@@ -102,6 +125,7 @@ export function vDebrief() {
     ${(() => { const hurt = (j) => (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad' ? 0 : 1, neg = d.judg.filter((j) => j.delta < 0), real = neg.filter((j) => !/-unseen$/.test(j.key || '')), w = (real.length ? real : neg).sort((a, b) => hurt(a) - hurt(b) || a.delta - b.delta || a.t - b.t)[0], pos = d.judg.filter((j) => j.delta > 0 && !(j.pid && (d.outcomes.find((o) => o.id === j.pid) || {}).tone === 'bad')), g = pos.sort((a, b) => (a.domain === 'priority') - (b.domain === 'priority') || b.delta - a.delta || a.t - b.t)[0]; return w || g ? `<section class="keyline">${w ? `<div class="kl bad"><span class="mk">The decision that mattered most</span><b>${esc(w.text)}</b><p>${esc(w.why)}</p></div>` : ''}${g ? `<div class="kl good"><span class="mk">Your best call</span><b>${esc(g.text)}</b></div>` : ''}</section>` : ''; })()}
     ${(() => { if (!STY) return ''; const n = d.outcomes.filter((o) => { const e = STY.epilogue(G.s, C(), def(o.id), G.s.p[o.id], o.tone); return e && !e.heard && e.total && !e.trust; }).length; return n ? `<p class="muted st-note">You didn't get time to sit and talk with ${n === d.outcomes.length ? 'your patients' : n === 1 ? 'one of your patients' : n + ' of your patients'} this shift, so ${n === 1 ? 'that story stays' : 'their stories stay'} short. "Sit and talk" in a room, once they're stable, fills them in.</p>` : ''; })()}
     <section class="outs" aria-label="Patient outcomes">${d.outcomes.map((o) => `<div class="out">${pface(o.id)}<div><span class="tone ${o.tone}">${{ good: 'Good outcome', mixed: 'Mixed outcome', bad: 'Poor outcome' }[o.tone]}</span><h3>${def(o.id).room} ${esc(def(o.id).short)}: ${esc(o.title)}</h3><p>${esc(o.text)}</p>${storyHTML(o)}${o.next ? `<details class="nx"><summary>What happened next in ${esc(F.where(o.next.unit))}</summary><ol class="aw-tl">${o.next.entries.map((e) => `<li class="${e.after ? 'after' : ''}"><span class="aw-tm">${e.after ? 'After your shift' : E.clock(e.t)}</span><span class="pill af-${e.st}">${F.ST[e.st]}</span><p>${esc(e.text)}</p></li>`).join('')}${o.next.later ? `<li class="after"><span class="aw-tm">Later</span><span></span><p>${esc(o.next.later)}</p></li>` : ''}</ol></details>` : ''}</div></div>`).join('')}</section>
+    ${drillHTML(d)}
     <div class="deb-acts">${nx ? `<button class="btn btn-nx" data-act="dtab" data-v="nclex"><span><b>NCLEX review</b><small>${nx.left ? `${nx.left} question${nx.left === 1 ? '' : 's'} from this shift and your weakest steps` : 'Your steps, step by step'}</small></span> <span aria-hidden="true">→</span></button>` : ''}${next && d.overall >= 58 ? `<button class="btn btn-primary btn-go btn-next" data-act="next-case" data-id="${nextId}"><span><b>Next: ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span> <span aria-hidden="true">→</span></button><button class="btn" data-act="new">Play this shift again</button>` : `<button class="btn btn-primary btn-go" data-act="new">Play the shift again <span aria-hidden="true">→</span></button>${next ? `<button class="btn btn-next" data-act="next-case" data-id="${nextId}"><span><b>Or try ${esc(next.title)}</b><small>${esc(specOf(nextId).name)} · ${esc(diffLabel(nextId))}</small></span></button>` : ''}`}<button class="btn btn-quiet" data-act="home">Home</button></div>
     ${nx ? nclexCta(nx) : ''}
     <button class="deb-more-b" data-act="deb-more" aria-expanded="${!!ui.debMore}"><span><b>${ui.debMore ? 'Hide the detail' : `Every moment that mattered${d.judg && d.judg.length ? ` (${d.judg.length})` : ''}`}</b><small>Each decision with the time and the evidence, plus how the score was built, your skills, XP and lessons</small></span><span class="deb-more-c" aria-hidden="true">${ui.debMore ? '−' : '+'}</span></button>

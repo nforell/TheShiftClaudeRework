@@ -2,7 +2,7 @@
 import { reduced } from './actions.js';
 import { vAwards } from './awards.js';
 import { ovChart } from './chart.js';
-import { applySettings, flushPops, goalWatch, tallyJudg } from './core.js';
+import { applySettings, flushPops, goalWatch, showLapse, tallyJudg } from './core.js';
 import { $, A, C, CL, DR, E, FX, G, GAMEVIEW, ICON, NG, OR, R, RV, TERMS, buildTag, def, esc, gone, here, inGame, liveDef, termsOk, ui } from './ctx.js';
 import { debriefAnim, vDebrief } from './debrief.js';
 import { callBar, ovAway, ovCalls, ovFloor, ovGive, ovInbox, ovReview, ovRoster, ptStrip, vStation } from './floor.js';
@@ -24,7 +24,7 @@ export function syncLooks() {
 export function render(scrollTop) {
   syncLooks();
   const T0 = performance.now();
-  if (inGame() && G.caseId !== G.s.caseId && E.getCase(G.s.caseId)) { G.caseId = G.s.caseId; E.useCase(G.caseId); }
+  if (inGame() && G.caseId !== G.s.caseId && E.caseMeta(G.s.caseId)) { G.caseId = G.s.caseId; E.useCase(G.caseId); }
   applySettings();
   const root = $('#app');
   const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
@@ -112,7 +112,7 @@ export function render(scrollTop) {
   document.body.classList.toggle('tense', !!(G.s && !G.s.ended && ui.view !== 'home' && ui.view !== 'debrief' && isTense()));
   if (ui.view === 'room' && G.s) ui.newLogSeen = G.s.seq;
   ui.enter = false; ui.adv = null; if (G.s && ui.view === 'station') ui.msgSeen = G.s.seq;
-  coachPlace(); debriefAnim(root); flushPops();
+  coachPlace(); debriefAnim(root); flushPops(); showLapse();
   FX.setMood(musicMood());
   if (ov === 'crit' || (ov === 'result' && ui.res && ui.res.crit)) { const k = ov === 'crit' ? (G.s.inbox.find((x) => x.id === ui.crit) || {}).pid : ui.res.pid; setTimeout(() => R.poke(k + ':bust'), 700); }
   if (ui.spot && ui.view === 'room') { const sp = ui.spot; ui.spot = null; const rt = root.querySelector('.room-top'); if (rt) { rt.classList.add('spot'); setTimeout(() => R.poke('room:' + sp), 350); setTimeout(() => rt.classList.remove('spot'), 2600); } }

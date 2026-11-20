@@ -1,11 +1,11 @@
 /* The Shift — UI: The header, the home screen and the full-shift picker. */
 import { careerHTML, starSvg } from './awards.js';
 import { helpers } from './core.js';
-import { C, CASES, CL, DIFF, DR, E, G, ICON, NG, R, RV, RW, S, SPEC, TERMS, buildTag, def, diffPips, esc, fmtN, hhmm, locked, meta, shiftFacts, specOf, ui, unitS } from './ctx.js';
+import { C, CASES, CL, CM, DIFF, DR, E, G, ICON, NG, R, RV, RW, S, SPEC, TERMS, buildTag, def, diffPips, esc, fmtN, hhmm, locked, meta, shiftFacts, specOf, ui, unitS } from './ctx.js';
 
 /* ------------ header ------------ */
 export function header() {
-  const unread = G.s.inbox.filter((m) => !m.read).length;
+  const unread = G.s.inbox.filter((m) => !m.read).length, ring = G.s.inbox.some((m) => !m.read && m.urgent);   // an urgent call rings, a routine one just counts
   const loc = ui.view === 'room' ? `${unitS()} <span aria-hidden="true">/</span> <b>${G.s.loc} ${esc(def(G.s.loc).short)}</b>` : ui.view === 'handoff' ? `${unitS()} <span aria-hidden="true">/</span> <b>Shift report</b>` : `${unitS()} <span aria-hidden="true">/</span> <b>Nurses' station</b>`;
   return `<header class="top">
     <button class="mark" data-act="menu" aria-label="The Shift menu">The Shift</button>
@@ -13,7 +13,7 @@ export function header() {
     <button class="icon-btn roster-btn" data-act="roster" aria-label="Your patients: who is who"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.4 0 4.3 1.4 5 4.3"/></svg><span class="nova-l">Patients</span></button>
     ${ui.view !== 'handoff' ? `${helpers()}
     ${(() => { const m = RW.mult(G.s.streak || 0); return `<button class="xp ${m > 1 ? 'hot' : ''}" data-act="calls" aria-label="Care XP ${fmtN(G.s.xp || 0)}${m > 1 ? `, streak times ${m}` : ''}. Your shift so far">${ICON.xp}<b>${fmtN(G.s.xp || 0)}</b><b class="xp-k">${(G.s.xp || 0) >= 10000 ? ((G.s.xp || 0) / 1000).toFixed(0) + 'k' : fmtN(G.s.xp || 0)}</b>${m > 1 ? `<span class="fl">${ICON.flame}×${m}</span>` : ''}</button>`; })()}
-    <button class="icon-btn" data-act="inbox" aria-label="Messages, ${unread} unread">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ''}</button>` : ''}
+    <button class="icon-btn ${ring ? 'ringing' : ''}" data-act="inbox" aria-label="Messages, ${unread} unread${ring ? ', one urgent' : ''}">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ''}</button>` : ''}
     <div class="clock ${ui.adv ? 'bump' : ''}" role="timer" aria-live="off" aria-label="Shift time ${E.clock(G.s.t)}">${E.clock(G.s.t)}<small>ends ${E.clock(C().length)}</small>${ui.adv ? `<span class="adv" aria-hidden="true">+${ui.adv} min</span>` : ''}</div>
     <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     <div class="shiftbar" aria-hidden="true"><i style="width:${Math.min(100, G.s.t / C().length * 100).toFixed(1)}%"></i></div>
@@ -35,7 +35,7 @@ export const DICON = {
   ref: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 5.5h14a4 4 0 0 1 4 4v17H11a4 4 0 0 1-4-4z"/><path d="M7 22.5a4 4 0 0 1 4-4h14"/></svg>',
 };
 export function vHome() {
-  const DS = DR ? DR.summary() : null, g = E.store.load(), saved = g && !g.ended ? E.getCase(g.caseId) : null;
+  const DS = DR ? DR.summary() : null, g = E.store.load(), saved = g && !g.ended ? E.caseMeta(g.caseId) : null;
   const newbie = DS && !DS.rounds && !G.prof.runs.length;
   const nShifts = CASES.length, nUnits = new Set(CASES.map((id) => meta(id).sp)).size;
   const day = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
@@ -89,20 +89,20 @@ export function vHome() {
 /* ------------ full shifts: the shift picker ------------ */
 export function vShifts() {
   E.useCase(G.caseId);
-  const g = E.store.load(), c = C(), done = (id) => G.prof.runs.filter((r) => r.caseId === id);
+  const g = E.store.load(), c = CM(), done = (id) => G.prof.runs.filter((r) => r.caseId === id);
   const start = hhmm(c, 0), initial = c.patients.filter((d) => !d.arrives), adm = c.patients.filter((d) => d.arrives);
   const cols = Math.ceil(initial.length / 2) + (adm.length ? 1 : 0) - (initial.length % 2 && adm.length ? 1 : 0);
-  const saved = g && !g.ended ? E.getCase(g.caseId) : null;
+  const saved = g && !g.ended ? E.caseMeta(g.caseId) : null;
   // Shift picker card: an illustrated header (the shift's sky, its start time and its real patients), the facts, and,
   // once picked, a bold ring and its own start button so choosing never depends on the hero scrolled out of view.
   const tod = (k) => { const h = Math.floor(((k.start || 420) % 1440) / 60); return h >= 21 || h < 5 ? 'night' : h >= 13 ? 'eve' : 'day'; };
   const TOD = { day: 'Day shift', eve: 'Evening shift', night: 'Night shift' };
   const rung = (id, i) => {
-    const k = E.getCase(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
+    const k = E.caseMeta(id), runs = done(id), best = runs.length ? Math.max(...runs.map((r) => r.score)) : null;
     const prev = i ? done(CASES[i - 1]).length : 1, on = id === G.caseId, lk = locked(id);
     const stn = (G.prof.stars || {})[id] || 0, tm = tod(k);
     const pts = k.patients.filter((x) => !x.arrives), shown = pts.slice(0, 3), more = k.patients.length - shown.length;
-    const status = lk ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.getCase(CASES[i - 1]).title);
+    const status = lk ? `<span class="rg-lock"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Shift pack</span>` : best !== null ? `Best ${best}` : prev ? 'Not played' : 'Best after ' + esc(E.caseMeta(CASES[i - 1]).title);
     const cta = saved && g.caseId === id ? `<button class="btn btn-primary btn-go sc-go" data-act="resume">Resume at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button>`
       : lk ? `<button class="btn btn-primary btn-go sc-go" data-act="pack">Unlock with the shift pack <span aria-hidden="true">→</span></button>`
       : `<button class="btn btn-primary btn-go sc-go" data-act="new">Start this shift <span aria-hidden="true">→</span></button>`;
@@ -134,7 +134,7 @@ export function vShifts() {
       <h1>Put it all together.</h1>
       <p class="lede">A whole shift on one unit: take report, decide who's first, give and hold meds, call the provider, and see what happened in the debrief. ${CASES.length} shifts, 15 to 25 minutes each.</p>
       ${saved ? `<div class="cta"><button class="btn btn-primary btn-go" data-act="resume">Resume ${esc(saved.title)} at ${hhmm(saved, g.t)} <span aria-hidden="true">→</span></button></div>` : ''}
-      ${(() => { if (G.s && !G.s.ended) return ''; const L = E.store.loadLast(); if (!L) return ''; const k = E.getCase(L.caseId), d0 = E.debrief(L); return `<button class="btn btn-quiet last-deb" data-act="last-debrief">See your last debrief: ${esc(k.title)}, ${d0.overall} <span aria-hidden="true">→</span></button>`; })()}
+      ${(() => { if (G.s && !G.s.ended) return ''; const L = E.store.loadLast(); if (!L) return ''; const k = E.caseMeta(L.caseId), d0 = E.debrief(L); return `<button class="btn btn-quiet last-deb" data-act="last-debrief">See your last debrief: ${esc(k.title)}, ${d0.overall} <span aria-hidden="true">→</span></button>`; })()}
     </section>
     <div>
       <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>

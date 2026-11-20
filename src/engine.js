@@ -9,8 +9,28 @@ window.Shift = window.Shift || {};
     return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   };
 
-  function registerCase(c) { cases[c.id] = c; }
-  function useCase(id) { const c = cases[id]; if (c) START = c.start !== undefined ? c.start : 7 * 60; }
+  /* Cases load on demand. The build registers each shift with a little metadata (title, staff, patients' looks: what
+     the picker and chrome need) and a loader that parses its script the first time anything reads cases[id]. The
+     getter is replaced by the case itself, so engine code, the UI and tests just read cases[id] as before. */
+  const metas = {}, loaded = new Set(), hooks = [];
+  function registerCase(c) { Object.defineProperty(cases, c.id, { value: c, writable: true, enumerable: true, configurable: true }); loaded.add(c.id); }
+  function lazy(id, meta, load) {
+    metas[id] = meta;
+    if (loaded.has(id)) return;
+    Object.defineProperty(cases, id, { enumerable: true, configurable: true, get() {
+      try { load(); } catch (e) { try { console.error('The Shift: could not load ' + id, e); } catch (e2) { /* no console */ } }
+      const d = Object.getOwnPropertyDescriptor(cases, id);
+      if (!d || d.get) return undefined;   // the script didn't register it
+      hooks.forEach((h) => h(d.value));
+      return d.value;
+    } });
+  }
+  // Run fn for every case once it's loaded: now for those already in, later for each as it arrives.
+  function onCaseLoad(fn) { hooks.push(fn); loaded.forEach((id) => { const d = Object.getOwnPropertyDescriptor(cases, id); if (d && !d.get) fn(d.value); }); }
+  // A shift's metadata without loading it (the picker, achievements, the pack sheet). Falls back to the case itself.
+  function caseMeta(id) { if (metas[id]) return metas[id]; const d = Object.getOwnPropertyDescriptor(cases, id); return d && !d.get ? d.value : undefined; }
+  const isLoaded = (id) => loaded.has(id);
+  function useCase(id) { const c = caseMeta(id); if (c) START = c.start !== undefined ? c.start : 7 * 60; }
   function getCase(id) { return cases[id]; }
 
   function newGame(caseId) {
@@ -265,9 +285,9 @@ window.Shift = window.Shift || {};
     saveProfile(p) { try { localStorage.setItem(PROF, JSON.stringify(p)); } catch (e) {} },
     /* The last finished shift, so its debrief (and the NCLEX questions waiting on it) survives a reload or a closed tab. */
     saveLast(s) { try { localStorage.setItem(LAST, JSON.stringify(s)); } catch (e) {} },
-    loadLast() { try { const r = localStorage.getItem(LAST); const g = r ? JSON.parse(r) : null; return g && g.ended && g.reward && cases[g.caseId] ? g : null; } catch (e) { return null; } },
+    loadLast() { try { const r = localStorage.getItem(LAST); const g = r ? JSON.parse(r) : null; return g && g.ended && g.reward && caseMeta(g.caseId) ? g : null; } catch (e) { return null; } },
     clearLast() { try { localStorage.removeItem(LAST); } catch (e) {} },
   };
 
-  S.engine = { registerCase, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, tally, SCORE: { BASE, GOOD, BAD, BAD_AFTER, BAD_FULL }, clock, clamp, store, DOMAINS, cases };
+  S.engine = { registerCase, lazy, onCaseLoad, caseMeta, isLoaded, useCase, getCase, newGame, abs: (t) => START + t, api, advance, perform, finish, debrief, tally, SCORE: { BASE, GOOD, BAD, BAD_AFTER, BAD_FULL }, clock, clamp, store, DOMAINS, cases };
 })(window.Shift);

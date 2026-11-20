@@ -8,7 +8,7 @@ import { GHOST_MS, openSnap } from './room.js';
 try { document.documentElement.classList.toggle('hov', !window.matchMedia || window.matchMedia('(hover: hover)').matches); } catch (e) { document.documentElement.classList.add('hov'); }
 // Focus rings follow the input: a key that moves focus turns them on (html.kbd), a pointer or touch turns them off.
 // Focus is restored after every redraw, so without this a tapped button (the menu, a reply) keeps a stray outline.
-addEventListener('keydown', (e) => { if (/^(Tab|Arrow|Enter$| $|Escape$|Home$|End$|Page)/.test(e.key) && !e.metaKey && !e.ctrlKey) document.documentElement.classList.add('kbd'); }, true);
+addEventListener('keydown', (e) => { if (/^(Tab|Arrow|Enter$| $|Home$|End$|Page)/.test(e.key) && !e.metaKey && !e.ctrlKey) document.documentElement.classList.add('kbd'); }, true);
 addEventListener('pointerdown', () => document.documentElement.classList.remove('kbd'), true);
 export function frameMon(ts) {
   if (!document.hidden && FM.last) { const d = ts - FM.last; if (d < 1000) FM.dts.push(d); }
@@ -72,12 +72,16 @@ export function spend(mins, fn, until) {
     // Something slipped past its time while you were busy: the streak ends.
     const slipped = Object.keys(after).filter((k) => after[k].late && !(before[k] && before[k].late) && !after[k].prog);
     if (slipped.length) breakStreak('Overdue: ' + after[slipped[0]].text.toLowerCase());
+    ui.lapse = G.s.ended ? null : lapseOf(before, after, slipped, t0);
     ui.ghosts = ui.ghosts.filter((g) => g.held || nowMs - g.born < GHOST_MS);
   }
   if (G.s.t > t0) ui.adv = G.s.t - t0;
   if (track && G.s.t > t0) stuckCheck();
   const fresh = G.s.fresh.splice(0);
   const isCrit = (m) => m && m.urgent && m.pid && def(m.pid);
+  // Call lights and requests that came in while your hands were busy join the time-lapse note.
+  if (ui.lapse) fresh.forEach((id) => { const m = G.s.inbox.find((x) => x.id === id); if (m && m.pid && def(m.pid) && !isCrit(m) && ui.lapse.items.length < 4) ui.lapse.items.unshift({ k: 'call', text: `${def(m.pid).room} ${m.bell || /call light/i.test(m.text || '') ? 'call light' : 'is asking for you'}` }); });
+  if (ui.lapse && !ui.lapse.items.length) ui.lapse = null;
   if (fresh.length) { const ms = fresh.map((id) => G.s.inbox.find((x) => x.id === id)); const crit = ms.some(isCrit), urgent = ms.some((m) => m && m.urgent); setTimeout(() => FX.play(crit ? 'crit' : urgent ? 'urgent' : 'msg'), crit ? 120 : 420); }
   fresh.forEach((id) => {
     const m = G.s.inbox.find((x) => x.id === id); if (!m) return;
@@ -91,6 +95,31 @@ export function spend(mins, fn, until) {
   if (G.s.ended) { endShift(); return why; }
   save();
   return why;
+}
+/* While you were busy: a task that takes the clock forward (a head-to-toe, a dressing, a long call) can let things
+   happen on the unit. One short, non-blocking note says what changed: what slipped past its time, what came due or
+   is coming due in the next 15 minutes, and who put a call light on. Only things a nurse would see from the hall or
+   her own list; nothing the debrief scores. Shown for a few seconds, never in the way (see showLapse). */
+const LAPSE_MIN = 3, SOON = 15;
+function lapseOf(before, after, slipped, t0) {
+  if (G.s.t - t0 < LAPSE_MIN) return null;
+  const room = (r) => (def(r.pid) ? def(r.pid).room + ' ' : ''), short = (t) => t.charAt(0).toLowerCase() + t.slice(1);
+  const items = slipped.slice(0, 2).map((k) => ({ k: 'late', text: `${room(after[k])}${short(after[k].text)}: overdue` }));
+  // Coming due: newly inside the next 15 minutes, or due within 5 (it came up while your hands were full).
+  const soon = Object.keys(after).filter((k) => { const a = after[k], b = before[k]; return !a.late && !a.prog && a.t > t0 && a.t <= G.s.t + SOON && (!(b && b.t <= t0 + SOON) || a.t <= G.s.t + 5); }).sort((x, y) => after[x].t - after[y].t);
+  soon.slice(0, 3 - items.length).forEach((k) => { const a = after[k]; items.push({ k: 'due', text: `${room(a)}${short(a.text)}: ${a.t <= G.s.t ? 'due now' : 'due ' + E.clock(a.t)}` }); });
+  return { from: t0, to: G.s.t, items, shown: false };
+}
+export function showLapse() {
+  const L = ui.lapse; if (!L || L.shown || !G.s || G.s.ended || (ui.view !== 'station' && ui.view !== 'room')) return;
+  L.shown = true; ui.lapse = null;
+  document.querySelectorAll('.lapse').forEach((n) => n.remove());
+  const n = document.createElement('div'); n.className = 'lapse'; n.setAttribute('role', 'status'); n.setAttribute('aria-live', 'polite');
+  n.innerHTML = `<span class="lp-h"><b>${E.clock(L.from)}–${E.clock(L.to)}</b> while you were busy</span><ul>${L.items.map((x) => `<li class="lp-${x.k}">${esc(x.text)}</li>`).join('')}</ul>`;
+  const top = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom));
+  n.style.top = Math.round(top + 8) + 'px';
+  document.body.appendChild(n);
+  setTimeout(() => { n.classList.add('out'); setTimeout(() => n.remove(), 300); }, reduced() ? 5200 : 4600);
 }
 export function logHere(pid, text, kind) { A().log(pid, text, kind); ui.newLog = G.s.seq; if (kind !== 'clue') ui.lastFind = G.s.seq; }
 

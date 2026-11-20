@@ -108,6 +108,8 @@ export function onReply(m, r) {
 
 export const stamp = (text, mins) => { ui.stamp = { text, sub: mins ? `${E.clock(G.s.t - mins)} · ${mins} min` : E.clock(G.s.t) }; };
 export const handlers = {
+  // Debrief to drill: start the round for a skill the shift caught you out on.
+  'deb-drill'(el) { TEL.track('debrief_drill', { kind: el.dataset.k, skills: el.dataset.dom || '', case: G.s && G.s.caseId }); handlers['dr-start']({ dataset: { k: el.dataset.k } }); },
   'pick-case'(el) { G.caseId = el.dataset.id; E.useCase(G.caseId); if (G.s && G.s.ended) G.s = null; ui.view = 'shifts'; ui.ov = null; render(); },
   shifts() { if (G.s && !G.s.ended && GAMEVIEW[ui.view]) save(); ui.view = 'shifts'; ui.ov = null; TEL.track('shifts_open', {}); render(true); },
   new() { if (locked(G.caseId)) return startNew(); if (firstTimer()) { openOrient(true); return; } if (E.store.load() && (ui.view === 'home' || ui.view === 'shifts')) { ui.confirm = { title: 'Start over?', text: 'Your saved shift will be replaced.', ok: 'Start a new shift', act: 'new-yes', danger: true }; ui.ov = 'confirm'; return render(); } startNew(); },
@@ -711,10 +713,14 @@ export function onSorted(name, keys, moved) {
 
 export function boot() {
   applySettings();
-  const all = CASES.map((id) => E.getCase(id)).filter(Boolean);
+  // Shifts load on demand (E.lazy): boot works from each shift's metadata, and a shift's own script is parsed the
+  // first time it's opened. Staff from the flow and the floor, and the oncoming nurse, join every shift's staff list;
+  // every patient's and staff member's look is defined now, so the picker can draw them without loading anything.
+  const all = CASES.map((id) => E.caseMeta(id)).filter(Boolean);
   all.forEach((k) => { const add = Object.assign(F.staffFor(k, all), FL.staffFor()); Object.keys(add).forEach((key) => { if (!k.staff[key]) k.staff[key] = add[key]; }); });
-  CASES.forEach((id) => { const k = E.getCase(id); if (k && STY) STY.install(k); });
-  CASES.forEach((id) => { const k = E.getCase(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
+  CASES.forEach((id) => { const k = E.caseMeta(id); if (!k) return; k.patients.forEach((p) => R.define(p.id, p.look)); Object.entries(k.staff).forEach(([key, v]) => { if (v.look) R.define(key, v.look); }); });
+  // When a shift's script arrives: the merged staff and its patient stories.
+  E.onCaseLoad((k) => { const m = E.caseMeta(k.id); if (m && m !== k) Object.keys(m.staff).forEach((key) => { if (!k.staff[key]) k.staff[key] = m.staff[key]; }); if (STY) STY.install(k); });
   document.addEventListener('click', onClick);
   document.addEventListener('pointerdown', startHold); document.addEventListener('pointermove', moveHold);
   document.addEventListener('pointerdown', sortDown); document.addEventListener('pointermove', sortMove);
@@ -726,7 +732,7 @@ export function boot() {
     else if (b === 'note') { ui.fb = ui.fb || {}; ui.fb.note = v; } else if (b === 'rp.note' && ui.rp) ui.rp.note = v; else if (b === 'acct.email') { ui.acct = ui.acct || {}; ui.acct.email = v; return; } else if (b === 'cls.code' || b === 'cls.name') { ui.cls = ui.cls || {}; ui.cls[b.slice(4)] = v; return; } const btn = document.querySelector(b === 'note' ? '[data-act="fb-send"]' : '[data-act="rpt-send"]'); if (btn) { const ok = b === 'note' ? fbAny(ui.fb) : !!(v.trim() || (ui.rp && ui.rp.why)); if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('data-why'); } else { btn.setAttribute('aria-disabled', 'true'); btn.dataset.why = b === 'note' ? 'Answer one question first.' : 'Pick what kind of problem, or describe it.'; } } });
   requestAnimationFrame(frameMon);
   if (/[?&#]health\b/.test(location.href)) setTimeout(() => { ui.ov = 'health'; render(); }, 400);
-  const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { G.s = g; G.caseId = g.caseId; E.useCase(G.caseId); }
+  const g = E.store.load(); if (g && !g.ended && E.caseMeta(g.caseId)) { G.s = g; G.caseId = g.caseId; E.useCase(G.caseId); }
   // A link to one shift (/play/?shift=icu-3w-1, from the landing page's shift cards) picks that shift on the home
   // screen. A shift already in progress wins: the link never throws away someone's game.
   { const want = new URLSearchParams(location.search).get('shift');
@@ -736,7 +742,7 @@ export function boot() {
   if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
   // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
   const wasOr = !seen('orient') && OR && orLoad();
-  if (wasOr) safe('orient-resume', () => { if (!G.s && wasOr.caseId && E.getCase(wasOr.caseId)) G.caseId = wasOr.caseId; openOrient(wasOr.start); });
+  if (wasOr) safe('orient-resume', () => { if (!G.s && wasOr.caseId && E.caseMeta(wasOr.caseId)) G.caseId = wasOr.caseId; openOrient(wasOr.start); });
   if (CL) { CL.onChange(() => { if (ui.ov === 'account' || ui.ov === 'class' || ui.ov === 'pack' || ui.view === 'home') render(); }); CL.ready.then((ok) => { const linked = CL.linked(); if (ok) fromCloud(); if (/[?&]pack=thanks/.test(location.search)) { history.replaceState(null, '', location.pathname); if (CL.user()) { ui.packWait = 'checking'; ui.ov = 'pack'; render(); packPoll(8); } } if (linked && CL.user()) setTimeout(() => hint(document.querySelector('[data-act=account].acct-link') || document.querySelector('.top .mark') || document.body, `Signed in as ${CL.user().email}. Your progress is saved to your account.`), 300); else if (linked) { ui.ov = 'account'; render(); } }).catch(() => {}); }
   addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
   addEventListener('appinstalled', () => { ui.installEvt = null; TEL.track('app_installed', {}); });

@@ -6,19 +6,9 @@ export const TEL = S.tel || { track() { return false; }, flush() {}, feedback() 
 export const CASES = ['medsurg-4w-1', 'medsurg-4w-2', 'medsurg-4w-3', 'stepdown-6e-1', 'icu-3w-1', 'ed-podb-1', 'ld-2s-1', 'ob-2n-1', 'psych-3e-1', 'psych-4n-1', 'peds-5s-1'];
 /* Mutable state shared by every module. */
 export const G = { caseId: CASES[0], s: null, prof: E.store.profile(), _A: null, _As: null, RC: null, aideCache: null, idleT: null, qtDup: null, resSeq: 0, SD: null };
-/* Psych law: the content is written to California law (5150, 5250, Riese, LPS). "General US" swaps those for
-   plain descriptions that hold in most states. Applied to everything the game shows, at display time. */
-export const LAW = [
-  [/\bWIC 5150\b/g, '72-hour involuntary hold'], [/\bWIC 5250\b/g, 'extended involuntary certification'],
-  [/\ba 5150\b/g, 'a 72-hour hold'], [/\b5150 hold\b/g, '72-hour hold'], [/\b5150\b/g, '72-hour hold'],
-  [/\ba 5250\b/g, 'an extended certification'], [/\bthe 5250\b/g, 'the extended certification'], [/^5250\b/g, 'Extended certification'], [/\b5250\b/g, 'extended certification'],
-  [/\bthe hearing is usually within a day\b/g, 'the hearing timeline depends on the state'],
-  [/\bRiese petition\b/g, 'petition for court-ordered medication'], [/ ?\(Riese\)/g, ''], [/\bRiese\b/g, 'capacity hearing'],
-  [/\bLPS conservatorship\b/g, 'mental health conservatorship'], [/\bWIC 5585\b/g, '72-hour involuntary hold for a minor'], [/\b5585\b/g, '72-hour hold (minor)'],
-  [/\billegal in California\b/g, 'illegal in most states'], [/\bCalifornia law protects\b/g, 'Privacy law protects'], [/ \(36 hours in California\)/g, ' (the deadline varies by state)'],
-];
-export const LAWHIT = /5150|5250|5585|Riese|LPS|California/;
-export const lawText = (x) => { if (!LAWHIT.test(x) || ((G.prof && G.prof.settings) || {}).law !== 'general') return x; LAW.forEach(([re, to]) => { x = x.replace(re, to); }); return x; };
+/* Psych law: content is written to California law; Settings → Psych law → General US swaps each legal phrase for a
+   plain one at display time. The phrases are data in src/law.js (S.law), and each case lists the ones it uses. */
+export const lawText = (x) => (S.law ? S.law.render(x, ((G.prof && G.prof.settings) || {}).law) : x);
 export const esc = (x) => lawText(String(x == null ? '' : x)).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const $ = (sel) => document.querySelector(sel);
 export const ICON = {
@@ -42,7 +32,9 @@ export const ui = { view: 'home', ov: null, chart: null, dock: 'assess', caption
    with another's case. */
 export const GAMEVIEW = { handoff: 1, station: 1, room: 1, debrief: 1 };
 export const inGame = () => !!(G.s && GAMEVIEW[ui.view]);
-export const C = () => E.getCase(G.s && ui.view !== 'home' && ui.view !== 'shifts' && E.getCase(G.s.caseId) ? G.s.caseId : G.caseId);
+export const C = () => E.getCase(G.s && ui.view !== 'home' && ui.view !== 'shifts' && E.caseMeta(G.s.caseId) ? G.s.caseId : G.caseId);
+/* The selected shift's metadata, for screens that only show it (the picker): doesn't load the shift's script. */
+export const CM = () => E.caseMeta(G.caseId);
 /* Shift picker: which specialty each shift belongs to and how hard it is (1–5), with the reason in one line. */
 export const SPEC = {
   ms: { name: 'Medical-surgical', unit: '4 West', blurb: 'Adult general floor: post-op care, diabetes, infection, heart failure. Start here.' },

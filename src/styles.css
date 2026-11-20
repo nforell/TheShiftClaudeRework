@@ -3091,3 +3091,66 @@ html:has(.dr){scroll-padding-top:72px}
 /* Focus rings follow the input: keyboard (html.kbd, set in ui.js) shows them; pointer and touch don't, so a button
    that keeps focus after a tap (the menu after it closes, a reply in the room) never leaves a stray outline. */
 html:not(.kbd) :focus,html:not(.kbd) :focus-visible{outline:none!important}
+
+/* ---------- 0.7: while you were busy, competing priorities, debrief to drill ---------- */
+/* The time-lapse note: drawn outside #app under the header, never takes a tap, fades on its own. */
+.lapse{position:fixed;left:50%;transform:translateX(-50%);z-index:58;pointer-events:none;width:min(440px,calc(100% - 24px));padding:.55rem .8rem .6rem;border-radius:14px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 28px -14px rgba(0,0,0,.45);font-size:.88rem;line-height:1.35;animation:lapsein .24s var(--ease-out,ease-out) both}
+.lapse.out{opacity:0;transition:opacity .28s}
+.lapse .lp-h{display:block;font-size:.78rem;color:var(--ink-2);margin-bottom:.2rem}.lapse .lp-h b{font-family:var(--mono);color:var(--ink)}
+.lapse ul{margin:0;padding:0;list-style:none;display:grid;gap:.15rem}
+.lapse li{display:flex;gap:.45rem;align-items:baseline}.lapse li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--teal);transform:translateY(-1px)}
+.lapse li.lp-late::before{background:var(--red)}.lapse li.lp-call::before{background:#F2C12E}.lapse li.lp-due::before{background:var(--amber)}
+@keyframes lapsein{from{opacity:0;transform:translate(-50%,-6px)}}
+@media (prefers-reduced-motion:reduce){.lapse{animation:none}.lapse.out{transition:none}}
+:root[data-motion="reduced"] .lapse{animation:none}
+/* A PRN reassessment due in that room: a sticky note on the door. */
+.door-note.late rect{animation:notepulse 1.6s ease-in-out infinite}
+@keyframes notepulse{50%{opacity:.72}}
+@media (prefers-reduced-motion:reduce){.door-note.late rect{animation:none}}
+:root[data-motion="reduced"] .door-note.late rect,:root[data-lite] .door-note.late rect{animation:none}
+/* A line flagged in report whose time is close (a soft pulse) or just passed (amber). */
+.chip.pin-near{background:var(--amber-bg);border-color:transparent;color:var(--amber);animation:pinpulse 2.4s ease-in-out infinite}
+.chip.pin-past{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.ro-fl li.pin-near{background:var(--amber-bg);border-radius:8px;animation:pinpulse 2.4s ease-in-out infinite}
+.ro-fl li.pin-past{background:var(--amber-bg);border-radius:8px;box-shadow:inset 3px 0 0 var(--amber)}
+@keyframes pinpulse{50%{opacity:.7}}
+@media (prefers-reduced-motion:reduce){.chip.pin-near,.ro-fl li.pin-near{animation:none}}
+:root[data-motion="reduced"] .chip.pin-near,:root[data-motion="reduced"] .ro-fl li.pin-near,:root[data-lite] .chip.pin-near,:root[data-lite] .ro-fl li.pin-near{animation:none}
+/* Debrief to drill. */
+.deb-drill{margin:1.2rem 0 .4rem}
+.deb-drill h2{font-size:1.05rem;margin:0 0 .5rem}
+.dd-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.6rem}
+.dd-go{display:flex;align-items:center;gap:.7rem;justify-content:flex-start;text-align:left;min-height:56px;padding:.55rem .8rem;border-radius:16px;background:var(--paper);box-shadow:0 3px 0 color-mix(in srgb,var(--k,var(--teal)) 45%,var(--line)),inset 0 0 0 1.5px color-mix(in srgb,var(--k,var(--teal)) 55%,transparent)}
+.dd-go .dd-k{flex:none;font-family:var(--sign);font-weight:700;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--paper);background:var(--k,var(--teal));padding:.3em .65em .26em;border-radius:999px;white-space:nowrap}
+.dd-go .dd-t{flex:1;display:flex;flex-direction:column;min-width:0}.dd-go .dd-t small{color:var(--ink-2);font-weight:500}
+.dd-go>span:last-child{font-size:1.3rem;color:var(--ink-2)}
+/* Alerts over chart: acute bedside triggers (a falling SpO₂, an overdue PRN check, an urgent call) get colour and
+   motion; the EHR chrome stays calm and grey. Pulses animate opacity only (docs/ARCHITECTURE.md). */
+.vstrip div.alarm,.vmini span.alarm{position:relative;background:var(--red-bg);border-radius:8px}
+.vstrip div.alarm b,.vmini span.alarm{color:var(--red)}
+.vstrip div.alarm::after,.vmini span.alarm::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);animation:acute 1.2s ease-in-out infinite}
+.vmini span.alarm{padding:0 .9rem 0 .35rem}.vmini span.alarm::after{top:50%;margin-top:-4px;right:3px}
+.vstrip .fall{display:block;font-style:normal;font-weight:700;font-size:.68rem;color:var(--red);letter-spacing:0;text-transform:none}
+.vmini .fall{font-size:.8rem;margin-left:.1rem}
+.b-row.over.acute{border-left-width:5px;position:relative}
+.b-row.over.acute::after{content:"";position:absolute;left:-3px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:var(--red);animation:acute 1.2s ease-in-out infinite}
+.icon-btn.ringing{color:var(--red)}
+.icon-btn.ringing::after{content:"";position:absolute;inset:4px;border-radius:50%;border:2px solid var(--red);animation:ringout 1.4s ease-out infinite;pointer-events:none}
+.phone.ringing .phone-h{background:var(--red);color:#fff}.phone.ringing .ph-urg{color:#fff}
+.ph-urg{color:var(--red)}
+@keyframes acute{50%{opacity:.25}}
+@keyframes ringout{0%{opacity:.9;transform:scale(.8)}100%{opacity:0;transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){.vstrip div.alarm::after,.vmini span.alarm::after,.b-row.over.acute::after,.icon-btn.ringing::after{animation:none}}
+:root[data-motion="reduced"] .vstrip div.alarm::after,:root[data-motion="reduced"] .vmini span.alarm::after,:root[data-motion="reduced"] .b-row.over.acute::after,:root[data-motion="reduced"] .icon-btn.ringing::after,
+:root[data-lite] .vstrip div.alarm::after,:root[data-lite] .vmini span.alarm::after,:root[data-lite] .b-row.over.acute::after,:root[data-lite] .icon-btn.ringing::after{animation:none}
+/* The chart is the calm part of the screen: no accent colour in its chrome, so anything coloured is news. */
+.drawer .chart-tabs button[aria-selected="true"]{box-shadow:inset 0 3px 0 var(--ink-2)}
+/* Room atmosphere tokens: the alarm tint at the room's edges and the monitor's glow on a night shift. */
+:root{--scene-alarm:#C8261B;--scene-glow:#7FD8B0}
+:root[data-theme="dark"]{--scene-alarm:#FF5A4E;--scene-glow:#58D68D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--scene-alarm:#FF5A4E;--scene-glow:#58D68D}}
+/* The tint itself is static SVG (no repaint loop); the breathing is an HTML layer over the scene, opacity only. */
+.room-top.alarming::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 58%,color-mix(in srgb,var(--scene-alarm) 30%,transparent) 100%);opacity:0;will-change:opacity;animation:alarmtint 2.2s ease-in-out infinite}
+@keyframes alarmtint{50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.room-top.alarming::before{animation:none;opacity:.6}}
+:root[data-motion="reduced"] .room-top.alarming::before,:root[data-lite] .room-top.alarming::before{animation:none;opacity:.6}

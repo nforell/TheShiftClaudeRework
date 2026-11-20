@@ -39,7 +39,7 @@ export const iosInstallable = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
 /* Who checked the clinical content of each shift, and against which version. */
 export function ovReviewInfo() {
   const web = /^https?:$/.test(location.protocol);
-  const rows = CASES.map((id) => { const k = E.getCase(id), st = RV.status(id), r = st.r;
+  const rows = CASES.map((id) => { const k = E.caseMeta(id), st = RV.status(id), r = st.r;
     return `<div class="rv-row"><div class="rv-h"><b>${esc(k.title)}</b><span class="chip ${st.state === 'reviewed' ? 'ok' : st.state === 'changed' ? 'alert' : 'warn'}">${esc(st.label)}</span></div>
       ${r.reviewers.length ? `<p>${r.reviewers.map((x) => `${esc(x.name)}, ${esc(x.credentials)}${x.role ? ` (${esc(x.role)})` : ''}${x.date ? `, ${esc(x.date)}` : ''}`).join('; ')}</p>` : ''}
       ${r.references.length ? `<ul class="rv-refs">${r.references.map((x) => `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.text)}</a>` : esc(x.text)}</li>`).join('')}</ul>` : ''}
@@ -99,7 +99,7 @@ export function ovPack() {
   if (owned()) return sheet('Shift pack unlocked', `<p style="margin-top:0">Every shift is open${CL.owns('pack') === 'class' ? ', through your class' : ''}. Thanks for supporting The Shift.</p>`, `<button class="btn btn-primary" data-act="close">Play</button>`, { label: 'Shift pack' });
   if (w) return sheet('Finishing your purchase', `<p style="margin-top:0">${w === 'slow' ? 'Your payment went through, but the unlock hasn\'t reached your account yet. It usually takes a few seconds. Check again in a minute; if it still doesn\'t show, email us and we\'ll sort it out.' : 'Checking with your account…'}</p>`,
     `<button class="btn" data-act="close">Close</button><button class="btn btn-primary" data-act="pack-check">Check again</button>`, { label: 'Shift pack' });
-  const list = `<ul class="pack-list">${lockedIds.map((id) => { const k = E.getCase(id); return `<li><b>${esc(k.title)}</b><small>${esc(specOf(id).name)} · ${esc(diffLabel(id))} · ${esc(k.card)}</small></li>`; }).join('')}</ul>`;
+  const list = `<ul class="pack-list">${lockedIds.map((id) => { const k = E.caseMeta(id); return `<li><b>${esc(k.title)}</b><small>${esc(specOf(id).name)} · ${esc(diffLabel(id))} · ${esc(k.card)}</small></li>`; }).join('')}</ul>`;
   const intro = `<p style="margin-top:0">${freeN} shifts are free to play as much as you like. The shift pack opens the other ${lockedIds.length}, and every shift we add after this, for one payment of <b>${esc(PACK.price || '')}</b>. No subscription.</p>${list}`;
   const school = CL ? '<p class="muted" style="font-size:.9rem">Is your school paying? <button class="acct-link" data-act="cls">Join your class</button> with the code from your instructor and every shift opens.</p>' : '';
   if (!CL) return sheet('The shift pack', intro + '<p class="muted">Buying the pack needs the online version of The Shift.</p>', `<button class="btn btn-primary" data-act="close">Close</button>`, { label: 'Shift pack' });
@@ -119,7 +119,7 @@ export function packPoll(n) {
 }
 export function fromCloud() {
   G.prof = E.store.profile(); applySettings();
-  if (!G.s || G.s.ended) { const g = E.store.load(); if (g && !g.ended && E.getCase(g.caseId)) { G.s = g; G.caseId = g.caseId; E.useCase(G.caseId); } }
+  if (!G.s || G.s.ended) { const g = E.store.load(); if (g && !g.ended && E.caseMeta(g.caseId)) { G.s = g; G.caseId = g.caseId; E.useCase(G.caseId); } }
   if (ui.view === 'home' || ui.ov === 'account') render();
 }
 export function fbWhere() { return G.s ? { case: G.s.caseId, game_min: Math.round(G.s.t), view: ui.view } : { case: G.caseId, view: ui.view }; }

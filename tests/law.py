@@ -13,7 +13,7 @@ def check(ok, what):
     print(('ok   ' if ok else 'FAIL ') + what)
     if not ok: fails.append(what)
 lits = []
-for f in ['src/case-psych1.js', 'src/stories/psych1.js', 'src/case-adolpsych1.js', 'src/stories/adolpsych1.js', 'src/flow.js', 'src/case-peds1.js']:
+for f in ['src/case-psych1.js', 'src/stories/psych1.js', 'src/case-adolpsych1.js', 'src/stories/adolpsych1.js', 'src/flow.js', 'src/case-peds1.js', 'src/stories/peds1.js']:
     src = (ROOT / f).read_text()
     body = src.split('*/', 1)[1] if src.lstrip().startswith('/*') else src   # skip the header comment
     for m in re.finditer(r"'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`", body):
@@ -22,6 +22,17 @@ for f in ['src/case-psych1.js', 'src/stories/psych1.js', 'src/case-adolpsych1.js
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={'width': 1280, 'height': 900}); fontroute(pg); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(GAME); pg.evaluate("localStorage.clear();localStorage.setItem('theshift.profile.v1',JSON.stringify({runs:[],settings:{theme:'light',sound:'off',music:'off',motion:'reduced',law:'general'},seen:{'coach:station':1,'coach:room':1}}))"); pg.reload(); pg.wait_for_timeout(300)
+    # The phrases are data (src/law.js); each case that leans on California law lists the rows it uses, and those rows
+    # alone must clear every California-specific string in that case and its stories.
+    rows = pg.evaluate("Shift.law.TERMS.map(t=>t.id)")
+    check(len(rows) == len(set(rows)) and pg.evaluate("Shift.law.TERMS.every(t=>t.ca && typeof t.us==='string')"), f'law rows are well formed ({len(rows)} rows, unique ids)')
+    for cid, fs in [('psych-3e-1', ['src/case-psych1.js', 'src/stories/psych1.js']), ('psych-4n-1', ['src/case-adolpsych1.js', 'src/stories/adolpsych1.js']), ('peds-5s-1', ['src/case-peds1.js', 'src/stories/peds1.js'])]:
+        L = pg.evaluate(f"(Shift.engine.cases['{cid}'].law||{{}}).terms||null")
+        check(bool(L) and all(x in rows for x in L), f'{cid} declares the law rows it uses ({len(L or [])})')
+        mine = [x for x in lits if any(x in (ROOT / f).read_text() or x.replace("'", "\\'") in (ROOT / f).read_text() for f in fs)]
+        rest = pg.evaluate("([xs, only]) => xs.map(x => Shift.law.general(x, only))", [mine, L or []])
+        left = [o for o in rest if TOK.search(o)]
+        check(not left, f'{cid}: its own rows cover all {len(mine)} of its California strings' + (f': still "{left[0][:100]}"' if left else ''))
     out = pg.evaluate("(xs)=>xs.map(x=>Shift.ui._law(x))", lits)
     left = [(a, o) for a, o in zip(lits, out) if TOK.search(o)]
     check(len(lits) >= 20 and not left, f'all {len(lits)} California-specific strings rewritten' + (f': still "{left[0][1][:120]}"' if left else ''))

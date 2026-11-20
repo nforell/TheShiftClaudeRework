@@ -153,7 +153,8 @@ export function paneBrain(d, P) {
   const shown = ui.brainAll ? doneLog : doneLog.slice(0, 5);
   const row = (r, cls) => { const inner = `${cls === 'prog' ? `<span class="b-prog" aria-hidden="true"><i style="width:${Math.min(100, Math.max(4, (G.s.t - r.at) / Math.max(1, r.t - r.at) * 100)).toFixed(0)}%"></i></span>` : ''}<span class="b-tm">${r.t === null ? esc(r.later) : E.clock(Math.max(r.t, 0))}</span><span class="b-tx"><b>${esc(r.text)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span><span class="b-st">${cls === 'over' ? 'Overdue' : cls === 'now' ? (r.t > G.s.t ? `In ${Math.round(r.t - G.s.t)} min` : 'Due') : cls === 'soon' ? 'Upcoming' : cls === 'prog' ? 'In progress' : cls === 'later' ? 'Later' : ''}</span>${r.go ? '<span class="b-go" aria-hidden="true">›</span>' : '<span></span>'}`;
     return r.go ? `<li><button class="b-row ${cls}" data-act="${r.go.act}" data-id="${r.go.id}"${r.go.act === 'dock' ? ` data-hl="${esc(r.hl || r.text)}"${r.sys ? ` data-sys="${esc(r.sys)}"` : ''}` : ''}>${inner}</button></li>` : `<li><div class="b-row ${cls} static">${inner}</div></li>`; };
-  const grp = (title, list, cls) => (list.length ? `<div class="b-grp ${cls}"><h4>${title}<span>${list.length}</span></h4><ul>${list.map((r) => row(r, cls)).join('')}</ul></div>` : '');
+  // A PRN whose "did it work?" check is overdue reads as an acute trigger, not one more line of work.
+  const grp = (title, list, cls) => (list.length ? `<div class="b-grp ${cls}"><h4>${title}<span>${list.length}</span></h4><ul>${list.map((r) => row(r, cls + (cls === 'over' && r.key && r.key.startsWith('rx:') ? ' acute' : ''))).join('')}</ul></div>` : '');
   const flags = G.s.brain.filter((k) => k.startsWith(d.id + ':')).map((k) => d.report[+k.split(':')[1]].text);
   let h = ghostList(d.id);
   if (!over.length && !now.length) h += '<p class="b-clear">Nothing overdue or due right now for this patient.</p>';
@@ -327,21 +328,24 @@ export function vRoom() {
   const d = def(G.s.loc), P = G.s.p[d.id], Ax = A();
   const v = Ax.lastVitals(d.id), fl = d.scene(G.s, P, Ax), st = d.status(G.s, P, Ax);
   let sceneSvg = A_.room(d, G.s, P, fl, rigV(d.id), P.callLight || !!P.bell, st === 'urgent');
-  if (ui.ov === 'dialog' && ui.dlg) sceneSvg = sceneSvg.replace('<svg class="scene"', '<svg class="scene" inert');   // the room holds still while you talk
+  if (ui.ov === 'dialog' && ui.dlg) sceneSvg = sceneSvg.replace('<svg class="scene', '<svg inert class="scene');   // the room holds still while you talk
   const looks = [...sceneSvg.matchAll(/data-act="clue" data-id="([^"]+)" tabindex="0" role="button" aria-label="([^"]+)"/g)].map((x) => [x[1], x[2]]);
   if (!PANES.some((p) => p[0] === ui.dock)) ui.dock = 'brain';
   const pane = PANES.find((p) => p[0] === ui.dock), cnt = railCounts(d, P);
   const logs = G.s.log.filter((l) => l.pid === d.id).slice().reverse();
   const ab = { T: abn(d, 'T', v.T), HR: abn(d, 'HR', v.HR), BP: abn(d, 'SBP', v.SBP), RR: abn(d, 'RR', v.RR), SpO2: abn(d, 'SpO2', v.SpO2) };
+  // An acute trigger outranks the chart: a low SpO₂ that is lower than the reading before it is an alarm, not a number.
+  const pv = P.vit.length > 1 ? P.vit[P.vit.length - 2] : null, falling = !!(ab.SpO2 && pv && v.SpO2 < pv.SpO2);
+  const alarm = (k) => (k === 'SpO2' && falling ? ' alarm' : '');
   const bg = P.bgs && P.bgs.length ? P.bgs[P.bgs.length - 1] : null;
   const body = ui.dock === 'brain' ? paneBrain(d, P) : ui.dock === 'assess' ? paneAssess(d, P) : ui.dock === 'care' ? paneCare(d, P) : ui.dock === 'meds' ? paneMeds(d, P) : paneTalk(d, P);
   const talking = ui.ov === 'dialog' && !!ui.dlg;
   return `<main class="roomv ${talking ? 'talking' : ''}">
-    <div class="room-top ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''} ${talking ? 'talking' : ''}">
+    <div class="room-top ${/\bmon-2\b/.test(sceneSvg.slice(0, 200)) ? 'alarming' : ''} ${ui.enter ? 'enter' : ''} ${ui.flash ? 'flash-' + ui.flash : ''} ${talking ? 'talking' : ''}">
       ${sceneSvg}
       ${speech(d, P, fl)}
       <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(liveDef(d).dx)}</div>
-        <button class="vmini" data-act="chart" data-pid="${d.id}" data-tab="vitals" aria-label="Last vitals at ${E.clock(v.t)}. Open the flowsheet.">${[['T', fT(v.T), ab.T], ['HR', v.HR, ab.HR], ['BP', `${v.SBP}/${v.DBP}`, ab.BP], ['RR', v.RR, ab.RR], ['SpO₂', v.SpO2 + '%', ab.SpO2]].map(([k, x, a]) => `<span class="${a ? 'ab' : ''}"><i>${k}</i>${x}</span>`).join('')}<small>${E.clock(v.t)}</small></button>
+        <button class="vmini" data-act="chart" data-pid="${d.id}" data-tab="vitals" aria-label="Last vitals at ${E.clock(v.t)}. Open the flowsheet.">${[['T', fT(v.T), ab.T], ['HR', v.HR, ab.HR], ['BP', `${v.SBP}/${v.DBP}`, ab.BP], ['RR', v.RR, ab.RR], ['SpO₂', v.SpO2 + '%', ab.SpO2, 'SpO2']].map(([k, x, a, id]) => `<span class="${a ? 'ab' : ''}${alarm(id)}"><i>${k}</i>${x}${alarm(id) ? '<b class="fall" aria-label="falling">↓</b>' : ''}</span>`).join('')}<small>${E.clock(v.t)}</small></button>
         <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(liveDef(d).code)}</span><span class="chip ${/No known/.test(liveDef(d).allergies) ? '' : 'alert'}">${esc(liveDef(d).allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
         <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
       ${ui.caption && !ui.captionPoke && !talking ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
@@ -360,7 +364,7 @@ export function vRoom() {
       </section>
       <aside class="doc" aria-label="Vitals and documentation">
         <div class="vstrip tap" aria-label="Last recorded vitals, ${E.clock(v.t)}: temperature ${fT(v.T)}, heart rate ${v.HR}, blood pressure ${v.SBP} over ${v.DBP}, respiratory rate ${v.RR}, SpO₂ ${v.SpO2}%${bg ? `, glucose ${bg.val}` : ''}. Open the vitals flowsheet." data-act="chart" data-pid="${d.id}" data-tab="vitals" role="button" tabindex="0">
-          <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${fT(v.T)}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}"><span>SpO₂</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
+          <div class="${ab.T ? 'ab' : ''}"><span>Temp</span><b>${fT(v.T)}</b></div><div class="${ab.HR ? 'ab' : ''}"><span>HR</span><b>${v.HR}</b></div><div class="${ab.BP ? 'ab' : ''}"><span>BP</span><b>${v.SBP}/${v.DBP}</b></div><div class="${ab.RR ? 'ab' : ''}"><span>RR</span><b>${v.RR}</b></div><div class="${ab.SpO2 ? 'ab' : ''}${alarm('SpO2')}"><span>SpO₂${falling ? ` <em class="fall">falling, was ${pv.SpO2}%</em>` : ''}</span><b>${v.SpO2}%</b></div>${bg ? `<div class="${bg.val < 70 || bg.val > 250 ? 'ab' : ''}"><span>Glucose</span><b>${bg.val}</b></div>` : ''}
         </div>
         <div class="vcap">Recorded ${E.clock(v.t)} by ${esc(v.by)}${G.s.t - v.t > 60 ? ', <b>over an hour ago</b>' : ''}</div>
         <h4 class="doc-h">Shift documentation</h4>

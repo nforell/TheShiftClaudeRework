@@ -15,6 +15,10 @@ Measured with `/play/` served compressed, 4x CPU slowdown and a 4G connection (a
 
 What made the difference: the build minifies (pinned esbuild in `tools/minify`); the NCLEX data (bank, case studies, rationales, focus items: about a quarter of the game) ships as JSON blocks parsed the first time practice or a debrief reads them, with the home screen's counts precomputed in `ngnMeta`; and shift-card portraits below the fold are drawn as they scroll into view. Most of what's left is clinical text, which minifying doesn't shrink. The next lever is option 3 below.
 
+### November 2026: shifts on demand
+
+The eleven shifts (case plus story scripts, about 1.4 MB of the 3.1 MB game) no longer run at startup. Each ships as an inert text block that is parsed the first time the game reads that shift; the home screen, the shift picker and achievements work from per-shift metadata generated at build time (`tools/case_meta.js`). Starting the game parses none of them; starting a shift parses one. The download is unchanged (the game is still one file, so `/play/` works offline and as a single artifact); the next step for download size is fetching each shift's block as its own file on Vercel, cached by the service worker. `tests/loop.py` checks that home parses nothing and a shift parses only itself.
+
 ## What the game costs today (September 2026, desktop Chromium)
 
 | Measure | Now | Budget |

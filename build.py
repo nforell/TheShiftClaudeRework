@@ -73,8 +73,27 @@ lazy = ('window.Shift.ngnMeta = ' + json.dumps(meta) + ';\n'
   "(function (S) { ['ngnWhy', 'ngnFocus', 'ngnBank', 'ngnCases'].forEach(function (k) { var v; Object.defineProperty(S, k, { configurable: true, enumerable: true, "
   "get: function () { if (v === undefined) { var el = document.getElementById('sd-' + k); try { v = el ? JSON.parse(el.textContent) : undefined; (S.dataParsed = S.dataParsed || []).push(k); } catch (e) { v = undefined; } if (v === undefined) v = k === 'ngnWhy' ? {} : []; } return v; }, "
   "set: function (x) { v = x; } }); }); })(window.Shift);\n")
-_rd = lambda f: bundle_ui() if f == 'ui' else (src/f).read_text()
-js=minjs(pre+lazy+''.join(_rd(f)+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn-challenge.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','ui']))
+# The shifts load on demand. Each shift's case and story scripts ship as an inert text block (minified), parsed the
+# first time the game reads that shift (Shift.engine.lazy); until then the game knows each shift by its metadata
+# (tools/case_meta.js: titles, staff, patients' names and looks), so starting the game parses none of them.
+_cm = subprocess.run(['node', str(pathlib.Path(__file__).parent/'tools'/'case_meta.js')], capture_output=True)
+if _cm.returncode: raise SystemExit('case_meta.js failed: ' + _cm.stderr.decode()[:2000])
+CMETA = json.loads(_cm.stdout)
+assert set(CMETA) == set(CF), 'case_meta.js and decisions.case_files disagree on the shifts'
+def _caseblock(cid):
+    code = minjs(''.join(f.read_text() + '\n' for f in CF[cid]))
+    if '<!--' in code: raise SystemExit(f'{cid}: "<!--" in a case script would break its inert block')
+    return f'<script type="text/x-shift-case" id="sc-{cid}">' + code + '</script>\n'
+caseblocks = ''.join(_caseblock(cid) for cid in sorted(CF))
+LAZYFILES = {f.relative_to(src).as_posix() for fs in CF.values() for f in fs}
+lazycases = ('(function (S) { var M = ' + json.dumps(CMETA, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + ';\n'
+  "Object.keys(M).forEach(function (id) { S.engine.lazy(id, M[id], function () { var el = document.getElementById('sc-' + id); if (!el) return; "
+  "(new Function(el.textContent + '\\n//# sourceURL=shift-' + id + '.js'))(); (S.caseParsed = S.caseParsed || []).push(id); }); }); })(window.Shift);\n")
+def _rd(f):
+    if f == 'ui': return bundle_ui()
+    if f == 'lazycases': return lazycases
+    return '' if f in LAZYFILES else (src/f).read_text()
+js=minjs(pre+lazy+''.join(_rd(f)+'\n' for f in ['config.js','telemetry.js','engine.js','cloud.js','cjmm.js','ngn-challenge.js','ngn.js','ref.js','review.js','flow.js','floor.js','floor-more.js','reward.js','fx.js','lazycases','case-medsurg1.js','case-medsurg2.js','case-medsurg3.js','case-psych1.js','case-adolpsych1.js','case-peds1.js','case-stepdown1.js','case-icu1.js','case-ob1.js','case-ed1.js','case-ld1.js','drills-content.js','drills-more-1.js','drills-more-2.js','drills-nclex-1.js','drills-nclex-2.js','drill.js','story.js','stories/medsurg1.js','stories/medsurg2.js','stories/medsurg3.js','stories/psych1.js','stories/adolpsych1.js','stories/peds1.js','stories/stepdown1.js','stories/icu1.js','stories/ob1.js','stories/ed1.js','stories/ld1.js','rig.js','art.js','orient.js','law.js','ui']))
 html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -90,7 +109,7 @@ html=f'''<!doctype html>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@200..800&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>{css}</style></head>
 <body><div id="app"></div>
-{datablocks}<script>{js}</script>
+{datablocks}{caseblocks}<script>{js}</script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {{}}));</script></body></html>'''
 root=pathlib.Path(__file__).parent; dist=root/'dist'
 # The game: /play/ on the site, plus a standalone single file.
@@ -104,7 +123,9 @@ tel='<script>'+minjs((src/'config.js').read_text()+'\n'+(src/'telemetry.js').rea
 # Installable app: manifest, icons, and a service worker whose cache name follows the app version.
 import re
 ver=re.search(r"version: '([^']+)'", (src/'config.js').read_text()).group(1)
-(dist/'sw.js').write_text((root/'site'/'sw.js').read_text().replace('__VERSION__', ver))
+# The cache name carries the build stamp too, so every new build (same version or not) retires the old cache.
+_bld = re.search(r"build: '([^']*)'", (src/'config.js').read_text()).group(1)
+(dist/'sw.js').write_text((root/'site'/'sw.js').read_text().replace('__VERSION__', ver + ('-' + _bld if _bld else '')))
 (dist/'manifest.webmanifest').write_text((root/'site'/'manifest.webmanifest').read_text())
 shutil.copytree(root/'site'/'icons', dist/'icons', dirs_exist_ok=True)
 # Clinical review pages: /review/ lists the shifts, /review/<shift>/ is the reviewer's checklist.

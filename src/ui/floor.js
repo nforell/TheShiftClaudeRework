@@ -42,7 +42,7 @@ export function ovRoster() {
         ${G.s.prio && inShift && !g ? `<span class="ro-mv"><button class="btn" data-act="prio" data-pid="${pid}" data-d="-1" aria-label="Move ${esc(d.short)} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="prio" data-pid="${pid}" data-d="1" aria-label="Move ${esc(d.short)} down" ${i === list.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>` : ''}</div>
       <p class="ro-why"><b>Here for</b> ${esc(d.reason)}</p>
       <div class="facts">${legal(d)}<span class="chip">${esc(liveDef(d).code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
-      ${fl.length ? `<ul class="ro-fl">${fl.map((f) => `<li><i class="flag-ic on" aria-hidden="true"></i>${esc(f)}</li>`).join('')}</ul>` : `<p class="ro-none">${ui.view === 'handoff' ? 'Nothing flagged yet.' : 'You flagged nothing from report.'}</p>`}
+      ${fl.length ? `<ul class="ro-fl">${fl.map((f) => { const k = inShift ? flagNear(f) : ''; return `<li class="${k ? 'pin-' + k : ''}"><i class="flag-ic on" aria-hidden="true"></i>${esc(f)}${k ? `<span class="sr"> (${k === 'near' ? 'coming up' : 'time passed'})</span>` : ''}</li>`; }).join('')}</ul>` : `<p class="ro-none">${ui.view === 'handoff' ? 'Nothing flagged yet.' : 'You flagged nothing from report.'}</p>`}
       ${inShift && g ? `<div class="ro-f"><button class="btn btn-primary" data-act="away" data-pid="${pid}">Follow up</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
       ${inShift && !g ? `<div class="ro-f"><button class="btn btn-primary" data-act="goto" data-pid="${pid}">Go to ${d.room}</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
     </article>`;
@@ -207,8 +207,19 @@ export function ffPlay() {
   };
   requestAnimationFrame(step); el.addEventListener('click', done);
 }
+/* Competing priorities a nurse can see from the hall, without the debrief's verdict: a PRN given in that room whose
+   "did it work?" check is due (a sticky note on the door, amber when it's late), and on the patient list, a line she
+   flagged in report whose time is close or just passed. */
+export function prnDue(d, P) { const r = brainRows(d, P).filter((x) => x.key && x.key.startsWith('rx:') && !x.done && x.t !== null && x.t <= G.s.t).sort((a, b) => a.t - b.t)[0]; return r ? { late: !!r.late, t: r.t } : null; }
+const HHMM = /\b([01]\d|2[0-3]):([0-5]\d)\b/;
+export function flagTime(text) {   // minutes from now to the first clock time in a flagged report line (negative: passed)
+  const m = HHMM.exec(text); if (!m) return null;
+  const at = +m[1] * 60 + +m[2], now = E.abs(G.s.t) % 1440;
+  return ((at - now + 720 + 1440) % 1440) - 720;
+}
+export const flagNear = (text) => { const d = flagTime(text); return d === null ? '' : d >= 0 && d <= 15 ? 'near' : d < 0 && d >= -30 ? 'past' : ''; };
 export function vStation() {
-  const doors = C().patients.map((d) => { const P = G.s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || G.s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), alert: light ? 'needs attention' : '' }; });
+  const doors = C().patients.map((d) => { const P = G.s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || G.s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); const prn = gone(P) ? null : prnDue(d, P); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), prn, alert: [light ? 'needs attention' : '', prn ? (prn.late ? 'PRN reassessment overdue' : 'PRN reassessment due') : ''].filter(Boolean).join(', ') }; });
   const pending = C().patients.filter((d) => !here(d));
   const due = dueList();
   return `<main>
@@ -221,7 +232,7 @@ export function vStation() {
         ${prioList().map(def).map((d) => { const P = G.s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = G.s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'away' : 'goto'}" data-pid="${d.id}">
           <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
           <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(liveDef(d).dx)}</div>${(() => { if (gone(P)) return ''; const r = nextFor(d.id); return r ? `<div class="pt-next ${r.late && !r.blocked ? 'late' : r.stat ? 'stat' : ''}"><span>${r.late && !r.blocked ? 'Overdue' : r.stat ? 'Now' : r.t > G.s.t ? 'Next, ' + E.clock(r.t) : 'Next'}</span>${esc(r.text)}</div>` : `<div class="pt-next ok"><span>Caught up</span>Nothing due in the next 30 min</div>`; })()}
-          <div class="facts">${legal(d)}${/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`}${gone(P) ? `<span class="chip">${esc(goneText(P))}</span>` : P.seenAt === null ? '' : `<span class="chip">${lastSeen(P)}</span>`}${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${flags ? `<span class="chip">${flags} flagged</span>` : ''}</div></div>
+          <div class="facts">${legal(d)}${/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`}${gone(P) ? `<span class="chip">${esc(goneText(P))}</span>` : P.seenAt === null ? '' : `<span class="chip">${lastSeen(P)}</span>`}${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${flags ? (() => { const near = flagsFor(d.id).map((t) => ({ t, k: flagNear(t), m: HHMM.exec(t) })).filter((x) => x.k).sort((a, b) => (a.k === 'past' ? -1 : 1) - (b.k === 'past' ? -1 : 1))[0]; return near ? `<span class="chip pin-${near.k}" title="${esc(near.t)}">Flagged ${near.m[0]}${near.k === 'past' ? ', passed' : ', soon'}</span>` : `<span class="chip">${flags} flagged</span>`; })() : ''}</div></div>
           <div class="go">${gone(P) ? (() => { const n = F.awayRows(G.s, A(), d, P).filter((r) => !r.done).length; return `<button class="btn ${n ? 'btn-primary' : ''}" data-act="away" data-pid="${d.id}">Follow up${n ? ` (${n})` : ''}</button>`; })() : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
         </div>`; }).join('')}
         ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} ${esc(admWord(d))}</div><div class="dx">From ${esc(fromOf(d))}, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
@@ -250,7 +261,8 @@ export function msgHTML(m) {
 }
 export function phone(n) {
   const list = G.s.inbox.slice(0, n);
-  return `<section class="phone" aria-labelledby="ph"><div class="phone-h"><b id="ph">Unit phone</b><span style="font-size:.8rem">${G.s.inbox.filter((m) => !m.read).length} unread</span></div>
+  const urgent = G.s.inbox.filter((m) => !m.read && m.urgent).length;
+  return `<section class="phone ${urgent ? 'ringing' : ''}" aria-labelledby="ph"><div class="phone-h"><b id="ph">Unit phone</b><span style="font-size:.8rem">${urgent ? `<b class="ph-urg">${urgent} urgent</b> · ` : ''}${G.s.inbox.filter((m) => !m.read).length} unread</span></div>
     <div class="msgs">${list.length ? list.map(msgHTML).join('') : '<p class="empty">Quiet so far.</p>'}</div>
     ${G.s.inbox.length > n ? `<div style="padding:.4rem;border-top:1px solid var(--line)"><button class="btn btn-quiet" data-act="inbox" style="width:100%">All ${G.s.inbox.length} messages</button></div>` : ''}</section>`;
 }
