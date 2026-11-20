@@ -23,6 +23,20 @@ const T = '11111111-1111-1111-1111-111111111111', S1 = '22222222-2222-2222-2222-
 await db.exec(`insert into auth.users values ('${T}','t@x'),('${S1}','s1@x'),('${S2}','s2@x'),('${X}','x@x')`);
 async function as(uid, sql) { await db.exec(`set role authenticated; select set_config('request.uid','${uid}',false);`); try { return await q(sql); } finally { await db.exec('reset role'); } }
 let ok = 0, bad = 0; const check = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); c ? ok++ : bad++; };
+// The shift in progress lives in shift_snapshots, apart from the profile: each player reads and writes only their own.
+await as(S1, `insert into public.shift_snapshots (user_id, game, case_id, game_min) values ('${S1}', '{"caseId":"icu-3w-1","t":42}', 'icu-3w-1', 42)`);
+check((await as(S1, `select case_id from public.shift_snapshots`)).rows.length === 1, 'a player saves and reads their own shift snapshot');
+check((await as(S2, `select * from public.shift_snapshots`)).rows.length === 0, 'nobody else can read it');
+let e0 = null; try { await as(S2, `insert into public.shift_snapshots (user_id, game) values ('${S1}', '{}')`); } catch (x) { e0 = x.message; }
+check(!!e0, 'nobody can write someone else\'s snapshot');
+await as(S2, `update public.shift_snapshots set game = null where user_id = '${S1}'`);
+check((await q(`select game is not null g from public.shift_snapshots where user_id = '${S1}'`)).rows[0].g, 'an update to someone else\'s snapshot changes nothing');
+// A shift saved the old way (saves.game) moves to shift_snapshots when the schema is re-run; finished shifts don't.
+await as(X, `insert into public.saves (user_id, profile, game) values ('${X}', '{}', '{"caseId":"ob-2n-1","t":17.6,"ended":false}')`);
+await as(S2, `insert into public.saves (user_id, profile, game) values ('${S2}', '{}', '{"caseId":"ob-2n-1","t":90,"ended":true}')`);
+await db.exec(fs.readFileSync(R + 'schema.sql', 'utf8'));
+const mv = (await q(`select user_id, case_id, game_min from public.shift_snapshots order by case_id`)).rows;
+check(mv.length === 2 && mv.some((r) => r.user_id === X && r.case_id === 'ob-2n-1' && r.game_min === 18), 'an old in-progress shift moves to shift_snapshots (and re-running is safe)');
 const k = (await as(T, `select public.create_class('NURS 310, Section 2') as j`)).rows[0].j;
 check(/^[A-Z2-9]{6}$/.test(k.code), 'create_class makes a 6-character code ' + k.code);
 const j1 = (await as(S1, `select public.join_class('${k.code.toLowerCase()}', 'Ana P.') as j`)).rows[0].j;

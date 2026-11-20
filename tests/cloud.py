@@ -1,6 +1,8 @@
 """Accounts and cloud saves, end to end against a stand-in for Supabase's auth and REST APIs: email link, coming
 back signed in, first upload, merging two devices' progress, picking up a shift on a third device, token refresh,
-sign out, and that nothing shows when accounts aren't configured. Usage: python tests/cloud.py  (exit 1 on failure)"""
+sign out, and that nothing shows when accounts aren't configured. The shift in progress syncs to shift_snapshots on
+its own debounced clock, never inside the profile row, and isn't re-sent unchanged; without that table it falls back
+to saves.game. Usage: python tests/cloud.py  (exit 1 on failure)"""
 import sys, json, pathlib, mimetypes, urllib.parse as up
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tests'))
@@ -14,7 +16,7 @@ def check(ok, what):
     print(('ok   ' if ok else 'FAIL ') + what)
     if not ok: fails.append(what)
 
-db = {'rows': {}, 'otp': [], 'tokens': {'t1': 'u1', 't2': 'u1', 't3': 'u1'}, 'refreshed': 0, 'bad_auth': 0}
+db = {'rows': {}, 'snaps': {}, 'snap_on': True, 'posts': [], 'otp': [], 'tokens': {'t1': 'u1', 't2': 'u1', 't3': 'u1'}, 'refreshed': 0, 'bad_auth': 0}
 CORS = {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'}
 
 def serve(route):
@@ -38,16 +40,19 @@ def supa(route):
     if u.path == '/auth/v1/token':
         db['refreshed'] += 1; db['tokens']['t9'] = 'u1'
         return j(200, {'access_token': 't9', 'refresh_token': 'r9', 'expires_in': 3600, 'user': {'id': 'u1', 'email': 'nurse@example.com'}})
-    if u.path == '/rest/v1/saves':
+    if u.path in ('/rest/v1/saves', '/rest/v1/shift_snapshots'):
+        snap = u.path.endswith('shift_snapshots'); tbl = db['snaps' if snap else 'rows']
+        if snap and not db['snap_on']: return j(404, {'code': 'PGRST205', 'message': "Could not find the table 'public.shift_snapshots'"})
         if not uid: db['bad_auth'] += 1; return j(401, {'message': 'JWT invalid'})
         if r.method == 'GET':
             want = q.get('user_id', [''])[0].replace('eq.', '')
-            row = db['rows'].get(want) if want == uid else None   # row level security
+            row = tbl.get(want) if want == uid else None   # row level security
             return j(200, [row] if row else [])
         body = json.loads(r.post_data)
         if body.get('user_id') != uid: return j(403, {'message': 'row level security'})
         check('merge-duplicates' in (h.get('prefer') or ''), 'upsert asks Supabase to merge, not duplicate')
-        db['rows'][uid] = body; return route.fulfill(status=201, body='', headers=CORS)
+        db['posts'].append(('snap' if snap else 'saves', sorted(body)))
+        tbl[uid] = dict(tbl.get(uid) or {}, **body); return route.fulfill(status=201, body='', headers=CORS)   # merge-duplicates updates only the columns sent
     j(404, {'message': 'not found'})
 
 with sync_playwright() as p:
@@ -99,10 +104,25 @@ with sync_playwright() as p:
     H(B, 'pick-case', id='peds-5s-1'); H(B, 'new')
     if B.evaluate("Shift.ui._ui.intro!=null"): H(B, 'intro-go')
     H(B, 'h-done'); H(B, 'rank-submit'); H(B, 'rank-go')
+    # Debounced: actions mid-shift don't upload right away; the shift goes up on its own, apart from the profile.
+    n0 = len(db['posts']); B.evaluate("Shift.engine.store.save(Shift.ui._state())"); B.wait_for_timeout(700)
+    check(len(db['posts']) == n0, 'an action mid-shift does not upload at once (debounced)')
+    w = B.evaluate("Shift.cloud._sync().waits"); check(w['GAME_WAIT'] >= 30000 and w['GAME_MAX'] >= w['GAME_WAIT'], f'shift snapshot waits for a pause, with a cap ({w})')
     B.evaluate("Shift.cloud.sync()"); B.wait_for_timeout(600)
-    check((db['rows']['u1'].get('game') or {}).get('caseId') == 'peds-5s-1', 'shift in progress is saved to the cloud')
+    check(((db['snaps'].get('u1') or {}).get('game') or {}).get('caseId') == 'peds-5s-1', 'shift in progress is saved to the cloud, in shift_snapshots')
+    check(db['snaps']['u1'].get('case_id') == 'peds-5s-1' and isinstance(db['snaps']['u1'].get('game_min'), int), 'the snapshot row names the shift and its minute')
+    check(all('game' not in keys for t, keys in db['posts'] if t == 'saves'), 'profile uploads never carry the shift in progress')
+    n1 = len(db['posts']); B.evaluate("Shift.cloud.pushGame()"); B.wait_for_timeout(300)
+    check(len(db['posts']) == n1, 'an unchanged shift is not uploaded again')
+    B.evaluate("(()=>{const s=Shift.ui._state(); s.t+=1; Shift.engine.store.save(s)})()"); B.evaluate("Shift.cloud.pushGame()"); B.wait_for_timeout(300)
+    check(len(db['posts']) == n1 + 1 and db['posts'][-1][0] == 'snap', 'a changed shift uploads only its snapshot')
     C = device('C'); signin(C, 't3')
     check('Resume' in C.content() and C.evaluate("Shift.ui._state() && Shift.ui._state().caseId") == 'peds-5s-1', 'a new device can resume that shift')
+    # An older database without shift_snapshots: the shift goes to saves.game, as before.
+    db['snap_on'] = False; B.reload(); B.wait_for_timeout(900)
+    B.evaluate("(()=>{const s=Shift.ui._state(); s.t+=2; Shift.engine.store.save(s)})()"); B.evaluate("Shift.cloud.pushGame()"); B.wait_for_timeout(400)
+    check(((db['rows']['u1'].get('game') or {}).get('caseId')) == 'peds-5s-1' and db['rows']['u1'].get('profile'), 'without shift_snapshots the shift falls back to saves.game, profile kept')
+    db['snap_on'] = True
 
     # Expired token refreshes; sign out forgets the session but keeps progress on the device.
     C.evaluate("(()=>{const s=JSON.parse(localStorage.getItem('theshift.auth.v1'));s.expires_at=Date.now()-1000;localStorage.setItem('theshift.auth.v1',JSON.stringify(s))})()")
