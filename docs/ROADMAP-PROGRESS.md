@@ -2,6 +2,25 @@
 
 Where the work from the business plan stands. Newest session first. The next session starts at **Up next**.
 
+## Session 27 — November 20, 2026 (branch `feat/0.7.0-beta-round`)
+
+Nick's ask: the 0.7.0-beta brief (live UI fixes, bundle and sync efficiency, the gameplay loop, alert hierarchy and room atmosphere).
+
+### Done
+- **Live UI fixes.** The chart drawer slides by transform only (no fade, so nothing shows through the EHR) and stays still when you switch tabs or patients. The quick rounds' mode pill rides in the opaque sticky bar, so the answer panel can't push it under. Focus rings show for keyboard users only (a tap that leaves focus on the menu or a reply no longer draws a stray outline; the tap flash is off under reduced motion). The cold open's Skip moved to the bottom right, clear of the menu button. Options are dealt together with a short slide, no stagger or fade, and the drill result ring and list land at their final state.
+- **UI as ES modules** (`src/ui/`, bundled by esbuild). Mechanical split by scope analysis; mutable top-level state is on `G`.
+- **Shifts on demand** (see ARCHITECTURE, November 2026).
+- **Cloud saves split and debounced**: `shift_snapshots` table, migration in `schema.sql`, fallback to `saves.game`.
+- **Gameplay loop**: the time-lapse note, PRN notes on doors, flagged report lines with their time, debrief to drill.
+- **Psych law as data** (`src/law.js`, `law.terms` per case).
+- **Alerts over chart and room atmosphere** (falling SpO₂, overdue PRN checks, urgent calls; monitor alarm tint, pleth wave, flowmeter and pump readouts).
+- **Service worker cache** is named by version and build, so each deploy retires the old cache.
+- New test: `tests/loop.py`.
+
+### To do on your side
+- Run the updated `supabase/schema.sql` in the Supabase SQL editor (adds `shift_snapshots`, moves any in-progress shift across once).
+- Check the live issues on a real iPhone (the stray outlines were focus rings after taps; I couldn't reproduce them in desktop Chromium).
+
 ## Session 26 — November 2, 2026 (branch `mission-p0`)
 
 Nick's ask: the master improvement mission (reliability and trust first, then the flagship shift). Audit: Days on 4 West played as a first-time student with real taps at 390 px, from the walkthrough through the debrief; desktop at 1280; refresh mid-shift; the review tooling. Kept as is: the shift opening, report and flagging, the hidden-sepsis design, vitals with trends, resume after refresh, the desktop layout, the story conversations, and a debrief that already gives outcomes per patient, the decision that mattered most and a timestamped rationale for every scored call.

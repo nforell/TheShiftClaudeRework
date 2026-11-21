@@ -72,7 +72,7 @@ main{max-width:1320px;margin:0 auto;padding:clamp(.6rem,2vw,1.4rem)}
 .home-cast figcaption{padding:.45rem .7rem .55rem;background:var(--surface);font-size:.8rem;color:var(--ink-2);line-height:1.35}
 .home-cast figcaption b{display:block;color:var(--ink);font-size:.88rem}
 .caption.quiet{}
-.pt{cursor:pointer}.pt:focus{outline:none}.pt:focus-visible{filter:drop-shadow(0 0 6px var(--teal))}
+.pt{cursor:pointer}.pt:focus{outline:none}html.kbd .pt:focus-visible{filter:drop-shadow(0 0 6px var(--teal))}
 .sched-h{margin:2rem 0 .4rem;font-family:var(--sign);font-size:1.5rem;font-weight:600;letter-spacing:0}
 .ladder{display:flex;flex-direction:column;border-top:2px solid var(--ink)}
 .rung{display:grid;grid-template-columns:5.2rem minmax(0,1fr) 7rem 6.5rem;gap:1rem;align-items:center;width:100%;text-align:left;padding:.8rem .4rem;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;cursor:pointer;font:inherit;color:inherit}
@@ -114,8 +114,8 @@ main{max-width:1320px;margin:0 auto;padding:clamp(.6rem,2vw,1.4rem)}
 /* station */
 .hall-wrap{background:var(--scene-wall);border-radius:var(--rc);overflow:hidden;box-shadow:var(--shadow)}
 svg.hall{display:block;width:100%;height:auto;max-height:230px}
-.door{cursor:pointer}:where(html.hov) .door:hover .door-hi,.door:focus .door-hi{opacity:.14}
-.door:focus{outline:none}.door:focus-visible rect:first-child{stroke:var(--teal);stroke-width:5}
+.door{cursor:pointer}:where(html.hov) .door:hover .door-hi,html.kbd .door:focus .door-hi{opacity:.14}
+.door:focus{outline:none}html.kbd .door:focus-visible rect:first-child{stroke:var(--teal);stroke-width:5}
 .station{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:1.2rem;margin-top:1.2rem;align-items:start}
 .board{background:var(--surface);border:1px solid var(--line);border-radius:var(--rc)}
 .board-h{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--line)}
@@ -159,7 +159,7 @@ svg.scene{display:block;width:100%;height:auto;max-height:min(62vh,520px)}
 @media (max-width:640px){svg.scene{height:300px;max-height:none}.toast:not(:last-child){display:none}}
 .enter{animation:enter .45s cubic-bezier(.2,.7,.2,1)}
 @keyframes enter{from{opacity:0;transform:scale(1.035)}}
-.clue{cursor:pointer}:where(html.hov) .clue:hover,.clue:focus{filter:drop-shadow(0 0 5px rgba(240,182,74,.95))}.clue:focus{outline:none}
+.clue{cursor:pointer}.clue:focus{outline:none}:where(html.hov) .clue:hover,html.kbd .clue:focus{filter:drop-shadow(0 0 5px rgba(240,182,74,.95))}.clue:focus{outline:none}
 .blink{animation:blink 1s steps(2) infinite}@keyframes blink{50%{opacity:.25}}
 .ecg{stroke-dasharray:240;animation:ecg 2.4s linear infinite}@keyframes ecg{from{stroke-dashoffset:240}to{stroke-dashoffset:0}}
 .nameplate{position:absolute;left:0;top:0;right:0;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between;align-items:flex-start;padding:.7rem .8rem;pointer-events:none}
@@ -214,8 +214,9 @@ svg.scene{display:block;width:100%;height:auto;max-height:min(62vh,520px)}
 .sheet-b{padding:1rem 1.1rem;overflow:auto}
 .sheet-f{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end;padding:.8rem 1.1rem;border-top:1px solid var(--line);background:var(--surface-2)}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(820px,100%);background:var(--surface);z-index:55;box-shadow:-20px 0 60px -20px rgba(0,0,0,.4);display:flex;flex-direction:column;animation:slide .22s cubic-bezier(.2,.7,.2,1);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@keyframes slide{from{transform:translateX(40px);opacity:0}}
-.drawer{background:var(--ehr);--line:var(--ehr-line);--surface-2:var(--ehr-2);font-size:.94rem}
+@keyframes slide{from{transform:translateX(40px)}}
+.drawer{background:var(--ehr);background-color:var(--ehr);opacity:1;isolation:isolate;backdrop-filter:none;-webkit-backdrop-filter:none;--line:var(--ehr-line);--surface-2:var(--ehr-2);font-size:.94rem}
+.drawer .chart-b{background:var(--ehr)}
 .chart-h{display:flex;align-items:center;gap:.6rem;padding:.6rem .9rem;background:var(--ehr-bar);color:#EEF0F3;flex-wrap:wrap}
 .chart-h .who span{color:#B9C0CA;font-size:.88rem}
 .ehr-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem}
@@ -463,7 +464,7 @@ td.wrap{white-space:normal;min-width:220px}
 .intro-beat:last-of-type{color:#F2C12E}
 .intro-cta{margin-top:1.2rem;animation:linein .6s ease-out backwards;animation-delay:var(--d);background:#E7E4DB;border-color:#E7E4DB;color:#15181D}
 .intro.all .intro-beat,.intro.all .intro-cta,.intro.all .intro-time,.intro.all .intro-place{animation:none}
-.intro-skip{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;background:transparent;border:1px solid rgba(255,255,255,.25);color:#A0A5AE;border-radius:var(--r);padding:.4em .9em;cursor:pointer;min-height:40px}
+.intro-skip{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));right:18px;background:transparent;border:1px solid rgba(255,255,255,.25);color:#A0A5AE;border-radius:var(--r);padding:.4em .9em;cursor:pointer;min-height:40px}
 .intro-ecg{display:none}
 .intro-ecg path{fill:none;stroke:#5DBBAE;stroke-width:2.5;stroke-dasharray:1400;stroke-dashoffset:1400;animation:ecgdraw 3.2s linear infinite}
 @keyframes ecgdraw{to{stroke-dashoffset:-1400}}
@@ -2692,8 +2693,7 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .dr-ring{width:100%;height:100%;transform:rotate(-90deg)}
 .dr-ring circle{fill:none;stroke-width:11}
 .dr-ring .bg{stroke:var(--surface-2)}
-.dr-ring .fg{stroke:var(--k);stroke-linecap:round;stroke-dasharray:var(--c);stroke-dashoffset:var(--o);animation:drring 1s cubic-bezier(.3,.9,.3,1)}
-@keyframes drring{from{stroke-dashoffset:var(--c)}}
+.dr-ring .fg{stroke:var(--k);stroke-linecap:round;stroke-dasharray:var(--c);stroke-dashoffset:var(--o)}
 .dr-sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .dr-sc b{font-family:var(--sign);font-size:3.2rem;font-weight:700;line-height:.9}
 .dr-sc b small{font-size:1.5rem;color:var(--ink-2)}
@@ -2706,8 +2706,7 @@ img.sc-bust{object-fit:contain;object-position:bottom}
 .dr-fates{text-align:left;margin-top:1.4rem}
 .dr-fates h3{font-family:var(--sign);font-size:1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:.4rem}
 .dr-fates ul{list-style:none;padding:0;margin:0;display:grid;gap:.4rem}
-.dr-fates li{display:flex;gap:.65rem;align-items:flex-start;padding:.6rem .7rem;border:1px solid var(--line);border-radius:var(--rc);background:var(--surface);font-size:.94rem;line-height:1.4;animation:drin .35s ease-out backwards}
-.dr-fates li:nth-child(2){animation-delay:.08s}.dr-fates li:nth-child(3){animation-delay:.16s}.dr-fates li:nth-child(4){animation-delay:.24s}.dr-fates li:nth-child(5){animation-delay:.32s}
+.dr-fates li{display:flex;gap:.65rem;align-items:flex-start;padding:.6rem .7rem;border:1px solid var(--line);border-radius:var(--rc);background:var(--surface);font-size:.94rem;line-height:1.4}
 .dr-fates small{color:var(--ink-2);font-size:.78rem}
 .dr-fi{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-weight:700;font-size:.85rem;color:#fff;background:var(--good);margin-top:.05rem}
 .dr-fates li.no .dr-fi{background:var(--red)}
@@ -2848,7 +2847,9 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 
 /* ---------- Drills: the front door ---------- */
 .dr{max-width:720px}
-.dr-top{gap:.6rem;padding:.55rem .8rem;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:0}
+.dr-top{gap:.6rem;padding:.55rem .8rem;background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0;box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 7%,transparent)}
+.dr-top .dr-kind{flex:none;margin:0;font-size:.74rem;padding:.3em .65em .26em;line-height:1.1;white-space:nowrap}
+html:has(.dr){scroll-padding-top:72px}
 .dr-prog{gap:6px}
 .dr-prog i{height:12px;border-radius:6px;border:0;background:color-mix(in srgb,var(--ink) 9%,transparent);transition:background .3s,transform .3s var(--ease-pop)}
 .dr-prog i.now{background:color-mix(in srgb,var(--k) 30%,var(--paper));box-shadow:inset 0 0 0 2px var(--k)}
@@ -2882,10 +2883,10 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 .dr-opt.right,.dr-pt.right{animation:drright .5s var(--ease-pop)}
 @keyframes drright{0%{transform:scale(.97)}55%{transform:scale(1.025)}100%{transform:none}}
 /* a new card: the patient settles in, then the options are dealt in order */
-.dr.q-new .dr-opt,.dr.q-new .dr-pt{animation:drdeal .36s var(--ease-out) backwards;animation-delay:calc(var(--n,0) * 60ms + 60ms)}
+.dr.q-new .dr-opt,.dr.q-new .dr-pt{animation:drdeal .18s var(--ease-out) backwards}
 .dr.c-new .dr-scene,.dr.c-new .dr-stage,.dr.c-new .dr-q.big{animation:drdeal .34s var(--ease-out) backwards}
 .dr.c-new .dr-bust .dr-face{animation:drface .5s var(--ease-pop) .08s backwards;transform-origin:50% 100%}
-@keyframes drdeal{from{opacity:0;transform:translateY(12px)}}
+@keyframes drdeal{from{transform:translateY(8px)}}
 @keyframes drface{from{transform:translateY(16%) scale(.94);opacity:0}}
 .dr-found p{border:0;border-radius:14px;background:var(--paper);box-shadow:var(--shadow);padding:.7rem .85rem}
 .dr-found p.hit{background:var(--good-bg);box-shadow:none}
@@ -2930,7 +2931,7 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
 .dr-miss .btn-go{min-height:56px;border-radius:16px;font-size:1.05rem}
 /* result */
 .dr-score{width:184px;height:184px}
-.dr.c-new .dr-score{animation:drface .5s var(--ease-pop) backwards}
+.dr.c-new .dr-score{animation:none}
 .dr-ring .bg{stroke:color-mix(in srgb,var(--ink) 8%,transparent)}
 .dr-stats>span{border:0;background:var(--paper);box-shadow:var(--shadow);padding:.3rem .8rem}
 .dr-fates li{border:0;border-radius:16px;background:var(--paper);box-shadow:var(--shadow);padding:.7rem .8rem}
@@ -3086,3 +3087,70 @@ body{background:radial-gradient(1100px 460px at 50% -160px,color-mix(in srgb,var
   .facts .prio-chip{display:none}
   .doc .vstrip,.doc .vcap{display:none}
 }
+
+/* Focus rings follow the input: keyboard (html.kbd, set in ui.js) shows them; pointer and touch don't, so a button
+   that keeps focus after a tap (the menu after it closes, a reply in the room) never leaves a stray outline. */
+html:not(.kbd) :focus,html:not(.kbd) :focus-visible{outline:none!important}
+
+/* ---------- 0.7: while you were busy, competing priorities, debrief to drill ---------- */
+/* The time-lapse note: drawn outside #app under the header, never takes a tap, fades on its own. */
+.lapse{position:fixed;left:50%;transform:translateX(-50%);z-index:58;pointer-events:none;width:min(440px,calc(100% - 24px));padding:.55rem .8rem .6rem;border-radius:14px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 28px -14px rgba(0,0,0,.45);font-size:.88rem;line-height:1.35;animation:lapsein .24s var(--ease-out,ease-out) both}
+.lapse.out{opacity:0;transition:opacity .28s}
+.lapse .lp-h{display:block;font-size:.78rem;color:var(--ink-2);margin-bottom:.2rem}.lapse .lp-h b{font-family:var(--mono);color:var(--ink)}
+.lapse ul{margin:0;padding:0;list-style:none;display:grid;gap:.15rem}
+.lapse li{display:flex;gap:.45rem;align-items:baseline}.lapse li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--teal);transform:translateY(-1px)}
+.lapse li.lp-late::before{background:var(--red)}.lapse li.lp-call::before{background:#F2C12E}.lapse li.lp-due::before{background:var(--amber)}
+@keyframes lapsein{from{opacity:0;transform:translate(-50%,-6px)}}
+@media (prefers-reduced-motion:reduce){.lapse{animation:none}.lapse.out{transition:none}}
+:root[data-motion="reduced"] .lapse{animation:none}
+/* A PRN reassessment due in that room: a sticky note on the door. */
+.door-note.late rect{animation:notepulse 1.6s ease-in-out infinite}
+@keyframes notepulse{50%{opacity:.72}}
+@media (prefers-reduced-motion:reduce){.door-note.late rect{animation:none}}
+:root[data-motion="reduced"] .door-note.late rect,:root[data-lite] .door-note.late rect{animation:none}
+/* A line flagged in report whose time is close (a soft pulse) or just passed (amber). */
+.chip.pin-near{background:var(--amber-bg);border-color:transparent;color:var(--amber);animation:pinpulse 2.4s ease-in-out infinite}
+.chip.pin-past{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.ro-fl li.pin-near{background:var(--amber-bg);border-radius:8px;animation:pinpulse 2.4s ease-in-out infinite}
+.ro-fl li.pin-past{background:var(--amber-bg);border-radius:8px;box-shadow:inset 3px 0 0 var(--amber)}
+@keyframes pinpulse{50%{opacity:.7}}
+@media (prefers-reduced-motion:reduce){.chip.pin-near,.ro-fl li.pin-near{animation:none}}
+:root[data-motion="reduced"] .chip.pin-near,:root[data-motion="reduced"] .ro-fl li.pin-near,:root[data-lite] .chip.pin-near,:root[data-lite] .ro-fl li.pin-near{animation:none}
+/* Debrief to drill. */
+.deb-drill{margin:1.2rem 0 .4rem}
+.deb-drill h2{font-size:1.05rem;margin:0 0 .5rem}
+.dd-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.6rem}
+.dd-go{display:flex;align-items:center;gap:.7rem;justify-content:flex-start;text-align:left;min-height:56px;padding:.55rem .8rem;border-radius:16px;background:var(--paper);box-shadow:0 3px 0 color-mix(in srgb,var(--k,var(--teal)) 45%,var(--line)),inset 0 0 0 1.5px color-mix(in srgb,var(--k,var(--teal)) 55%,transparent)}
+.dd-go .dd-k{flex:none;font-family:var(--sign);font-weight:700;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--paper);background:var(--k,var(--teal));padding:.3em .65em .26em;border-radius:999px;white-space:nowrap}
+.dd-go .dd-t{flex:1;display:flex;flex-direction:column;min-width:0}.dd-go .dd-t small{color:var(--ink-2);font-weight:500}
+.dd-go>span:last-child{font-size:1.3rem;color:var(--ink-2)}
+/* Alerts over chart: acute bedside triggers (a falling SpO₂, an overdue PRN check, an urgent call) get colour and
+   motion; the EHR chrome stays calm and grey. Pulses animate opacity only (docs/ARCHITECTURE.md). */
+.vstrip div.alarm,.vmini span.alarm{position:relative;background:var(--red-bg);border-radius:8px}
+.vstrip div.alarm b,.vmini span.alarm{color:var(--red)}
+.vstrip div.alarm::after,.vmini span.alarm::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);animation:acute 1.2s ease-in-out infinite}
+.vmini span.alarm{padding:0 .9rem 0 .35rem}.vmini span.alarm::after{top:50%;margin-top:-4px;right:3px}
+.vstrip .fall{display:block;font-style:normal;font-weight:700;font-size:.68rem;color:var(--red);letter-spacing:0;text-transform:none}
+.vmini .fall{font-size:.8rem;margin-left:.1rem}
+.b-row.over.acute{border-left-width:5px;position:relative}
+.b-row.over.acute::after{content:"";position:absolute;left:-3px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:var(--red);animation:acute 1.2s ease-in-out infinite}
+.icon-btn.ringing{color:var(--red)}
+.icon-btn.ringing::after{content:"";position:absolute;inset:4px;border-radius:50%;border:2px solid var(--red);animation:ringout 1.4s ease-out infinite;pointer-events:none}
+.phone.ringing .phone-h{background:var(--red);color:#fff}.phone.ringing .ph-urg{color:#fff}
+.ph-urg{color:var(--red)}
+@keyframes acute{50%{opacity:.25}}
+@keyframes ringout{0%{opacity:.9;transform:scale(.8)}100%{opacity:0;transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){.vstrip div.alarm::after,.vmini span.alarm::after,.b-row.over.acute::after,.icon-btn.ringing::after{animation:none}}
+:root[data-motion="reduced"] .vstrip div.alarm::after,:root[data-motion="reduced"] .vmini span.alarm::after,:root[data-motion="reduced"] .b-row.over.acute::after,:root[data-motion="reduced"] .icon-btn.ringing::after,
+:root[data-lite] .vstrip div.alarm::after,:root[data-lite] .vmini span.alarm::after,:root[data-lite] .b-row.over.acute::after,:root[data-lite] .icon-btn.ringing::after{animation:none}
+/* The chart is the calm part of the screen: no accent colour in its chrome, so anything coloured is news. */
+.drawer .chart-tabs button[aria-selected="true"]{box-shadow:inset 0 3px 0 var(--ink-2)}
+/* Room atmosphere tokens: the alarm tint at the room's edges and the monitor's glow on a night shift. */
+:root{--scene-alarm:#C8261B;--scene-glow:#7FD8B0}
+:root[data-theme="dark"]{--scene-alarm:#FF5A4E;--scene-glow:#58D68D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--scene-alarm:#FF5A4E;--scene-glow:#58D68D}}
+/* The tint itself is static SVG (no repaint loop); the breathing is an HTML layer over the scene, opacity only. */
+.room-top.alarming::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 58%,color-mix(in srgb,var(--scene-alarm) 30%,transparent) 100%);opacity:0;will-change:opacity;animation:alarmtint 2.2s ease-in-out infinite}
+@keyframes alarmtint{50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.room-top.alarming::before{animation:none;opacity:.6}}
+:root[data-motion="reduced"] .room-top.alarming::before,:root[data-lite] .room-top.alarming::before{animation:none;opacity:.6}

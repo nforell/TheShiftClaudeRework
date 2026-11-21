@@ -681,6 +681,8 @@
 
   S.engine.registerCase({
     id: 'peds-5s-1', title: 'Evenings on 5 South', unit: '5 South, Pediatrics', unitShort: '5 South', level: 'Specialty: Peds', start: 15 * 60, length: 300, novaCredits: 3,
+    // Written to CA law; Settings → Psych law → General US swaps these phrases (rows in src/law.js).
+    law: { written: 'ca', terms: ['hours-36-ca'] },
     card: 'Five kids and their parents: RSV on high flow, a sickle cell crisis, a dosing error, bruises that don\'t fit the story, and asthma.',
     hero: { head: 'Evenings, 5 South. Five kids and their parents.', lede: 'Pediatrics, 15:00 to 20:00, ages four months to fifteen years. Normal vitals depend on age and every dose depends on weight, so check both. The parent in the chair often knows first when something is off.' },
     intro: { time: '14:58', place: '5 South, Pediatrics, Evening', cta: 'Take report', beats: ['Callum is giving report by the peds station.', 'Five patients, from four months to fifteen years old.', 'Check the weight behind every dose. Some of these kids can\'t tell you what\'s wrong.'] },

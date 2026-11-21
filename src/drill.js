@@ -1,12 +1,12 @@
 /* The Shift — drills. One patient, one moment, one decision.
    Short rounds (about two minutes) built from src/drills-content.js: Med Pass, Who's First, SBAR, De-escalation,
    and a daily round that mixes them. Every answer gets the patient's reaction, one line of why, and a pearl.
-   The UI module (ui.js) owns render(); this file owns ui.dr, its own handlers (all prefixed dr-) and its markup.
+   The UI (src/ui/) owns render(); this file owns ui.dr, its own handlers (all prefixed dr-) and its markup.
    Progress lives in the profile under prof.drills: { cards: { id: [times seen, last right 0/1, last seen ms] },
    days: ['YYYY-MM-DD', ...], rounds: { kind: n }, best: { kind: percent } }. */
 (function (S) {
   const D = () => S.drillData || { med: [], first: [], sbar: [], calm: [] };
-  let X = null;   // context from ui.js: { ui, esc, render, prof, saveProf, R, FX, TEL, ICON }
+  let X = null;   // context from src/ui/drills.js: { ui, esc, render, prof, saveProf, R, FX, TEL, ICON }
 
   const KINDS = {
     med: { name: 'Med Pass', verb: 'Give, hold, or call?', blurb: 'Check what matters, then decide.', n: 4, color: 'mp' },
@@ -182,6 +182,7 @@
     const r = X.ui.dr, segs = r.deck.map((c, i) => `<i class="${r.res[i] ? (r.res[i].ok ? 'on ok' : 'on no') : i < r.i ? 'on' : i === r.i ? 'now' : ''}"></i>`).join('');
     return `<header class="dr-top">
       <button class="icon-btn dr-x" data-act="dr-quit" aria-label="Quit this round">${X.ICON.close}</button>
+      <span class="dr-kind k-${KINDS[r.deck[r.i].kind].color}">${E(KINDS[r.deck[r.i].kind].name)}</span>
       <div class="dr-prog" role="progressbar" aria-label="${KINDS[r.kind].name}, card ${Math.min(r.i + 1, r.deck.length)} of ${r.deck.length}" aria-valuemin="0" aria-valuemax="${r.deck.length}" aria-valuenow="${r.i}">${segs}</div>
       <span class="dr-combo ${r.combo >= 2 ? 'hot' : ''} ${r.pop ? 'pop' : ''}" aria-live="polite">${X.ICON.flame}<b>${r.combo}</b><span class="sr"> in a row</span></span>
     </header>`;
@@ -202,7 +203,7 @@
   const age = (p) => typeof p.a === 'string' ? p.a : p.k || p.a < 18 ? `${p.a} yr${p.a === 1 ? '' : 's'}` : `${p.a}${p.x || ''}`;
   const notOf = (o) => (o && !o.ok && o.w ? { not: o } : null);
   const who = (p) => `${E(p.n)}<small>${E(age(p))}</small>`;
-  const chip = (kind) => { const r = X.ui.dr, c = r && !r.done && r.deck[r.i]; return `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>${c && isHard(c) ? '<span class="dr-lv" title="Every option here is plausible. Think it through.">NCLEX level</span>' : ''}`; };
+  const chip = (kind) => { const r = X.ui.dr, c = r && !r.done && r.deck[r.i]; if (!c) return `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>`; return `${isHard(c) ? '<span class="dr-lv" title="Every option here is plausible. Think it through.">NCLEX level</span>' : ''}`; };
 
   function vMed(k, st) {
     const key = face('dr-' + k.id, k.p), v = st.stage !== 'done' ? k.v : k.pick[st.pick].ok ? Object.assign({}, k.v, k.good) : Object.assign({}, k.v, k.bad);

@@ -1,6 +1,7 @@
 /* The Shift — accounts and cloud saves (Supabase).
-   Sign in with an emailed link, no passwords. Progress (profile) and the shift in progress (game) sync to one row
-   per player in public.saves (see supabase/schema.sql). Talks to Supabase's REST endpoints directly, so the game
+   Sign in with an emailed link, no passwords. Progress (profile, which holds every finished shift's summary) syncs
+   to public.saves; the shift in progress (game) syncs separately to public.shift_snapshots, debounced, so a long
+   shift's growing logs aren't re-sent with every action or alongside the profile (see supabase/schema.sql). Talks to Supabase's REST endpoints directly, so the game
    stays one file with no libraries. Without config.supabaseUrl and config.supabaseKey this module stays off and
    the game saves only on the device, as before. */
 (function (S) {
@@ -14,6 +15,7 @@
   let sess = get(SK);                 // { access_token, refresh_token, expires_at, user: { id, email } }
   let meta = get(SYNCK) || {};        // { at: last successful sync (ms), err }
   let dirty = false, timer = null, busy = null, linked = false;
+  let dirtyG = false, timerG = null, firstG = 0, pushingG = null, sentP = null, sentG = null, snapTable = true;
   const listeners = [];
   const changed = () => listeners.forEach((f) => { try { f(); } catch (e) { /* UI handles its own errors */ } });
 
@@ -23,7 +25,7 @@
     if (opts.auth && sess) h.Authorization = 'Bearer ' + sess.access_token;
     const r = await fetch(base() + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined, keepalive: !!opts.keepalive });
     const txt = await r.text(); let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = txt; }
-    if (!r.ok) { const err = new Error((data && (data.msg || data.message || data.error_description || data.error)) || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+    if (!r.ok) { const err = new Error((data && (data.msg || data.message || data.error_description || data.error)) || ('HTTP ' + r.status)); err.status = r.status; err.code = data && data.code; throw err; }
     return data;
   }
   function keep(t) {
@@ -113,7 +115,49 @@
   }
   const empty = (p) => !p || (!(p.runs || []).length && !(p.xp || 0) && !Object.keys((p.drills && p.drills.cards) || {}).length);
 
-  /* 3. Sync: pull this player's row, merge with this device, write both places. */
+  /* 3. Sync. Two rows per player, synced on their own clocks:
+       saves.profile          progress: scores, badges, every finished shift's summary. Pulled and merged on boot,
+                              sign-in and Sync now; pushed (merged with the cloud copy first) 20 s after it changes.
+       shift_snapshots.game   the shift in progress. Pushed, never merged: 45 s after the last action, at least every
+                              3 minutes while playing, and when the page is hidden. Unchanged content isn't re-sent.
+     Older databases without shift_snapshots keep the game in saves.game, as before. */
+  // A cheap fingerprint of what was last sent, so an unchanged profile or shift isn't uploaded again.
+  const sig = (x) => { const t = JSON.stringify(x === undefined ? null : x); let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return t.length + ':' + h; };
+  const missingTable = (e) => e && (e.status === 404 || e.code === 'PGRST205' || e.code === '42P01');
+  const live = (g) => (g && !g.ended ? g : null);
+  async function pullGame(uid, row) {
+    let snap = null;
+    if (snapTable) {
+      try { const r = await call('/rest/v1/shift_snapshots?select=game,saved_at&user_id=eq.' + encodeURIComponent(uid), { auth: true }); snap = r && r[0] ? r[0].game : null; }
+      catch (e) { if (missingTable(e)) snapTable = false; else throw e; }
+    }
+    // A shift saved by an older version of the game sits in saves.game; the newer of the two wins.
+    const old = row && row.game, a = live(snap), b = live(old);
+    return !a ? b : !b ? a : (b.savedAt || 0) > (a.savedAt || 0) ? b : a;
+  }
+  async function pushGame(why) {
+    if (!on() || !sess || !sess.user) return false;
+    if (pushingG) return pushingG;
+    pushingG = (async () => {
+      try {
+        if (!(await fresh())) return false;
+        const uid = sess.user.id, game = live(E.store.load()), h = sig(game);
+        if (h === sentG) { dirtyG = false; firstG = 0; return true; }
+        const keepalive = why === 'leaving';
+        if (snapTable) {
+          try {
+            await call('/rest/v1/shift_snapshots?on_conflict=user_id', { method: 'POST', auth: true, keepalive, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+              body: { user_id: uid, game, case_id: game ? game.caseId : null, game_min: game ? Math.round(game.t || 0) : null, saved_at: new Date((game && game.savedAt) || Date.now()).toISOString() } });
+          } catch (e) { if (!missingTable(e)) throw e; snapTable = false; }
+        }
+        if (!snapTable) await call('/rest/v1/saves?on_conflict=user_id', { method: 'POST', auth: true, keepalive, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: { user_id: uid, game, updated_at: new Date().toISOString() } });
+        sentG = h; dirtyG = false; firstG = 0;
+        return true;
+      } catch (e) { meta = Object.assign({}, meta, { err: String(e.message || e).slice(0, 140) }); put(SYNCK, meta); return false; }
+      finally { pushingG = null; }
+    })();
+    return pushingG;
+  }
   async function sync(why) {
     if (!on() || !sess || !sess.user) return false;
     if (busy) return busy;
@@ -124,12 +168,21 @@
         const rows = await call('/rest/v1/saves?select=profile,game,updated_at&user_id=eq.' + encodeURIComponent(uid), { auth: true });
         const remote = rows && rows[0], local = E.store.profile();
         const merged = remote && !empty(remote.profile) ? (empty(local) ? Object.assign({}, remote.profile, { settings: local.settings }) : mergeProfile(local, remote.profile)) : local;
-        let game = E.store.load();
-        const rg = remote && remote.game;
-        if (rg && !rg.ended && (!game || (rg.savedAt || 0) > (game.savedAt || 0))) { game = rg; E.store.save(rg); }
-        E.store.saveProfile(merged);
-        await call('/rest/v1/saves?on_conflict=user_id', { method: 'POST', auth: true, keepalive: why === 'leaving', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: { user_id: uid, profile: merged, game: game && !game.ended ? game : null, updated_at: new Date().toISOString() } });
+        // The shift in progress: pulled on boot, sign-in and Sync now, never on the automatic profile push.
+        if (why !== 'auto' && why !== 'leaving') {
+          const rg = await pullGame(uid, remote), game = E.store.load();
+          if (rg && (!game || (rg.savedAt || 0) > (game.savedAt || 0))) { saveQuiet(rg); sentG = sig(rg); }
+        }
+        saveProfileQuiet(merged);
+        const hp = sig(merged);
+        if (hp !== sentP || !remote) {
+          const body = { user_id: uid, profile: merged, updated_at: new Date().toISOString() };
+          if (!snapTable) body.game = live(E.store.load());   // older database: the shift rides along, as before
+          await call('/rest/v1/saves?on_conflict=user_id', { method: 'POST', auth: true, keepalive: why === 'leaving', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body });
+          sentP = hp;
+        }
         dirty = false; meta = { at: Date.now() }; put(SYNCK, meta);
+        if (dirtyG || (why !== 'auto' && why !== 'leaving')) await pushGame(why);
         await flush().catch(() => {});
         await checkOwns().catch(() => {});
         if (why === 'signin') TEL.track('account_synced', { had_cloud: !!(remote && !empty(remote.profile)), had_local: !empty(local) });
@@ -228,17 +281,28 @@
   }
   const owns = (product) => { const o = sess ? get(OWNK) || {} : {}; return o[product] || null; };
 
-  function later() { dirty = true; if (!timer && sess) timer = setTimeout(() => { timer = null; if (dirty) sync('auto'); }, 20000); }
-
-  /* Every local save also schedules a cloud save. The shift's own timestamp settles which device's shift is newer. */
+  /* Every local save schedules a cloud save of just what changed. Profile: 20 s after the first change. The shift in
+     progress: a trailing debounce (45 s after the last action), capped so a long run of actions still uploads at
+     least every 3 minutes. The shift's own timestamp settles which device's shift is newer. */
+  const PROF_WAIT = 20000, GAME_WAIT = 45000, GAME_MAX = 180000;
+  function later() { dirty = true; if (!timer && sess) timer = setTimeout(() => { timer = null; if (dirty) sync('auto'); }, PROF_WAIT); }
+  function laterGame() {
+    dirtyG = true; if (!sess) return;
+    const now = Date.now(); if (!firstG) firstG = now;
+    clearTimeout(timerG); timerG = setTimeout(() => { timerG = null; if (dirtyG) pushGame('auto'); }, Math.max(0, Math.min(GAME_WAIT, firstG + GAME_MAX - now)));
+  }
+  let saveQuiet = (g) => { if (E && E.store) E.store.save(g); }, saveProfileQuiet = (p) => { if (E && E.store) E.store.saveProfile(p); };
   if (E && E.store) {
     const st = E.store, s0 = st.save, p0 = st.saveProfile, c0 = st.clear;
-    st.save = (g) => { if (g) g.savedAt = Date.now(); s0(g); later(); };
+    st.save = (g) => { if (g) g.savedAt = Date.now(); s0(g); laterGame(); };
     st.saveProfile = (p) => { p0(p); later(); };
-    st.clear = () => { c0(); later(); };
+    st.clear = () => { c0(); laterGame(); };
+    // What sync pulls down is written locally without scheduling another upload of the same thing.
+    saveQuiet = (g) => s0(g); saveProfileQuiet = (p) => p0(p);
   }
-  addEventListener('pagehide', () => { if (dirty && sess) sync('leaving'); });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty && sess) sync('leaving'); });
+  function leaving() { if (!sess) return; if (dirty) sync('leaving'); else if (dirtyG) { clearTimeout(timerG); timerG = null; pushGame('leaving'); } }
+  addEventListener('pagehide', leaving);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') leaving(); });
 
   /* On load: finish a sign-in from the emailed link, or refresh an existing session. Resolves when the first sync
      is done, so the UI can show merged progress. */
@@ -254,7 +318,7 @@
     user: () => (sess && sess.user) || null,
     linked: () => linked,   // this page load came from the emailed link
     status: () => (!on() ? null : !sess ? { state: 'out', err: meta.err || null } : { state: 'in', email: sess.user && sess.user.email, at: meta.at || null, err: meta.err || null, busy: !!busy }),
-    recordRun, recordNgn, recordDrill, flush, pending: () => { const o = outbox(); return o.results.length + o.ngn.length + o.drills.length; },
+    recordRun, recordNgn, recordDrill, flush, pushGame: () => pushGame('manual'), _sync: () => ({ dirty, dirtyG, snapTable, waits: { PROF_WAIT, GAME_WAIT, GAME_MAX } }), pending: () => { const o = outbox(); return o.results.length + o.ngn.length + o.drills.length; },
     myClasses, join, leave, createClass, teaching, roster, removeMember, classResults, classNgn, classDrills,
     owns, checkOwns,
     _merge: mergeProfile,

@@ -2,8 +2,8 @@
    shift. Every chapter is something the player does: commit actions and watch the clock, highlight report, drag
    patients into order, answer the phone, hold a medication, build an SBAR call, delegate, and read a debrief.
    The wall clock is the throughline: it only moves by what each action costs.
-   ui.js owns rendering and routing: it calls view(o) for the HTML, act(o, data) on taps (data-act="or"),
-   and sorted(...) when the practice board is dragged. State lives in ui.or; ui.js keeps a copy so a reload resumes it. */
+   src/ui/ owns rendering and routing: it calls view(o) for the HTML, act(o, data) on taps (data-act="or"),
+   and sorted(...) when the practice board is dragged. State lives in ui.or; src/ui/ keeps a copy so a reload resumes it. */
 (function (S) {
   const R = S.rig, ART = S.art, FX = S.fx || { play() {} };
   const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

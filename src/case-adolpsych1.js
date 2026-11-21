@@ -769,6 +769,8 @@
 
   S.engine.registerCase({
     id: 'psych-4n-1', title: 'Evenings on 4 North', unit: '4 North, Adolescent Psychiatry', unitShort: '4 North', level: 'Specialty: Teen psych', start: 15 * 60, length: 300, novaCredits: 3,
+    // Written to CA law; Settings → Psych law → General US swaps these phrases (rows in src/law.js).
+    law: { written: 'ca', terms: ['wic-5585', '5585', 'hours-36-ca'] },
     card: 'Adolescent unit until 20:00: refeeding labs, self-harm precautions, a dystonic reaction, a disclosure, and an ED admission.',
     hero: { head: 'Evenings, 4 North. Four teenagers and an admission from the ED.', lede: 'Adolescent psych, 15:00 to 20:00. Two of tonight\'s medical problems will look like behavior at first. Teenagers talk to each other before they talk to staff, so listen to them.' },
     intro: { time: '14:58', place: '4 North, Adolescent Psychiatry', cta: 'Take report', beats: ['Ben is giving report in the med room.', 'Four patients until eight, plus an admission coming up from the ED.', 'Be wary of "dramatic" and "attention-seeking" in report. Go look for yourself.'] },

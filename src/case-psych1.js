@@ -986,6 +986,8 @@
 
   S.engine.registerCase({
     id: 'psych-3e-1', title: 'Days on 3 East', unit: '3 East, Adult Acute Psychiatry', unitShort: '3 East', level: 'Specialty: Psych', start: 7 * 60, length: 300, novaCredits: 3,
+    // Written to CA law; Settings → Psych law → General US swaps these phrases (rows in src/law.js).
+    law: { written: 'ca', terms: ['wic-5150', 'wic-5250', 'a-5150', '5150', 'a-5250', 'the-5250', '5250-start', '5250', 'hearing-day', 'riese-petition', 'riese-paren', 'lps', 'illegal-ca', 'privacy-ca'] },
     card: 'Adult locked unit, five patients until noon: mania, lithium, a med refusal, compulsive water drinking, and a man who is suddenly calm.',
     hero: { head: 'Days, 3 East. Five patients on a locked adult unit.', lede: 'Adult acute psych, 07:00 to noon. No telemetry and no pumps. Most of your assessment is talking to people, including asking the questions that feel awkward to ask.' },
     intro: { time: '06:58', place: '3 East, Adult Acute Psychiatry', cta: 'Take report', beats: ['Priya is giving report in the nurses\' station, behind the glass.', 'Five patients until noon. No monitors here; you assess by talking.', 'One man seems a lot better than he did yesterday. Find out why.'] },
