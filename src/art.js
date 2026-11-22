@@ -169,7 +169,7 @@
         <rect class="door-hi" x="${x}" y="68" width="${dw}" height="222" rx="2" fill="#fff" opacity="0"/>
       </g>`;
     }).join('');
-    const warm = sky(s.t)[0], kc = S.engine.getCase(s.caseId), unit = (kc && kc.unitShort) || '4 West', rn = doors.map((o) => o.room);
+    const warm = sky(s.t)[0], kc = s.unit ? null : S.engine.getCase(s.caseId), unit = s.unit || (kc && kc.unitShort) || '4 West', rn = doors.map((o) => o.room);
     return `<svg class="hall" viewBox="0 0 1060 300" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Hallway. Rooms ${rn[0]} to ${rn[rn.length - 1]}.">
       <defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="-400" x2="530" y1="0" y2="0"><stop offset="0" stop-color="${warm}" stop-opacity=".45"/><stop offset="1" stop-color="${warm}" stop-opacity="0"/></linearGradient></defs>
       <rect x="-2000" width="5060" height="300" fill="var(--scene-wall)"/><rect x="-2000" y="290" width="5060" height="10" fill="var(--scene-floor)"/>

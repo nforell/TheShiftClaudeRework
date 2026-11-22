@@ -10,7 +10,7 @@ The deployed site (Vercel, serving `dist/`) has a beta landing page at `/` (sour
 ## Keep it simple: the front door
 The core thesis: **one patient, one moment, one decision.** The home screen is one big Play button, four drills, and the deeper modes. A new player is one tap from their first decision.
 
-- **Play** runs the daily round: five patients, one of each kind of decision below, about three minutes.
+- **Play** runs the quick round: five patients, one of each kind of decision below, about three minutes.
 - **Drills** (`src/drill.js`; content in `src/drills-content.js`, `src/drills-more-*.js` and the NCLEX-level `src/drills-nclex-*.js`), each a two-minute round with the patient's face reacting to what you chose, one line of why, and a pearl to remember. 128 cards across med-surg, cardiac, ICU, ED, L&D, mother-baby, psych, peds and rehab:
   - **Med Pass**: what do you check first? The number comes back; then give, hold or call. 50 cards, and giving is right often enough that "hold" isn't a tell.
   - **Who's First**: four patients, one nurse, every one of them abnormal. 36 sets.
@@ -44,7 +44,9 @@ The core thesis: **one patient, one moment, one decision.** The home screen is o
 
 ## First time
 
-A brand-new player who taps Start gets an eight-step orientation first (`src/orient.js`): the clock, report, deciding who's first (drag and drop), the station and phone, a room and a medication decision, an SBAR call, delegating, and the debrief, each practiced with three demo patients. It's always available from **How it plays**.
+A brand-new player who taps Start on their first full shift (quick rounds first or not) gets an eight-step orientation (`src/orient.js`): the clock, report, deciding who's first (drag and drop), the station's Next card, patient list and phone, a room (Next here bar, the real dock's tabs, a medication decision), an SBAR call, delegating, and a debrief that leads with the decision that mattered most and the drill to practice, each with three demo patients on a practice unit. It's always available from **How it plays**. It wears the same daylight styling as the rest of the game; when the station, room or debrief change, change the matching chapter too.
+
+The landing page's screenshots (`site/assets/`, including `home.jpg` and `round.jpg`) come from the current build: `python3 build.py && python3 tools/screenshots.py && python3 build.py`. Rerun it after any visual or art change.
 
 ## Every shift
 

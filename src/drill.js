@@ -13,7 +13,7 @@
     first: { name: 'Who\'s First', verb: 'Four patients. One nurse.', blurb: 'Pick who you see first.', n: 5, color: 'wf' },
     sbar: { name: 'SBAR', verb: 'Make the call.', blurb: 'Build the call to the provider, line by line.', n: 2, color: 'sb' },
     calm: { name: 'De-escalation', verb: 'Talk them down.', blurb: 'Every word moves the room.', n: 2, color: 'de' },
-    mix: { name: 'Daily round', verb: 'One of everything.', blurb: 'A med, two priorities, a call, and a hard conversation.', n: 5, color: 'mix' },
+    mix: { name: 'Quick round', verb: 'One of everything.', blurb: 'A med, two priorities, a call, and a hard conversation.', n: 5, color: 'mix' },
     hard: { name: 'NCLEX-level round', verb: 'No gimmes.', blurb: 'Five of the hardest cards: every option is plausible.', n: 5, color: 'mix' },
   };
   const ORDER = ['med', 'first', 'sbar', 'calm'];
