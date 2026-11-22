@@ -119,7 +119,12 @@ root=pathlib.Path(__file__).parent; dist=root/'dist'
 import shutil
 # The landing page shares the game's config and telemetry, so a visit, a signup and the shifts played line up.
 tel='<script>'+minjs((src/'config.js').read_text()+'\n'+(src/'telemetry.js').read_text())+'</script>'
-(dist/'index.html').write_text((root/'site'/'index.html').read_text().replace('<!--TELEMETRY-->', tel))
+# Its playable card is a real Med Pass card (tools/teaser.js) drawn by the game's own character rig, so the patient on
+# the front door is the same reviewed card and the same face as in the drill.
+_tz = subprocess.run(['node', str(root/'tools'/'teaser.js')], capture_output=True)
+if _tz.returncode: raise SystemExit('teaser.js failed: ' + _tz.stderr.decode()[:2000])
+teaser = '<script>' + minjs('window.Shift = window.Shift || {}; window.Shift.teaser = ' + _tz.stdout.decode() + ';\n' + (src/'rig.js').read_text()) + '</script>'
+(dist/'index.html').write_text((root/'site'/'index.html').read_text().replace('<!--TELEMETRY-->', tel).replace('<!--TEASER-->', teaser))
 # Installable app: manifest, icons, and a service worker whose cache name follows the app version.
 import re
 ver=re.search(r"version: '([^']+)'", (src/'config.js').read_text()).group(1)

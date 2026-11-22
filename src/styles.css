@@ -156,6 +156,10 @@ svg.hall{display:block;width:100%;height:auto;max-height:230px}
 /* room */
 .room-top{position:relative;border-radius:var(--rc);overflow:hidden;box-shadow:var(--shadow);background:var(--scene-wall)}
 svg.scene{display:block;width:100%;height:auto;max-height:min(62vh,520px)}
+/* On a phone the room is a fixed 300px tall and sliced to its middle (x ~310 to ~720 at 320px wide), which cut the
+   bedside monitor (x 648 to 772) and its numbers off at the right edge. Pull it in toward the bed, a little smaller,
+   so the heart rate and SpO2 stay on screen and clear of the patient's head. */
+@media (max-width:640px){svg.scene .clue[data-id="monitor"]{transform-box:view-box;transform-origin:648px 112px;transform:translate(-36px,0) scale(.8)}}
 @media (max-width:640px){svg.scene{height:300px;max-height:none}.toast:not(:last-child){display:none}}
 .enter{animation:enter .45s cubic-bezier(.2,.7,.2,1)}
 @keyframes enter{from{opacity:0;transform:scale(1.035)}}
@@ -1953,7 +1957,10 @@ button.mark::after{content:'';position:absolute;inset:-10px -4px}
   .sb[data-side="down"] .sb-tx{-webkit-line-clamp:3}
   .sb[data-side="below"]{left:10px;right:10px;max-width:none}
   .sb[data-side="below"] .sb-tx{-webkit-line-clamp:3}
-  .sb[data-side="fam"],.sb[data-side="famlo"]{right:10px;max-width:60%}
+  /* The family's button sits top-left, over the window: top-right is where the monitor and oxygen flowmeter are,
+     and both are clues. The name wraps rather than being cut to "Talk with Raf…". */
+  .sb[data-side="fam"],.sb[data-side="famlo"]{left:10px;right:auto;max-width:min(48%,200px)}
+  .sb.fam .sb-go span{white-space:normal;overflow:visible;line-height:1.2}
   .sb[data-side="up"]{position:relative;margin:14px 10px 10px;max-width:none}
   .room-top.talking .nameplate{display:none}
   .room-top.talking::after{bottom:auto;height:300px}

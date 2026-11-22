@@ -46,7 +46,7 @@ The core thesis: **one patient, one moment, one decision.** The home screen is o
 
 A brand-new player who taps Start on their first full shift (quick rounds first or not) gets an eight-step orientation (`src/orient.js`): the clock, report, deciding who's first (drag and drop), the station's Next card, patient list and phone, a room (Next here bar, the real dock's tabs, a medication decision), an SBAR call, delegating, and a debrief that leads with the decision that mattered most and the drill to practice, each with three demo patients on a practice unit. It's always available from **How it plays**. It wears the same daylight styling as the rest of the game; when the station, room or debrief change, change the matching chapter too.
 
-The landing page's screenshots (`site/assets/`, including `home.jpg` and `round.jpg`) come from the current build: `python3 build.py && python3 tools/screenshots.py && python3 build.py`. Rerun it after any visual or art change.
+The landing page is one screen that plays: its card is a real Med Pass card (`tools/teaser.js`, default `mp-metoprolol`) drawn by the game's own character rig, so a visitor makes a decision, sees the patient react and reads why before scrolling. Below it, one band (the four drills, full shifts with `room.jpg`, NCLEX practice) and the signup. Keep it that short: about three phone screens. Its screenshots (`site/assets/`; `drill-phone.jpg` is the card's no-JavaScript fallback) come from the current build: `python3 build.py && python3 tools/screenshots.py && python3 build.py`. Rerun it after any visual or art change.
 
 ## Every shift
 
