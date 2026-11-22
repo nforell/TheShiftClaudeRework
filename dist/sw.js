@@ -1,7 +1,7 @@
 /* The Shift — service worker. Makes the game installable and playable offline.
    Network first for pages, so beta players always get the newest build when they're online;
    the cached copy is only used when the network fails. Never touches analytics requests. */
-const VERSION = '0.7.0-beta-26643a6';
+const VERSION = '0.7.0-beta-cb7043c';
 const CACHE = 'theshift-' + VERSION;
 const CORE = ['/play/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 

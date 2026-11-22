@@ -88,6 +88,9 @@ section{padding:clamp(3.5rem,8vw,6rem) 0 0}
 .d-mp{--k:#22706B}.d-wf{--k:#B4531A}.d-sb{--k:#2F5F9E}.d-de{--k:#6A4690}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .d-mp{--k:#6CC3B9}:root:not([data-theme="light"]) .d-wf{--k:#F0A06A}:root:not([data-theme="light"]) .d-sb{--k:#8DB4EC}:root:not([data-theme="light"]) .d-de{--k:#C0A2E6}}
 @media (max-width:760px){.drills{grid-template-columns:minmax(0,1fr)}}
+.two .shot img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}
+.round-fig{margin:2rem 0 0;max-width:720px}
+.round-fig .shot img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}
 .loop{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:2rem 0 0;padding:0;list-style:none;counter-reset:l}
 .loop li{border-top:2px solid var(--ink);padding-top:.7rem;color:var(--ink-2);counter-increment:l}
 .loop li::before{content:counter(l);display:block;font-family:var(--sign);font-size:1.6rem;font-weight:600;color:var(--ink);line-height:1}
@@ -127,6 +130,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
   <div class="wrap">
     <a class="mark" href="/">The Shift</a><span class="beta">beta</span>
     <nav>
+      <a class="lnk" href="#start">How it works</a>
       <a class="lnk" href="#drills">Drills</a>
       <a class="lnk" href="#how">Full shifts</a>
       <a class="lnk" href="#nick">Who made this</a>
@@ -140,7 +144,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     <div>
       <h1>A patient needs you. What do you do?</h1>
       <p class="lede">Real decisions from the floor, one at a time. Check what matters before a med pass, decide who you see first, make the call to the provider, talk someone down. The patient reacts to what you choose, and every answer is explained.</p>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Start playing</a><p class="meta">Two ways to play: a three-minute round, or a <a href="#how">full shift</a> from report to debrief. Free, in your browser, no account needed.</p></div>
+      <div class="cta"><a class="btn btn-primary" href="/play/">Start playing</a><p class="meta">Two ways to play: a three-minute <a href="#drills">quick round</a>, or a <a href="#how">full shift</a> from report to debrief. Free, in your browser, no account needed.</p></div>
     </div>
     <figure class="hero-fig">
       <div class="phone"><img src="/assets/drill-phone.jpg" width="780" height="1560" alt="A Med Pass drill on a phone: Samuel Ortiz is due for metoprolol. You checked his apical pulse and blood pressure: 52 and 94/58. Give, hold, or call?"></div>
@@ -148,6 +152,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
     </figure>
   </div>
 
+  <section id="start">
+    <div class="wrap two">
+      <div class="sec-h"><h2>Open it and pick your assignment</h2><p>The first screen is the unit whiteboard with two choices. A <b>quick round</b> is five patients and one decision each: a med, two who's-firsts, a call and a hard conversation, about three minutes. A <b>full shift</b> is a whole unit from report to debrief. Or practice one skill on its own.</p></div>
+      <div class="shot"><img src="/assets/home.jpg" width="1600" height="1000" loading="lazy" alt="The home screen: a whiteboard with Quick round and Full shift side by side."></div>
+    </div>
+  </section>
   <section id="nick">
     <div class="wrap">
       <div class="note">
@@ -175,22 +185,23 @@ footer .wrap{display:flex;justify-content:space-between;gap:1rem 2rem;flex-wrap:
         <article class="drill d-de"><h3>De-escalation <small>22 scenarios</small></h3><p>Every line you choose moves the agitation meter and the patient's face. Waiting rooms, psych holds, dementia, withdrawal, a doctor yelling in the hall.</p><div class="shot"><img src="/assets/drill-calm.jpg" width="1600" height="1000" loading="lazy" alt="A de-escalation drill: an agitation meter falling after a calm first line."></div></article>
       </div>
       <ol class="loop">
-        <li><b>Play a daily round.</b> One of each drill, five patients, about three minutes.</li>
-        <li><b>Fix what you missed.</b> Retry the ones you got wrong right away, or let them come back later.</li>
-        <li><b>Then work a shift.</b> Put it all together on a whole unit, from report to debrief.</li>
+        <li><b>Play a quick round.</b> Five patients, one decision each, about three minutes.</li>
+        <li><b>Fix what you missed.</b> See what happened to each patient, retry the misses right away, or let them come back later.</li>
+        <li><b>Then work a shift.</b> Put it all together on a whole unit. The debrief points you back to the drill for whatever the shift caught you out on.</li>
       </ol>
-      <div class="cta"><a class="btn btn-primary" href="/play/">Play today's round</a></div>
+      <figure class="round-fig"><div class="shot"><img src="/assets/round.jpg" width="1600" height="1000" loading="lazy" alt="The end of a quick round: three patients did well; Samuel Ortiz got metoprolol with a pulse of 52 and greyed out on the commode an hour later."></div><figcaption class="cap"><b>After a round.</b> What happened to each patient, right or wrong.</figcaption></figure>
+      <div class="cta"><a class="btn btn-primary" href="/play/">Play a quick round</a></div>
     </div>
   </section>
 
   <section id="how">
     <div class="wrap">
-      <div class="sec-h"><h2>Then put it together: a full shift</h2><p>Four or five patients until handoff, about twenty minutes. A Next card always shows what to do next and walks you there. The clock only moves when you act. Every assessment, med pass and phone call costs minutes, and your other patients keep changing while you're busy.</p></div>
+      <div class="sec-h"><h2>Then put it together: a full shift</h2><p>Four or five patients until handoff, about twenty minutes. A Next card always shows what to do next and walks you there. The clock only moves when you act. Every assessment, med pass and phone call costs minutes, and your other patients keep changing while you're busy; a short note tells you what came due while your hands were full. Your first shift opens with a five-minute walkthrough on a practice unit, and you can skip it.</p></div>
       <div class="tl">
         <div class="tl-row"><div class="t">06:58<small>Report</small></div><div><h3>Take report</h3><p>The off-going nurse talks through every patient. Flag what matters onto your brain sheet. Some of what you hear is noise.</p></div><div class="shot"><img src="/assets/report.jpg" width="1600" height="1000" loading="lazy" alt="Shift report with flagged lines written onto a brain sheet."></div></div>
         <div class="tl-row"><div class="t">07:15<small>Prioritize</small></div><div><h3>Decide who's first</h3><p>Rank your patients before you move. Nova, the charge nurse, compares your order with hers and tells you why at the end.</p></div><div class="shot"><img src="/assets/triage.jpg" width="1600" height="1000" loading="lazy" alt="Ranking patients from first to last."></div></div>
-        <div class="tl-row"><div class="t">07:20<small>to the end of shift</small></div><div><h3>Work the hall</h3><p>Assess, give or hold meds, delegate to your aide, talk with patients and families, and call the provider with SBAR. Look around the room; the clues are in it.</p></div><div class="shot"><img src="/assets/psych.jpg" width="1600" height="1000" loading="lazy" alt="A room on the psych unit."></div></div>
-        <div class="tl-row"><div class="t">After<small>Debrief</small></div><div><h3>See what happened</h3><p>An outcome for every patient, the decision that mattered most, and each call you made with the reasoning behind it, scored by skill and by NCLEX clinical judgment step.</p></div><div class="shot"><img src="/assets/debrief.jpg" width="1600" height="1000" loading="lazy" alt="The debrief: score, outcomes and the decision that mattered most."></div></div>
+        <div class="tl-row"><div class="t">07:20<small>to the end of shift</small></div><div><h3>Work the hall</h3><p>Assess, give or hold meds, delegate to your aide, talk with patients and families, and call the provider with SBAR. Look around the room; the clues are in it. Falling oxygen and alarms get colour and motion; the chart stays calm.</p></div><div class="shot"><img src="/assets/psych.jpg" width="1600" height="1000" loading="lazy" alt="A room on the psych unit."></div></div>
+        <div class="tl-row"><div class="t">After<small>Debrief</small></div><div><h3>See what happened</h3><p>The decision that mattered most, an outcome for every patient, and each call you made with the reasoning behind it, scored by skill and by NCLEX clinical judgment step. Then a drill for what you missed, one tap away.</p></div><div class="shot"><img src="/assets/debrief.jpg" width="1600" height="1000" loading="lazy" alt="The debrief: score, outcomes and the decision that mattered most."></div></div>
       </div>
     </div>
   </section>

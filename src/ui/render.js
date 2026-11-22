@@ -26,6 +26,8 @@ export function render(scrollTop) {
   const T0 = performance.now();
   if (inGame() && G.caseId !== G.s.caseId && E.caseMeta(G.s.caseId)) { G.caseId = G.s.caseId; E.useCase(G.caseId); }
   applySettings();
+  // The time-lapse note belongs to the floor: never let it ride over the debrief, home or a drill.
+  if (!G.s || G.s.ended || (ui.view !== 'station' && ui.view !== 'room')) document.querySelectorAll('.lapse').forEach((n) => n.remove());
   const root = $('#app');
   const focusKey = document.activeElement && document.activeElement.dataset ? keyOf(document.activeElement) : null;
   const y = window.scrollY;

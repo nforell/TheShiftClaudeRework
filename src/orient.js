@@ -20,6 +20,7 @@
   };
   Object.keys(PT).forEach((k) => R.define(k, PT[k].look));
   const bust = (k) => R.bust(k, null, 'portrait');
+  const DRILL_ICON = '<svg class="or-dri" viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="11" width="22" height="10" rx="5" transform="rotate(-35 16 16)"/><path d="M12.2 10.6l7.6 10.8"/></svg>';
   const icon = (k, v) => R.icon(k, v);
 
   /* ---------- chapters ---------- */
@@ -28,7 +29,7 @@
     { id: 'clock', t: 6 * 60 + 58, step: 'How time works', title: 'You\'re the nurse.' },
     { id: 'report', t: 7 * 60, step: 'Take report', title: 'Take report.' },
     { id: 'rank', t: 7 * 60 + 14, step: 'Decide who\'s first', title: 'Decide who\'s first.' },
-    { id: 'station', t: 7 * 60 + 15, step: 'The station and the phone', title: 'Home base.' },
+    { id: 'station', t: 7 * 60 + 15, step: 'Follow the Next card', title: 'Home base.' },
     { id: 'room', t: 7 * 60 + 20, step: 'In the room', title: 'In the room.' },
     { id: 'sbar', t: 7 * 60 + 41, step: 'Call the provider', title: 'Call for help.' },
     { id: 'team', t: 8 * 60 + 5, step: 'Work with your aide', title: 'You\'re not alone.' },
@@ -37,7 +38,7 @@
 
   function fresh(start) {
     return { i: 0, start: !!start, seen: [0], extra: 0, log: [], hl: [], hlChecked: false, order: ['or-c', 'or-b', 'or-a'], rankChecked: false, dragged: false,
-      phone: {}, tab: 'assess', apical: false, med: null, sbar: { picked: [], req: null, sent: false }, deleg: {}, delegChecked: false, deb: false };
+      phone: {}, tab: 'todo', apical: false, med: null, sbar: { picked: [], req: null, sent: false }, deleg: {}, delegChecked: false, deb: false };
   }
   const clockOf = (o) => CH[o.i].t + (o.i === 0 ? o.extra : 0) + (o.i === 4 ? o.roomMin || 0 : 0);
 
@@ -83,11 +84,14 @@
     { id: 'aide', from: 'Luis (aide)', who: 'luis', text: '103 wants to walk to the bathroom. Okay to help him?', opts: [{ id: 'yes', t: 'Yes, he\'s stable. Thanks, Luis.', v: 2, fb: 'Walking a stable patient is a perfect aide task. You keep the assessments.' }, { id: 'wait', t: 'No, wait for me', v: 0, fb: 'He\'d have waited for nothing. Hand off what\'s safe to hand off.' }] },
   ];
   const TABS = {
-    assess: { label: 'Assess', text: 'Vital signs and a body-system check, one system at a time. Each one shows its cost in minutes.', rows: [['Vital signs', 4], ['Heart and lungs', 2], ['Neuro', 2], ['Pain', 1]] },
+    todo: { label: 'To do', text: 'This patient\'s tasks, overdue first. Tap one and it opens the right tab with the action ready.', rows: [['Apical pulse before digoxin', 1], ['Shift assessment', 12], ['Daily weight', 2]] },
+    assess: { label: 'Assess', text: 'Vital signs and a full head-to-toe lead. Single body systems are folded underneath for a quick recheck. Each shows its cost in minutes.', rows: [['Vital signs', 4], ['Head-to-toe', 12], ['Recheck one system', 2]] },
     care: { label: 'Care', text: 'Things you do with your hands: reposition, start an IV, check a site, apply oxygen. Some only appear when they\'re needed.', rows: [['Reposition and pad his heels', 3], ['Count an apical pulse', 1], ['Daily weight', 2]] },
-    meds: { label: 'Meds', text: 'The medication record. Every dose is a decision: give it, or hold it with a reason. Read the checks first.', rows: [['Digoxin 0.125 mg PO, due 09:00', 5], ['Apixaban 5 mg PO, due 09:00', 5]] },
-    talk: { label: 'Talk', text: 'Talk with the patient and family, call the provider, or ask for help. Patients tell you things the chart doesn\'t.', rows: [['Talk with Mr. Ostrowski', 3], ['Call Dr. Chen (SBAR)', 6], ['Call a rapid response', 3]] },
+    meds: { label: 'MAR', text: 'The medication record. Every dose is a decision: give it, or hold it with a reason. Read the checks first.', rows: [['Digoxin 0.125 mg PO, due 09:00', 5], ['Apixaban 5 mg PO, due 09:00', 5]] },
+    talk: { label: 'Talk & call', text: 'Talk with the patient and family, call the provider, or ask for help. Patients tell you things the chart doesn\'t.', rows: [['Talk with Mr. Ostrowski', 3], ['Call Dr. Chen (SBAR)', 6], ['Call a rapid response', 3]] },
   };
+  // The station's Next card and patient list, as the real station shows them.
+  const NEXT = { 'or-a': ['Now', 'Vital signs and a look at her'], 'or-b': ['Next, 09:00', 'Apical pulse, then digoxin'], 'or-c': ['Next, 10:00', 'Pain check'] };
   const SB = [
     { id: 'conf', t: 'Two black, tarry stools overnight', key: true },
     { id: 'vs', t: 'HR 112, up from 88 at midnight; BP 98/58', key: true },
@@ -135,19 +139,23 @@
       </div>`;
     }
     if (c.id === 'station') {
-      const hall = ART.hallway({ t: 15, caseId: 'medsurg-4w-1' }, [
+      const hall = ART.hallway({ t: 15, unit: 'Practice' }, [
         { pid: 'or-a', room: '101', name: 'Mrs. Alvarez', light: false }, { pid: 'or-b', room: '103', name: 'Mr. Ostrowski', light: true }, { pid: 'or-c', room: '105', name: 'Ms. Abernathy', light: false }, { pid: 'x', room: '107', pending: true, eta: '09:30', label: 'Admission' },
       ]).replace(/data-act="goto"/g, 'data-act="or" data-do="door"');
       return `<div class="or-scene or-s-station">
-        <div class="or-hall">${hall}${o.door ? `<p class="or-cap or-door-msg">${esc(o.door)}</p>` : ''}</div>
+        <button class="or-next ${o.door ? 'did' : ''}" data-act="or" data-do="door" data-pid="or-a" data-next="1">${icon('or-a')}<span><small>Next · 101 Mrs. Alvarez</small><b>${esc(NEXT['or-a'][1])}</b></span><i aria-hidden="true">Go ›</i></button>
+        ${o.door ? `<p class="or-cap or-door-msg">${esc(o.door)}</p>` : ''}
+        <div class="or-hall">${hall}</div>
+        <ol class="or-pts" aria-label="Your patients">${RIGHT.map((k, i) => `<li><button data-act="or" data-do="door" data-pid="${k}"><span class="mag" aria-hidden="true">${i + 1}</span>${icon(k)}<span class="who"><b>${PT[k].room} ${esc(PT[k].short)}</b><small><em>${esc(NEXT[k][0])}</em> ${esc(NEXT[k][1])}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ol>
         <div class="or-phone" aria-label="Unit phone"><p class="or-phone-h">Unit phone</p>${PHONE.map((m) => { const a = o.phone[m.id]; const pick = a && m.opts.find((x) => x.id === a); return `<div class="or-msg ${pick ? 'done' : ''}"><p><b>${esc(m.from)}</b> ${esc(m.text)}</p>${pick ? `<p class="or-fb ${pick.v === 2 ? 'good' : ''}">${esc(pick.fb)}</p>` : `<div class="or-rep">${m.opts.map((x) => `<button class="btn" data-act="or" data-do="phone" data-m="${m.id}" data-x="${x.id}">${esc(x.t)}</button>`).join('')}</div>`}</div>`; }).join('')}</div>
-        <div class="or-team"><div>${icon('nova')}<p><b>Ask Nova</b> Three tips a shift. She points; she won\'t answer for you.</p></div><div>${icon('luis')}<p><b>Ask Luis</b> Your aide. He takes vitals, walks, turns and errands.</p></div><div class="or-skip"><span aria-hidden="true">▶▶</span><p><b>Skip ahead</b> When you\'re caught up, the clock runs until something needs you.</p></div></div>
+        <div class="or-team"><div>${icon('nova')}<p><b>Ask Nova</b> A few tips a shift. She points; she won\'t answer for you.</p></div><div>${icon('luis')}<p><b>Ask Luis</b> Your aide. He takes vitals, walks, turns and errands.</p></div><div class="or-skip"><span aria-hidden="true">▶▶</span><p><b>Skip ahead</b> When you\'re caught up, the clock runs until something needs you.</p></div></div>
       </div>`;
     }
     if (c.id === 'room') {
       const T = TABS[o.tab];
       return `<div class="or-scene or-s-room">
         <div class="or-roomtop">${bust('or-b')}<div class="or-plate"><b>Henry Ostrowski</b> 71M, 103<br><small>Atrial fibrillation</small><span class="chip">Full code</span> <span class="chip alert">Allergy: penicillin</span></div></div>
+        <p class="or-nexthere"><small>Next here</small><b>${o.med ? 'Done: digoxin decided' : 'Apical pulse, then the 09:00 digoxin'}</b></p>
         <div class="or-dock" role="tablist">${Object.entries(TABS).map(([k, t]) => `<button role="tab" aria-selected="${o.tab === k}" class="${o.tab === k ? 'on' : ''}" data-act="or" data-do="tab" data-k="${k}">${esc(t.label)}</button>`).join('')}</div>
         <div class="or-pane"><p>${esc(T.text)}</p><ul>${T.rows.map(([l, m]) => `<li><span>${esc(l)}</span><b>${m} min</b></li>`).join('')}</ul></div>
         <div class="or-med"><p class="or-med-h"><b>Digoxin 0.125 mg PO</b>, due 09:00. <span class="or-param">Hold for apical pulse under 60.</span></p>
@@ -179,22 +187,23 @@
     const met = [['Patient safety', 88], ['Prioritization', 92], ['Assessment', 84], ['Medication safety', 76], ['Communication', 90], ['Delegation', 80]];
     const steps = [['Recognize cues', 90], ['Analyze cues', 78], ['Prioritize hypotheses', 92], ['Generate solutions', 74], ['Take action', 86], ['Evaluate outcomes', 70]];
     return `<div class="or-scene or-s-deb ${o.deb ? 'go' : ''}">
-      <div class="or-deb-top"><p class="or-score"><b>86</b><small>Safe, solid shift</small></p><p class="or-stars" aria-label="Three stars"><i></i><i></i><i></i></p></div>
-      <div class="or-meters"><div><h4>By skill</h4>${met.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div><div><h4>By NCLEX clinical judgment step</h4>${steps.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k + 6}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div></div>
+      <div class="or-deb-top"><div><p class="or-deb-k">Days on the practice unit</p><p class="or-deb-h">Safe, solid shift</p></div><p class="or-score"><b>86</b><small>out of 100</small></p></div>
+      <div class="or-key"><div class="bad"><small>The decision that mattered most</small><b>You held Mrs. Alvarez's enoxaparin and called before it went in.</b><span>A blood thinner on a bleed is the dose that hurts her. Report gave you the clues.</span></div><div class="good"><small>Practice next</small><b>${DRILL_ICON} Med Pass drill</b><span>The debrief names the drill for what a shift caught you out on, one tap away.</span></div></div>
       <div class="or-outs"><div class="or-out good">${icon('or-a')}<p><b>Bleed caught early</b> Enoxaparin held, two units in by 09:30, hemoglobin steady. Home on day 6 with Dena.</p></div><div class="or-out good">${icon('or-b')}<p><b>Digoxin held, level came back high</b> Dose lowered by cardiology.</p></div><div class="or-out mixed">${icon('or-c')}<p><b>Pain under control, call light late</b> She waited 25 minutes at 10:40.</p></div></div>
+      <details class="or-scoring"><summary>How it was scored: by skill and by NCLEX step</summary><div class="or-meters"><div><h4>By skill</h4>${met.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div><div><h4>By NCLEX clinical judgment step</h4>${steps.map(([l, v], k) => `<p class="or-m" style="--v:${v}%;--k:${k + 6}"><span>${l}</span><i></i><b>${v}</b></p>`).join('')}</div></div></details>
     </div>`;
   }
 
   /* Nova's narration for each chapter. */
   const SAY = {
-    clock: (o) => `I'm Nova, your charge nurse. The clock only moves when you do something: looking is free, and everything else costs minutes you see before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. Spend them on what matters most.' : ''}`,
+    clock: (o) => `I'm Nova, your charge nurse. A full shift is the quick round's decisions on one unit, with a clock. The clock only moves when you do something: looking is free, and everything else costs minutes you see before you commit. Try a few actions on Mrs. Alvarez.${o.log.length >= 3 ? ' See it? Minutes are what you spend. When something takes a while, a short note tells you what came due while your hands were busy.' : ''}`,
     report: () => `Every shift starts with report from the nurse going home. It's long and most of it is noise. Tap the lines that would change what you do in your first hour. They go on your brain sheet in highlighter, and the game tracks what you caught.`,
     rank: () => `Before you leave report, decide who you'll see first. Ask yourself who could get hurt fastest. Unstable beats scheduled, and scheduled beats stable. Drag the magnets on the board into order.`,
-    station: () => `This is your home base between rooms. Doors show who's waiting; a yellow light is a call light. The phone is how the lab, pharmacy, doctors and your aide reach you, and some messages need an answer. Try answering these two. You can also tap a door.`,
-    room: () => `In a room, look at the patient first, then work through the tabs: assess, care, meds, talk. Before you give anything, check what the order asks you to check. Mr. Ostrowski's digoxin is due. Decide.`,
+    station: () => `This is your home base between rooms. When you're not sure what to do, the blue Next card at the top names one thing and walks you to that room with the right tab open. Every patient on your list shows their next task too. The phone is how the lab and your aide reach you, and some messages need an answer. Try these two.`,
+    room: () => `In a room, look at the patient first. The Next here bar says what this patient needs now; the tabs hold the rest: To do, Assess, Care, the MAR, Talk & call. Before you give anything, check what the order asks you to check. Mr. Ostrowski's digoxin is due. Decide.`,
     sbar: () => `When something's wrong, you call the provider with an SBAR: situation, background, assessment, recommendation. Pick only what she needs to make a decision, then ask for what you want. Mrs. Alvarez can't wait.`,
     team: () => `You have an aide, Luis. He can measure and help patients move. He can't assess, decide, or give meds. Assign each task: Luis or you.`,
-    debrief: () => `At the end of the shift you give report to the next nurse, then see what happened to every patient, scored by skill and by the six NCLEX clinical judgment steps. Every decision has a reason you can read. Patients have stories too: the more time you spend with them, the more they tell you. That's it. You're ready.`,
+    debrief: () => `At the end you give report to the next nurse, then see what happened. The debrief leads with the one decision that mattered most and what happened to each patient, and points you to a drill for what you missed. The scoring, by skill and by NCLEX step, is one tap down. That's it. You're ready.`,
   };
 
   function view(o) {
@@ -232,7 +241,7 @@
       case 'mv': { const i = o.order.indexOf(d.k), j = i + +d.d; if (i < 0 || j < 0 || j >= o.order.length) break; [o.order[i], o.order[j]] = [o.order[j], o.order[i]]; o.dragged = true; break; }
       case 'rankcheck': o.rankChecked = true; FX.play(o.order.every((k, i) => RIGHT[i] === k) ? 'right' : 'commit'); break;
       case 'phone': { const m = PHONE.find((x) => x.id === d.m); if (!m || o.phone[m.id]) break; o.phone[m.id] = d.x; FX.play(m.opts.find((x) => x.id === d.x).v === 2 ? 'right' : 'nope'); break; }
-      case 'door': { const p = PT[d.pid]; o.door = p ? `You'd walk into ${p.room}${p === PT['or-b'] ? ', where Mr. Ostrowski has his call light on' : ''}. Walking between rooms takes a minute.` : 'That room is waiting for an admission at 09:30.'; FX.play('tap'); break; }
+      case 'door': { const p = PT[d.pid]; o.door = d.next ? 'In a real shift, that walks you into 101 with the Assess tab open and vital signs ready. Walking between rooms takes a minute.' : p ? `You'd walk into ${p.room}${p === PT['or-b'] ? ', where Mr. Ostrowski has his call light on' : ''}. Walking between rooms takes a minute.` : 'That room is waiting for an admission at 09:30.'; FX.play('tap'); break; }
       case 'tab': o.tab = d.k; FX.play('tap'); break;
       case 'apical': o.apical = true; o.roomMin = (o.roomMin || 0) + 1; FX.play('commit'); break;
       case 'med': o.med = d.v; o.roomMin = (o.roomMin || 0) + 5; FX.play(d.v === 'hold' && o.apical ? 'right' : 'nope'); break;

@@ -85,6 +85,25 @@ with sync_playwright() as p:
         if phone: Image.open(io.BytesIO(pg.screenshot())).convert('RGB').save(OUT / name, quality=84, optimize=True); print('wrote', name)
         else: save(pg, name)
         pg.close()
+    # Home: the front door a new player sees (quick round beside full shifts, the four skills below).
+    pg = b.new_page(viewport={'width': 960, 'height': 600}, device_scale_factor=2); fontroute(pg); pg.goto(GAME); pg.evaluate(PROF.replace("seen:{", "terms:'9999',seen:{")); pg.reload(); pg.wait_for_timeout(900); save(pg, 'home.jpg'); pg.close()
+    # A finished quick round: right and wrong answers, each with what happened (the same fixed deck every time).
+    pg = b.new_page(viewport={'width': 800, 'height': 500}, device_scale_factor=2); fontroute(pg); pg.goto(GAME); pg.evaluate(PROF.replace("seen:{", "terms:'9999',seen:{")); pg.reload(); pg.wait_for_timeout(300)
+    pg.evaluate("Shift.drill.start('mix', [{kind:'first',id:'wf-sepsis'},{kind:'med',id:'mp-metoprolol'},{kind:'sbar',id:'sb-sepsis'},{kind:'calm',id:'de-ed-wait'}]); Shift.ui._render(true)")
+    # Right on every step but the second card's: a realistic first round, one miss to learn from.
+    BEST = """(()=>{const r=Shift.ui._ui.dr,c=r.deck[r.i],k=Shift.drillData[c.kind].find(x=>x.id===c.id),s=r.c,wrong=r.i===1;
+      const pick=(arr,good)=>{const i=arr.findIndex(good);return wrong?arr.findIndex((o,j)=>j!==i):i};
+      if(c.kind==='med')return s.stage==='check'?['dr-check',pick(k.check,o=>o.ok)]:['dr-pick',pick(k.pick,o=>o.ok)];
+      if(c.kind==='first')return ['dr-pick',pick(k.pts,o=>o.ok)];
+      if(c.kind==='sbar')return ['dr-say',k.steps[s.step].o.findIndex(o=>o.ok)];
+      const t=k.turns[s.turn].o.map(o=>o.d);return ['dr-calm',t.indexOf(Math.min(...t))]})()"""
+    for k in range(80):
+        if pg.evaluate("Shift.ui._ui.dr.done"): break
+        n = pg.locator('[data-act="dr-next"]:visible, [data-act="dr-fix"]:visible')
+        if n.count(): n.first.click(); pg.wait_for_timeout(150); continue
+        a, i = pg.evaluate(BEST)
+        pg.evaluate("([a,i])=>Shift.ui._handlers[a]({dataset:{i:String(i)}})", [a, i]); pg.wait_for_timeout(150)
+    pg.wait_for_timeout(1400); pg.evaluate("scrollTo(0,250)"); pg.wait_for_timeout(300); save(pg, 'round.jpg'); pg.close()
     q = b.new_page(); q.goto(GAME); idx = lambda js: q.evaluate(js)
     mi = idx("(()=>{const k=Shift.drillData.med.find(c=>c.id==='mp-metoprolol');return k.check.findIndex(o=>o.ok)})()")
     drill('med', 'mp-metoprolol', [('dr-check', mi)], 'drill-med.jpg')
