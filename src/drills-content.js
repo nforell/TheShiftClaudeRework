@@ -124,7 +124,7 @@
 
     { id: 'mp-apap-max', p: { n: 'Frank Delgado', a: 68, x: 'M', sk: 4, h: ['swoop', '#8E8378'], c: GOWN, e: ['mustache'], sm: .3 },
       med: 'Acetaminophen 1,000 mg PO, scheduled', for: 'Post-op pain', line: 'Due at 12:00. He also has hydrocodone-acetaminophen ordered for breakthrough pain.',
-      check: [{ t: 'Every acetaminophen since midnight', v: '1 g at 00:00 and 06:00, plus 2 hydrocodone-acetaminophen tablets (325 mg each) at 04:00 and 10:00. Total 3.3 g.', ok: 1 }, { t: 'Pain score, at rest and moving', v: 'Pain 4 of 10.' }, { t: 'Yesterday\'s liver enzymes', v: 'Normal yesterday.' }],
+      check: [{ t: 'Every acetaminophen since midnight', v: '1 g at 00:00 and 06:00, plus 2 hydrocodone-acetaminophen tablets (325 mg each) at 04:00 and 2 more at 10:00 (4 tablets = 1.3 g). Total 3.3 g.', ok: 1 }, { t: 'Pain score, at rest and moving', v: 'Pain 4 of 10.' }, { t: 'Yesterday\'s liver enzymes', v: 'Normal yesterday.' }],
       pick: [{ t: 'Hold it and ask for the orders to be adjusted', ok: 1 }, { t: 'Give it and tell the next nurse to skip his 16:00 hydrocodone', w: 'This dose alone puts him at 4.3 g today. The fix is new orders, not a handoff note.' }, { t: 'Give 650 mg instead of 1,000', w: 'That\'s still 3.95 g today, right at the adult limit and above many hospitals\' limit for older adults. Changing a dose is the prescriber\'s decision.' }],
       why: 'Another gram makes 4.3 g today. Adults shouldn\'t exceed 4 g a day, and many hospitals cap older adults lower.',
       pearl: 'Count every acetaminophen, including combination pills. Adults: no more than 4 g a day, often less in older adults and liver disease.',
@@ -315,7 +315,7 @@
         { p: { n: 'Mr. Young', a: 70, x: 'M', sk: 2, h: ['swoop', '#C9C2B8'] }, line: 'Hemoglobin 7.8. Tired, vitals stable.', w: 'May need a transfusion today; stable.' },
       ],
       why: 'Fever with neutropenia is an emergency. Without neutrophils, infection spreads fast; antibiotics are due within an hour.',
-      pearl: 'Neutropenic fever: cultures and antibiotics within the hour. The conversation about hospice matters, and comes next.' },
+      pearl: 'Neutropenic fever: blood cultures and broad-spectrum IV antibiotics within the hour. Never wait on a rectal temp or delay first-dose coverage.' },
   ];
 
   /* ---------------- SBAR: build the call, line by line ---------------- */

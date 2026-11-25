@@ -34,11 +34,11 @@
       goodLine: 'He walks the hall twice. No clot, no bleeding.', badLine: 'Two days later his calf swells.' },
 
     { id: 'mp-h-oxy-poss2', lv: 2, p: { n: 'Darius King', a: 47, x: 'M', sk: 7, h: ['buzz', '#120C09'], c: GOWN, e: ['beard'], sm: 0 },
-      med: 'Oxycodone 5 mg PO, every 4 hours as needed', for: 'Pain after a hernia repair', line: 'Pain 7 of 10. He has dozed off twice while you talked. His last dose was 4 hours ago.',
-      check: [{ t: 'Sedation level and breathing', v: 'Drowsy but wakes easily to your voice and stays awake. RR 14, SpO₂ 96% on room air.', ok: 1 }, { t: 'Blood pressure, lying and sitting', v: 'BP 138/84.' }, { t: 'Bowel sounds and last stool', v: 'Present in all four quadrants.' }],
-      pick: [{ t: 'Give it, and recheck his sedation and breathing in 30 to 60 minutes', ok: 1 }, { t: 'Hold it, because he keeps dozing off', w: 'Drowsy but easy to rouse is an acceptable sedation level. Untreated pain keeps him from breathing deeply and walking.' }, { t: 'Give half the dose to be safe', w: 'He\'s safe for the ordered dose. A partial dose isn\'t ordered, and undertreating pain has its own risks.' }],
-      why: 'Sedation that\'s easy to reverse with your voice, with normal breathing, is acceptable for an opioid. Sedation you can\'t interrupt, or drifting off mid-sentence, is when you hold.',
-      pearl: 'Use a sedation scale (like POSS). 1 to 2 (awake or drowsy, easy to rouse): give and monitor. 3 (falls asleep mid-conversation): hold, rouse, report. 4: emergency.',
+      med: 'Oxycodone 5 mg PO, every 4 hours as needed', for: 'Pain after a hernia repair', line: 'Pain 7 of 10. His eyes are heavy between questions, though he answers clearly when you speak. Last dose 4 hours ago.',
+      check: [{ t: 'Sedation level and breathing', v: 'POSS 2: slightly drowsy, wakes easily to your voice and stays awake during conversation. RR 14, SpO₂ 96% on room air.', ok: 1 }, { t: 'Blood pressure, lying and sitting', v: 'BP 138/84.' }, { t: 'Bowel sounds and last stool', v: 'Present in all four quadrants.' }],
+      pick: [{ t: 'Give it, and recheck his sedation and breathing in 30 to 60 minutes', ok: 1 }, { t: 'Hold it, because he looks slightly drowsy between questions', w: 'Slightly drowsy and easy to rouse (POSS 2) with normal breathing is acceptable. Untreated pain keeps him from breathing deeply and walking.' }, { t: 'Give half the dose to be safe', w: 'He\'s safe for the ordered dose. A partial dose isn\'t ordered, and undertreating pain has its own risks.' }],
+      why: 'Slightly drowsy yet easily aroused and able to stay awake while talking (POSS 2), with normal respirations, is acceptable for an opioid. Drifting off mid-conversation (POSS 3) is when you hold.',
+      pearl: 'Use a sedation scale (like POSS). 1 to 2 (awake or slightly drowsy, easy to rouse): give and monitor. 3 (frequently drowsy, drifts off mid-conversation): hold, rouse, report. 4: emergency.',
       v: { pain: 7, alert: 1 }, good: { pain: 3, alert: 0 }, bad: { pain: 8, rr: 22, anxious: .6 },
       goodLine: 'An hour later his pain is 3 and he walks to the bathroom.', badLine: 'Unrelieved, he splints and takes shallow breaths all night. By morning he has a low fever.' },
 
@@ -54,11 +54,11 @@
     { id: 'mp-h-ssri-teen', lv: 2, p: { n: 'Emma Walsh', a: 16, x: 'F', sk: 0, h: ['long', '#8A5A3A'], c: 'hoodie', e: ['freckles'], sm: 0, k: .94 },
       med: 'Sertraline 50 mg PO', for: 'Depression, started 2 weeks ago', line: 'She tells you quietly she\'s been thinking about death more since starting it.',
       check: [{ t: 'Ask her directly about suicide', v: '"I think about not being here. I don\'t have a plan."', ok: 1 }, { t: 'Her weight since admission', v: 'Down 1 kg since admission.' }, { t: 'How she\'s been sleeping and eating', v: 'About 6 hours a night.' }],
-      pick: [{ t: 'Give it, keep her safe, and report the suicidal thoughts now', ok: 1 }, { t: 'Hold it: antidepressants cause suicidal thoughts in teens', w: 'The warning is to watch closely, not to stop on your own. Stopping is the prescriber\'s call; her safety and the report are yours.' }, { t: 'Give it and pass it on to the morning team', w: 'New or worse suicidal thoughts are reported now, with a safety check now.' }],
-      why: 'Young people starting an antidepressant need close watching for new or worse suicidal thinking, especially in the first weeks. The response is a safety assessment and an urgent report, not a nurse-initiated stop.',
-      pearl: 'Antidepressants under 25: watch for new suicidal thoughts, agitation or unusual changes, especially early or after a dose change. Ask directly, keep them safe, report now.',
+      pick: [{ t: 'Ensure her safety, notify the psychiatrist now, and clarify whether to give today\'s dose', ok: 1 }, { t: 'Discontinue it yourself: antidepressants cause suicidal thoughts in teens', w: 'The boxed warning is to watch closely and notify the prescriber, not to unilaterally discontinue an SSRI. Her safety and an immediate call come first.' }, { t: 'Give it as scheduled and pass it on to the morning team', w: 'New or worse suicidal thoughts require an immediate safety assessment and provider notification, not a routine handoff.' }],
+      why: 'Young people starting an SSRI carry a boxed warning for emergent suicidal thinking, especially in the first weeks. Ensure immediate safety and notify the psychiatrist promptly so the prescriber can evaluate and decide whether to continue or change the medication.',
+      pearl: 'Antidepressants under 25: watch for new suicidal thoughts, agitation or unusual changes, especially early or after a dose change. Ask directly, ensure safety, notify the prescriber now.',
       v: { anxious: .4 }, good: { anxious: .2 }, bad: { anxious: .7 },
-      goodLine: 'She\'s moved to closer observation and her psychiatrist sees her that afternoon.', badLine: 'Nobody hears about it until a peer reports what she said two days later.' },
+      goodLine: 'She\'s moved to closer observation and her psychiatrist evaluates her and adjusts the plan that afternoon.', badLine: 'Nobody hears about it until a peer reports what she said two days later.' },
 
     { id: 'mp-h-warfarin-low', lv: 2, p: { n: 'George Hill', a: 74, x: 'M', sk: 6, h: ['balding', '#3A302A'], c: GOWN, e: ['mustache', 'wrinkles'], sm: .3 },
       med: 'Warfarin 5 mg PO', for: 'Atrial fibrillation (INR goal 2 to 3)', line: 'He missed two doses at home before admission.',
@@ -94,7 +94,34 @@
       why: 'She\'s fluid overloaded with crackles and weight gain. Her pressure is lower but adequate, potassium and kidneys are fine. Diuresis is the treatment.',
       pearl: 'In heart failure, a modest pressure drop is common with treatment. Hold for symptomatic hypotension, low potassium or worsening kidney function, not for a number that still meets the order.',
       v: { rr: 22, spo2: 92 }, good: { rr: 16, spo2: 96 }, bad: { rr: 30, spo2: 87, lean: .6 },
-      goodLine: 'She diureses 1.4 liters. Her crackles are gone by morning.', badLine: 'At 03:00 she sits bolt upright, gasping.' }
+      goodLine: 'She diureses 1.4 liters. Her crackles are gone by morning.', badLine: 'At 03:00 she sits bolt upright, gasping.' },
+
+    { id: 'mp-h-diltiazem-ef', lv: 2, p: { n: 'Raymond Bell', a: 69, x: 'M', sk: 6, h: ['balding', '#3A302A'], c: GOWN, e: ['wrinkles'], sm: 0 },
+      med: 'Diltiazem 15 mg IV push, once', for: 'Atrial fibrillation, HR 132', line: 'New order from the covering cross-cover resident. BP 114/70, mild bibasilar crackles.',
+      check: [{ t: 'Recent echocardiogram and heart failure history', v: 'Echo from yesterday shows EF 25% (HFrEF).', ok: 1 }, { t: 'His morning serum sodium', v: 'Na 136.' }, { t: 'His allergy band', v: 'No known drug allergies.' }],
+      pick: [{ t: 'Hold it and call the resident about his EF of 25%', ok: 1 }, { t: 'Give it slowly over 2 minutes since his BP is over 100', w: 'BP alone is not the issue: non-dihydropyridine calcium channel blockers depress contractility and worsen heart failure with reduced EF.' }, { t: 'Give half the ordered dose and watch his telemetry closely', w: 'Diltiazem is contraindicated in HFrEF regardless of half-dosing; clarify for a safer agent such as amiodarone or digoxin.' }],
+      why: 'Non-dihydropyridine calcium channel blockers (diltiazem, verapamil) are negative inotropes that can precipitate acute decompensated heart failure when EF is reduced.',
+      pearl: 'Before IV diltiazem or verapamil for AFib with RVR, check the EF. In HFrEF (EF ≤ 40%), question the order.',
+      v: { hr: 132, rr: 22 }, good: { hr: 98, rr: 18 }, bad: { hr: 124, sbp: 82, rr: 30, spo2: 87, lean: .6 },
+      goodLine: 'The resident switches to amiodarone; his rate settles to 96 with stable BP.', badLine: 'Ten minutes after IV diltiazem his BP falls to 82 and his crackles climb.' },
+
+    { id: 'mp-h-carboprost-asthma', lv: 2, p: { n: 'Tessa Okafor', a: 30, x: 'F', sk: 8, h: ['bun', '#17110E'], c: GOWN, e: [], sm: 0 },
+      med: 'Carboprost 250 mcg IM, now', for: 'Postpartum uterine atony', line: 'Fundus boggy despite oxytocin and massage; BP 116/72, HR 110. The provider calls for carboprost.',
+      check: [{ t: 'Medical history for contraindications', v: 'Moderate persistent asthma (uses daily inhaled steroid and albuterol).', ok: 1 }, { t: 'Her latest prenatal hemoglobin', v: 'Hgb 11.2 g/dL.' }, { t: 'Her Rh blood type', v: 'A positive.' }],
+      pick: [{ t: 'Hold it, speak up about her asthma, ask for another uterotonic', ok: 1 }, { t: 'Give it now because hemorrhage is more urgent than asthma', w: 'Carboprost (PGF2α) causes severe bronchospasm in asthma; safe alternatives like misoprostol or methylergonovine (her BP is normal) are right there.' }, { t: 'Give it with an albuterol nebulizer at the same time to block wheezing', w: 'Giving a contraindicated uterotonic alongside a bronchodilator risks life-threatening bronchospasm when safe uterotonics exist.' }],
+      why: 'Carboprost is a prostaglandin F2α analog that triggers severe bronchoconstriction and is contraindicated in asthma. Because her BP is 116/72, methylergonovine or misoprostol can be used instead.',
+      pearl: 'Uterotonic contraindications: no methylergonovine in hypertension; no carboprost in asthma. Speak up immediately before drawing it.',
+      v: { hr: 110, anxious: .5 }, good: { hr: 90, anxious: .2 }, bad: { rr: 32, spo2: 85, anxious: .9, lean: .6 },
+      goodLine: 'She gets methylergonovine IM instead; her fundus firms up and her lungs stay clear.', badLine: 'Minutes later she develops severe wheezing and SpO₂ drops to 85%.' },
+
+    { id: 'mp-h-mg-oliguria', lv: 2, p: { n: 'Elena Vargas', a: 34, x: 'F', sk: 4, h: ['long', '#1E1612'], c: GOWN, e: [], sm: 0 },
+      med: 'Magnesium sulfate 2 g/h IV, continuing infusion', for: 'Preeclampsia with severe features', line: 'Hourly safety check on her infusion. BP 142/88, awake and talking softly.',
+      check: [{ t: 'Reflexes, breathing, and hourly urine output', v: 'Urine output 15 mL/h for 2 hours, patellar reflexes absent, RR 11.', ok: 1 }, { t: 'Her fetal heart rate baseline earlier', v: 'Baseline 140, moderate variability.' }, { t: 'Her last meal time', v: 'Clear liquids only.' }],
+      pick: [{ t: 'Stop the infusion now, notify the provider, ready calcium gluconate', ok: 1 }, { t: 'Cut the rate to 1 g/h and send a stat magnesium level first', w: 'Absent reflexes and RR 11 are active magnesium toxicity; stop the infusion completely rather than continuing at half rate.' }, { t: 'Give an IV fluid bolus to boost urine output while magnesium runs', w: 'Continuing magnesium while the kidneys cannot clear it worsens respiratory depression and risks cardiac arrest.' }],
+      why: 'Magnesium is cleared by the kidneys. Oliguria lets levels climb, causing loss of deep tendon reflexes first, then respiratory depression (RR < 12). Stop the drip immediately.',
+      pearl: 'Magnesium toxicity ladder: reflexes vanish first, then breathing slows, then cardiac arrest. Stop the drip and have IV calcium gluconate 1 g at the bedside.',
+      v: { alert: 1, rr: 11 }, good: { alert: 0, rr: 16 }, bad: { alert: 2, rr: 7, spo2: 86 },
+      goodLine: 'Stopping the drip and giving calcium gluconate brings her breathing back to 16.', badLine: 'Twenty minutes later her respirations fall to 7 and a rapid response is called.' }
   );
 
   D.first.push(

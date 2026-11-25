@@ -249,7 +249,7 @@
         run(s, P, A) {
           P.secluded = true; P.seclAt = s.t; P.seclOk = P.esc >= 2.6 && P.tried;
           startEp(s, P, 'secl');
-          if (P.esc >= 2.6 && P.tried) A.judge('303-seclude', 'safety', 0, 'You used seclusion for Jasmine after less restrictive measures failed.', 'Imminent danger, less restrictive options tried: seclusion can be the right last resort. It needs an order within the hour, a face-to-face evaluation, continuous observation, and release as soon as she\'s safe.', '303');
+          if (P.esc >= 2.6 && P.tried) A.judge('303-seclude', 'safety', 0, 'You used seclusion for Jasmine after less restrictive measures failed.', 'Imminent danger, less restrictive options tried: seclusion can be the right last resort. It needs an immediate provider order, a face-to-face evaluation within 1 hour, continuous observation, and release as soon as she\'s safe.', '303');
           else A.judge('303-seclude', 'safety', -3, 'You secluded Jasmine when she wasn\'t an imminent danger.', 'Seclusion is legal only for imminent danger, and only after less restrictive measures fail. Loud, irritable and intrusive is not imminent danger. It\'s a reason to lower the stimulation.', '303');
           P.esc = Math.max(0, P.esc - (P.esc >= 2.6 ? 1 : -.3));
           return 'Security and staff walk her to the seclusion room. The door closes. She screams, then pounds on the window. From now: an order, someone watching her every second, a check every 15 minutes, and Dr. Iyer\'s face-to-face within the hour.';
@@ -365,7 +365,7 @@
       {
         id: '303-im', name: 'Haloperidol + lorazepam', dose: '5 mg + 2 mg', route: 'IM', freq: 'Once, imminent danger when PO refused', prn: true,
         block: (s, P) => (P.im !== null ? 'Given at ' + clock(P.im) + '.' : null),
-        checks: (s, P) => [{ label: 'Imminent danger', value: P.esc >= 2.6 ? 'Yes' : 'No: ' + escTxt(P.esc), ok: P.esc >= 2.6 }, { label: 'PO offered', value: P.prnAt !== null ? 'Given at ' + clock(P.prnAt) : 'Not yet', ok: P.prnAt !== null }],
+        checks: (s, P) => [{ label: 'Imminent danger', value: P.esc >= 2.6 ? 'Yes' : 'No: ' + escTxt(P.esc), ok: P.esc >= 2.6 }, { label: 'PO offered', value: P.prnAt !== null ? 'Given at ' + clock(P.prnAt) : P.poOffered ? 'Offered and refused' : 'Not yet', ok: P.prnAt !== null || !!P.poOffered }],
         give(s, P, A) {
           P.im = s.t; startEp(s, P, 'hold');
           if (P.esc < 2.6) A.judge('303-im', 'meds', -3, 'You gave Jasmine emergency IM medication when she wasn\'t an imminent danger.', 'Involuntary medication without a capacity ruling is legal only in an emergency: imminent danger to self or others. Otherwise it\'s an assault, and it teaches her the unit is a place where people hold her down.', '303');
@@ -718,7 +718,7 @@
       { id: '309-cloz', name: 'Clozapine', dose: '200 mg', route: 'PO', freq: 'Daily at 08:00', due: 60, checks: () => [{ label: 'ANC', value: '2.8 on Monday (≥ 1.5 per labeling)', ok: true }, { label: 'Bowels', value: 'No BM charted in 4 days', ok: false }], give: () => 'Clozapine 200 mg taken.', hold(s, P, A, r) { if (r === 1) { A.judge('309-cloz-hold', 'meds', 0, 'You held Linda\'s clozapine to clarify with the psychiatrist.', 'Defensible with a firm, distended abdomen after four days without a BM: that can be early ileus. Call today, because a gap of 48 hours means re-titrating from a low dose.', '309'); return 'Held: clarify with the psychiatrist today.'; } A.judge('309-cloz-hold', 'meds', -2, 'You held Linda\'s clozapine.', 'Missing doses is how she got admitted. Constipation needs treating, not the clozapine stopped; a gap of 48 hours means re-titrating from a low dose.', '309'); return 'Held.'; } },
       { id: '309-docu', name: 'Docusate', dose: '100 mg', route: 'PO', freq: 'Twice daily', due: 60, checks: () => [{ label: 'Last BM', value: '4 days ago', ok: true }], give: () => 'Docusate 100 mg taken.' },
       { id: '309-peg', name: 'Polyethylene glycol', dose: '17 g', route: 'PO', freq: 'Daily as needed, no BM in 2 days', prn: true, block: (s, P) => (P.peg ? 'Given today.' : null), checks: () => [{ label: 'Last BM', value: '4 days ago', ok: true }, { label: 'Mixed in', value: '120 mL: counts toward the restriction', ok: null }], give(s, P, A) { P.peg = true; A.judge('309-peg', 'meds', 1, 'You treated Linda\'s constipation.', 'Clozapine slows the gut, and clozapine bowel obstruction kills more people than its blood effects. Four days without a BM is a problem to act on today.', '309'); return 'Polyethylene glycol 17 g in 120 mL of juice. She drinks it in one go.'; } },
-      { id: '309-apap', name: 'Acetaminophen', dose: '650 mg', route: 'PO', freq: 'Every 6 h as needed, pain', prn: true, block: (s, P) => (s.t < 60 ? 'Last dose 04:00. Next available at 10:00.' : null), checks: (s, P) => [{ label: 'Headache', value: `${P.na < 126 ? 6 : 4}/10`, ok: true }], give(s, P) { P.tylAt = s.t; return 'Acetaminophen 650 mg taken.'; } },
+      { id: '309-apap', name: 'Acetaminophen', dose: '650 mg', route: 'PO', freq: 'Every 6 h as needed, pain', prn: true, block: (s, P) => (s.t < 180 ? 'Last dose 04:00. Next available at 10:00.' : null), checks: (s, P) => [{ label: 'Headache', value: `${P.na < 126 ? 6 : 4}/10`, ok: true }], give(s, P) { P.tylAt = s.t; return 'Acetaminophen 650 mg taken.'; } },
     ],
     talk: (s, P) => (P.agreed ? 'lin_after' : 'lin_talk'),
     sbar: {
@@ -988,7 +988,7 @@
     id: 'psych-3e-1', title: 'Days on 3 East', unit: '3 East, Adult Acute Psychiatry', unitShort: '3 East', level: 'Specialty: Psych', start: 7 * 60, length: 300, novaCredits: 3,
     // Written to CA law; Settings → Psych law → General US swaps these phrases (rows in src/law.js).
     law: { written: 'ca', terms: ['wic-5150', 'wic-5250', 'a-5150', '5150', 'a-5250', 'the-5250', '5250-start', '5250', 'hearing-day', 'riese-petition', 'riese-paren', 'lps', 'illegal-ca', 'privacy-ca'] },
-    card: 'Adult locked unit, five patients until noon: mania, lithium, a med refusal, compulsive water drinking, and a man who is suddenly calm.',
+    card: 'Adult locked unit, five patients until noon: acute mania, bipolar on lithium, a medication refusal, schizophrenia, and major depression.',
     hero: { head: 'Days, 3 East. Five patients on a locked adult unit.', lede: 'Adult acute psych, 07:00 to noon. No telemetry and no pumps. Most of your assessment is talking to people, including asking the questions that feel awkward to ask.' },
     intro: { time: '06:58', place: '3 East, Adult Acute Psychiatry', cta: 'Take report', beats: ['Priya is giving report in the nurses\' station, behind the glass.', 'Five patients until noon. No monitors here; you assess by talking.', 'One man seems a lot better than he did yesterday. Find out why.'] },
     minutes: 20,

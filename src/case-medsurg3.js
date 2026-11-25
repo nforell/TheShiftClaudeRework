@@ -314,8 +314,8 @@
     orders: [
       { t: -420, text: 'DKA protocol: regular insulin infusion 0.1 units/kg/h (6 units/h). Point-of-care glucose every hour.' },
       { t: -420, text: 'When glucose < 250 mg/dL: change fluids to D5 ½NS at 150 mL/h and reduce insulin to 0.05 units/kg/h (3 units/h).' },
-      { t: -420, text: 'Potassium protocol: K 3.5–5.0, give KCl 20 mEq IV per liter of fluid. K < 3.5: HOLD insulin, give KCl 40 mEq IV, recheck in 2 h. BMP every 2 h.' },
-      { t: -420, text: 'When anion gap ≤ 12: give insulin glargine subQ, continue the infusion for 2 h after, then stop. NPO until gap closes.' },
+      { t: -420, text: 'Potassium protocol: K 3.5–5.0, hang premixed IV fluid with KCl 20 mEq/L. K < 3.5: HOLD insulin, give premixed KCl 40 mEq IV over 4 h, recheck in 2 h. BMP every 2 h.' },
+      { t: -420, text: 'When DKA resolves (venous pH ≥ 7.3 or bicarb ≥ 18, beta-hydroxybutyrate < 0.6, and anion gap ≤ 12): give insulin glargine subQ, continue the infusion for 2 h after, then stop. NPO until resolved.' },
     ],
     notes: [
       { t: -60, author: 'Jamal, evening RN', text: 'Glucose 338 at 22:00, drip at 6 units/h. Gap 18. K 3.6. Protocol KCl 20 mEq due 23:00. Nauseous earlier, better now. Very hungry, asking to eat, told her not until the gap closes.' },
@@ -376,20 +376,20 @@
     meds: [
       { id: '435-drip', name: 'Insulin regular infusion', dose: '0.1 units/kg/h', route: 'IV', freq: 'Continuous, per DKA protocol', initStatus: 'given', givenNote: 'Running since 16:30' },
       {
-        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'IV', freq: 'Per liter, protocol for K 3.5–5.0', due: 0,
-        checks: (s, P) => [{ label: 'Potassium', value: '3.6 at 22:00', ok: true }, { label: 'Urine output', value: 'Adequate, 1,650 mL since admission', ok: true }, { label: 'Rate', value: 'No faster than 10 mEq/h peripherally', ok: null }],
-        give(s, P, A) { P.kclAt = s.t; if (s.t > 60) A.judge('435-kcl-late', 'time', -1, 'Ms. Sorensen\'s protocol potassium went in late.', 'Insulin keeps pulling potassium down. Replacement has to keep pace.', '435'); return 'KCl 20 mEq added to the running liter, infusing over 2 h.'; },
+        id: '435-kcl', name: 'Potassium chloride', dose: '20 mEq/L (premixed)', route: 'IV', freq: 'Per liter, protocol for K 3.5–5.0', due: 0,
+        checks: (s, P) => [{ label: 'Potassium', value: '3.6 at 22:00', ok: true }, { label: 'Urine output', value: 'Adequate, 1,650 mL since admission', ok: true }, { label: 'Rate', value: 'Premixed bag on pump (max 10 mEq/h peripherally)', ok: null }],
+        give(s, P, A) { P.kclAt = s.t; if (s.t > 60) A.judge('435-kcl-late', 'time', -1, 'Ms. Sorensen\'s protocol potassium went in late.', 'Insulin keeps pulling potassium down. Replacement has to keep pace.', '435'); return 'Premixed 0.9% NaCl with KCl 20 mEq/L hung on the pump at 250 mL/h (5 mEq/h over 4 h).'; },
         hold(s, P, A) { A.judge('435-kcl-hold', 'meds', -2, 'You held the protocol potassium on an insulin drip.', 'Her K was 3.6 and falling with every hour of insulin.', '435'); return 'Held.'; },
       },
       {
         id: '435-kcl2', name: 'Potassium chloride (low-K protocol)', dose: '40 mEq', route: 'IV', freq: 'Once, K < 3.5', prn: true, available: (s, P) => P.kLow, block: (s, P) => (P.kclLowAt !== null ? 'Given at ' + clock(P.kclLowAt) + '.' : null),
         checks: () => [{ label: 'Potassium', value: '3.1 (low)', ok: true }, { label: 'Insulin', value: 'Hold while replacing', ok: null }],
-        give(s, P, A) { P.kclLowAt = s.t; P.kclAt = s.t; A.judge('435-kcl2', 'meds', 1, 'You replaced Ms. Sorensen\'s low potassium.', 'Replace, recheck, then restart the insulin.', '435'); return 'KCl 40 mEq IV infusing over 4 h via pump.'; },
+        give(s, P, A) { P.kclLowAt = s.t; P.kclAt = s.t; A.judge('435-kcl2', 'meds', 1, 'You replaced Ms. Sorensen\'s low potassium.', 'Replace, recheck, then restart the insulin.', '435'); return 'Premixed KCl 40 mEq IV infusing over 4 h via pump (10 mEq/h).'; },
       },
       {
-        id: '435-glar', name: 'Insulin glargine', dose: '20 units', route: 'SubQ', freq: 'Once, when the gap closes', prn: true, available: (s, P) => P.gapClosed, block: (s, P) => (P.glarAt !== null ? 'Given at ' + clock(P.glarAt) + '.' : null),
-        checks: () => [{ label: 'Anion gap', value: '11, closed', ok: true }, { label: 'Keep drip', value: 'Continue infusion 2 h after this dose', ok: null }],
-        give(s, P, A) { P.glarAt = s.t; A.judge('435-glar', 'meds', 1, 'You gave glargine once the gap closed.', 'Basal first, overlap, then the drip comes off.', '435'); return 'Glargine 20 units subQ given. The infusion keeps running for 2 more hours.'; },
+        id: '435-glar', name: 'Insulin glargine', dose: '20 units', route: 'SubQ', freq: 'Once, when DKA resolves', prn: true, available: (s, P) => P.gapClosed, block: (s, P) => (P.glarAt !== null ? 'Given at ' + clock(P.glarAt) + '.' : null),
+        checks: () => [{ label: 'DKA resolution', value: 'Anion gap 11, bicarb 18, pH 7.34, ketones < 0.6', ok: true }, { label: 'Keep drip', value: 'Continue infusion 2 h after this dose', ok: null }],
+        give(s, P, A) { P.glarAt = s.t; A.judge('435-glar', 'meds', 1, 'You gave glargine once DKA resolved.', 'Basal first, 2-hour overlap, then the drip comes off.', '435'); return 'Glargine 20 units subQ given. The infusion keeps running for 2 more hours.'; },
       },
       { id: '435-ond', name: 'Ondansetron', dose: '4 mg', route: 'IV', freq: 'Every 6 h as needed, nausea', prn: true, checks: () => [{ label: 'Nausea', value: 'On and off', ok: true }], give: () => 'Ondansetron 4 mg IV given.' },
     ],
@@ -844,7 +844,7 @@
 
   S.engine.registerCase({
     id: 'medsurg-4w-3', title: 'Nights on 4 West', unit: '4 West, Medical-Surgical', level: 'Intermediate', start: 23 * 60, length: 300, novaCredits: 2,
-    card: 'Five patients from 23:00, and your aide gets floated at 01:00. Delirium, a swollen calf, a DKA drip, a late stroke, and a PCA.',
+    card: 'Five patients from 23:00, and your aide gets floated at 01:00: post-op hip, DVT workup, insulin drip, stroke rehab, and a PCA.',
     hero: { head: 'Nights, 4 West. Five patients, and your aide leaves at 01:00.', lede: 'Med-surg, 23:00 to 04:00. Most of your patients will be asleep, which makes changes easy to miss. Round anyway, and look at the person, not only the numbers.' },
     intro: { time: '22:58', place: '4 West, Night shift', cta: 'Take report', beats: ['Jamal is finishing his evening shift and wants to give report.', 'Five patients until 04:00. Your aide gets floated to the ED at 01:00.', 'At night, changes don\'t get called in. You find them on rounds.'] },
     minutes: 20,

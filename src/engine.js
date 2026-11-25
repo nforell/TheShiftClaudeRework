@@ -218,7 +218,7 @@ window.Shift = window.Shift || {};
       return { id, label, score: T.score, good: T.good, bad: T.bad };
     });
     const scored = dom.filter((d) => d.score !== null);
-    const overall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
+    const rawOverall = scored.length ? Math.round(scored.reduce((n, d) => n + d.score, 0) / scored.length) : 0;
     const outcomes = c.patients.map((d) => {
       const P = s.p[d.id], o = Object.assign({ id: d.id }, d.outcome(s, P, A));
       if (S.flow) o.next = S.flow.nextFor(s, A, d, P);
@@ -227,11 +227,22 @@ window.Shift = window.Shift || {};
       return o;
     });
     const violations = checkClaims(s, c, A, outcomes);
-    const harmed = outcomes.filter((o) => o.tone === 'bad').length;
+    const activeJudg = s.judg.filter((j) => !j.superseded).sort((a, b) => a.t - b.t);
+    const badIds = new Set(outcomes.filter((o) => o.tone === 'bad').map((o) => o.id));
+    const harmed = badIds.size;
+    // Clinical safety gate: a never-event (delta <= -4) or a serious error (delta <= -3) linked to patient harm caps
+    // the shift score at 68 (max 1 star) so strong routine work cannot mathematically wash out a sentinel safety breach.
+    const BARRIER = { meds: 'Medication verification / 5 rights barrier', safety: 'Patient safety & verification barrier', assess: 'Bedside assessment & recognition barrier', priority: 'Acuity & rescue prioritization barrier', comm: 'Escalation & closed-loop communication barrier', deleg: 'Scope & supervision barrier', judgment: 'Clinical judgment barrier', time: 'Timely rescue & reassessment barrier' };
+    const neverEvents = activeJudg
+      .filter((j) => j.delta <= -4 || (j.delta <= -3 && j.pid && badIds.has(j.pid)))
+      .map((j) => ({ key: j.key || '', pid: j.pid || null, t: j.t, domain: j.domain, barrier: BARRIER[j.domain] || 'Patient safety barrier', text: j.text, why: j.why }));
+    const capped = neverEvents.length > 0 && rawOverall > 68;
+    const overall = neverEvents.length > 0 ? Math.min(rawOverall, 68) : rawOverall;
     let rating = overall >= 85 ? 'Charge-nurse material' : overall >= 72 ? 'Safe, solid shift' : overall >= 58 ? 'Getting there' : 'Rough shift';
-    if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';
-    if (!harmed && rating === 'Rough shift' && overall >= 45) rating = 'Getting there';
-    return { dom, overall, rating, outcomes, violations, judg: s.judg.filter((j) => !j.superseded).sort((a, b) => a.t - b.t) };
+    if (neverEvents.length > 0) rating = 'Safety review needed';
+    else if (harmed && overall >= 72) rating = 'Solid, with a miss that mattered';
+    else if (!harmed && rating === 'Rough shift' && overall >= 45) rating = 'Getting there';
+    return { dom, overall, rawOverall, capped, neverEvents, rating, outcomes, violations, judg: activeJudg };
   }
 
   /* The debrief may only say what happened. Before it renders, each outcome sentence is checked against the shift's

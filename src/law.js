@@ -32,7 +32,7 @@ window.Shift = window.Shift || {};
     { id: 'lps', ca: 'LPS conservatorship', us: 'mental health conservatorship' },
     { id: 'wic-5585', ca: 'WIC 5585', us: '72-hour involuntary hold for a minor' },
     { id: '5585', ca: '5585', us: '72-hour hold (minor)' },
-    { id: 'illegal-ca', ca: 'illegal in California', us: 'illegal in most states' },
+    { id: 'illegal-ca', ca: 'illegal in California', us: 'a violation of federal patient rights (CMS 42 CFR 482.13)' },
     { id: 'privacy-ca', ca: 'California law protects', us: 'Privacy law protects' },
     { id: 'hours-36-ca', ca: ' (36 hours in California)', us: ' (the deadline varies by state)' },
   ];

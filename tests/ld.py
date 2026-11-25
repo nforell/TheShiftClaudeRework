@@ -94,7 +94,7 @@ with sync_playwright() as p:
             until(165); act('224', 'reassess')
             until(185); act('222', 'sve'); act('222', 'setup'); sbar('222', ['cx', 'fast'], 'complete')
             until(201); act('222', 'help'); talk('222', 0); act('222', 'head'); act('222', 'nuchal'); act('222', 'shoulders'); act('222', 'dry')
-            reply('apgar1-8'); act('222', 'cordwait'); reply('apgar5-9')
+            reply('apgar1-9'); act('222', 'cordwait'); reply('apgar5-9')
             until(st("(s.p['222'].bornAt||0)+4")); act('222', 'placenta'); give('222', '222-oxypp'); act('222', 'fundus')
         else:
             H('rank-submit'); H('rank-go')

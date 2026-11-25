@@ -1,5 +1,5 @@
 /* The Shift — UI: Calling the provider with SBAR. */
-import { A, C, E, F, G, def, esc, face, gone, lcFirst, liveDef, prov, provKey, pts, ui, unitS } from './ctx.js';
+import { A, C, E, F, G, def, esc, face, floorMode, gone, lcFirst, liveDef, prov, provKey, pts, ui, unitS } from './ctx.js';
 import { didText, doneFor, givenList, reviewHTML } from './room.js';
 import { sheet } from './sheets.js';
 
@@ -14,6 +14,7 @@ export function ovSbar() {
   const d = def(pid), P = G.s.p[pid], Ax = A();
   if (ui.sbar.reply) return sheet(esc(prov(pid).name), `<div class="reply">${face(provKey(pid))}<p class="voice" style="margin:0">"${esc(ui.sbar.reply)}"</p></div>${reviewHTML(ui.sbar.review, 'Your call, reviewed')}`, `<button class="btn btn-primary" data-act="close">Done</button>`, { face: '' });
   const items = d.sbar.items(G.s, P, Ax);
+  const shownItems = floorMode() ? items.filter((it) => it.need) : items;
   const reqs0 = (typeof d.sbar.requests === 'function' ? d.sbar.requests(G.s, G.s.p[pid], A()) : d.sbar.requests) || [{ id: 'orders', label: 'Here\'s what I\'m seeing. What would you like me to do?' }, { id: 'fyi', label: 'Just keeping you updated.' }];
   const body = `<div class="sbar-sec"><h3><i>S</i>Situation</h3><p class="muted" style="margin:.3rem 0">This is your nurse on ${unitS()}, calling about ${esc(d.name)}, ${d.age}, in room ${d.room}.</p></div>
     <div class="sbar-sec"><h3><i>B</i>Background</h3><p class="muted" style="margin:.3rem 0">${esc(liveDef(d).dx)}. ${esc(liveDef(d).hx[0])}. ${esc(liveDef(d).code)}.</p></div>
@@ -22,7 +23,7 @@ export function ovSbar() {
       return `<details class="sbar-sec sbar-err" ${es.length || ui.sbar.picked.some((x) => /^(err|rx|hd):/.test(x)) ? 'open' : ''}><summary><h3><i>!</i>Report a medication error</h3></summary><p class="muted" style="margin:.2rem 0 .4rem">If something you gave was wrong, say what, when, and how the patient is now.</p>${es.map((e) => box('err:' + e.id, F.errLabel(e))).join('')}${gv.map((g) => box(`rx:${g.mid}:${g.t}`, `I'm worried the ${g.name} I gave at ${E.clock(g.t)} was an error.`)).join('')}${hv.map((m) => box(`hd:${m.id}`, `I held the ${lcFirst(m.name)} due at ${E.clock(m.due !== undefined ? m.due : G.s.meds[m.id].at)} (held ${E.clock(G.s.meds[m.id].at)}). I'm not sure that was right.`)).join('')}</details>`; })()}
     ${(() => { const dn = doneFor(pid, items); return dn.length ? `<fieldset class="sbar-sec sbar-did" style="border:0;padding:0"><legend><h3><i>✓</i>What you've already done</h3></legend><p class="muted" style="margin:.2rem 0 .4rem">Tell the provider what's in place so the plan builds on it.</p>${dn.map((l) => `<label class="opt"><input type="checkbox" data-act="sbar-pick" data-id="did:${l.id}" ${ui.sbar.picked.includes('did:' + l.id) ? 'checked' : ''}><span><span class="did-t">${E.clock(l.t)}</span>${esc(didText(l))}</span></label>`).join('')}</fieldset>` : ''; })()}
     <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>A</i>Assessment: what will you report?</h3></legend>
-      ${items.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('')}</fieldset>
+      ${shownItems.length ? shownItems.map((it) => `<label class="opt ${it.need ? '' : 'locked'}"><input type="checkbox" data-act="sbar-pick" data-id="${it.id}" ${ui.sbar.picked.includes(it.id) ? 'checked' : ''} ${it.need ? '' : `disabled data-why="${esc(it.lock || 'Not known yet')}."`}><span>${it.need ? esc(it.label) : `<span class="lock-l">Not assessed yet</span><small>${esc(it.lock || 'Not known yet')}</small>`}</span></label>`).join('') : '<p class="muted" style="margin:.35rem 0">No assessment findings documented yet. Gather your vitals and focused exam at the bedside before calling.</p>'}</fieldset>
     <fieldset class="sbar-sec" style="border:0;padding:0"><legend><h3><i>R</i>Recommendation</h3></legend>
       ${(() => { const seed = [...pid].reduce((n, ch) => n + ch.charCodeAt(0), 0); return reqs0.map((r, i) => [r, (i * 7 + seed) % 11]).sort((a, b) => a[1] - b[1]).map((x) => x[0]); })().map((r) => `<label class="opt"><input type="radio" name="req" data-act="sbar-req" data-id="${r.id}" ${ui.sbar.req === r.id ? 'checked' : ''}><span>${esc(r.label)}</span></label>`).join('')}</fieldset>`;
   const errOnly = ui.sbar.picked.length && ui.sbar.picked.every((x) => /^(err|rx|hd):/.test(x));

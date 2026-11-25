@@ -2,6 +2,24 @@
 
 A running record of content changed to keep the shifts current, so reviewers know what moved and why.
 
+## November 24, 2026: Comprehensive clinical & psychometric audit fixes
+
+| Where | What changed | Basis |
+|---|---|---|
+| L&D (`case-ld1.js`, `tests/ld.py`) | Vigorous 1-minute APGAR corrected from 8 to 9 (acrocyanosis 1 + HR 2 + grimace 2 + flexed/active 2 + vigorous cry 2); `tl-baby` units (`2 / 3 / 6`) and cord pH (`6.91`) aligned with `outcome()`. | Standard APGAR scoring; internal consistency. |
+| Nights 4W (`case-medsurg3.js`) | Replaced bedside KCl-added-to-bag phrasing with pharmacy-premixed KCl 20 mEq/L at 250 mL/h (5 mEq/h over 4 h); updated DKA resolution criteria to include venous pH ≥ 7.3 / bicarb ≥ 18, beta-hydroxybutyrate < 0.6, and anion gap ≤ 12. | ISMP Targeted Medication Safety Best Practices; 2024 ADA DKA consensus. |
+| ED (`case-ed1.js`) | Fixed tenecteplase `give()` logged dose (20.5 / 25 / 41 mg); blocked Harold Jensen PO acetaminophen (`25-apap`) permanently once CT confirms acute SDH; aligned Karen's Wednesday evening 18:00 warfarin pillbox clue/dialog. | FDA tenecteplase weight-tier dosing; neurosurgical NPO safety; internal consistency. |
+| Adult psych (`case-psych1.js`) | Fixed Jasmine seclusion order vs 1-hr F2F phrasing; recognized `P.poOffered` in emergency IM MAR check; corrected Linda Fairweather q6h PRN acetaminophen lockout window to 10:00 (`s.t < 180`). | CMS 42 CFR 482.13; MAR safety. |
+| Teen psych (`case-adolpsych1.js`) | Unified Ella Mg ref range (1.7–2.2), added repeat Mg to `ella-recheck`, added ASPEN 2020 nuance for severe symptomatic refeeding; aligned Jaylen post-IM q15/q30 check timeline and Ben note timestamp; clarified haloperidol dystonia as intolerance rather than IgE allergy. | ASPEN 2020 Refeeding Consensus; clinical pharmacology & internal consistency. |
+| Mother-baby (`case-ob1.js`) | Replaced `"placental"` with `"cerebral and end-organ perfusion"` in postpartum preeclampsia rationale. | Postpartum physiology (placenta already delivered). |
+| Step-down (`case-stepdown1.js`) | Replaced `"Urinal"` with commode urine hat for Gloria Mendes (`601`); changed Raymond Okoro daily maintenance ASA 81 mg from chewed to swallowed and made SBAR Hgb dynamic; changed Dolores Price (`605`) secondary line to single-lumen PICC for heparin flush trap; fixed argatroban logged start rate (`2 mcg/kg/min`). | INS 2021/2024 Infusion Standards; ACC/AHA; internal consistency. |
+| Pediatrics (`case-peds1.js`) | Fixed Leo Park Holliday-Segar math wording (70 vs 48 mL/h = nearly 1.5×, not >2×); made IV room clue reflect `P.ivFixed`. | Holliday-Segar arithmetic; internal consistency. |
+| Evenings 4W (`case-medsurg2.js`) | Computed dynamic CIWA-Ar sub-scores summing exactly to `c`; removed urticaria/hives from AHTR (`425`) presentation; ordered D50 before regular insulin IV (`427`); aligned Amina cipro pre-op order window to 120 min; updated COPD hypercapnia rationale to V/Q mismatch & Haldane effect. | CIWA-Ar; AABB transfusion reactions; hyperkalemia safety; GOLD COPD physiology. |
+| Days 4W (`case-medsurg1.js`) | Labeled Mr. Bell's SBP −22 / HR +20 as positive orthostatic hypotension; added SSC 2021 balanced crystalloid & 30 mL/kg reassessment nuance; added oral KCl >40 mEq GI splitting check for Mr. Ortiz. | Orthostatic hypotension criteria; SSC 2021; oral KCl GI safety. |
+| ICU (`case-icu1.js`) | Replaced routine gastric residual language with ASPEN/SCCM tolerance check (`712`); enabled second KCl 20 mEq protocol run for `713` per `"repeat once if < 3.5"` order. | ASPEN/SCCM nutrition guidelines; internal order consistency. |
+| Law & Pocket Ref (`law.js`, `ref.js`) | Updated General US standing-restraint wording to federal CMS 42 CFR 482.13; added RN/PA F2F physician consultation requirement; updated OB late decels to ACOG 2022 (no routine maternal O₂ if SpO₂ normal); clarified newborn resting vs PALS awake HR. | CMS 42 CFR 482.13; ACOG 2022; PALS. |
+| Drills & NGN (`drills-*.js`, `ngn*.js`, `floor-more.js`) | Rewrote `mp-h-oxy-poss2` stem to true POSS 2 and refined `mp-h-ssri-teen`; updated `mp-dka-k` to 2024 ADA K⁺ < 3.5 threshold; added CO pulse-ox caveat to `wf-burn-airway`; removed orphaned hospice sentence from `wf-neutro`; clarified `mp-apap-max` math; fixed `sb-compartment`, `sb-stemi`, `sb-h-na`, and hyponatremia ≤ 6–8 mEq/L/24h cap; fixed `ed-hl` arrival ambiguity, `pd-mat` sleeping infant HR, `p4-sata` national mandated-reporter wording, `ob-ch1` glucose threshold (`32 mg/dL`), `ms1-ch1` row count, `cs-preterm` Mg units (`4.8–8.4 mg/dL`), and ABA/ABLS 2 mL/kg/%TBSA note on Parkland items; replaced 4 duplicate-topic challenge items (`sd-ch1`, `icu-ch1`, `ld-ch1`, `p4-ch2`) with fresh unit-relevant items. | 2024 ADA; AAP; US hyponatremia consensus; ABA/ABLS; NCLEX-RN blueprint. |
+
 ## November 1, 2026: Round 3 playtest fixes (needs nurse review)
 
 | Where | What changed | Basis |

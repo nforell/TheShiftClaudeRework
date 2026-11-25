@@ -203,7 +203,7 @@
           if (dose !== 1) A.judge('22-tpa-dose', 'meds', -1, `You gave the wrong tenecteplase dose.`, `For stroke, 0.25 mg/kg to a maximum of 25 mg: 20.5 mg for 82 kg. The higher MI dose doesn't apply.`, '22');
           if (v.SBP > 185) A.judge('22-tpa-bp', 'meds', -2, `You gave tenecteplase with a pressure over 185.`, `Above 185/110, the risk of brain hemorrhage climbs. Lower it first.`, '22');
           P.ichAt = s.t + 45;
-          return `Tenecteplase 20.5 mg IV push.`;
+          return `Tenecteplase ${['', '20.5 mg', '25 mg', '41 mg'][dose] || '20.5 mg'} IV push.`;
         },
       },
       { id: '22-asa', name: 'Aspirin', dose: '325 mg', route: 'PO', freq: 'Once (stroke order set)', prn: true, available: (s, P) => P.ir !== null || P.called !== null, checks: (s, P) => [{ label: 'Swallow screen', value: P.swallow ? 'Failed' : 'Not done', ok: false }, { label: 'Thrombolytic', value: P.tpaGiven !== null ? 'Given: no antiplatelets for 24 h' : 'Not given', ok: P.tpaGiven === null }], give(s, P, A) { P.water = true; A.judge('22-asa', 'meds', -2, `You gave Mr. Haskins an oral pill ${P.swallow ? 'after he failed' : 'without'} a swallow screen.`, `Nothing by mouth until he passes a swallow screen. Aspirin can go rectally, and not at all before thrombectomy unless the team says so.`, '22'); return `He coughs and sputters on the pill.`; } },
@@ -477,7 +477,7 @@
         doses: [{ id: 1, label: '10 mg IV, diluted, over at least 20 minutes' }, { id: 2, label: '10 mg IM' }, { id: 3, label: '10 mg IV push' }],
         give(s, P, A, dose) { P.vitk = dose; A.judge('25-vitk', 'meds', dose === 1 ? 1 : -1, dose === 1 ? `You gave vitamin K IV slowly.` : `You gave vitamin K by the wrong route.`, `PCC works in minutes but wears off; vitamin K keeps the INR corrected. Give it IV, slowly: a fast push can cause anaphylactoid reactions, and IM in an anticoagulated patient causes a hematoma and absorbs unpredictably.`, '25'); return `Vitamin K 10 mg ${['', 'IV in 50 mL over 20 minutes', 'IM, deltoid', 'IV push'][dose]}.`; } },
       { id: '25-ond', name: 'Ondansetron', dose: '4 mg', route: 'IV', freq: 'As needed, nausea', prn: true, checks: (s, P) => [{ label: 'Last neuro check', value: P.checks.length ? clock(P.checks[P.checks.length - 1]) : 'None', ok: P.checks.length && s.t - P.checks[P.checks.length - 1] <= 15 }], give(s, P, A) { P.ond = true; if (P.bleed >= .55 && !(P.checks.length && s.t - P.checks[P.checks.length - 1] <= 15)) A.judge('25-ond', 'judgment', -2, `You treated Mr. Jensen's vomiting without checking his neuro status.`, `New vomiting after a head injury is a sign of rising pressure in the skull. Do a neuro check and call; the antiemetic comes after.`, '25'); return `Ondansetron 4 mg IV.`; } },
-      { id: '25-apap', name: 'Acetaminophen', dose: '650 mg', route: 'PO', freq: 'As needed, headache', prn: true, checks: (s, P) => [{ label: 'Diet', value: 'NPO until CT read', ok: P.ctSeen }], give: () => `Acetaminophen 650 mg.` },
+      { id: '25-apap', name: 'Acetaminophen', dose: '650 mg', route: 'PO', freq: 'As needed, headache', prn: true, checks: (s, P) => [{ label: 'Diet', value: P.ctSeen ? 'NPO — acute subdural hematoma, neurosurgical candidate' : 'NPO until CT read', ok: false }], give(s, P, A) { A.judge('25-apap-npo', 'safety', -2, `You gave Mr. Jensen an oral medication while NPO for a head injury${P.ctSeen ? ' with an acute subdural hematoma' : ''}.`, `Keep patients with acute intracranial hemorrhage and declining neuro status strictly NPO for aspiration risk and potential emergency surgery. Ask for IV or rectal acetaminophen if needed.`, '25'); return `Acetaminophen 650 mg PO given despite NPO status.`; } },
     ],
     talk: (s, P) => (P.gone ? null : P.bleed >= .8 ? 'har_out' : P.k.talked ? 'har_after' : 'har_talk'),
     family: { name: 'Karen', rel: 'Daughter', mode: 'bedside', cost: 3, avail: (s, P) => !P.gone, dialog: (s, P) => (P.k.karen ? 'karen_after' : 'karen_talk') },
@@ -506,7 +506,7 @@
       },
     },
     scene: (s, P) => ({ tele: true, iv: P.pcc !== null && s.t - P.pcc < 15 ? 'running' : 'lock', fallPrec: true, tray: 'none', family: P.gone ? null : 'karen', familyLabel: 'Karen, his daughter', empty: P.gone, emptyText: 'Stretcher empty. To the OR with neurosurgery.' }),
-    clues: () => ({ family: `Karen, still in her work lanyard, his pill organizer in her hand. Wednesday's slot is empty.`, alarm: `Bed alarm on, rails up.` }),
+    clues: () => ({ family: `Karen, still in her work lanyard, his pill organizer in her hand. Wednesday's evening warfarin is still in the slot.`, alarm: `Bed alarm on, rails up.` }),
     rig: (s, P) => ({ confused: P.bleed >= .4 && P.bleed < 1, alert: P.bleed >= 1 ? 2 : P.bleed >= .6 ? 1 : 0, pain: P.bleed >= .4 ? 6 : 2, nausea: P.bleed >= .55 && P.bleed < 1 }),
     status: (s, P) => (P.gone ? 'gone' : gcs(P) < 15 ? 'urgent' : 'watch'),
     outcome(s, P) {
@@ -601,7 +601,7 @@
     ] },
     karen_a: { who: 'karen', pid: '25', text: `"Okay. He'll hate it." She pulls a chair closer. "I'll stay."` },
     karen_b: { who: 'karen', pid: '25', text: `"Great." She starts looking up the parking validation.` },
-    karen_after: { who: 'karen', pid: '25', text: `"He took his warfarin this morning. I set it up in his pill box. Wednesday's empty."` },
+    karen_after: { who: 'karen', pid: '25', text: `"He takes his warfarin at six every evening. I brought his pill box—Wednesday's evening pill is still in there, and he never misses a day."` },
   };
 
   /* ---------- events ---------- */
@@ -712,7 +712,7 @@
   const LK = (skin, shade, lip, blush, iris, hair, hcol, cloth, extras, smile) => ({ skin, shade, lip, blush, iris, head: { w: 55, h: 61, jaw: .42 }, eye: 9.8, hair: { style: hair, color: hcol }, brow: { w: 3.6, color: hcol }, body: { w: 82, cloth }, extras: extras || [], smile: smile === undefined ? .35 : smile });
   S.engine.registerCase({
     id: 'ed-podb-1', title: 'Evenings in the ED', unit: 'Emergency Department, Pod B', unitShort: 'ED Pod B', level: 'Specialty: Emergency', start: 15 * 60, length: 300, novaCredits: 3,
-    card: 'The ED from three to eight: a stroke alert with the wrong onset time, "indigestion" that becomes a STEMI, a pregnancy test and shoulder pain, and two more coming through the doors.',
+    card: 'The ED from three to eight: a stroke alert, epigastric discomfort, abdominal pain in a young woman, and two more arriving.',
     hero: { head: 'Evenings, ED Pod B. Three bays and the doors keep opening.', lede: 'Emergency department, 15:00 to 20:00. Every patient comes with a clock: a treatment window, a door-to-balloon time, a scan that\'s backed up. The facts that change the plan come from asking.' },
     intro: { time: '14:58', place: 'Emergency Department, Pod B', cta: 'Take report', beats: ['Paul is handing off Pod B at the board between ambulances.', 'Three in beds and two more on the way before eight.', 'Triage notes and EMS reports are where the story starts. They aren\'t where it ends.'] },
     minutes: 25,

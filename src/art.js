@@ -53,37 +53,140 @@
     if (!psy || f.o2) back += `<rect x="404" y="58" width="222" height="34" rx="7" fill="var(--scene-panel)"/><circle cx="426" cy="75" r="6.5" fill="#6FA785"/><circle cx="446" cy="75" r="6.5" fill="var(--scene-frame)" stroke="#9AA9A6"/><rect x="592" y="67" width="22" height="16" rx="3" fill="var(--scene-frame)" stroke="#9AA9A6"/>`;
     if (!psy || f.o2) back += hot('o2', 'Oxygen flowmeter', `<rect x="562" y="62" width="16" height="36" rx="4" fill="#DCE8E5" stroke="#86A39C"/><circle cx="570" cy="${f.o2 ? 92 - Math.min(+f.o2 || 2, 10) * 2.4 : 90}" r="3.5" fill="${+f.o2 >= 5 ? '#D9822B' : '#2F8F6B'}"/>${f.o2 ? `<path d="M570 98 C 572 140 590 160 576 172" stroke="#BFE2E8" stroke-width="3" fill="none"/><rect x="540" y="100" width="34" height="15" rx="4" fill="#fff" stroke="#86A39C" opacity=".92"/><text x="557" y="111.5" text-anchor="middle" font-size="10" font-weight="700" fill="${+f.o2 >= 5 ? '#9A5A12' : '#22604A'}" font-family="Atkinson Hyperlegible Mono, monospace">${+f.o2 || 2} L</text>` : ''}`);
     if (f.tele) {
-      const vv = S.engine.api(s).vitals(def.id), hr = vv.HR;
-      // The screen tells the room's state: amber for a reading out of range, red (and a flashing marker) for one that
-      // needs someone now. The pleth wave under the ECG flattens as SpO2 falls, the way a poor signal looks.
-      const o2 = +vv.SpO2 || 98, lvl = o2 < 88 || hr < 45 || hr > 140 ? 2 : o2 < 92 || hr < 50 || hr > 120 ? 1 : 0;
-      mon = lvl; const ALC = ['#2b3a3f', '#E0A526', '#ff6b5f'][lvl], amp = Math.max(2, Math.min(10, (o2 - 80) * .6));
-      const pleth = Array.from({ length: 14 }, (_, i) => `${656 + i * 8},${170 - (i % 3 === 1 ? amp : i % 3 === 2 ? amp * .35 : 0)}`).join(' ');
-      // Labor rooms: the bedside screen is the fetal monitor, so it shows the baby's heart rate under the mother's.
-      const fm = /FHR\D*?(\d+)(s)?/.exec(vv.extra || ''), fhr = fm ? +fm[1] + (fm[2] ? 5 : 0) : 0;
-      back += hot('monitor', `${fhr ? 'Bedside and fetal monitor' : 'Cardiac monitor'}: heart rate ${hr}, ${fhr ? `fetal heart rate ${fhr}` : `SpO₂ ${vv.SpO2}%`}`, `<rect x="648" y="112" width="124" height="74" rx="7" fill="#0f1b1f" stroke="${ALC}" stroke-width="${lvl ? 4 : 3}"/>${lvl === 2 ? `<path d="M710 116 l7 12 h-14 Z" fill="#ff6b5f" class="blink"/>` : ""}${fm ? '' : `<polyline points="${pleth}" fill="none" stroke="${o2 < 92 ? '#E0A526' : '#7fc8e8'}" stroke-width="1.6" opacity=".85"/>`}
-        <polyline points="${f.teleWave === 'afib' ? '656,152 660,150 664,153 668,151 671,152 674,138 677,160 680,152 684,150 688,153 692,151 696,152 699,136 702,161 705,152 711,151 716,153 719,152 722,137 725,160 728,152 734,150 739,153 744,151 750,152 753,138 756,160 759,152 764,151' : f.teleWave === 'tors' ? '656,152 660,140 664,166 668,134 672,170 676,130 680,174 684,132 688,170 692,140 696,162 700,146 704,158 708,144 712,162 716,134 720,172 724,128 728,176 732,130 736,170 740,138 744,164 748,146 752,158 756,150 764,152' : f.teleWave === 'stemi' ? '656,152 668,152 672,156 676,128 680,158 684,142 690,138 698,140 704,152 722,152 726,156 730,128 734,158 738,142 744,138 752,140 758,152 764,152' : f.teleWave === 'peaked' ? '656,152 666,152 670,144 674,160 678,152 686,152 693,122 700,152 712,152 716,144 720,160 724,152 732,152 739,122 746,152 764,152' : '656,152 670,152 674,140 678,162 682,152 706,152 710,136 714,164 718,152 740,152 746,144 750,158 754,152 764,152'}" stroke="#58d68d" stroke-width="1.8" fill="none" class="ecg"/>
-        <text x="764" y="132" text-anchor="end" fill="${hr < 50 || hr > 130 ? '#ff6b5f' : hr > 110 ? '#F2C12E' : '#58d68d'}" font-size="16" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${hr}</text>
-        <text x="656" y="132" fill="#58d68d" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">HR</text><text x="656" y="180" fill="#7fc8e8" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${fhr ? 'FHR' : 'SpO₂'}</text><text x="764" y="180" text-anchor="end" fill="${fhr ? (fhr < 110 || fhr > 160 ? '#ff6b5f' : '#7fc8e8') : o2 < 88 ? '#ff6b5f' : o2 < 92 ? '#F2C12E' : '#7fc8e8'}" font-size="13" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${fhr || S.engine.api(s).vitals(def.id).SpO2}</text><path d="M710 186 V 250" stroke="#8F9A98" stroke-width="4"/>`);
+      const vv = S.engine.api(s).vitals(def.id), hr = vv.HR, o2 = +vv.SpO2 || 98;
+      // Age-appropriate monitor alarm thresholds: a 4-month-old infant at HR 148 is normal, not a code alarm.
+      const hrNorm = (def.norms && def.norms.HR) || [55, 100], o2Lo = (def.norms && def.norms.SpO2 && def.norms.SpO2[0]) || 92;
+      const hrCrit = hr < Math.max(35, hrNorm[0] - 15) || hr > hrNorm[1] + 40;
+      const hrWarn = hr < Math.max(45, hrNorm[0] - 5) || hr > hrNorm[1] + 20;
+      const o2Crit = o2 < o2Lo - 4, o2Warn = o2 < o2Lo;
+      let lvl = o2Crit || hrCrit ? 2 : o2Warn || hrWarn ? 1 : 0;
+      const efm = f.efm || null;
+      if (efm) {
+        if (efm.cat >= 3 || efm.fhr < 100) lvl = 2;
+        else if (efm.cat === 2 || efm.fhr < 110 || efm.fhr > 160 || efm.toco === 'tachy') lvl = Math.max(lvl, 1);
+      }
+      if (f.ventAlarm) lvl = 2;
+      mon = lvl; const ALC = ['#2b3a3f', '#E0A526', '#ff6b5f'][lvl];
+      if (efm) {
+        // Live 2-channel SVG Fetal Monitor Strip: upper FHR trace (baseline + variability + decels), lower TOCO trace.
+        const fy = (bpm) => Math.max(118, Math.min(162, 166 - ((bpm - 60) / 140) * 46));
+        const baseY = fy(efm.fhr);
+        const ampV = efm.var === 'absent' ? 0.6 : efm.var === 'min' ? 1.8 : 4.2;
+        const fhrPts = Array.from({ length: 28 }, (_, i) => {
+          const x = 648 + i * 4.7;
+          let dip = 0;
+          if (efm.decel === 'late' && ((i >= 8 && i <= 14) || (i >= 20 && i <= 26))) dip = 16 * Math.sin(((i % 12) - 8 + 12) % 12 / 6 * Math.PI);
+          else if (efm.decel === 'var' && (i === 9 || i === 10 || i === 21 || i === 22)) dip = 18;
+          else if (efm.decel === 'prolonged' && i >= 6) dip = Math.min(22, (i - 5) * 3.5);
+          const jitter = Math.sin(i * 2.7) * ampV + Math.cos(i * 4.1) * (ampV * 0.5);
+          return `${x.toFixed(1)},${Math.max(117, Math.min(163, baseY + Math.max(0, dip) + jitter)).toFixed(1)}`;
+        }).join(' ');
+        const tocoPts = Array.from({ length: 28 }, (_, i) => {
+          const x = 648 + i * 4.7;
+          let h = 0;
+          if (efm.toco === 'flat') h = 0.6;
+          else if (efm.toco === 'tachy') h = Math.max(0, Math.sin(i * 0.95)) * 18 + 3;
+          else h = Math.max(0, Math.sin((i - 3) * 0.52) - 0.18) * 21;
+          return `${x.toFixed(1)},${(197 - h).toFixed(1)}`;
+        }).join(' ');
+        const fhrCol = efm.fhr < 110 || efm.fhr > 160 ? '#ff6b5f' : '#7fc8e8';
+        const tocoCol = efm.toco === 'flat' ? '#ff6b5f' : efm.toco === 'tachy' ? '#F2C12E' : '#85D6A3';
+        back += hot('monitor', `Fetal monitor strip: FHR ${efm.fhr}, maternal HR ${hr}, ${efm.toco === 'flat' ? 'loss of uterine tone' : efm.toco === 'tachy' ? 'tachysystole' : 'regular contractions'}`,
+          `<rect x="638" y="104" width="146" height="106" rx="8" fill="#0d181c" stroke="${ALC}" stroke-width="${lvl ? 3.5 : 2.5}"/>
+          <rect x="644" y="114" width="134" height="52" rx="3" fill="#132329"/>
+          <path d="M644 127 h134 M644 140 h134 M644 153 h134" stroke="#223a42" stroke-width=".7"/>
+          <rect x="644" y="170" width="134" height="32" rx="3" fill="#132329"/>
+          <path d="M644 181 h134 M644 192 h134" stroke="#223a42" stroke-width=".7"/>
+          <polyline points="${fhrPts}" fill="none" stroke="${fhrCol}" stroke-width="1.8"/>
+          <polyline points="${tocoPts}" fill="none" stroke="${tocoCol}" stroke-width="1.8"/>
+          ${lvl === 2 ? `<path d="M711 107 l6 10 h-12 Z" fill="#ff6b5f" class="blink"/>` : ''}
+          <text x="647" y="124" fill="${fhrCol}" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">FHR</text>
+          <text x="774" y="125" text-anchor="end" fill="${fhrCol}" font-size="13" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${efm.fhr}</text>
+          <text x="647" y="179" fill="${tocoCol}" font-size="8" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">TOCO${efm.toco === 'tachy' ? ' · TACHY' : efm.toco === 'flat' ? ' · FLAT' : ''}</text>
+          <text x="774" y="179" text-anchor="end" fill="#58d68d" font-size="9.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">MHR ${hr}</text>
+          <path d="M711 210 V 256" stroke="#8F9A98" stroke-width="4"/>`);
+      } else {
+        // Multi-parameter bedside monitor: ECG + HR, pleth + SpO2, NIBP/MAP + RR.
+        const amp = Math.max(2, Math.min(9, (o2 - 80) * .55));
+        const pleth = Array.from({ length: 14 }, (_, i) => `${648 + i * 7.5},${162 - (i % 3 === 1 ? amp : i % 3 === 2 ? amp * .35 : 0)}`).join(' ');
+        const mapVal = Math.round((vv.SBP + 2 * vv.DBP) / 3);
+        const bpStr = kind === 'icu' ? `${vv.SBP}/${vv.DBP} (${mapVal})` : `${vv.SBP}/${vv.DBP}`;
+        back += hot('monitor', `Bedside monitor: heart rate ${hr}, SpO₂ ${vv.SpO2}%, BP ${vv.SBP}/${vv.DBP}, RR ${vv.RR}`, `<rect x="640" y="106" width="144" height="94" rx="8" fill="#0d181c" stroke="${ALC}" stroke-width="${lvl ? 3.5 : 2.5}"/>${lvl === 2 ? `<path d="M712 110 l6.5 11 h-13 Z" fill="#ff6b5f" class="blink"/>` : ''}
+          <polyline points="${f.teleWave === 'afib' ? '648,140 652,138 656,141 660,139 663,140 666,127 669,147 672,140 676,138 680,141 684,139 688,140 691,125 694,148 697,140 703,139 708,141 711,140 714,126 717,147 720,140 726,138 731,141 736,139 742,140 745,127 748,147 751,140 756,139' : f.teleWave === 'tors' ? '648,140 652,128 656,154 660,122 664,158 668,120 672,160 676,122 680,158 684,128 688,150 692,134 696,146 700,132 704,150 708,122 712,158 716,120 720,160 724,122 728,156 732,126 736,152 740,134 744,146 748,138 756,140' : f.teleWave === 'stemi' ? '648,140 660,140 664,144 668,118 672,146 676,130 682,126 690,128 696,140 714,140 718,144 722,118 726,146 730,130 736,126 744,128 750,140 756,140' : f.teleWave === 'peaked' ? '648,140 658,140 662,132 666,148 670,140 678,140 685,112 692,140 704,140 708,132 712,148 716,140 724,140 731,112 738,140 756,140' : '648,140 662,140 666,128 670,150 674,140 698,140 702,125 706,151 710,140 732,140 738,132 742,146 746,140 756,140'}" stroke="#58d68d" stroke-width="1.7" fill="none" class="ecg"/>
+          <polyline points="${pleth}" fill="none" stroke="${o2Warn ? '#E0A526' : '#7fc8e8'}" stroke-width="1.5" opacity=".88"/>
+          <text x="648" y="122" fill="#58d68d" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">HR</text>
+          <text x="776" y="126" text-anchor="end" fill="${hrCrit ? '#ff6b5f' : hrWarn ? '#F2C12E' : '#58d68d'}" font-size="16" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${hr}</text>
+          <text x="648" y="175" fill="#7fc8e8" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">SpO₂</text>
+          <text x="776" y="176" text-anchor="end" fill="${o2Crit ? '#ff6b5f' : o2Warn ? '#F2C12E' : '#7fc8e8'}" font-size="13.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${vv.SpO2}%</text>
+          <line x1="646" y1="181" x2="778" y2="181" stroke="#22363d" stroke-width="1"/>
+          <text x="648" y="194" fill="#d9e4e8" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">${bpStr}</text>
+          <text x="776" y="194" text-anchor="end" fill="#F2C12E" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">RR ${vv.RR}</text>
+          <path d="M712 200 V 252" stroke="#8F9A98" stroke-width="4"/>`);
+      }
     }
-    // IV pole, pump and line
+    // IV pole, smart pump (and ICU vasopressor stack when f.pressor is active)
     const ivOn = f.iv && f.iv !== 'lock', blood = f.iv === 'blood', bag = blood ? '#9E1B22' : '#E8F2F6', line = blood ? '#B3262D' : '#BCD7E0';
-    if (!psy || f.iv) back += hot('iv', 'IV site and pump', `<rect x="236" y="50" width="56" height="350" fill="#fff" fill-opacity="0"/><path d="M262 52 V400" stroke="#8F9A98" stroke-width="4.5"/><path d="M246 52 h32" stroke="#8F9A98" stroke-width="4"/>
-      ${ivOn ? `<path d="M250 58 q-8 30 8 48 q14 -18 6 -48 Z" fill="${bag}" stroke="#9FB6C1" stroke-width="1.5"/>` : ''}${f.bloodHung && !blood ? `<path d="M272 60 q-6 22 6 36 q10 -14 4 -36 Z" fill="#9E1B22" opacity=".8"/><path d="M278 96 v10" stroke="#555" stroke-width="4"/>` : ''}
-      <rect x="247" y="160" width="32" height="44" rx="5" fill="#E4EBE9" stroke="#8A9A96" opacity="${ivOn ? 1 : .55}"/><rect x="252" y="167" width="22" height="11" rx="2" fill="${f.iv === 'bolus' ? '#F3C35B' : ivOn ? '#9FE0B8' : '#C9D2CF'}" class="${f.iv === 'bolus' ? 'blink' : ''}"/><text x="263" y="194" text-anchor="middle" font-size="7.5" font-weight="700" fill="#3F4B48" font-family="Atkinson Hyperlegible Mono, monospace">${f.iv === 'bolus' ? 'BOLUS' : blood ? 'BLOOD' : ivOn ? 'RUN' : 'LOCK'}</text>
-      ${ivOn ? `<path d="M263 204 C 262 280 360 300 ${X - 50} ${B + 16}" stroke="${line}" stroke-width="${blood ? 3 : 2.4}" fill="none"/>` : ''}`);
+    if (!psy || f.iv) back += hot('iv', f.pressor ? `Vasopressor pump: ${f.pressor.drug} ${f.pressor.rate} mcg/min` : 'IV site and pump', `<rect x="234" y="50" width="60" height="350" fill="#fff" fill-opacity="0"/><path d="M262 52 V400" stroke="#8F9A98" stroke-width="4.5"/><path d="M244 52 h36" stroke="#8F9A98" stroke-width="4"/>
+      ${ivOn ? `<path d="M250 58 q-8 30 8 48 q14 -18 6 -48 Z" fill="${bag}" stroke="#9FB6C1" stroke-width="1.5"/>` : ''}${f.pressor ? `<path d="M272 58 q-6 26 6 42 q10 -16 4 -42 Z" fill="#F7E1B5" stroke="#C49A45" stroke-width="1.4"/>` : ''}${f.bloodHung && !blood ? `<path d="M272 60 q-6 22 6 36 q10 -14 4 -36 Z" fill="#9E1B22" opacity=".8"/><path d="M278 96 v10" stroke="#555" stroke-width="4"/>` : ''}
+      <rect x="245" y="156" width="36" height="44" rx="5" fill="#E4EBE9" stroke="#8A9A96" opacity="${ivOn ? 1 : .55}"/><rect x="250" y="163" width="26" height="11" rx="2" fill="${f.iv === 'bolus' ? '#F3C35B' : ivOn ? '#9FE0B8' : '#C9D2CF'}" class="${f.iv === 'bolus' ? 'blink' : ''}"/><text x="263" y="191" text-anchor="middle" font-size="7.5" font-weight="700" fill="#3F4B48" font-family="Atkinson Hyperlegible Mono, monospace">${f.iv === 'bolus' ? 'BOLUS' : blood ? 'BLOOD' : ivOn ? 'RUN' : 'LOCK'}</text>
+      ${f.pressor ? `<rect x="242" y="206" width="42" height="48" rx="5" fill="#18272c" stroke="${f.pressor.map < 65 ? '#E0A526' : '#5e7e85'}" stroke-width="1.8"/><text x="263" y="219" text-anchor="middle" font-size="7.5" font-weight="700" fill="#F2C12E" font-family="Atkinson Hyperlegible Mono, monospace">${f.pressor.drug} ${f.pressor.rate}</text><text x="263" y="231" text-anchor="middle" font-size="6.8" fill="#a8c3cb" font-family="Atkinson Hyperlegible Mono, monospace">mcg/min</text><text x="263" y="245" text-anchor="middle" font-size="7.5" font-weight="700" fill="${f.pressor.map < 65 ? '#ff6b5f' : '#58d68d'}" font-family="Atkinson Hyperlegible Mono, monospace">MAP ${f.pressor.map}</text>` : ''}
+      ${ivOn ? `<path d="M263 ${f.pressor ? 254 : 200} C 262 280 360 300 ${X - 50} ${B + 16}" stroke="${line}" stroke-width="${blood ? 3 : 2.4}" fill="none"/>` : ''}`);
     if (f.pca) back += hot('pca', 'PCA pump', `<rect x="244" y="212" width="36" height="40" rx="5" fill="#EFE6D2" stroke="#9A8E72"/><rect x="250" y="218" width="24" height="10" rx="2" fill="#2F6B5A"/><circle cx="262" cy="240" r="4" fill="#C84B3A"/><path d="M262 252 C 270 330 330 350 ${X - 190} 360" stroke="#6E6A60" stroke-width="2.4" fill="none"/><rect x="${X - 196}" y="352" width="16" height="28" rx="6" fill="#C84B3A" stroke="#7C2A20"/>`);
+    // ICU Mechanical Ventilator tower + corrugated breathing circuit to ETT
+    if (f.vent && !f.empty) {
+      const vm = f.ventMeta || { tv: 400, peep: 8, fio2: 40, peak: 26 }, al = !!f.ventAlarm;
+      const vWave = al ? '122,222 132,222 138,196 144,196 148,222 162,222 168,194 174,194 178,222 194,222 200,196 206,196 210,222' : '122,222 132,222 140,206 152,208 158,222 174,222 182,206 194,208 200,222 214,222';
+      back += hot('vent', `Mechanical ventilator${al ? ': HIGH PRESSURE alarm' : ''}`, `<g>
+        <rect x="148" y="274" width="38" height="114" rx="5" fill="#DCE4E6" stroke="#8C9A9E" stroke-width="2"/>
+        <rect x="130" y="384" width="74" height="12" rx="4" fill="#7D8C90"/>
+        <circle cx="140" cy="398" r="5" fill="#465256"/><circle cx="194" cy="398" r="5" fill="#465256"/>
+        <rect x="114" y="176" width="108" height="98" rx="8" fill="#101D22" stroke="${al ? '#ff6b5f' : '#6A8188'}" stroke-width="${al ? 3.5 : 2.5}"/>
+        ${al ? `<rect x="120" y="182" width="96" height="13" rx="3" fill="#ff6b5f" class="blink"/><text x="168" y="191.5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" font-family="Atkinson Hyperlegible Mono, monospace">HIGH PRESSURE</text>` : `<text x="122" y="192" fill="#88A9B3" font-size="8" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">VENT · AC/VC</text>`}
+        <polyline points="${vWave}" fill="none" stroke="${al ? '#ff6b5f' : '#7fc8e8'}" stroke-width="1.8"/>
+        <text x="122" y="244" fill="#d9e6ea" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">VT ${vm.tv}</text>
+        <text x="214" y="244" text-anchor="end" fill="${al ? '#ff6b5f' : '#F2C12E'}" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">Pk ${vm.peak}</text>
+        <text x="122" y="262" fill="#85D6A3" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">PEEP ${vm.peep}</text>
+        <text x="214" y="262" text-anchor="end" fill="#7fc8e8" font-size="8.5" font-weight="700" font-family="Atkinson Hyperlegible Mono, monospace">FiO₂ ${vm.fio2}%</text>
+        <path d="M222 252 C 296 254 358 238 ${X - 24} 206" stroke="#A9C4CC" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+        <path d="M222 252 C 296 254 358 238 ${X - 24} 206" stroke="#7E9BA4" stroke-width="6.5" stroke-dasharray="3 5" fill="none"/>
+      </g>`);
+    }
     if (f.papers) back += hot('papers', 'Sketches', `<g transform="rotate(-4 330 150)"><rect x="300" y="104" width="54" height="70" fill="#FBF8EF" stroke="#D8D0BC"/><path d="M308 150 q12 -30 28 -6 q8 12 12 -8" stroke="#3A5A8C" stroke-width="2" fill="none"/><circle cx="328" cy="124" r="9" fill="none" stroke="#C8553D" stroke-width="2"/></g><g transform="rotate(5 380 170)"><rect x="352" y="134" width="46" height="60" fill="#FBF8EF" stroke="#D8D0BC"/><path d="M358 180 l10 -24 l8 16 l10 -20" stroke="#2E7C78" stroke-width="2" fill="none"/></g><g transform="rotate(8 680 150)"><rect x="652" y="112" width="52" height="66" fill="#FBF8EF" stroke="#D8D0BC"/><path d="M660 160 q16 -34 34 0 M664 130 h28" stroke="#8C3A7A" stroke-width="2" fill="none"/></g><g transform="rotate(-7 740 190)"><rect x="716" y="160" width="48" height="60" fill="#FBF8EF" stroke="#D8D0BC"/><path d="M722 200 c8 -18 16 8 24 -10 s10 6 12 -4" stroke="#C8553D" stroke-width="2" fill="none"/></g>`);
-    back += `<rect x="409" y="112" width="212" height="170" rx="26" fill="${psy ? wood : 'var(--scene-headboard)'}"/><ellipse cx="${X}" cy="238" rx="122" ry="46" fill="var(--scene-pillow)"/>`;
+    // Headboard & pillow: safe-sleep infant cribs apply only when the patient is an infant (def.look.small);
+    // adult postpartum/L&D rooms with f.crib get a separate rolling bedside bassinet instead.
+    const inCrib = !!(f.crib && def.look.small);
+    if (inCrib) {
+      back += `<rect x="${X - 246}" y="220" width="492" height="176" rx="14" fill="#ECE6D9" stroke="#C4BAA7" stroke-width="2.5"/><rect x="${X - 234}" y="294" width="468" height="96" rx="8" fill="#F4F1EA" stroke="#D5CEC0" stroke-width="1.5"/>`;
+      if (!f.empty) back += `<g aria-hidden="true" opacity=".9"><path d="M${X - 180} 222 C ${X - 180} 152 ${X - 70} 142 ${X - 20} 156" stroke="#C4BAA7" stroke-width="3.5" fill="none"/><path d="M${X - 60} 150 h80" stroke="#C4BAA7" stroke-width="2"/><line x1="${X - 54}" y1="150" x2="${X - 54}" y2="176" stroke="#B9B1A0" stroke-width="1.2"/><line x1="${X - 18}" y1="150" x2="${X - 18}" y2="184" stroke="#B9B1A0" stroke-width="1.2"/><line x1="${X + 16}" y1="150" x2="${X + 16}" y2="174" stroke="#B9B1A0" stroke-width="1.2"/><ellipse cx="${X - 54}" cy="180" rx="14" ry="7" fill="#DCE9F2"/><ellipse cx="${X - 18}" cy="188" rx="15" ry="7.5" fill="#F6E2B3"/><ellipse cx="${X + 16}" cy="178" rx="13" ry="6.5" fill="#E3EFE4"/></g>`;
+    } else {
+      back += `<rect x="409" y="112" width="212" height="170" rx="26" fill="${psy ? wood : 'var(--scene-headboard)'}"/><ellipse cx="${X}" cy="238" rx="122" ry="46" fill="var(--scene-pillow)"/>`;
+    }
     if (f.commode) back += hot('commode', 'Bedside commode', `<g transform="translate(140 318)"><rect x="0" y="0" width="70" height="12" rx="4" fill="#9AA6A9"/><path d="M6 12 L2 62 M64 12 L68 62" stroke="#9AA6A9" stroke-width="5"/><rect x="12" y="14" width="46" height="26" rx="5" fill="#E6EBEA" stroke="#9AA6A9"/></g>`);
     if (f.bipap) back += hot('bipap', 'BiPAP machine', `<rect x="300" y="330" width="66" height="44" rx="7" fill="#DDE4E6" stroke="#8B979A"/><rect x="310" y="338" width="30" height="14" rx="2" fill="#1d2b30"/><path d="M366 346 C 420 330 440 240 ${X - 26} 205" stroke="#B9C6CA" stroke-width="7" fill="none"/>`);
     if (f.cpap) back += hot('cpap', 'CPAP machine', `<rect x="150" y="352" width="54" height="34" rx="7" fill="#DFE3E3" stroke="#9AA4A4"/><circle cx="189" cy="369" r="7" fill="#BCC4C4"/><path d="M170 352 C 170 330 200 326 214 312" stroke="#BCC4C4" stroke-width="3" fill="none"/>`);
     // patient
     const person = f.empty
       ? `<rect x="${X - 236}" y="${B}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity=".8"/><rect x="${X - 90}" y="${B - 20}" width="180" height="26" rx="10" fill="var(--scene-sheet)"/><text x="${X}" y="${B + 70}" text-anchor="middle" fill="var(--ink-2)" font-size="18" font-family="Atkinson Hyperlegible Next, sans-serif" font-style="italic">${f.emptyText || 'Bed stripped. Transferred to ICU.'}</text>`
-      : `<g class="pt" data-act="poke" tabindex="0" role="button" aria-label="Speak to ${def.name}">${def.look.small ? `<rect x="${X - 236}" y="${B + 4}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity=".55"/>` : ''}${R.place(def.id, 'bed', v, def.look.small ? `translate(${X} ${150 + (1 - def.look.small) * 330}) scale(${def.look.small})` : `translate(${X} 150)`, 'room:' + def.id)}</g>`;
+      : `<g class="pt" data-act="poke" tabindex="0" role="button" aria-label="Speak to ${def.name}">${def.look.small ? `<rect x="${X - 236}" y="${B + 4}" width="472" height="140" rx="10" fill="var(--scene-blanket)" opacity="${inCrib ? .35 : .55}"/>` : ''}${R.place(def.id, 'bed', v, def.look.small ? `translate(${X} ${150 + (1 - def.look.small) * 330}) scale(${def.look.small})` : `translate(${X} 150)`, 'room:' + def.id)}</g>`;
     if (f.elevated && !f.empty) front += hot('leg', 'Elevated left leg', `<rect x="${X + 70}" y="${B + 4}" width="160" height="58" rx="20" fill="#fff" opacity="0"/><path d="M${X + 96} ${B + 22} q 44 -10 96 2" stroke="#D8918A" stroke-width="4" stroke-dasharray="3 4" fill="none" opacity=".75"/>`);
-    // foley
+    // Chest tube drainage system (Pleur-Evac / Atrium 3-chamber unit)
+    if (f.ctube && !f.empty) {
+      const lv = Math.max(0.15, Math.min(0.88, f.ctLevel || 0.5)), fh = Math.round(lv * 54), fy = 394 - fh;
+      front += hot('ctube', `Chest tube drainage system${f.ctClot ? ' (clots visible in tubing)' : ''}`, `<g>
+        <path d="M${X - 72} ${B + 18} C ${X - 120} ${B + 32} 364 316 350 326" stroke="${f.ctClot ? '#5E1117' : '#A43A3E'}" stroke-width="4.5" fill="none"/>
+        ${f.ctClot ? `<path d="M${X - 88} ${B + 22} l-18 6 M368 318 l-12 5" stroke="#2D070A" stroke-width="5.5" stroke-linecap="round"/>` : ''}
+        <rect x="306" y="324" width="68" height="76" rx="6" fill="#EFF4F5" stroke="#7E9196" stroke-width="2"/>
+        <rect x="312" y="334" width="14" height="60" rx="2" fill="#DCE9EE" stroke="#9BB2BA" stroke-width="1"/>
+        <rect x="313" y="376" width="12" height="17" fill="#77B8D1" opacity=".7"/>
+        <rect x="329" y="334" width="16" height="60" rx="2" fill="#F8F9FA" stroke="#9BB2BA" stroke-width="1"/>
+        <rect x="330" y="${fy}" width="14" height="${fh}" fill="#A6282E" opacity=".88"/>
+        <rect x="348" y="334" width="18" height="60" rx="2" fill="#F8F9FA" stroke="#9BB2BA" stroke-width="1"/>
+        <rect x="349" y="${fy + 6}" width="16" height="${Math.max(8, fh - 6)}" fill="#A6282E" opacity=".72"/>
+        <path d="M329 348 h16 M329 362 h16 M329 376 h16 M348 348 h18 M348 362 h18 M348 376 h18" stroke="#6F8288" stroke-width=".9"/>
+        ${f.ctClot ? `<circle cx="364" cy="330" r="4.5" fill="#ff6b5f" class="blink"/>` : ''}
+      </g>`);
+    }
+    // foley & groin dressing
     if (f.groin && !f.empty) front += hot('groin', 'Right groin dressing', `<g transform="translate(${X + 44} ${B + 46})"><rect x="-22" y="-12" width="44" height="26" rx="5" fill="#fff" opacity="0"/><rect x="-16" y="-8" width="32" height="18" rx="4" fill="#F4F1EA" stroke="#C9C2B4" stroke-width="1.5"/><path d="M-10 -2 h20 M-10 4 h20" stroke="#D9D2C4" stroke-width="1.5"/></g>`);
     if (f.foley) front += hot('foley', 'Foley bag', `<g transform="translate(${X + 170} 392)"><path d="M0 0 q-8 16 4 30" stroke="#E7D98F" stroke-width="3" fill="none"/><rect x="-14" y="26" width="36" height="40" rx="6" fill="#F7EBA4" stroke="#B9AD6A"/></g>`);
     // bed frame and alarm
@@ -109,15 +212,24 @@
     if (f.dino) tbl += hot('dino', 'Plush dinosaur', `<path d="M846 290 q-2 -18 12 -24 q6 -14 18 -10 q8 4 2 12 q10 6 6 22 Z" fill="#6DAA5C" stroke="#4E8040"/><circle cx="866" cy="260" r="1.8" fill="#1E2A18"/><path d="M852 290 v4 M866 290 v4" stroke="#4E8040" stroke-width="3"/>`);
     if (f.bottle) tbl += hot('bottle', 'Baby bottle', `<rect x="852" y="258" width="16" height="34" rx="4" fill="#F7F4EA" stroke="#BDB6A2"/><rect x="852" y="270" width="16" height="22" rx="3" fill="#F3E3B5" opacity=".9"/><path d="M855 258 q5 -12 10 0 Z" fill="#E8B77A"/>`);
     if (f.flowers) tbl += hot('flowers', 'Card on the table', `<path d="M850 264 L876 264 L876 292 L850 292Z" fill="#FFF6E8" stroke="#D5C7AD"/><path d="M856 274 q6 -6 12 0" stroke="#E07A5F" stroke-width="2" fill="none"/>`);
+    if (f.consent) { const cx = f.flowers && !f.tele ? 650 : 840, cy = f.flowers && !f.tele ? 152 : 260; tbl += hot('consent', 'Consent clipboard', `<rect x="${cx}" y="${cy}" width="32" height="32" rx="3" fill="#C7A57A" stroke="#8E6F49" stroke-width="1"/><rect x="${cx + 4}" y="${cy + 4}" width="24" height="25" fill="#FAFAF7"/><rect x="${cx + 10}" y="${cy - 2}" width="12" height="5" rx="1.5" fill="#6E7578"/><path d="M${cx + 8} ${cy + 11} h16 M${cx + 8} ${cy + 16} h16 M${cx + 8} ${cy + 21} h10" stroke="#7A868B" stroke-width="1.3"/>`); }
+    if (f.thermos) tbl += hot('thermos', 'Water thermos', `<rect x="784" y="248" width="18" height="44" rx="5" fill="#3E7C6E" stroke="#28544A" stroke-width="1.2"/><rect x="782" y="244" width="22" height="8" rx="3" fill="#2C5A50"/><path d="M788 260 h10" stroke="#A6D4C9" stroke-width="1.4" opacity=".7"/>`);
     front += psy ? `<g><rect x="760" y="292" width="132" height="12" rx="3" fill="${wood}"/><rect x="768" y="304" width="116" height="98" rx="4" fill="${woodD}"/><path d="M780 350 h92" stroke="${wood}" stroke-width="2"/>${tbl}</g>` : `<g><rect x="764" y="292" width="124" height="11" rx="3" fill="var(--scene-table)"/><rect x="820" y="303" width="9" height="100" fill="#8A8F91"/><rect x="796" y="400" width="56" height="8" rx="3" fill="#6F7577"/>${tbl}</g>`;
-    if (f.consent) tbl += hot('consent', 'Clipboard', `<rect x="840" y="262" width="30" height="30" rx="3" fill="#C7A57A"/><rect x="844" y="266" width="22" height="24" fill="#FAFAF7"/><path d="M848 272 h14 M848 277 h14 M848 282 h9" stroke="#9AA" stroke-width="1.3"/>`);
-    if (f.thermos) tbl += hot('thermos', 'Thermos', `<rect x="784" y="248" width="16" height="44" rx="5" fill="#3E7C6E"/><rect x="782" y="244" width="20" height="8" rx="3" fill="#2C5A50"/>`);
     if (f.packed) front += hot('packed', 'Packed bag by the door', `<g transform="translate(920 318)"><rect x="0" y="16" width="86" height="64" rx="10" fill="#4A5A6A" stroke="#33404C"/><path d="M22 16 q21 -26 42 0" stroke="#33404C" stroke-width="5" fill="none"/><rect x="30" y="30" width="26" height="16" fill="#F7E27A"/></g>`);
     if (f.visitor) front += hot('visitor', 'Visitor\'s tote bag', `<g transform="translate(792 336)"><path d="M0 14 h70 l-6 56 h-58 Z" fill="#C88E5A" stroke="#8E6038"/><path d="M16 14 q19 -24 38 0" stroke="#8E6038" stroke-width="4" fill="none"/><path d="M40 12 q14 -16 4 -26 q-10 -8 -2 -18" stroke="#EDEDED" stroke-width="3" fill="none"/></g>`);
-    // Crib: rails in front of a small child.
-    if (f.crib && !f.empty) front += hot('crib', 'Crib rails', `<rect x="${X - 244}" y="286" width="488" height="120" fill="#fff" fill-opacity="0"/><rect x="${X - 246}" y="284" width="492" height="9" rx="4" fill="#E8E2D6" stroke="#B9B1A0"/>${Array.from({ length: 19 }, (_, i) => `<rect x="${X - 236 + i * 26}" y="292" width="5" height="110" rx="2" fill="#EFEAE0" stroke="#C9C1B0" stroke-width=".8"/>`).join('')}<rect x="${X - 250}" y="250" width="12" height="160" rx="5" fill="#E8E2D6" stroke="#B9B1A0"/><rect x="${X + 238}" y="250" width="12" height="160" rx="5" fill="#E8E2D6" stroke="#B9B1A0"/>`);
+    // Safe-sleep crib rails for infant patients; rolling acrylic bedside bassinet for adult postpartum/L&D mothers.
+    if (inCrib && !f.empty) front += hot('crib', 'Crib rails', `<rect x="${X - 244}" y="286" width="488" height="120" fill="#fff" fill-opacity="0"/><rect x="${X - 246}" y="284" width="492" height="10" rx="5" fill="#E8E2D6" stroke="#B9B1A0"/>${Array.from({ length: 19 }, (_, i) => `<rect x="${X - 236 + i * 26}" y="294" width="5" height="108" rx="2" fill="#EFEAE0" stroke="#C9C1B0" stroke-width=".8"/>`).join('')}<rect x="${X - 250}" y="236" width="12" height="174" rx="5" fill="#E8E2D6" stroke="#B9B1A0"/><rect x="${X + 238}" y="236" width="12" height="174" rx="5" fill="#E8E2D6" stroke="#B9B1A0"/>`);
+    else if (f.crib && !f.empty) front += hot('crib', 'Bassinet', `<g><rect x="148" y="286" width="78" height="36" rx="7" fill="#EBF4F7" fill-opacity=".75" stroke="#8FB0BC" stroke-width="2"/><rect x="154" y="308" width="66" height="11" rx="4" fill="#F8F5EE"/><ellipse cx="184" cy="306" rx="18" ry="8" fill="#DCE9F5" stroke="#AFC4D8" stroke-width="1"/><circle cx="170" cy="304" r="6" fill="#E8C2A2"/><rect x="152" y="322" width="70" height="6" rx="2" fill="#9EB0B6"/><rect x="160" y="328" width="54" height="58" rx="4" fill="#E6ECEE" stroke="#9EB0B6" stroke-width="1.5"/><rect x="166" y="336" width="42" height="18" rx="2" fill="#F6F8F9" stroke="#B8C4C8"/><path d="M164 386 v14 M210 386 v14" stroke="#6E7C80" stroke-width="3"/><circle cx="164" cy="402" r="4" fill="#465256"/><circle cx="210" cy="402" r="4" fill="#465256"/></g>`);
     if (f.walker) front += hot('walker', 'Walker', `<g transform="translate(930 250)"><rect x="-6" y="-6" width="62" height="168" fill="#fff" fill-opacity="0"/><path d="M0 0 L10 150 M50 0 L40 150 M0 0 H50 M4 60 H46" stroke="#9AA6A9" stroke-width="5" fill="none"/><circle cx="10" cy="152" r="5" fill="#555"/><circle cx="40" cy="152" r="5" fill="#555"/></g>`);
-    if (f.family) front += hot('family', f.familyLabel || 'Family at the bedside', `<rect x="900" y="286" width="126" height="116" rx="14" fill="#8B6F5A"/><rect x="908" y="240" width="110" height="60" rx="14" fill="#9C7F69"/>${R.place(f.family, 'bust', null, 'translate(963 250) scale(.62)', 'room:' + f.family)}<rect x="900" y="330" width="126" height="72" rx="12" fill="#8B6F5A"/>`);
+    // Hospital visitor recliner with rounded back and armrests
+    if (f.family) front += hot('family', f.familyLabel || 'Family at the bedside', `<g>
+      <path d="M904 268 Q904 234 934 234 H992 Q1022 234 1022 268 V340 H904 Z" fill="#6F848C" stroke="#53666E" stroke-width="2"/>
+      <rect x="914" y="242" width="98" height="58" rx="18" fill="#7D939B" opacity=".7"/>
+      ${R.place(f.family, 'bust', null, 'translate(963 250) scale(.62)', 'room:' + f.family)}
+      <rect x="896" y="316" width="22" height="84" rx="10" fill="#637880" stroke="#4D5F66" stroke-width="1.5"/>
+      <rect x="1008" y="316" width="22" height="84" rx="10" fill="#637880" stroke="#4D5F66" stroke-width="1.5"/>
+      <rect x="914" y="336" width="98" height="66" rx="12" fill="#6F848C" stroke="#53666E" stroke-width="1.5"/>
+    </g>`);
     front += alarm;
     const light = callLight ? `<circle cx="1004" cy="30" r="10" fill="#F0B64A" class="blink"/>` : '';
     // Room atmosphere (--scene-alarm, --scene-glow): a monitor alarming tints the edges of the room; at night the

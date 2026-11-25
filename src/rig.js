@@ -406,10 +406,10 @@
       const apex = lidY + (openAmt < .3 ? 3.2 * (1 - openAmt / .3) : 0);
       e.lash.setAttribute('d', `M ${-e.s * hw} ${cy} Q 0 ${2 * apex - cy} ${e.s * hw} ${cy}` + (e.wing ? ` L ${e.s * (hw + e.wing)} ${cy - 2.2}` : ''));
       e.iris.setAttribute('transform', `translate(${(g.x + I.sac.x) * maxOff} ${(g.y + I.sac.y) * maxOff * .8 + cur.droop * 1.5})`);
-      const ir = rx * .8; e.pupil.setAttribute('r', ir * .46 * (1 + cur.dil * .42)); e.hl.setAttribute('r', ir * .32 * (1 + cur.glassy * .35));
+      const ir = rx * .76; e.pupil.setAttribute('r', ir * .46 * (1 + cur.dil * .42)); e.hl.setAttribute('r', ir * .29 * (1 + cur.glassy * .35));
     });
     const by = I.h * .1 - c.eye * I.eyeR - 8;
-    I.brows.forEach((br) => { const s = +br.dataset.s, ang = cur.worry * 16 - cur.smile * 2; br.setAttribute('transform', `translate(${s * I.w * I.gap - s * cur.worry * 2} ${by - cur.raise * 4 + cur.worry * 1.5}) rotate(${s * ang})`); });
+    I.brows.forEach((br) => { const s = +br.dataset.s, ang = cur.worry * 20 - cur.smile * 2; br.setAttribute('transform', `translate(${s * I.w * I.gap - s * cur.worry * 2.4} ${by - cur.raise * 4 + cur.worry * 1.8}) rotate(${s * ang})`); });
     // mouth
     const gasp = cur.strain > .05 || v.rr > 24 ? clamp(cur.strain * .8 + (v.rr - 24) / 20) * (.35 + .65 * b) : 0;
     const chatter = d.rigors && d.alertEff < 2 && calm ? (Math.sin(t * 38) > 0 ? .1 : 0) : 0;

@@ -101,7 +101,7 @@
         id: 'ortho', label: 'Check orthostatic vital signs', cost: 5,
         run(s, P, A) {
           P.orthoAt = s.t; A.recordVitals('412', 'You');
-          return 'Lying 136/82, HR 88. Sitting 126/78, HR 96. Standing 114/72, HR 108. The room "tilts" for a few seconds, then settles. Mildly orthostatic: dangle first, move slowly, use a gait belt.';
+          return 'Lying 136/82, HR 88. Sitting 126/78, HR 96. Standing 114/72, HR 108. The room "tilts" for a few seconds, then settles. Positive orthostatic hypotension (SBP dropped 22 mm Hg, HR jumped 20): dangle first, move slowly, use a gait belt.';
         },
       },
       {
@@ -507,7 +507,7 @@
       },
       {
         id: 'bolus', label: 'Start 1,000 mL normal saline bolus (ordered)', cost: 4, avail: (s, P) => P.bundle && P.bolusAt === null,
-        run(s, P, A) { P.bolusAt = s.t; A.judge('416-bolus', 'judgment', 2, 'You started Mrs. Whitfield\'s fluid bolus.', 'Sepsis-induced hypotension is a volume problem first: dilated vessels and leaky capillaries. Fluids restore perfusion; the lactate tells you whether it worked.', '416'); return 'Bolus running on the pump at 1,000 mL/h. Watch her lungs as it goes in.'; },
+        run(s, P, A) { P.bolusAt = s.t; A.judge('416-bolus', 'judgment', 2, 'You started Mrs. Whitfield\'s fluid bolus.', 'Sepsis-induced hypotension is a volume problem first: dilated vessels and leaky capillaries. Fluids restore perfusion (SSC 2021 suggests balanced crystalloid when available and reassessment toward 30 mL/kg); the lactate tells you whether it worked.', '416'); return 'Bolus running on the pump at 1,000 mL/h. Watch her lungs as it goes in and reassess toward her 30 mL/kg target.'; },
       },
     ],
     comms: [
@@ -741,7 +741,7 @@
         },
       },
       { id: '418-kcl', name: 'Potassium chloride', dose: '20 mEq', route: 'PO', freq: 'Daily', due: 120, checks: () => [{ label: 'Potassium', value: '3.3 (low)', ok: true }, { label: 'Creatinine', value: '1.4, near baseline', ok: true }], give(s, P) { P.kclAt = s.t; return 'KCl 20 mEq given with water, upright.'; }, hold(s, P, A) { A.judge('418-kcl-hold', 'meds', -1, 'You held potassium from a patient with a potassium of 3.3 on a loop diuretic.', 'This is the dose that protects him.', '418'); return 'Held.'; } },
-      { id: '418-kx', name: 'Potassium chloride (extra)', dose: '40 mEq', route: 'PO', freq: 'Once', prn: true, ordered: true, available: (s, P) => P.kxOrdered, block: (s, P) => P.kxAt ? 'Given at ' + clock(P.kxAt) + '.' : null, checks: () => [{ label: 'Ordered for', value: 'K 3.3 on IV furosemide', ok: true }], give(s, P) { P.kxAt = s.t; P.kclAt = P.kclAt === null ? s.t : P.kclAt; return 'KCl 40 mEq given. Recheck K in the afternoon.'; } },
+      { id: '418-kx', name: 'Potassium chloride (extra)', dose: '40 mEq', route: 'PO', freq: 'Once', prn: true, ordered: true, available: (s, P) => P.kxOrdered, block: (s, P) => P.kxAt ? 'Given at ' + clock(P.kxAt) + '.' : null, checks: (s, P) => [{ label: 'Ordered for', value: 'K 3.3 on IV furosemide', ok: true }, { label: 'GI tolerance', value: P.kclAt !== null && s.t - P.kclAt < 60 ? 'Scheduled 20 mEq just given — space or split doses >40 mEq to protect GI mucosa' : 'Give with water/food, upright; split single oral doses >40 mEq', ok: true }], give(s, P) { P.kxAt = s.t; P.kclAt = P.kclAt === null ? s.t : P.kclAt; return 'KCl 40 mEq PO given (spaced from scheduled dose to minimize GI irritation, with water, upright). Recheck K in the afternoon.'; } },
       { id: '418-lx80', name: 'Furosemide (extra)', dose: '80 mg', route: 'IV', freq: 'Once, now', prn: true, ordered: true, available: (s, P) => P.lx80, block: (s, P) => P.lx80At ? 'Given at ' + clock(P.lx80At) + '.' : null, checks: () => [{ label: 'Ordered for', value: 'Pulmonary congestion', ok: true }], give(s, P) { P.lx80At = s.t; P.lasixAt = P.lasixAt === null ? s.t : P.lasixAt; P.fl = Math.max(40, P.fl - 6); return 'Furosemide 80 mg IV given. Strict I&O.'; } },
       { id: '418-apix', name: 'Apixaban', dose: '5 mg', route: 'PO', freq: 'Twice daily', due: 120, checks: () => [{ label: 'Bleeding signs', value: 'None', ok: true }, { label: 'Hemoglobin', value: '12.9, stable', ok: true }], give: () => 'Apixaban 5 mg given.', hold(s, P, A) { A.judge('418-apix-hold', 'meds', -1, 'You held Mr. Ortiz\'s anticoagulant without a reason.', 'In AFib, missed anticoagulant doses raise stroke risk. No bleeding, stable hemoglobin.', '418'); return 'Held.'; } },
     ],
@@ -979,7 +979,7 @@
 
   S.engine.registerCase({
     id: 'medsurg-4w-1', title: 'Days on 4 West', unit: '4 West, Medical-Surgical', level: 'Orientation', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'Four med-surg patients until noon: a fresh post-op, a diabetic with cellulitis, a confused 82-year-old, and heart failure. Start here.',
+    card: 'Four med-surg patients until noon: post-op day 1, cellulitis, an 82-year-old with a UTI, and heart failure. Start here.',
     hero: { head: 'Day shift, 4 West. You have 412 through 418.', lede: 'Med-surg, 07:00 to noon. Dana is finishing a night shift and will give you report at the desk. After that the hall is yours: assess, prioritize, give meds, and call when you need to. How your patients do depends on what you catch.' },
     intro: { time: '06:58', place: '4 West, Medical-Surgical', cta: 'Take report', beats: ['You badge in, grab a brain sheet, and find Dana at the desk.', 'Four patients until noon. She\'s been up all night, so report will be quick.', 'One of the four is sicker than report makes it sound.'] },
     minutes: 15,

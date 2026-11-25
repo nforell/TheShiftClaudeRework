@@ -370,7 +370,7 @@
   };
   function bpMed(s, P, A, k, drop, txt) {
     const v = A.vitals('214'), severe = v.SBP >= 160 || v.DBP >= 110;
-    if (!severe) { A.judge('214-bp-' + k + '-' + s.t, 'meds', -1, `You gave an antihypertensive with a pressure of ${v.SBP}/${v.DBP}.`, `The protocol is for severe range. Dropping a preeclamptic pressure too far cuts placental and brain perfusion; the goal is 140–150/90–100.`, '214'); }
+    if (!severe) { A.judge('214-bp-' + k + '-' + s.t, 'meds', -1, `You gave an antihypertensive with a pressure of ${v.SBP}/${v.DBP}.`, `The protocol is for severe range. Dropping a postpartum preeclamptic pressure too far cuts cerebral and end-organ perfusion; the goal is 140–150/90–100.`, '214'); }
     else if (P.firstBpMed === null) {
       const mins = s.t - P.sevAt;
       A.judge('214-bp-treat', 'meds', mins <= 30 ? 2 : mins <= 60 ? 1 : -1, `You treated Ms. Kealoha's severe pressure ${mins} minutes after it started.`, `Severe-range pressure in preeclampsia gets treated within 60 minutes, ideally 30. ${P.confirmedAt === null ? 'Confirm with a repeat, but don\'t let confirming become waiting.' : ''}`, '214');
@@ -817,7 +817,7 @@
   const LK = (skin, shade, lip, blush, iris, hair, hcol, cloth, extras, smile) => ({ skin, shade, lip, blush, iris, head: { w: 55, h: 61, jaw: .4 }, eye: 9.8, hair: { style: hair, color: hcol }, brow: { w: 3.6, color: hcol }, body: { w: 82, cloth }, extras: extras || [], smile: smile === undefined ? .35 : smile });
   S.engine.registerCase({
     id: 'ob-2n-1', title: 'Days on 2 North', unit: '2 North, Mother-Baby', unitShort: '2 North', level: 'Specialty: Mother-baby', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'Mother-baby until noon: a soft uterus behind a full bladder, magnesium that isn\'t clearing, a sleepy baby of a diabetic mother, and a depression screen nobody discussed.',
+    card: 'Mother-baby until noon: two hours postpartum, preeclampsia on magnesium, a newborn of a diabetic mother, and discharge teaching.',
     hero: { head: 'Days, 2 North. Three mothers and a baby.', lede: 'Mother-baby, 07:00 to noon. Everyone looks fine from the doorway. The numbers that matter here are the ones you go and get: a fundus, a reflex, a heel stick, an answer on a screen.' },
     intro: { time: '06:58', place: '2 North, Mother-Baby', cta: 'Take report', beats: ['Paloma is finishing nights and giving report at the desk, a coffee in each hand.', 'Three mothers and one baby until noon. Births at 01:05, 04:40 and last evening, and a cesarean yesterday.', 'The first day after birth is when the quiet emergencies happen: bleeding, a drug building up, a low sugar, a thought someone hasn\'t said out loud.'] },
     minutes: 20,

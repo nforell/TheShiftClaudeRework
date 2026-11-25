@@ -197,10 +197,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:.5rem 2rem;flex-wrap
   <section id="inside">
     <div class="wrap inside">
       <div class="col">
-        <h2>Four drills, 128 cards</h2>
+        <h2>Four drills, 141 cards</h2>
         <p>A quick round mixes them: five patients, one decision each. Missed cards come back until you get them.</p>
         <ul class="drills">
-          <li class="d-mp"><h3>Med Pass <small>50 cards</small></h3><p>Check what matters, then give, hold or call.</p></li>
+          <li class="d-mp"><h3>Med Pass <small>63 cards</small></h3><p>Check what matters, then give, hold or call.</p></li>
           <li class="d-wf"><h3>Who's First <small>36 sets</small></h3><p>Four patients, one nurse. Who do you see first?</p></li>
           <li class="d-sb"><h3>SBAR <small>20 calls</small></h3><p>Build the call to the provider, line by line.</p></li>
           <li class="d-de"><h3>De-escalation <small>22 scenarios</small></h3><p>Every word moves the room. Talk them down.</p></li>
@@ -211,7 +211,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:.5rem 2rem;flex-wrap
         <p>Report to debrief, about twenty minutes. Every action costs time, and your other patients keep changing while you're busy.</p>
         <div class="shot"><img src="/assets/room.jpg" width="1600" height="1000" loading="lazy" alt="A patient room in a full shift: Marcus Bell, post-op day 1, says his pain is a 7 and climbing."></div>
         <p class="units"><b>11 shifts on 9 units:</b> med-surg, step-down, ICU, ED, labor and delivery, mother-baby, psych, teen psych and peds.</p>
-        <p class="extra"><b>NCLEX practice too.</b> 19 unfolding case studies and 250 questions, every option explained.</p>
+        <p class="extra"><b>NCLEX practice too.</b> 19 unfolding case studies and 277 standalone questions (391 total), every option explained.</p>
       </div>
     </div>
   </section>
@@ -296,7 +296,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:.5rem 2rem;flex-wrap
         <p>${E(k.why)}</p>
         <p class="pearl"><b>Remember</b>${E(k.pearl)}</p>
       </div>
-      <div class="next"><p>A round is five patients like this. About three minutes.</p><a class="btn btn-primary btn-big" href="/play/" data-act="go">Play a full round <span aria-hidden="true">→</span></a><small>Free. No account. Your progress saves as you play.</small></div>` : ''}`;
+      <div class="next"><p>That was patient 1 of 5. Keep your streak rolling — four patients left in this round.</p><a class="btn btn-primary btn-big" href="/play/#continue=${encodeURIComponent(k.id)}&ok=${ok ? 1 : 0}&chk=${checked && checked.ok ? 1 : 0}" data-act="go">Continue this round (4 left) <span aria-hidden="true">→</span></a><small>Free. No account. Your progress saves as you play.</small></div>` : ''}`;
     R.hydrate(box);
   }
   box.addEventListener('click', (e) => {

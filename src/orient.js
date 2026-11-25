@@ -220,7 +220,7 @@
         <header class="or-head"><div><p class="or-k">Step ${o.i + 1} of ${CH.length}<button class="or-skip-m" data-act="or" data-do="skip">${o.start ? 'Skip' : 'Close'}</button></p><h2 tabindex="-1">${esc(c.title)}</h2></div>${wallClock(clockOf(o))}</header>
         <div class="or-nova">${R.bust('nova', null, 'portrait')}<p>${esc(SAY[c.id](o))}</p></div>
         ${stage(o)}
-        </div><nav class="or-nav"><button class="btn" data-act="or" data-do="back" ${o.i ? '' : 'disabled data-why="This is the first step."'}>Back</button>${last ? `<button class="btn btn-quiet" data-act="or" data-do="ref">Quick reference</button>` : ''}<button class="btn btn-primary" data-act="or" data-do="${last ? 'done' : 'next'}">${last ? (o.start ? 'Start my first shift' : 'Done') : 'Next'}</button></nav>
+        </div><nav class="or-nav"><button class="btn" data-act="or" data-do="back" ${o.i ? '' : 'disabled data-why="This is the first step."'}>Back</button>${o.start && o.i === 0 ? `<button class="btn btn-quiet" data-act="or" data-do="skip">Jump straight into Shift 1</button>` : ''}${last ? `<button class="btn btn-quiet" data-act="or" data-do="ref">Quick reference</button>` : ''}<button class="btn btn-primary" data-act="or" data-do="${last ? 'done' : 'next'}">${last ? (o.start ? 'Start my first shift' : 'Done') : 'Next'}</button></nav>
       </section>
     </div>`;
   }

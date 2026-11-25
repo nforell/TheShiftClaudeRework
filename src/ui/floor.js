@@ -1,7 +1,7 @@
 /* The Shift — UI: The nurses' station: the command bar, the patient list, the phone, floor calls, follow-up after transfers, and report to the oncoming nurse. */
 import { reduced, stamp } from './actions.js';
 import { aideSuggest, spend } from './core.js';
-import { A, A_, C, E, F, FL, FX, G, ICON, RW, admWord, ageSex, cna, cnaAway, def, esc, face, faceOf, fmtN, fromOf, gone, goneText, here, legal, liveDef, pface, prov, pts, staff, ui, who } from './ctx.js';
+import { A, A_, C, E, F, FL, FX, G, ICON, RW, admWord, ageSex, cna, cnaAway, def, esc, face, faceOf, floorMode, fmtN, fromOf, gone, goneText, here, legal, liveDef, pface, prov, pts, staff, ui, who } from './ctx.js';
 import { render } from './render.js';
 import { awayShort, brainRows, fbNow, flowRows, ghostList, liveGhosts, oncoming, reviewHTML, stName, stRank, trend } from './room.js';
 import { sheet } from './sheets.js';
@@ -41,7 +41,7 @@ export function ovRoster() {
       <div class="ro-h">${n ? `<span class="ro-n" title="Your priority">${n}<small>${ordinal(n)}</small></span>` : ''}${pface(pid)}<div class="ro-who"><b>${d.room} ${esc(d.name)}</b> <small>${ageSex(d)}</small><span>${esc(liveDef(d).dx)}</span></div>
         ${G.s.prio && inShift && !g ? `<span class="ro-mv"><button class="btn" data-act="prio" data-pid="${pid}" data-d="-1" aria-label="Move ${esc(d.short)} up" ${i === 0 ? 'disabled data-why="Already first."' : ''}>${ICON.up}</button><button class="btn" data-act="prio" data-pid="${pid}" data-d="1" aria-label="Move ${esc(d.short)} down" ${i === list.length - 1 ? 'disabled data-why="Already last."' : ''}>${ICON.down}</button></span>` : ''}</div>
       <p class="ro-why"><b>Here for</b> ${esc(d.reason)}</p>
-      <div class="facts">${legal(d)}<span class="chip">${esc(liveDef(d).code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
+      <div class="facts">${legal(d)}<span class="chip">${esc(liveDef(d).code.split(',')[0])}</span>${shortAllergy(d)}${inShift ? `<span class="chip ${P.seenAt === null ? 'warn' : ''}">${g ? esc(goneText(P)) : lastSeen(P)}</span>` : ''}${!floorMode() && P.read && !g ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${due.length ? `<span class="chip ${due.some((r) => r.late) ? 'alert' : 'warn'}">${due.length} due</span>` : ''}</div>
       ${fl.length ? `<ul class="ro-fl">${fl.map((f) => { const k = inShift ? flagNear(f) : ''; return `<li class="${k ? 'pin-' + k : ''}"><i class="flag-ic on" aria-hidden="true"></i>${esc(f)}${k ? `<span class="sr"> (${k === 'near' ? 'coming up' : 'time passed'})</span>` : ''}</li>`; }).join('')}</ul>` : `<p class="ro-none">${ui.view === 'handoff' ? 'Nothing flagged yet.' : 'You flagged nothing from report.'}</p>`}
       ${inShift && g ? `<div class="ro-f"><button class="btn btn-primary" data-act="away" data-pid="${pid}">Follow up</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
       ${inShift && !g ? `<div class="ro-f"><button class="btn btn-primary" data-act="goto" data-pid="${pid}">Go to ${d.room}</button><button class="btn" data-act="chart" data-pid="${pid}">${ICON.chart}Chart</button></div>` : ''}
@@ -62,7 +62,7 @@ export function ptStrip() {
       const rows = (g ? F.awayRows(G.s, A(), d, P) : brainRows(d, P)).filter((r) => !r.done && !r.prog && r.t !== null), late = rows.filter((r) => r.late).length, due = rows.filter((r) => !r.late && r.t <= G.s.t + 30).length;
       const tk = liveGhosts(d.id).length;
       const pn = prioN(d.id);
-      return `<button class="ps ${cur === d.id ? 'on' : ''} ${light ? 'alert' : ''} ${g ? 'gone' : ''} ${tk ? 'ticked' : ''}" data-act="${g ? 'away' : cur === d.id ? 'here' : 'goto'}" data-pid="${d.id}" ${cur === d.id ? 'aria-current="page"' : ''} aria-label="Room ${d.room}, ${esc(d.name)}${g ? ', ' + esc(goneText(P)) + ', follow up' : ''}${late ? `, ${late} overdue` : due ? `, ${due} due` : ''}${light ? ', needs attention' : ''}"><span class="ps-top">${pn ? `<span class="ps-n" title="Your priority">${pn}</span>` : ''}<b>${d.room}</b>${P.read && !g ? `<i class="dot st-${P.read.st}" aria-hidden="true"></i>` : ''}${late ? `<em class="late">${late}</em>` : due ? `<em>${due}</em>` : ''}${tk ? `<span class="ps-tick" aria-hidden="true">✓</span>` : ''}</span><small>${esc(d.short)}</small><small class="ps-dx">${g ? esc(awayShort(P)) : esc(liveDef(d).dx)}</small></button>`;
+      return `<button class="ps ${cur === d.id ? 'on' : ''} ${light ? 'alert' : ''} ${g ? 'gone' : ''} ${tk ? 'ticked' : ''}" data-act="${g ? 'away' : cur === d.id ? 'here' : 'goto'}" data-pid="${d.id}" ${cur === d.id ? 'aria-current="page"' : ''} aria-label="Room ${d.room}, ${esc(d.name)}${g ? ', ' + esc(goneText(P)) + ', follow up' : ''}${late ? `, ${late} overdue` : due ? `, ${due} due` : ''}${light ? ', needs attention' : ''}"><span class="ps-top">${pn ? `<span class="ps-n" title="Your priority">${pn}</span>` : ''}<b>${d.room}</b>${!floorMode() && P.read && !g ? `<i class="dot st-${P.read.st}" aria-hidden="true"></i>` : ''}${late ? `<em class="late">${late}</em>` : due ? `<em>${due}</em>` : ''}${tk ? `<span class="ps-tick" aria-hidden="true">✓</span>` : ''}</span><small>${esc(d.short)}</small><small class="ps-dx">${g ? esc(awayShort(P)) : esc(liveDef(d).dx)}</small></button>`;
     }).join('')}</div></div></nav>`;
 }
 export function dueGroups(due) {
@@ -79,7 +79,10 @@ export function nowRows() {
   const out = [];
   const acu = {};
   pts().forEach((d) => { const P = G.s.p[d.id], aw = gone(P); acu[d.id] = aw ? 0 : stRank(d.status(G.s, P, A())); (aw ? F.awayRows(G.s, A(), d, P) : brainRows(d, P)).forEach((r) => { if (!r.done && !r.prog && !r.info && r.t !== null && r.t <= G.s.t) out.push({ pid: d.id, key: r.key, text: r.text + (r.blocked ? ' (awaiting pharmacy)' : ''), late: !!r.late, t: r.t, away: aw, rp: r.key === 'rp', blocked: !!r.blocked, stat: !!r.stat }); }); });
-  const pr = prioList(), now = (r) => (r.stat || acu[r.pid] >= 2 ? 1 : 0);
+  const pr = prioList();
+  // Floor mode sorts strictly by clock time and the nurse's own priority order — never hidden engine acuity.
+  if (floorMode()) return out.sort((a, b) => a.blocked - b.blocked || b.late - a.late || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
+  const now = (r) => (r.stat || acu[r.pid] >= 2 ? 1 : 0);
   // What the orientation teaches: something you can act on before something you're waiting on; new orders and
   // a patient who needs you now before anything routine; then overdue work, then the sicker patient, then the clock.
   return out.sort((a, b) => a.blocked - b.blocked || now(b) - now(a) || b.late - a.late || acu[b.pid] - acu[a.pid] || a.t - b.t || pr.indexOf(a.pid) - pr.indexOf(b.pid));
@@ -123,7 +126,7 @@ export function idleCheck() {
   const g = document.querySelector('.cmd-go'); if (g && !reduced()) g.classList.add('nudge');
 }
 export function stuckTip(where) {
-  if (!ui.stuck || !G.s || G.s.ended) return '';
+  if (!ui.stuck || !G.s || G.s.ended || floorMode()) return '';
   const rows = nowRows(), top = (where === 'room' && rows.find((r) => r.pid === G.s.loc && !r.blocked)) || rows[0]; if (!top) return '';
   if (where === 'station') return `<div class="stuck-tip" role="status"><p><b>Not sure where to start?</b> Tap the task above. It walks you to ${top.away ? 'the follow-up' : 'the room'} and the right tab.${G.s.nova ? ' Nova can also point you somewhere.' : ''}</p>${G.s.nova ? '<button class="btn" data-act="nova">Ask Nova</button>' : ''}</div>`;
   const d = def(G.s.loc), mine = top.pid === d.id;
@@ -150,18 +153,20 @@ export function suggestIdle() {
   return { pid: d.id, text: P.seenAt === null ? `Nobody's waiting on you. You haven't seen ${d.short} yet.` : `Nobody's waiting on you. ${d.short} hasn't seen you since ${E.clock(best.last)}: a good time to look again.`, go: `Go to ${d.room}` };
 }
 export function cmdBar() {
-  const now = nowRows(), nx = nextKnown(), open = FL.open(G.s), top = now[0];
+  const now = nowRows(), nx = nextKnown(), top = now[0], flm = floorMode();
   // One next step, and a count you can live with: rooms waiting, not every line item.
   const rooms = new Set(now.map((r) => r.pid)).size, lateN = now.filter((r) => r.late && !r.blocked).length;
   const head = now.length === 1 ? 'One thing needs you' : rooms === 1 ? `${now.length} things in one room` : `Work waiting in ${rooms} rooms`;
-  const tail = now.length > 1 ? `<small class="cmd-sub">${now.length} tasks due${lateN ? ` · <em>${lateN} overdue</em>` : ''}. Start with this one:</small>` : '';
   const idle = suggestIdle();
-  // One big card: who, what, and a button that walks you there and opens the right tab.
-  const status = top ? `<div class="cmd-st busy nx ${lateN ? 'late' : ''} ${lateN >= 3 ? 'behind' : ''}"><p class="nx-h"><span class="cmd-n" aria-hidden="true">${now.length === 1 ? 1 : rooms}</span><b>${head}</b>${now.length > 1 ? `<small>${now.length} tasks${lateN ? ` · <em>${lateN} overdue</em>` : ''}</small>` : ''}</p><button class="cmd-go" data-act="do-next" data-pid="${top.pid}">${top.rp || top.away ? '' : pface(top.pid)}<span class="nx-t"><small>${top.late && !top.blocked ? '<em>Overdue</em> · ' : 'Next · '}${top.rp ? 'Report' : esc(def(top.pid).room + ' ' + def(top.pid).short)}</small><b>${esc(top.text)}</b></span><span class="nx-go" aria-hidden="true">Go ›</span></button></div>`
-    : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
-  const calls = open.map((x) => { const v = FL.view(G.s, C(), x.id), w = who(v.from), left = Math.max(0, x.exp - G.s.t), pct = left / Math.max(1, x.exp - x.at); return `<button class="fcall ${pct < .4 ? 'hurry' : ''}" data-act="floor" data-id="${x.id}">${faceOf(v.from)}<span class="fc-l"><b>${esc(v.title)}</b><small>${esc(w.name)}${w.role ? ', ' + esc(w.role) : ''}</small></span><span class="fc-ring" style="--p:${pct.toFixed(2)}" aria-label="${left} minutes left"><i>${left}</i><small>min</small></span></button>`; }).join('');
+  // Floor mode: neutral clock-time worklist summary — you choose who to see without an acuity autopilot.
+  // Orientee mode: one big blue Next card that walks you to the highest-acuity room and right tab.
+  const status = flm
+    ? `<div class="cmd-st floor-mode ${lateN ? 'late' : ''}"><div><p class="nx-h"><span class="cmd-n" aria-hidden="true">${now.length}</span><b>${now.length ? `Scheduled work in ${rooms} room${rooms === 1 ? '' : 's'}` : 'Schedule clear'}</b>${lateN ? `<small><em>${lateN} overdue</em></small>` : ''}</p><small class="cmd-sub">${now.length ? `Sorted by time & your priority list. Next on clock: ${esc(def(top.pid).room)} ${esc(top.text)} (${E.clock(Math.max(0, top.t))}).` : 'No scheduled orders due right now. Round on your patients, check the phone, or skip ahead.'}</small></div>${top ? `<button class="btn" data-act="${top.away ? 'away' : top.rp ? 'report' : 'goto'}" data-pid="${top.pid}">${top.rp ? 'Report' : `Go to ${def(top.pid).room}`} ›</button>` : ''}</div>`
+    : top ? `<div class="cmd-st busy nx ${lateN ? 'late' : ''} ${lateN >= 3 ? 'behind' : ''}"><p class="nx-h"><span class="cmd-n" aria-hidden="true">${now.length === 1 ? 1 : rooms}</span><b>${head}</b>${now.length > 1 ? `<small>${now.length} tasks${lateN ? ` · <em>${lateN} overdue</em>` : ''}</small>` : ''}</p><button class="cmd-go" data-act="do-next" data-pid="${top.pid}">${top.rp || top.away ? '' : pface(top.pid)}<span class="nx-t"><small>${top.late && !top.blocked ? '<em>Overdue</em> · ' : 'Next · '}${top.rp ? 'Report' : esc(def(top.pid).room + ' ' + def(top.pid).short)}</small><b>${esc(top.text)}</b></span><span class="nx-go" aria-hidden="true">Go ›</span></button></div>`
+      : `<div class="cmd-st clear"><span class="cmd-ok" aria-hidden="true">${ICON.tick}</span><div><b>You're caught up</b>${idle ? `<small>${esc(idle.text)}</small><button class="cmd-go" data-act="goto" data-pid="${idle.pid}">${esc(idle.go)} <span aria-hidden="true">›</span></button>` : '<small>Skip ahead. The clock runs until something needs you.</small>'}</div></div>`;
   const skip = `<button class="btn skip ${top ? '' : 'ready'}" data-act="skip" title="Moves the clock forward. It stops the moment a message, task or patient needs you.">${ICON.ff}<span><b>Skip ahead in time</b><small>${nx ? `Fast-forward to ${E.clock(nx.t)}: ${esc(nx.text)}` : 'Fast-forward up to 30 min; stops if anything needs you'}</small></span></button>`;
-  return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}${calls ? `<div class="fcalls"><h4>Floor calls <span>Someone on the unit needs you</span></h4>${calls}</div>` : ''}</section>`;
+  // Floor calls are shown once in the sticky callBar() above the station and every room — no duplicate block here.
+  return `<section class="cmd" aria-label="Right now"><div class="cmd-row">${status}${skip}</div>${stuckTip('station')}</section>`;
 }
 /* Let time pass: the clock runs minute by minute and stops the moment something needs you. */
 export function skipAhead() {
@@ -222,8 +227,9 @@ export function vStation() {
   const doors = C().patients.map((d) => { const P = G.s.p[d.id]; if (!here(d)) return { pid: d.id, room: d.room, pending: true, eta: E.clock(d.arrives), label: admWord(d) }; const light = !gone(P) && (P.callLight || !!P.bell || G.s.inbox.some((m) => m.pid === d.id && m.urgent && !m.read)); const prn = gone(P) ? null : prnDue(d, P); return { pid: d.id, room: d.room, name: d.name, light, gone: gone(P), prn, alert: [light ? 'needs attention' : '', prn ? (prn.late ? 'PRN reassessment overdue' : 'PRN reassessment due') : ''].filter(Boolean).join(', ') }; });
   const pending = C().patients.filter((d) => !here(d));
   const due = dueList();
+  const flm = floorMode();
   return `<main>
-    <div class="st-intro"><h1>Nurses' station</h1>${G.prof.runs.length ? '' : `<p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>Tap the blue Next card, or any patient, to walk to their room.</b></p>`}</div>
+    <div class="st-intro"><div class="st-top"><h1>Nurses' station</h1><div class="mode-pill" role="group" aria-label="Shift guidance mode"><button data-act="set" data-k="shiftMode" data-v="orientee" aria-pressed="${!flm}" title="Guided Next card and immediate feedback">Orientee</button><button data-act="set" data-k="shiftMode" data-v="floor" aria-pressed="${flm}" title="Independent floor practice: hides acuity autopilot, status chips, and locked SBAR hints">Floor mode</button></div></div>${G.prof.runs.length ? '' : `<p>Your home base between rooms.<span class="long"> Plan who's next, read the phone, ask ${esc(cna().name)} or the doctor for help, and skip ahead when nothing needs you.</span> <b>${flm ? 'Choose any room or review your worklist below.' : 'Tap the blue Next card, or any patient, to walk to their room.'}</b></p>`}</div>
     ${cmdBar()}
     <div class="hall-wrap">${A_.hallway(G.s, doors)}</div>
     <div class="station">
@@ -232,7 +238,7 @@ export function vStation() {
         ${prioList().map(def).map((d) => { const P = G.s.p[d.id], n = prioN(d.id); const v = A().lastVitals(d.id); const flags = G.s.brain.filter((k) => k.startsWith(d.id + ':')).length; return `<div class="pt-row tap ${gone(P) ? 'gone' : ''}" data-act="${gone(P) ? 'away' : 'goto'}" data-pid="${d.id}">
           <span class="pr-n" aria-label="Your priority ${n || ''}">${n || ''}</span>${pface(d.id)}
           <div><div class="nm">${d.room} ${esc(d.name)}<small>${ageSex(d)}</small></div><div class="dx">${esc(liveDef(d).dx)}</div>${(() => { if (gone(P)) return ''; const r = nextFor(d.id); return r ? `<div class="pt-next ${r.late && !r.blocked ? 'late' : r.stat ? 'stat' : ''}"><span>${r.late && !r.blocked ? 'Overdue' : r.stat ? 'Now' : r.t > G.s.t ? 'Next, ' + E.clock(r.t) : 'Next'}</span>${esc(r.text)}</div>` : `<div class="pt-next ok"><span>Caught up</span>Nothing due in the next 30 min</div>`; })()}
-          <div class="facts">${legal(d)}${/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`}${gone(P) ? `<span class="chip">${esc(goneText(P))}</span>` : P.seenAt === null ? '' : `<span class="chip">${lastSeen(P)}</span>`}${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${flags ? (() => { const near = flagsFor(d.id).map((t) => ({ t, k: flagNear(t), m: HHMM.exec(t) })).filter((x) => x.k).sort((a, b) => (a.k === 'past' ? -1 : 1) - (b.k === 'past' ? -1 : 1))[0]; return near ? `<span class="chip pin-${near.k}" title="${esc(near.t)}">Flagged ${near.m[0]}${near.k === 'past' ? ', passed' : ', soon'}</span>` : `<span class="chip">${flags} flagged</span>`; })() : ''}</div></div>
+          <div class="facts">${legal(d)}${/^Full code/.test(liveDef(d).code) ? '' : `<span class="chip alert">${esc(liveDef(d).code.split(',')[0])}</span>`}${gone(P) ? `<span class="chip">${esc(goneText(P))}</span>` : P.seenAt === null ? '' : `<span class="chip">${lastSeen(P)}</span>`}${gone(P) && P.out ? `<span class="chip af-${P.out.spec.course[P.out.known].st}">${esc(awayShort(P))}</span>` : ''}${P.bell && !gone(P) ? '<span class="chip alert">Call light</span>' : ''}${!flm && P.read && !gone(P) ? `<span class="chip read st-${P.read.st}">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}${flags ? (() => { const near = flagsFor(d.id).map((t) => ({ t, k: flagNear(t), m: HHMM.exec(t) })).filter((x) => x.k).sort((a, b) => (a.k === 'past' ? -1 : 1) - (b.k === 'past' ? -1 : 1))[0]; return near ? `<span class="chip pin-${near.k}" title="${esc(near.t)}">Flagged ${near.m[0]}${near.k === 'past' ? ', passed' : ', soon'}</span>` : `<span class="chip">${flags} flagged</span>`; })() : ''}</div></div>
           <div class="go">${gone(P) ? (() => { const n = F.awayRows(G.s, A(), d, P).filter((r) => !r.done).length; return `<button class="btn ${n ? 'btn-primary' : ''}" data-act="away" data-pid="${d.id}">Follow up${n ? ` (${n})` : ''}</button>`; })() : `<button class="btn btn-primary" data-act="goto" data-pid="${d.id}">Go to ${d.room}</button>`}<button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button></div>
         </div>`; }).join('')}
         ${pending.map((d) => `<div class="pt-row pending tap" data-act="pending" data-pid="${d.id}"><div class="pend-dot" aria-hidden="true"></div><div><div class="nm">${d.room} ${esc(admWord(d))}</div><div class="dx">From ${esc(fromOf(d))}, expected about ${E.clock(d.arrives)}. ${esc(d.reason)}.</div></div></div>`).join('')}
@@ -254,10 +260,12 @@ export function vStation() {
 
 export function msgHTML(m) {
   const w = who(m.from);
+  const activeCall = FL && G.s && G.s.floor && G.s.floor.q.find((x) => !x.done);
+  const dupFloor = activeCall && m.replies && m.replies.length === 1 && m.replies[0].act === 'floor' && m.replies[0].id === activeCall.id;
   return `<div class="msg tap ${m.read ? '' : 'unread'} ${m.urgent ? 'urgent' : ''} ${m.id > (ui.msgSeen || 0) ? 'fresh' : ''}" data-act="msg" data-m="${m.id}">${faceOf(m.from)}
     <div><div class="from"><b>${esc(w.name)}</b> ${esc(w.role)} <span aria-hidden="true">at</span> ${E.clock(m.t)}${m.urgent ? ' <b style="color:var(--red)">Urgent</b>' : ''}</div>
     <p class="tx">${esc(m.text)}</p>
-    ${m.replies && !m.done ? `<div class="rep">${m.replies.map((r, i) => `<button class="btn" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.label)}</button>`).join('')}</div>` : m.pid && def(m.pid) && here(def(m.pid)) && !(ui.view === 'room' && G.s.loc === m.pid) ? `<span class="msg-go" aria-hidden="true">${gone(G.s.p[m.pid]) ? 'Follow up on' : 'Go to'} ${esc(def(m.pid).room)} ›</span>` : ''}</div></div>`;
+    ${dupFloor ? `<span class="msg-go" aria-hidden="true">Active in call bar above ↑</span>` : m.replies && !m.done ? `<div class="rep">${m.replies.map((r, i) => `<button class="btn" data-act="reply" data-m="${m.id}" data-i="${i}">${esc(r.label)}</button>`).join('')}</div>` : m.pid && def(m.pid) && here(def(m.pid)) && !(ui.view === 'room' && G.s.loc === m.pid) ? `<span class="msg-go" aria-hidden="true">${gone(G.s.p[m.pid]) ? 'Follow up on' : 'Go to'} ${esc(def(m.pid).room)} ›</span>` : ''}</div></div>`;
 }
 export function phone(n) {
   const list = G.s.inbox.slice(0, n);

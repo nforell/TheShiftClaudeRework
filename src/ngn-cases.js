@@ -5,7 +5,7 @@ window.Shift = window.Shift || {};
 window.Shift.ngnCases = [
  {
   "id": "cs-pneumonia-sepsis",
-  "title": "Pneumonia that turns septic",
+  "title": "78-year-old admitted with community-acquired pneumonia",
   "sp": "ms",
   "topic": "Sepsis from pneumonia",
   "client": "74-year-old man admitted to the medical-surgical unit with community-acquired pneumonia",
@@ -547,11 +547,12 @@ window.Shift.ngnCases = [
     "why": "Most sepsis targets are met: MAP 65 or higher, lactate clearing, urine 0.5 mL/kg/h or more, and better mentation. His breathing is worse, though, and new crackles in both bases after a large bolus in an older adult need prompt reporting and reassessment of fluids and oxygen.",
     "tip": "Check each finding against its specific goal, and remember that one worsening system needs action even when others improve."
    }
-  ]
+  ],
+  "dxTitle": "Pneumonia that turns septic"
  },
  {
   "id": "cs-heart-failure",
-  "title": "Heart failure that tips over",
+  "title": "72-year-old with worsening ankle swelling and dyspnea",
   "sp": "sd",
   "topic": "Acute decompensated heart failure",
   "client": "66-year-old woman with HFrEF (EF 30%) admitted to the cardiac step-down unit with acute decompensated heart failure",
@@ -1023,11 +1024,12 @@ window.Shift.ngnCases = [
     "why": "Her weight, lungs, oxygenation and electrolytes show that treatment worked. Two teach-back statements show she understands daily weights and when to call. Two statements show she still needs teaching on staying on her diuretic and reporting new orthopnea before discharge.",
     "tip": "For evaluation of teaching, select statements that match the teaching exactly; any plan to stop a medication or self-manage new symptoms needs more teaching."
    }
-  ]
+  ],
+  "dxTitle": "Heart failure that tips over"
  },
  {
   "id": "cs-dka",
-  "title": "New diabetes in DKA",
+  "title": "14-year-old with nausea, belly pain, and rapid breathing",
   "sp": "peds",
   "topic": "Pediatric diabetic ketoacidosis",
   "client": "15-year-old girl directly admitted to the pediatric unit with new-onset type 1 diabetes and diabetic ketoacidosis",
@@ -1565,11 +1567,12 @@ window.Shift.ngnCases = [
     "why": "Her acidosis, anion gap and ketones have all resolved, her neurologic status is back to normal and she can eat, so she is ready for subcutaneous insulin. IV insulin lasts only minutes after it stops, so the first subcutaneous dose must be given before the infusion is turned off.",
     "tip": "Judge DKA resolution by pH, bicarbonate, anion gap and ketones, not glucose, and never leave a gap in insulin coverage."
    }
-  ]
+  ],
+  "dxTitle": "New diabetes in DKA"
  },
  {
   "id": "cs-hip-pe",
-  "title": "Hip replacement with a clot that travels",
+  "title": "68-year-old on day 2 after hip arthroplasty",
   "sp": "ms",
   "topic": "DVT and pulmonary embolism",
   "client": "71-year-old female, med-surg unit, post-op day 2 after right total hip arthroplasty",
@@ -2049,11 +2052,12 @@ window.Shift.ngnCases = [
     "why": "The client's oxygenation and breathing have improved, and the aPTT is in range with stable platelets. Persistent calf swelling is expected because heparin prevents extension rather than dissolving clot. New hematuria is a bleeding sign that needs prompt reporting even when lab values look therapeutic.",
     "tip": "When evaluating an anticoagulant, check both whether it is working and whether it is causing bleeding."
    }
-  ]
+  ],
+  "dxTitle": "Hip replacement with a clot that travels"
  },
  {
   "id": "cs-gi-bleed",
-  "title": "Variceal bleed in cirrhosis",
+  "title": "56-year-old with cirrhosis and hematemesis",
   "sp": "ms",
   "topic": "Upper GI bleed in cirrhosis",
   "client": "58-year-old male with alcohol-related cirrhosis admitted to the medical unit with hematemesis and melena",
@@ -2562,11 +2566,12 @@ window.Shift.ngnCases = [
     "why": "Lactulose works by drawing ammonia into the colon and clearing it in the stool. Success shows up as the target number of soft stools and a return of normal mental status without asterixis. Stable hemoglobin and no further vomiting reflect bleeding control, a separate goal.",
     "tip": "Match each finding to the treatment that produced it; highlight only those tied to the drug in the question."
    }
-  ]
+  ],
+  "dxTitle": "Variceal bleed in cirrhosis"
  },
  {
   "id": "cs-stroke",
-  "title": "Stroke alert in the ED",
+  "title": "71-year-old brought to the ED with right-sided weakness",
   "sp": "ed",
   "topic": "Acute ischemic stroke and thrombolysis",
   "client": "67-year-old male brought to the emergency department with sudden right-sided weakness and trouble speaking",
@@ -3010,11 +3015,12 @@ window.Shift.ngnCases = [
     "why": "Intracranial hemorrhage is the most feared complication of alteplase. Sudden severe headache, vomiting, a worsening neuro exam and a sharp rise in BP after initial improvement point to it. The nurse notifies the provider and stroke team at once and prepares for a stat non-contrast CT; if alteplase were still running, it would be stopped.",
     "tip": "After thrombolysis, any neurologic decline paired with headache, vomiting or rising BP means bleeding until proven otherwise."
    }
-  ]
+  ],
+  "dxTitle": "Stroke alert in the ED"
  },
  {
   "id": "cs-preeclampsia",
-  "title": "Preeclampsia that turns severe",
+  "title": "32-year-old at 36 weeks with rising blood pressure",
   "sp": "ob",
   "topic": "Preeclampsia with severe features",
   "client": "32-year-old G1 P0 at 35 weeks, admitted to labor and delivery with headache and high blood pressure",
@@ -3489,11 +3495,12 @@ window.Shift.ngnCases = [
     "why": "The antidote worked: breathing, reflexes and alertness have recovered. The client is not out of danger, though. Her BP is back in the severe range with a headache, and her kidneys are still clearing poorly, so the provider must treat the BP now and adjust magnesium before restarting it.",
     "tip": "When evaluating, check whether each original problem resolved, then look for anything that has returned or worsened."
    }
-  ]
+  ],
+  "dxTitle": "Preeclampsia that turns severe"
  },
  {
   "id": "cs-infant-dehydration",
-  "title": "Infant with gastroenteritis and dehydration",
+  "title": "8-month-old with two days of vomiting and diarrhea",
   "sp": "peds",
   "topic": "Pediatric dehydration",
   "client": "11-month-old male, 8.5 kg, admitted to the pediatric unit with vomiting and diarrhea",
@@ -3967,11 +3974,12 @@ window.Shift.ngnCases = [
     "why": "Normal heart rate, brisk refill, alertness and good urine output show the bolus and maintenance fluid worked. Teaching focuses on giving oral rehydration solution in small frequent amounts, avoiding sugary drinks, continuing normal feeding and knowing when to call. Two statements show the caregiver needs more teaching.",
     "tip": "For evaluation items with caregiver statements, flag any statement that substitutes a sugary drink for oral rehydration solution or withholds normal feeding."
    }
-  ]
+  ],
+  "dxTitle": "Infant with gastroenteritis and dehydration"
  },
  {
   "id": "cs-burns",
-  "title": "House fire with inhalation injury",
+  "title": "39-year-old brought in after a house fire",
   "sp": "ed",
   "topic": "Major burns and inhalation injury",
   "client": "34-year-old male, 80 kg, brought to the emergency department after a house fire",
@@ -4430,11 +4438,12 @@ window.Shift.ngnCases = [
     "why": "The Parkland formula is only a starting point; urine output decides the rate. Here output is below 0.5 mL/kg/h, heart rate is rising, BP is falling and lactate is climbing, so the client is under-resuscitated. Inhalation injury often raises fluid needs above the formula. Whether the order uses Parkland or the ABLS starting dose of 2 mL/kg/%TBSA, the adult target is 0.5 mL/kg/h. The nurse reports this and increases lactated Ringer's per protocol.",
     "tip": "Judge burn resuscitation by hourly urine output first, then confirm with heart rate, BP and lactate, not by whether the formula volume was given."
    }
-  ]
+  ],
+  "dxTitle": "House fire with inhalation injury"
  },
  {
   "id": "cs-alcohol-withdrawal",
-  "title": "Ankle fracture that turns into alcohol withdrawal",
+  "title": "54-year-old admitted 48 hours ago with an ankle fracture",
   "sp": "ms",
   "topic": "Alcohol withdrawal",
   "client": "49-year-old man on a med-surg unit, admitted with a fractured right ankle awaiting surgery",
@@ -4930,11 +4939,12 @@ window.Shift.ngnCases = [
     "why": "Falling CIWA-Ar scores, normal vital signs, clearing hallucinations and normal electrolytes show the treatment is working. He is still inside the 48 to 96 hour window, so scoring continues. His plan to keep drinking needs a brief intervention and referral before discharge.",
     "tip": "Evaluate against the same measures that triggered treatment, then look for what the plan has not yet addressed."
    }
-  ]
+  ],
+  "dxTitle": "Ankle fracture that turns into alcohol withdrawal"
  },
  {
   "id": "cs-aki-hyperkalemia",
-  "title": "Stomach bug that ends in hyperkalemia",
+  "title": "67-year-old with chronic kidney disease and gastroenteritis",
   "sp": "sd",
   "topic": "AKI and hyperkalemia",
   "client": "70-year-old woman admitted to the step-down unit from the ED with dehydration and acute kidney injury",
@@ -5349,11 +5359,12 @@ window.Shift.ngnCases = [
     "why": "Lower potassium, normal T waves, better urine output and a higher blood pressure show treatment is working. Hypoglycemia after insulin, new crackles during fluid replacement and her plan to keep taking ibuprofen each need action. Potassium can rebound as insulin wears off, so monitoring continues.",
     "tip": "In evaluation items, a finding that is new since treatment began is often a side effect of the treatment rather than progress."
    }
-  ]
+  ],
+  "dxTitle": "Stomach bug that ends in hyperkalemia"
  },
  {
   "id": "cs-serotonin",
-  "title": "New antibiotic that triggers serotonin syndrome",
+  "title": "41-year-old on an SSRI started on a new antibiotic",
   "sp": "psy",
   "topic": "Serotonin syndrome",
   "client": "41-year-old man on an adult inpatient psychiatric unit for major depression, day 6 of admission",
@@ -5788,11 +5799,12 @@ window.Shift.ngnCases = [
     "why": "Most signs of serotonin syndrome resolve within 24 hours once the drugs are stopped, and this client's vital signs, clonus, bowel and mental status show that. The rising CK means muscle damage still threatens the kidneys. His tramadol request shows a teaching need.",
     "tip": "In evaluation, compare each finding with its earlier value; a lab that rose after the crisis can lag behind the bedside improvement."
    }
-  ]
+  ],
+  "dxTitle": "New antibiotic that triggers serotonin syndrome"
  },
  {
   "id": "cs-copd",
-  "title": "COPD flare with pneumonia",
+  "title": "69-year-old with COPD and increased sputum",
   "sp": "ms",
   "topic": "COPD flare with pneumonia",
   "client": "66-year-old woman with severe COPD is admitted to the medical-surgical unit with an exacerbation and right lower lobe community-acquired pneumonia",
@@ -6218,11 +6230,12 @@ window.Shift.ngnCases = [
     "cn": "physio"
    }
   ],
-  "sys": "respiratory"
+  "sys": "respiratory",
+  "dxTitle": "COPD flare with pneumonia"
  },
  {
   "id": "cs-hemorrhage",
-  "title": "Bleeding after a hysterectomy",
+  "title": "48-year-old four hours after abdominal hysterectomy",
   "sp": "ms",
   "topic": "Bleeding after a hysterectomy",
   "client": "54-year-old woman is on the medical-surgical unit after an open total abdominal hysterectomy this morning",
@@ -6655,11 +6668,12 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "heme"
+  "sys": "heme",
+  "dxTitle": "Bleeding after a hysterectomy"
  },
  {
   "id": "cs-tbi",
-  "title": "Head injury after a motorcycle crash",
+  "title": "29-year-old in the ICU after a motorcycle crash",
   "sp": "icu",
   "topic": "Head injury after a motorcycle crash",
   "client": "23-year-old man was admitted to the neuro ICU after a motorcycle crash with a right temporal skull fracture, a brain contusion and a small subdural hematoma",
@@ -7082,11 +7096,12 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "neuro"
+  "sys": "neuro",
+  "dxTitle": "Head injury after a motorcycle crash"
  },
  {
   "id": "cs-abruption",
-  "title": "Placental abruption at 34 weeks",
+  "title": "34-year-old at 34 weeks with painful vaginal bleeding",
   "sp": "ob",
   "topic": "Placental abruption at 34 weeks",
   "client": "31-year-old G2P1 at 34 weeks 2 days with chronic hypertension arrives at labor and delivery triage at 06:40 with sudden abdominal pain and vaginal bleeding",
@@ -7489,11 +7504,12 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "maternal"
+  "sys": "maternal",
+  "dxTitle": "Placental abruption at 34 weeks"
  },
  {
   "id": "cs-preterm",
-  "title": "Preterm labor at 31 weeks",
+  "title": "26-year-old at 31 weeks with low back ache and cramping",
   "sp": "ob",
   "topic": "Preterm labor at 31 weeks",
   "client": "24-year-old G1P0 at 31 weeks 1 day arrives at labor and delivery triage at 07:30 with cramping and low back pain that started last night",
@@ -7598,7 +7614,7 @@ window.Shift.ngnCases = [
     "tab": "Laboratory Results",
     "at": 5,
     "time": "18:05",
-    "text": "Serum magnesium 9.6 mg/dL (target for this protocol 4 to 7). Creatinine 1.2 mg/dL (0.4 to 0.8 in pregnancy)."
+    "text": "Serum magnesium 9.6 mg/dL (therapeutic target 4.8 to 8.4 mg/dL, or 4 to 7 mEq/L). Creatinine 1.2 mg/dL (0.4 to 0.8 in pregnancy)."
    }
   ],
   "items": [
@@ -7901,11 +7917,12 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "maternal"
+  "sys": "maternal",
+  "dxTitle": "Preterm labor at 31 weeks"
  },
  {
   "id": "cs-meningitis",
-  "title": "Bacterial meningitis in a preschooler",
+  "title": "4-year-old brought to triage with high fever and irritability",
   "sp": "peds",
   "topic": "Bacterial meningitis in a preschooler",
   "client": "4-year-old boy is brought to the pediatric emergency department at 13:30 by his mother for fever, vomiting and increasing sleepiness since this morning",
@@ -8286,11 +8303,12 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "neuro"
+  "sys": "neuro",
+  "dxTitle": "Bacterial meningitis in a preschooler"
  },
  {
   "id": "cs-nms",
-  "title": "Fever and rigidity on haloperidol",
+  "title": "35-year-old on an antipsychotic with new fever and stiffness",
   "sp": "psy",
   "topic": "Fever and rigidity on haloperidol",
   "client": "29-year-old man with schizophrenia is on day 7 of an admission to an adult inpatient psychiatric unit",
@@ -8685,6 +8703,7 @@ window.Shift.ngnCases = [
     "stem": "Refer to the chart."
    }
   ],
-  "sys": "mental health"
+  "sys": "mental health",
+  "dxTitle": "Fever and rigidity on haloperidol"
  }
 ];

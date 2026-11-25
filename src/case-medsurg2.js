@@ -238,7 +238,15 @@
         run(s, P, A) {
           const c = ciwa(s, P); P.ciwaAt = s.t; P.lastCiwa = c;
           if (s.t <= 60) A.judge('423-ciwa-early', 'assess', 1, 'You scored Mr. Tran\'s CIWA early in the shift.', 'At 40 hours after his last drink he\'s in the window where withdrawal escalates. The protocol only works if someone scores it on time.', '423');
-          const parts = c >= 18 ? 'nausea 3, tremor 5, sweats 4, anxiety 4, agitation 4, tactile 3, visual 3, headache 2' : c >= 12 ? 'nausea 2, tremor 4, sweats 3, anxiety 3, agitation 2, headache 1' : 'nausea 2, tremor 2, sweats 2, anxiety 2, headache 1';
+          const items = c >= 18
+            ? [['nausea', 3], ['tremor', 5], ['sweats', 4], ['anxiety', 4], ['agitation', 4], ['tactile', 3], ['visual', 3], ['headache', 2]]
+            : c >= 12
+              ? [['nausea', 2], ['tremor', 4], ['sweats', 3], ['anxiety', 3], ['agitation', 2], ['headache', 1]]
+              : [['nausea', 2], ['tremor', 2], ['sweats', 2], ['anxiety', 2], ['headache', 1]];
+          let sum = items.reduce((acc, x) => acc + x[1], 0), idx = 0;
+          while (sum < c && idx < 64) { if (items[idx % items.length][1] < 7) { items[idx % items.length][1]++; sum++; } idx++; }
+          while (sum > c && idx < 64) { if (items[idx % items.length][1] > 0) { items[idx % items.length][1]--; sum--; } idx++; }
+          const parts = items.filter(([, v]) => v > 0).map(([k, v]) => `${k} ${v}`).join(', ');
           return `CIWA-Ar ${c}. (${parts}.) ${c >= 16 ? 'Protocol: lorazepam 2 mg IV, seizure precautions.' : c >= 10 ? 'Protocol: lorazepam 1 mg IV, recheck in 1 hour.' : 'Below treatment threshold. Recheck in 4 hours.'}`;
         },
       },
@@ -401,7 +409,7 @@
       cardiac: (s, P, A) => `HR ${A.vitals('425').HR}, irregular (AFib). Pale conjunctivae. Cap refill 3 seconds.`,
       neuro: () => 'Alert, oriented. Hard of hearing on the left.',
       pain: (s, P) => reacting(P) ? 'New pain in her lower back and flanks, 7/10, and a burning at the IV site.' : 'Knees ache, 2/10. "My old friend."',
-      skin: (s, P) => reacting(P) ? 'Flushed face, hives across her chest, cool hands.' : 'Pale, cool hands. No bruising.',
+      skin: (s, P) => reacting(P) ? 'Flushed face, shaking rigors, cool clammy hands.' : 'Pale, cool hands. No bruising.',
       gi: (s, P) => `Abdomen soft, mildly tender in the epigastrium. One melena stool this afternoon.${reacting(P) ? ' Urine in the commode is dark red-brown.' : ''}`,
     },
     interventions: [
@@ -441,7 +449,7 @@
         run(s, P, A) {
           P.vit15 = true; A.recordVitals('425', 'You');
           const v = A.vitals('425');
-          if (reacting(P)) { A.judge('425-stay', 'assess', 2, 'You stayed with Mrs. Nakamura for the first 15 minutes and saw the reaction start.', 'Acute hemolytic reactions start within minutes: fever, chills, back pain, hypotension, a sense of doom. Being in the room is what makes early recognition possible.', '425'); return `Eight minutes in she grabs your wrist. "I'm so cold, and my back." T ${v.T}, HR ${v.HR}, BP ${v.SBP}/${v.DBP}. Hives across her chest.`; }
+          if (reacting(P)) { A.judge('425-stay', 'assess', 2, 'You stayed with Mrs. Nakamura for the first 15 minutes and saw the reaction start.', 'Acute hemolytic reactions start within minutes: fever, chills, back pain, hypotension, a sense of doom. Being in the room is what makes early recognition possible.', '425'); return `Eight minutes in she grabs your wrist. "I'm so cold, and my back." T ${v.T}, HR ${v.HR}, BP ${v.SBP}/${v.DBP}. Shaking rigors, flushed face, burning at the IV site.`; }
           A.judge('425-stay', 'assess', 1, 'You watched Mrs. Nakamura through the first 15 minutes of her transfusion.', 'The first 15 minutes carry most of the risk of a severe reaction. Vitals were stable, so the rate can go up.', '425');
           return `15 minutes: T ${v.T}, HR ${v.HR}, BP ${v.SBP}/${v.DBP}. No reaction. Rate up to finish over 2 hours.`;
         },
@@ -606,7 +614,7 @@
       {
         id: '427-ins', name: 'Insulin regular + dextrose 50%', dose: '10 units + 25 g', route: 'IV', freq: 'Once', prn: true, available: (s, P) => P.hkOrders, block: (s, P) => P.insAt !== null ? 'Given at ' + clock(P.insAt) + '.' : null,
         checks: (s, P) => [{ label: 'Glucose before', value: P.bgAt !== null ? `${P.lastBG} at ${clock(P.bgAt)}` : 'Not checked', ok: recent(s, P.bgAt, 60) }, { label: 'After', value: 'Glucose every hour for 4 hours (kidney failure prolongs insulin)', ok: null }, { label: 'Hypoglycemia risk', value: 'High: CKD 4, glucose under 125. Many protocols use 5 units or add a dextrose infusion here.', ok: null }],
-        give(s, P, A) { P.insAt = s.t; if (!recent(s, P.bgAt, 60)) A.judge('427-ins-bg', 'assess', -1, 'You gave IV insulin without a baseline glucose.', 'You need the starting number to judge the drop that follows.', '427'); return 'Regular insulin 10 units IV, then dextrose 50% 25 g IV. Potassium shifts into cells over 15 to 30 minutes. Glucose checks every hour.'; },
+        give(s, P, A) { P.insAt = s.t; if (!recent(s, P.bgAt, 60)) A.judge('427-ins-bg', 'assess', -1, 'You gave IV insulin without a baseline glucose.', 'You need the starting number to judge the drop that follows.', '427'); return 'Dextrose 50% 25 g IV, then regular insulin 10 units IV. Potassium shifts into cells over 15 to 30 minutes. Glucose checks every hour.'; },
       },
       {
         id: '427-lok', name: 'Sodium zirconium cyclosilicate', dose: '10 g', route: 'PO', freq: 'Once', prn: true, available: (s, P) => P.hkOrders, block: (s, P) => P.lokAt !== null ? 'Given at ' + clock(P.lokAt) + '.' : null,
@@ -776,7 +784,7 @@
       },
       respond(s, P, A, picked) {
         const out = [];
-        if (picked.includes('allergy') && !P.abxChanged && P.abxGiven === null) { P.abxChanged = true; A.addOrder('429', 'Discontinue ampicillin-sulbactam. Pre-op: ciprofloxacin 400 mg IV and metronidazole 500 mg IV within 60 minutes before incision.'); A.judge('429-abx-catch', 'meds', 3, 'You caught a penicillin ordered for a patient with penicillin anaphylaxis.', 'The allergy was documented; the order still got written. Reading every order against the allergy list, especially for a patient you just met, is the check that catches it.', '429'); out.push('Oh, you\'re right. Switching her to cipro and metronidazole. Thank you.'); }
+        if (picked.includes('allergy') && !P.abxChanged && P.abxGiven === null) { P.abxChanged = true; A.addOrder('429', 'Discontinue ampicillin-sulbactam. Pre-op: ciprofloxacin 400 mg IV (within 120 min before incision) and metronidazole 500 mg IV (within 60 min before incision).'); A.judge('429-abx-catch', 'meds', 3, 'You caught a penicillin ordered for a patient with penicillin anaphylaxis.', 'The allergy was documented; the order still got written. Reading every order against the allergy list, especially for a patient you just met, is the check that catches it.', '429'); out.push('Oh, you\'re right. Switching her to cipro and metronidazole. Thank you.'); }
         if (picked.includes('anaph')) out.push('Epinephrine IM now if you haven\'t, stop that infusion, I\'m calling a rapid response.');
         if (picked.includes('pain') && P.ruptured) out.push('That\'s a rupture until proven otherwise. I\'m calling Dr. Morales to bump her up.');
         return out.length ? out.join(' ') : 'Okay. She\'s on for 19:00. Anything else?';
@@ -999,7 +1007,7 @@
 
   S.engine.registerCase({
     id: 'medsurg-4w-2', title: 'Evenings on 4 West', unit: '4 West, Medical-Surgical', level: 'Beginner', start: 15 * 60, length: 300, novaCredits: 3,
-    card: 'Four patients and an ED admission: COPD, alcohol withdrawal, a GI bleed getting blood, and a critical potassium.',
+    card: 'Evening shift on 4 West: COPD on oxygen, pancreatitis, a GI bleed awaiting blood, chronic kidney disease, and an ED admission.',
     hero: { head: 'Evenings, 4 West. Four patients and an admission before dinner.', lede: 'Med-surg, 15:00 to 20:00. A unit of blood is coming up, the lab is about to call a critical, and the ED is sending you a surgical admission. Other people will change things on you, so read orders twice.' },
     intro: { time: '14:58', place: '4 West, Medical-Surgical', cta: 'Take report', beats: ['Marisol is at the desk, ready to give report.', 'Four patients now, and a fifth coming up from the ED.', 'Blood is on its way and the lab has a critical to call in. Read every order twice.'] },
     minutes: 20,
@@ -1033,7 +1041,7 @@
     },
     replies: {
       'o2-back'(s, A) { const P = s.p['421']; P.o2 = 2; P.o2Fixed = s.t; P.luisTaught = true; A.judge('421-o2-back', 'deleg', 2, 'You had Luis return Mrs. Kowalski\'s oxygen to 2 L and explained why.', 'Changing oxygen isn\'t in a CNA\'s scope, and for a CO₂ retainer more isn\'t better. Correcting it right away, and teaching, protects this patient and the next one.', '421'); A.msg({ from: 'luis', pid: '421', text: 'Got it, back to 2. I didn\'t know high sats could be bad for her. Won\'t touch the O₂ again.' }); },
-      'o2-leave'(s, A) { A.judge('421-o2-leave', 'judgment', -2, 'You approved raising a CO₂ retainer\'s oxygen to 6 L.', 'Her target was 88–92%. A sat of 98% in chronic hypercapnia is too much oxygen. It suppresses her drive to breathe and lets CO₂ climb.', '421'); A.msg({ from: 'luis', pid: '421', text: 'Cool, leaving it.' }); },
+      'o2-leave'(s, A) { A.judge('421-o2-leave', 'judgment', -2, 'You approved raising a CO₂ retainer\'s oxygen to 6 L.', 'Her target was 88–92%. A sat of 98% in chronic hypercapnia is too much oxygen: it worsens V/Q mismatch and the Haldane effect (and blunts hypoxic drive), letting CO₂ climb.', '421'); A.msg({ from: 'luis', pid: '421', text: 'Cool, leaving it.' }); },
       'linh-good'(s, A) { A.judge('423-linh', 'comm', 2, 'You protected Mr. Tran\'s privacy with his mother, kindly.', 'Without his permission, you can\'t confirm diagnosis details, even to family. Offering to pass the message along respects both of them.', '423'); A.msg({ from: 'linh', pid: '423', text: '"...Okay. Tell him his mother loves him and he should call."' }); },
       'linh-bad'(s, A) { A.judge('423-linh', 'comm', -3, 'You disclosed Mr. Tran\'s diagnosis and drinking to his mother without permission.', 'He specifically asked you not to. That\'s a privacy violation (HIPAA) and a break in trust with a patient already at risk of leaving.', '423'); A.msg({ from: 'linh', pid: '423', text: '"I knew it. I KNEW it." She hangs up. Ten minutes later his phone starts ringing nonstop.' }); },
       'linh-fine'(s, A) { A.judge('423-linh', 'comm', -1, 'You told Mr. Tran\'s mother he was fine.', 'That\'s not true, and it\'s still disclosing information. "I can\'t share details without his permission" is honest and kind.', '423'); A.msg({ from: 'linh', pid: '423', text: '"Then why is he in the hospital?" She sounds unconvinced.' }); },
