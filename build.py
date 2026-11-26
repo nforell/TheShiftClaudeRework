@@ -99,14 +99,14 @@ html=f'''<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Shift — a nursing shift simulator</title>
 <meta name="description" content="Work a real nursing shift: med-surg, step-down, ED, mother-baby, psych and peds. Take report, walk the hall, and decide who needs you first. Your patients get better or worse based on what you notice.">
-<meta name="theme-color" content="#2449A8">
+<meta name="theme-color" content="#214B7A">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Shift"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta property="og:title" content="The Shift — a nursing shift simulator">
 <meta property="og:description" content="Four patients. One is quietly getting worse. Will you notice in time?">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2322406A'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23FAF8F3' stroke-width='5'/%3E%3Cpath d='M32 32V18M32 32l-6.5 11' stroke='%23FAF8F3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23214B7A'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23FAF8F3' stroke-width='5'/%3E%3Cpath d='M32 32V18M32 32l-6.5 11' stroke='%23FAF8F3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@200..800&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Mono:wght@200..800&family=Barlow+Condensed:wght@500;600;700&family=Kalam:wght@400;700&family=Newsreader:ital,opsz,wght@0,6..72,500..700;1,6..72,500..600&display=swap" rel="stylesheet">
 <style>{css}</style></head>
 <body><div id="app"></div>
 {datablocks}{caseblocks}<script>{js}</script>
