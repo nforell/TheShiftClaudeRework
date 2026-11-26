@@ -98,7 +98,7 @@
           { t: 'This is the nurse for Kenji Sato, tibia fracture in a cast. His toes are tingling under the cast and he can\'t get comfortable.', w: 'Add pain out of proportion and pain on stretch.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Closed tibia fracture from a motorcycle crash, casted at 16:00. Morphine 4 mg IV at 01:30 didn\'t touch it.', ok: 1 },
-          { t: 'Closed tibia fracture, casted yesterday afternoon. He\'s 28, healthy, no medical history and no allergies.', w: 'Missing that the morphine didn\'t help.' },
+          { t: 'Closed tibia fracture, casted yesterday afternoon. He\'s 27, healthy, no medical history and no allergies.', w: 'Missing that the morphine didn\'t help.' },
           { t: 'Tibia fracture from a motorcycle crash. He had a lot of pain in the ED too, and needed several doses there.', w: 'Earlier pain doesn\'t explain pain that\'s worse now despite morphine.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Toes pale and cool, tingling, pulses still there. Pain out of proportion. I think pressure is building in the leg.', ok: 1 },
@@ -206,7 +206,7 @@
       steps: [
         { k: 'S', q: 'Open the call.', o: [
           { t: 'This is the nurse for Earl Watts. He has chest pain and the ECG shows ST elevation in II, III and aVF. I think he\'s having a STEMI.', ok: 1 },
-          { t: 'This is the nurse for Earl Watts. He has crushing chest pain and he\'s sweating. It started about ten minutes ago at rest.', w: 'Add the ECG: ST elevation in II, III and aVF.' },
+          { t: 'This is the nurse for Earl Watts. He has crushing chest pain and he\'s sweating. It started about 15 minutes ago at rest.', w: 'Add the ECG: ST elevation in II, III and aVF.' },
           { t: 'This is the nurse for Earl Watts, hip replacement two days ago. His ECG looks abnormal to me and I\'d like you to read it.', w: 'Say what\'s abnormal and that you think it\'s a STEMI.' }] },
         { k: 'B', q: 'Background.', o: [
           { t: 'Hip replacement two days ago, on enoxaparin. Diabetic, smoker. No cardiac history.', ok: 1 },
@@ -351,7 +351,7 @@
         { say: '"I need a phone RIGHT NOW. Do you know who I am?"', o: [
           { t: 'Speak slowly and quietly: "Dev, I can tell this is important to you. Let\'s step into the quiet room and figure it out."', d: -2, r: 'He follows, still talking fast.' },
           { t: '"Everyone on this unit thinks they\'re important, Dev. You\'ll wait for phone hours like everybody else."', d: 2, r: '"You\'re all JEALOUS."' },
-          { t: 'Match his energy to engage him: "A billion dollars? Tell me everything, let\'s get your lawyer on the line!"', d: 2, r: 'He gets louder.' }] },
+          { t: 'Keep him at the desk to build rapport: "Tell me more about the app — maybe we can call your lawyer once you walk me through it."', d: 2, r: 'He gets louder and draws a crowd at the station.' }] },
         { say: '"I don\'t need sleep. I\'m on fire tonight."', o: [
           { t: '"You haven\'t slept in two nights. Your brain needs it, even when it doesn\'t feel that way."', d: -1, r: 'He pauses. "Two nights?"' },
           { t: '"It\'s late and lights out has come and gone. Go to bed now."', d: 2, r: '"You can\'t make me."' },

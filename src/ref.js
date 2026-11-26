@@ -1448,7 +1448,7 @@ window.Shift.ref = [
      [
       "Face-to-face evaluation",
       "Within 1 hour of starting (violent or self-destructive)",
-      "By physician, LIP, or trained RN/PA"
+      "By physician, LIP, or trained RN/PA (RN/PA must consult attending physician/LIP ASAP per CMS 42 CFR 482.13)"
      ],
      [
       "Non-violent (medical) restraint",
@@ -1762,7 +1762,7 @@ window.Shift.ref = [
      [
       "Late",
       "Placental insufficiency",
-      "Stop oxytocin, lateral position, IV bolus, treat low BP, notify provider; oxygen per policy"
+      "Stop oxytocin, lateral position, IV bolus, treat low BP, notify provider; no routine maternal O₂ if maternal SpO₂ is normal (ACOG 2022)"
      ]
     ]
    },
@@ -1874,8 +1874,8 @@ window.Shift.ref = [
     "rows": [
      [
       "Heart rate",
-      "110 to 160 bpm",
-      "May drop near 100 in deep sleep"
+      "110 to 160 bpm (resting)",
+      "May drop near 100 in deep sleep; PALS awake/crying upper range up to 205"
      ],
      [
       "Respiratory rate",

@@ -1,6 +1,6 @@
 /* The Shift — UI: The patient's room: the task timeline, assessment, care, meds, talking, delegation, critical moments and consequence cards. */
 import { aideSuggest } from './core.js';
-import { A, A_, C, CJ, E, F, FX, G, ICON, R, STY, abn, ageSex, clip, cna, cnaAway, def, esc, fT, face, faceOf, gone, goneText, here, lcFirst, legal, liveDef, medDose, norm, pface, prov, rigV, staff, sysL, ui, who } from './ctx.js';
+import { A, A_, C, CJ, E, F, FX, G, ICON, R, STY, abn, ageSex, clip, cna, cnaAway, def, esc, fT, face, faceOf, floorMode, gone, goneText, here, lcFirst, legal, liveDef, medDose, norm, pface, prov, rigV, staff, sysL, ui, who } from './ctx.js';
 import { goData, nextFor, nowRows, prioN, stuckTip } from './floor.js';
 import { PAST } from './sbar.js';
 import { sheet } from './sheets.js';
@@ -21,7 +21,7 @@ export function medStatus(m) {
   const late = G.s.t > m.due + 60; return { cls: late ? 'late' : G.s.t >= m.due - 30 ? 'due' : '', text: (late ? 'Late, due ' : 'Due ') + E.clock(m.due) };
 }
 /* ------------ decision review: the why, right after the decision ------------ */
-export const fbNow = () => (G.prof.settings.feedback || 'now') === 'now';
+export const fbNow = () => !floorMode() && (G.prof.settings.feedback || 'now') === 'now';
 export const DOM = Object.fromEntries(E.DOMAINS);
 export const judgSince = (n0, pid) => G.s.judg.slice(n0).filter((j) => pid === undefined || !j.pid || j.pid === pid);
 export function reviewHTML(list, title) {
@@ -32,10 +32,17 @@ export function reviewHTML(list, title) {
 export function reviewSound(list) { if (!fbNow() || !list || !list.length) return; const worst = Math.min(...list.map((j) => j.delta)), best = Math.max(...list.map((j) => j.delta)); setTimeout(() => FX.play(worst <= -1 ? 'miss' : best > 0 ? 'right' : 'tap'), 520); }
 
 /* ------------ condition reads: what the nurse sees after acting ------------ */
-export const ST = { stable: ['Looks settled', 0], watch: ['Concerning', 1], urgent: ['Needs you now', 2], gone: ['Off the unit', -1] };
+export const ST = { stable: ['Looks settled', 0], watch: ['Needs monitoring', 1], urgent: ['Needs you now', 2], gone: ['Off the unit', -1] };
 export const stName = (k) => (ST[k] || ST.stable)[0];
 export const stRank = (k) => (ST[k] || ST.stable)[1];
-export function markRead(pid, st) { const P = G.s.p[pid]; P.read = { t: G.s.t, st }; P.reads = (P.reads || []).concat(st).slice(-6); }
+export function markRead(pid, st) {
+  const P = G.s.p[pid], d = def(pid);
+  if (st === 'stable' && d && !gone(P)) {
+    const v = A().vitals(pid);
+    if (v && (abn(d, 'T', v.T) || abn(d, 'SpO2', v.SpO2) || abn(d, 'RR', v.RR) || abn(d, 'SBP', v.SBP) || (v.pain || 0) >= 7)) st = 'watch';
+  }
+  P.read = { t: G.s.t, st }; P.reads = (P.reads || []).concat(st).slice(-6);
+}
 export const trend = (P) => (P.reads && P.reads.length ? `<span class="trend" aria-hidden="true">${P.reads.map((r) => `<i class="st-${r}"></i>`).join('')}</span>` : '');
 
 /* ------------ the brain: an Epic-style task timeline for one patient ------------ */
@@ -88,8 +95,8 @@ export function brainRows0(d, P) {
   rows.push({ key: 'sa', t: 0, late: G.s.t > 90 && sysDone < 3, done: sysDone >= 3, sys: 'full', text: 'Shift assessment', sub: sysDone >= 3 ? `${sysDone} systems documented` : sysDone ? `${sysDone} of 3+ systems documented` : 'Nothing documented yet', go: { act: 'dock', id: 'assess' } });
   const off = gone(P);   // transferred: their scheduled work went with them
   if (off) rows.pop();
-  // A patient who needs you now always has something on the list, even when nothing is scheduled: look, then act.
-  if (!off && d.status(G.s, P, A()) === 'urgent') {
+  // A patient who needs you now always has something on the list in Orientee mode; Floor mode leaves acuity recognition to you.
+  if (!off && !floorMode() && d.status(G.s, P, A()) === 'urgent') {
     const mine = [P.vit.filter((v) => v.by === 'You').map((v) => v.t), Object.values(P.assessAt || {})].flat(), lastLook = mine.length ? Math.max(...mine) : -999;
     const alert = G.s.inbox.find((m) => m.pid === d.id && m.urgent && m.stale === undefined && G.s.t - m.t <= 60), fresh = G.s.t - lastLook <= 15;
     rows.push({ key: 'urg', t: G.s.t, late: false, stat: true, text: fresh ? `Needs you now: you assessed at ${E.clock(lastLook)}. Act on it` : 'Needs you now: assess and act', sub: fresh ? 'Treat what you can at the bedside (Care), and call for what you can\'t (Talk & call).' : alert ? clip(alert.text, 110) : 'Look at the patient, take vital signs, then decide what to do and who to call.', ...(() => { if (!fresh) return { go: { act: 'dock', id: 'assess' }, sys: 'vitals', hl: 'Vital signs' }; const Ax = A(), u = (d.interventions || []).find((x) => (!x.avail || x.avail(G.s, P, Ax)) && (x.urgent || /juice|d50|brady/.test(x.id))); return u ? { go: { act: 'dock', id: 'care' }, hl: u.label } : { go: { act: 'dock', id: 'talk' }, hl: 'Call SBAR' }; })() });
@@ -221,7 +228,7 @@ export function railCounts(d, P) {
     assess: [sysCount(P) ? `${sysCount(P)} documented` : 'Start here', sysCount(P) ? '' : 'due'],
     care: P.bell ? ['Call light on', 'late'] : [`${ints + 1} option${ints === 0 ? '' : 's'}`, ''],
     meds: medLate ? [`${medLate} late`, 'late'] : medDue ? [`${medDue} due`, 'due'] : ['Nothing due', ''],
-    talk: STY && STY.waiting(G.s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Patient, family, provider', ''],
+    talk: STY && STY.waiting(G.s, C(), d, P, Ax) ? ['Wants to talk', 'due'] : ['Bedside & calls', ''],
   };
 }
 /* ------------ talking in the room ------------
@@ -346,11 +353,11 @@ export function vRoom() {
       ${speech(d, P, fl)}
       <div class="nameplate"><div class="plate"><h2>${esc(d.name)} <small>${ageSex(d)}, ${d.room}</small></h2><div class="muted" style="font-size:.88rem">${esc(liveDef(d).dx)}</div>
         <button class="vmini" data-act="chart" data-pid="${d.id}" data-tab="vitals" aria-label="Last vitals at ${E.clock(v.t)}. Open the flowsheet.">${[['T', fT(v.T), ab.T], ['HR', v.HR, ab.HR], ['BP', `${v.SBP}/${v.DBP}`, ab.BP], ['RR', v.RR, ab.RR], ['SpO₂', v.SpO2 + '%', ab.SpO2, 'SpO2']].map(([k, x, a, id]) => `<span class="${a ? 'ab' : ''}${alarm(id)}"><i>${k}</i>${x}${alarm(id) ? '<b class="fall" aria-label="falling">↓</b>' : ''}</span>`).join('')}<small>${E.clock(v.t)}</small></button>
-        <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(liveDef(d).code)}</span><span class="chip ${/No known/.test(liveDef(d).allergies) ? '' : 'alert'}">${esc(liveDef(d).allergies.split('.')[0])}</span>${P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
+        <div class="facts">${prioN(d.id) ? `<button class="chip prio-chip" data-act="roster" title="Your priority list">#${prioN(d.id)} on your list</button>` : ''}${legal(d)}<span class="chip">${esc(liveDef(d).code)}</span><span class="chip ${/No known/.test(liveDef(d).allergies) ? '' : 'alert'}">${esc(liveDef(d).allergies.split('.')[0])}</span>${!floorMode() && P.read ? `<span class="chip read st-${P.read.st}" title="How ${esc(d.short)} looked after your last action">${esc(stName(P.read.st))}${trend(P)}</span>` : ''}</div></div>
         <div class="plate-btns"><button class="btn" data-act="chart" data-pid="${d.id}">${ICON.chart}Chart</button><button class="btn" data-act="back">${ICON.back}Back to station</button></div></div>
       ${ui.caption && !ui.captionPoke && !talking ? `<div class="caption ${ui.captionQuiet ? 'quiet' : ''}" role="status">${esc(ui.caption)}</div>` : ''}
     </div>
-    ${talking ? '' : nextHere(d, P)}
+    ${talking || floorMode() ? '' : nextHere(d, P)}
     ${talking ? convoTray(d) : ''}
     ${looks.length && !talking ? `<div class="lookaround" role="group" aria-label="Look around the room"><span>Look at</span>${looks.map(([id, l]) => `<button class="look" data-act="clue" data-id="${id}" aria-label="${l}">${esc(l.replace(/^(Meal|Bedside|Cardiac|Oxygen) /, '').replace(/ and pump$| on the table$/, ''))}</button>`).join('')}</div>` : ''}
     <div class="ws" ${talking ? 'inert' : ''}>
@@ -429,7 +436,7 @@ export function ovResult() {
     ${alerts}
     ${(r.done || []).length ? `<div class="res-done"><span class="res-cl">Checked off</span><ul>${r.done.map((x, i) => `<li style="--i:${i}"><span class="gcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17.2 8.6"/></svg></span><s>${esc(x)}</s></li>`).join('')}</ul></div>` : ''}
     ${vit}
-    ${changed ? `<div class="res-cond chg"><span class="res-cl">Overall, since you came in</span><span class="pill st-${r.st0} was">${esc(stName(r.st0))}</span><span class="res-arrow" aria-hidden="true">→</span><span class="pill st-${r.st1} now">${esc(stName(r.st1))}</span></div>` : ''}
+    ${!floorMode() && changed ? `<div class="res-cond chg"><span class="res-cl">Overall, since you came in</span><span class="pill st-${r.st0} was">${esc(stName(r.st0))}</span><span class="res-arrow" aria-hidden="true">→</span><span class="pill st-${r.st1} now">${esc(stName(r.st1))}</span></div>` : ''}
     ${(r.meanwhile || []).length ? `<div class="res-mw"><span class="res-cl">Meanwhile, while you were here</span><ul>${r.meanwhile.map((x) => `<li><b>${esc(x.pid)} ${esc(def(x.pid).short)}</b> ${esc(x.text)} is now overdue</li>`).join('')}</ul></div>` : ''}
     ${r.msgs ? `<button class="res-msgs" data-act="res-inbox">${ICON.msg}<span>While you were busy: <b>${r.msgs} new message${r.msgs === 1 ? '' : 's'}</b></span><span aria-hidden="true">›</span></button>` : ''}
     <div class="res-f"><button class="btn btn-primary" data-act="res-close">Continue</button></div>

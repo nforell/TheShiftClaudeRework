@@ -182,7 +182,7 @@
         return `Okay. MAP 65, lactate at eight, IR at ten.`;
       },
     },
-    scene: (s, P) => ({ tele: true, iv: P.site === 'off' ? 'lock' : 'running', o2: 4, foley: true, family: P.away ? null : 'linda', familyLabel: 'Linda, his wife, holding his hand', empty: !!P.away, emptyText: 'In IR for a left nephrostomy. Back about ' + (P.awayAt !== null ? clock(P.awayAt + 45) : '10:45') + '.' }),
+    scene: (s, P) => ({ tele: true, iv: P.site === 'off' ? 'lock' : 'running', pressor: P.site === 'off' ? null : { drug: 'NE', rate: P.ne, map: frMAP(P), site: P.site }, o2: 4, foley: true, family: P.away ? null : 'linda', familyLabel: 'Linda, his wife, holding his hand', empty: !!P.away, emptyText: 'In IR for a left nephrostomy. Back about ' + (P.awayAt !== null ? clock(P.awayAt + 45) : '10:45') + '.' }),
     clues: (s, P) => ({ iv: P.site === 'central' ? `Norepinephrine ${P.ne} mcg/min on the central line. The forearm IV is capped${P.extFound ? ', the arm on pillows' : ''}.` : P.site === 'off' ? `The norepinephrine pump is stopped. The bag is still hanging.` : `Norepinephrine ${P.ne} mcg/min into the 18g in his left forearm. The central line ports are capped and labeled "do not use: CXR pending."`, family: `Linda, in yesterday's clothes, holding his hand. A thermos of coffee she hasn't touched. A list on her phone titled "Questions for the doctor."`, foley: `Foley bag: dark amber. ${Math.round(P.uo)} mL in the last hour.`, monitor: `MAP ${frMAP(P)}.`, o2: `Nasal cannula at 4 L.` }),
     rig: (s, P) => ({ sbp: frSBP(P), alert: frMAP(P) < 60 ? 2 : 1, anxious: P.ext >= .3 && P.site === 'peri' ? .5 : 0, pain: 3 }),
     status: (s, P) => (P.away ? 'watch' : frMAP(P) < 60 || P.site === 'off' || (P.ext >= .2 && P.site === 'peri') ? 'urgent' : frMAP(P) < 65 || P.site === 'peri' || !P.srcDone ? 'watch' : 'stable'),
@@ -249,7 +249,7 @@
       neuro: (s, P) => { const r = tuRASS(s, P); P.k.neuro = s.t; return r <= -3 ? `RASS -3: moves to voice, no eye contact. Pupils equal and reactive. Below his goal of 0 to -1.` : r >= 1 ? `RASS +${r}: restless, pulling at the tube, not following commands. Can't hold attention.` : `RASS ${r}: opens eyes to voice, follows simple commands some of the time.`; },
       pain: (s, P) => { const r = tuRASS(s, P); return r >= 0 ? `CPOT 4: grimacing, fighting the ventilator, tense arms. He's in pain.` : `CPOT 1: relaxed face, tolerating the ventilator.`; },
       skin: (s, P) => `Sacrum intact. Both heels red, blanching. ${P.turnAt > s.t - 120 ? 'Heels floated.' : 'Heels on the mattress.'} Lips dry, tube tape intact.`,
-      gi: () => `Abdomen soft. Feeds at goal, residuals small. Foley draining clear yellow urine.`,
+      gi: () => `Abdomen soft, nondistended. Tolerating tube feeds at goal without distension or emesis. Foley draining clear yellow urine.`,
     },
     interventions: [
       { id: 'hob', label: 'Raise the head of the bed to 30 to 45 degrees', cost: 1, avail: (s, P) => P.hob < 30 && !P.arrest,
@@ -377,7 +377,7 @@
         return `Thanks. SAT today; no SBT on those settings.`;
       },
     },
-    scene: (s, P) => ({ tele: true, iv: 'running', vent: true, foley: true, family: P.arrest ? null : 'michael', familyLabel: 'Michael, his partner, in scrubs from his own shift' }),
+    scene: (s, P) => ({ tele: true, iv: 'running', vent: true, ventAlarm: !!P.plugOn, ventMeta: { tv: P.plugOn ? 240 : 400, peep: 12, fio2: 60, peak: tuPeak(P) }, foley: true, family: P.arrest ? null : 'michael', familyLabel: 'Michael, his partner, in scrubs from his own shift' }),
     clues: (s, P) => ({ vent: P.plugOn ? `Alarm: HIGH PRESSURE. Peak ${tuPeak(P)}. The pressure waveform spikes and cuts off each breath early. Exhaled volume 240 mL of the 400 set.` : `Volume control 400 mL, rate 26, PEEP 12, FiO₂ 60%. Peak 32, plateau 28. No alarms.`, family: `Michael, in scrubs from his own night shift, a photo of a marching band propped on the windowsill. He watches the ventilator screen more than the TV.`, iv: `Propofol ${P.sedOff && !P.resedated ? 'paused' : P.resedated ? '15' : '30'} mcg/kg/min, fentanyl ${P.fentOn ? (P.fentRate || 50) : 'paused'}, on the central line.`, monitor: `SpO₂ ${tuSpO2(P)}%.`, foley: `Clear yellow urine.` }),
     rig: (s, P) => { const r = tuRASS(s, P); return { alert: r <= -3 || P.arrest ? 2 : r <= -1 ? 1 : 0, anxious: r >= 1 ? .7 : 0, spo2: tuSpO2(P), rr: r >= 1 ? 34 : 26 }; },
     status: (s, P) => (P.plugOn || P.sbtOn || tuRASS(s, P) >= 1 ? 'urgent' : 'watch'),
@@ -469,9 +469,9 @@
         run(s, P, A) { P.reassessed = true; A.judge('713-reassess', 'judgment', 2, `You reassessed Mrs. Holloway after her re-exploration.`, `Did it work? Heart rate down, pressure up, pulse pressure wider, CVP lower, tubes draining again.`, '713'); return `HR ${beHR(P)}, BP ${beSBP(P)}/${beDBP(P)}, CVP ${beCVP(P)}. Pulse pressure back to ${beSBP(P) - beDBP(P)}. Chest tubes draining 40 mL/h, serosanguineous. "I can breathe again."`; } },
     ],
     meds: [
-      { id: '713-kcl', name: 'Potassium chloride (protocol)', dose: '20 mEq over 1 hour', route: 'IV, central', freq: 'Per electrolyte protocol: K under 4.0', prn: true, available: (s, P) => !P.gone, block: (s, P) => (P.kGiven !== null ? 'Started at ' + clock(P.kGiven) + '.' : null),
-        checks: () => [{ label: 'Potassium', value: '3.4 at 05:00', ok: true }, { label: 'Urine output', value: 'Adequate', ok: true }, { label: 'Line', value: 'Central (IJ introducer)', ok: true }],
-        give(s, P, A) { P.kGiven = s.t; A.judge('713-kcl', 'meds', s.t <= 90 ? 2 : 1, `You started the electrolyte protocol for Mrs. Holloway's potassium${s.t <= 90 ? ' early' : ''}.`, `Low potassium and magnesium after heart surgery raise the risk of post-op atrial fibrillation. The protocol is yours to start.`, '713'); return `KCl 20 mEq in 100 mL over 1 hour on the pump, central line. Recheck after the second run.`; } },
+      { id: '713-kcl', name: 'Potassium chloride (protocol)', dose: '20 mEq over 1 hour', route: 'IV, central', freq: 'Per electrolyte protocol: K under 4.0 (repeat once if < 3.5)', prn: true, available: (s, P) => !P.gone, block: (s, P) => ((P.kCount || 0) >= 2 ? 'Both protocol doses started (' + clock(P.kGiven) + ').' : P.kGiven !== null && s.t < P.kGiven + 60 ? 'First 20 mEq running (started ' + clock(P.kGiven) + '); repeat dose due at ' + clock(P.kGiven + 60) + '.' : null),
+        checks: (s, P) => [{ label: 'Potassium', value: (P.kCount || 0) === 1 ? '3.4 at 05:00 — second 20 mEq run per protocol (< 3.5)' : '3.4 at 05:00', ok: true }, { label: 'Urine output', value: 'Adequate', ok: true }, { label: 'Line', value: 'Central (IJ introducer)', ok: true }],
+        give(s, P, A) { P.kCount = (P.kCount || 0) + 1; P.kGiven = s.t; if (P.kCount === 1) A.judge('713-kcl', 'meds', s.t <= 90 ? 2 : 1, `You started the electrolyte protocol for Mrs. Holloway's potassium${s.t <= 90 ? ' early' : ''}.`, `Low potassium and magnesium after heart surgery raise the risk of post-op atrial fibrillation. The protocol is yours to start.`, '713'); return P.kCount === 1 ? `KCl 20 mEq in 100 mL over 1 hour on the pump, central line. Second 20 mEq run available once this finishes, then recheck K.` : `Second KCl 20 mEq in 100 mL over 1 hour on the pump, central line. Recheck K after this run completes.`; } },
       { id: '713-mag', name: 'Magnesium sulfate (protocol)', dose: '2 g over 1 hour', route: 'IV', freq: 'Per electrolyte protocol: Mg under 2.0', prn: true, available: (s, P) => !P.gone, block: (s, P) => (P.mgGiven !== null ? 'Started at ' + clock(P.mgGiven) + '.' : null),
         checks: () => [{ label: 'Magnesium', value: '1.7 at 05:00', ok: true }, { label: 'Creatinine', value: '1.0', ok: true }],
         give(s, P, A) { P.mgGiven = s.t; A.judge('713-mag', 'meds', s.t <= 90 ? 2 : 1, `You started magnesium for Mrs. Holloway.`, `Magnesium 2.0 or higher after cardiac surgery helps prevent atrial fibrillation and makes potassium easier to correct.`, '713'); return `Magnesium sulfate 2 g over 1 hour.`; } },
@@ -530,7 +530,7 @@
         return `I'm on my way. Set up for a bedside re-exploration: open-chest cart, blood in the room, call the OR. Don't strip the tubes. Hold the beta-blocker.`;
       },
     },
-    scene: (s, P) => ({ tele: true, teleWave: P.af ? 'afib' : 'normal', iv: 'running', o2: 2, foley: true, ctube: true, ctLevel: P.reexp ? .7 : .55, is: true, isUsed: P.is, flowers: true, empty: P.gone, emptyText: 'Bed stripped. Emergency resternotomy at the bedside after a PEA arrest; now in the OR.' }),
+    scene: (s, P) => ({ tele: true, teleWave: P.af ? 'afib' : 'normal', iv: 'running', o2: 2, foley: true, ctube: true, ctLevel: P.reexp ? .7 : .55, ctClot: P.tamp >= .15 && !P.reexp, is: true, isUsed: P.is, flowers: true, empty: P.gone, emptyText: 'Bed stripped. Emergency resternotomy at the bedside after a PEA arrest; now in the OR.' }),
     clues: (s, P) => ({ ctube: P.tamp >= .15 && !P.reexp ? `Collection chamber: the level hasn't moved since the 08:00 mark. Dark clots sit in both tubes where they leave her chest.` : `Collection chamber marked each hour: 120, 110, 100, 90, then ${s.t >= 60 ? '70' : 'filling'}. Serosanguineous, no clots. Suction bubbling gently.`, flowers: `A card from the Elmhurst library story-time kids, crayon hearts. "Get well Mrs. H! We miss the bear book."`, is: P.is ? `The spirometer marker is at 1,000.` : `The spirometer marker is at 750.`, monitor: `HR ${beHR(P)}. CVP ${beCVP(P)}.`, foley: `Urine ${P.tamp >= .4 ? 'scant, dark' : 'clear yellow'}.` }),
     rig: (s, P) => ({ hr: beHR(P), sbp: beSBP(P), anxious: P.tamp >= .25 && !P.reexp ? Math.min(.9, P.tamp) : 0, sweat: P.tamp >= .6 ? .5 : 0, pain: 4 }),
     status: (s, P) => (P.gone ? 'gone' : P.tamp >= .4 ? 'urgent' : P.tamp >= .15 || P.af ? 'watch' : 'stable'),
@@ -663,7 +663,7 @@
         return `Thanks. See you at 10:30.`;
       },
     },
-    scene: (s, P) => ({ tele: P.extAt === null && !P.stopped, iv: 'running', vent: P.extAt === null, foley: true, family: 'abena', familyLabel: P.extAt !== null ? 'Abena, with Kofi and Ama, around the bed' : 'Abena, his wife, a Bible in her lap', flowers: true }),
+    scene: (s, P) => ({ tele: P.extAt === null && !P.stopped, iv: 'running', vent: P.extAt === null, ventMeta: { tv: 450, peep: 5, fio2: 30, peak: 20 }, foley: true, family: 'abena', familyLabel: P.extAt !== null ? 'Abena, with Kofi and Ama, around the bed' : 'Abena, his wife, a Bible in her lap', flowers: true }),
     clues: (s, P) => ({ vent: `FiO₂ 30%, PEEP 5, rate 14. He isn't triggering breaths of his own.`, family: P.extAt !== null ? `Abena holds his hand. Kofi stands at the window. Ama has her phone on speaker: her aunt in Kumasi, praying.` : `Abena, in her church clothes, a Bible open to the Psalms. A photo on the windowsill: Joseph in coveralls, grinning, in front of a bus.`, flowers: `A card from the transit authority's maintenance shop, signed by 40 mechanics. "Fix yourself up, Deacon."`, foley: `Clear urine.` }),
     rig: (s, P) => ({ alert: 2, rr: P.extAt === null ? 14 : Math.round(10 + P.dist * 20), spo2: P.extAt === null ? 98 : 86, anxious: 0 }),
     status: (s, P) => (P.extAt !== null && (P.dist >= .4 || P.sec >= .5) ? 'urgent' : 'watch'),
@@ -925,7 +925,7 @@
 
   S.engine.registerCase({
     id: 'icu-3w-1', title: 'Days in the ICU', unit: '3 West ICU, Medical-Cardiac Intensive Care', unitShort: '3 West ICU', level: 'Specialty: Critical care', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'Critical care until noon: septic shock on a pressor in the wrong line, a ventilator alarm, a chest tube that stops, and a family meeting.',
+    card: 'Critical care until noon: septic shock on pressors, ventilated ARDS, day 1 after triple bypass, and a family meeting.',
     hero: { head: 'Days, 3 West ICU. Four patients, two ventilators, one family meeting.', lede: 'Critical care, 07:00 to noon. Drips titrated to a number, a ventilator bundle, a fresh bypass, and a man who isn\'t going to wake up. The monitors show you a lot. They don\'t show you everything.' },
     intro: { time: '06:58', place: '3 West ICU', cta: 'Take report', beats: ['Bree is finishing nights and giving report at the central station, under a wall of monitors.', 'Four patients until noon: a pressor, a ventilator, a heart surgery from yesterday, and a family meeting at 10:30.', 'In the ICU, a good number can be the wrong goal, and a quiet tube can be the loudest finding in the room.'] },
     minutes: 25,

@@ -608,12 +608,12 @@ window.Shift = window.Shift || {};
     ],
   };
   const NOISE = {
-    med: ['What they had for breakfast', 'Every vital sign since the start of the shift, in order', 'That the TV remote doesn\'t work', 'The last nurse\'s opinion of the family'],
-    psych: ['What was on TV in the dayroom', 'Every q15 check since the start of the shift, one by one', 'What they ate for breakfast', 'That they seem "manipulative"'],
-    ob: ['What she named the baby', 'Every vital sign since delivery, in order', 'How many visitors came last night', 'The last nurse\'s opinion of her birth plan'],
-    ld: ['Her playlist for the birth', 'Every contraction since midnight, one by one', 'How many visitors are in the waiting room', 'The last nurse\'s opinion of her birth plan'],
-    ed: ['How long they waited in the lobby', 'Every vital sign since arrival, in order', 'That the TV in the bay is broken', 'A guess about whether they\'re drug-seeking'],
-    peds: ['Their favorite cartoon', 'Every vital sign since the start of the shift, in order', 'Which popsicle flavor they picked', 'A guess about how the parents get along'],
+    med: ['Exact meal percentage eaten at breakfast', 'Every set of routine vitals from 07:00 onward, line by line', 'Details of a resolved minor admission from three years ago', 'A full read-through of unchanged home vitamins'],
+    psych: ['Which daytime group topic was discussed yesterday', 'Every routine 15-minute safety check from the shift, one by one', 'Exact meal percentage eaten at breakfast', 'Unverified opinions about their personality style'],
+    ob: ['How many family members visited last evening', 'Every routine vital sign since delivery, one by one', 'Which brand of diapers the family brought from home', 'A complete retelling of prenatal clinic visits from the first trimester'],
+    ld: ['How many relatives are waiting in the lobby', 'Every individual contraction recorded since midnight', 'Details of her labor playlist and room lighting preferences', 'Routine prenatal lab panels that were normal at 28 weeks'],
+    ed: ['How long the lobby waiting room was backed up', 'Every repeated normal vital sign since triage, one by one', 'Which ambulance crew transported them to triage', 'A speculative guess about whether symptoms are drug-seeking'],
+    peds: ['Which show or game child life brought this morning', 'Every stable vital sign since the start of the shift, in order', 'Exact brand of formula used before this admission', 'Personal impressions of how the parents interact'],
   };
   const NOBELL = { 'peds-5s-1': ['507'], 'psych-3e-1': ['301'], 'psych-4n-1': ['409'] };
   // No call lights in the voice of someone who can't press one or speak (GCS 3, no response to pain).

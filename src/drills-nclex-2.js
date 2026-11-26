@@ -76,7 +76,7 @@
           { t: 'She has a history of mild dementia and her daughter says she gets muddled in new places.', w: 'Dementia doesn\'t explain an acute change. Don\'t let it anchor the call.' }] },
         { k: 'A', q: 'Assessment.', o: [
           { t: 'Symptomatic hyponatremia that fell fast. I\'m worried about seizures and brain swelling.', ok: 1 },
-          { t: 'She\'s vomited three times today. I think she\'s dehydrated from vomiting and needs fluids.', w: 'Possible contributor, but a sodium of 118 with confusion is the emergency.' },
+          { t: 'She\'s vomited today and looks dry. I think she\'s dehydrated and just needs IV fluids.', w: 'Possible contributor, but a sodium of 118 with confusion is the emergency.' },
           { t: 'Her sodium is low, but she\'s awake and she\'s not having seizures, so I think it\'s stable for now.', w: 'Confusion and vomiting are already neuro symptoms. Seizures are what you\'re trying to prevent.' }] },
         { k: 'R', q: 'Ask.', o: [
           { t: 'I\'ve held the thiazide and put her on seizure precautions. Can you see her, and do you want hypertonic saline and frequent sodium checks?', ok: 1 },
@@ -88,7 +88,7 @@
           { t: 'Read back: normal saline 100 mL over 10 minutes, sodium every 2 hours, no more than 8 in 24 hours, thiazide held.', w: 'She ordered 3% saline, not normal saline.' }] },
       ],
       win: 'Her sodium rises to 123 by evening, slowly and safely. By day 3 she\'s doing her crossword.', lose: 'She has a seizure at 16:00.',
-      pearl: 'Hyponatremia: how fast it fell and the symptoms matter more than the number. Correct slowly (usually no more than 8 to 10 in 24 hours) to avoid osmotic demyelination.' },
+      pearl: 'Hyponatremia: how fast it fell and the symptoms matter more than the number. Correct slowly (usually no more than 6 to 8 mEq/L in 24 hours) to avoid osmotic demyelination.' },
 
     { id: 'sb-h-gib', lv: 2, p: { n: 'Walter Kim', a: 69, x: 'M', sk: 3, h: ['balding', '#3A3330'], c: GOWN, e: ['wrinkles'], sm: 0 },
       to: 'Dr. Shah, hospitalist', at: '02:30', setup: 'Admitted for a COPD flare. Just vomited 200 mL of coffee-ground material. HR 112, BP 104/66 (baseline 142/80). Takes aspirin and naproxen.',

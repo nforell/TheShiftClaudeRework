@@ -98,6 +98,24 @@
     X.ui.view = 'drill'; X.ui.ov = null;
     X.TEL.track('drill_start', { kind, streak: streak() });
   }
+  /* Continue directly from the landing-page teaser: record card 1 and open on card 2 of a 5-card mix round. */
+  function continueFrom(id, ok, chkOk) {
+    const k = card('med', id);
+    if (!k) return start('mix');
+    const base = deck('mix').filter((x) => !(x.kind === 'med' && x.id === id));
+    const medIdx = base.findIndex((x) => x.kind === 'med');
+    if (medIdx >= 0) base.splice(medIdx, 1);
+    const d = [{ kind: 'med', id }].concat(base.slice(0, 4));
+    const st = { stage: 'done', co: order(k.check.length), po: order(k.pick.length), check: 0, pick: 0 };
+    const right = (chkOk ? 1 : 0) + (ok ? 1 : 0);
+    const combo = ok ? (chkOk ? 2 : 1) : 0;
+    X.ui.dr = { kind: 'mix', retry: false, deck: d, i: 0, c: st, right, total: d.reduce((a, c) => a + steps(c.kind, card(c.kind, c.id)), 0), combo, best: combo, res: [], done: false, t0: Date.now(), vi: 2 };
+    finishCard(!!ok);
+    X.ui.dr.i = 1;
+    X.ui.dr.c = fresh(d[1]);
+    X.ui.view = 'drill'; X.ui.ov = null;
+    X.TEL.track('drill_start', { kind: 'mix', from_teaser: 1, streak: streak() });
+  }
   function scoreStep(ok) {
     const r = X.ui.dr; r.vi += 1;
     if (ok) { r.right += 1; r.combo += 1; r.best = Math.max(r.best, r.combo); X.FX.play(r.combo >= 3 && r.combo % 3 === 0 ? 'combo' : 'right'); r.pop = r.combo >= 2 ? r.combo : 0; }
@@ -138,6 +156,7 @@
   /* ---------- handlers ---------- */
   const H = {
     'dr-start'(el) { start(el.dataset.k || 'mix'); X.render(true); },
+    'dr-continue'(el) { continueFrom(el.dataset.id, el.dataset.ok === '1', el.dataset.chk === '1'); X.render(true); },
     'dr-quit'() { X.TEL.track('drill_quit', { kind: X.ui.dr && X.ui.dr.kind, at: X.ui.dr && X.ui.dr.i }); X.ui.dr = null; X.ui.view = 'home'; X.render(true); },
     'dr-again'() { start(X.ui.dr ? X.ui.dr.kind : 'mix'); X.render(true); },
     'dr-retry'() { const r = X.ui.dr; if (!r) return; const miss = r.res.filter((x) => !x.ok); X.TEL.track('drill_retry', { kind: r.kind, n: miss.length }); start(r.kind, miss); X.render(true); },
@@ -187,10 +206,11 @@
       <span class="dr-combo ${r.combo >= 2 ? 'hot' : ''} ${r.pop ? 'pop' : ''}" aria-live="polite">${X.ICON.flame}<b>${r.combo}</b><span class="sr"> in a row</span></span>
     </header>`;
   }
-  function verdict(ok, why, pearl, extra) {
+  function verdict(ok, why, pearl, extra, sev) {
     const r = X.ui.dr, last = r.i >= r.deck.length - 1;
-    return `<footer class="dr-foot ${ok ? 'ok' : 'no'}" role="status">
-      <div class="dr-vd"><span class="dr-vi" aria-hidden="true">${ok ? X.ICON.tick : '<svg class="tick" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M8 8l8 8M16 8l-8 8"/></svg>'}</span><b>${E(ok ? RIGHT[r.vi % RIGHT.length] : WRONG[r.vi % WRONG.length])}</b></div>
+    const head = ok ? RIGHT[r.vi % RIGHT.length] : sev === 'never' ? 'Never event — stop and review.' : WRONG[r.vi % WRONG.length];
+    return `<footer class="dr-foot ${ok ? 'ok' : 'no'}${!ok && sev === 'never' ? ' never' : ''}" role="status">
+      <div class="dr-vd"><span class="dr-vi" aria-hidden="true">${ok ? X.ICON.tick : '<svg class="tick" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M8 8l8 8M16 8l-8 8"/></svg>'}</span><b>${E(head)}</b></div>
       ${extra && extra.html ? extra.html : ''}
       ${extra && extra.not ? `<p class="dr-not"><b>Why not "${E(extra.not.t)}"?</b> ${E(extra.not.w)}</p>` : ''}
       ${why ? `<p class="dr-why">${E(why)}</p>` : ''}
@@ -203,7 +223,28 @@
   const age = (p) => typeof p.a === 'string' ? p.a : p.k || p.a < 18 ? `${p.a} yr${p.a === 1 ? '' : 's'}` : `${p.a}${p.x || ''}`;
   const notOf = (o) => (o && !o.ok && o.w ? { not: o } : null);
   const who = (p) => `${E(p.n)}<small>${E(age(p))}</small>`;
-  const chip = (kind) => { const r = X.ui.dr, c = r && !r.done && r.deck[r.i]; if (!c) return `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>`; return `${isHard(c) ? '<span class="dr-lv" title="Every option here is plausible. Think it through.">NCLEX level</span>' : ''}`; };
+  // Show the NCLEX-level badge upfront on dedicated hard rounds (where every card is hard), and post-answer on mixed rounds so it never acts as a pre-answer tell.
+  const chip = (kind, answered) => { const r = X.ui.dr, c = r && !r.done && r.deck[r.i]; if (!c) return `<span class="dr-kind k-${KINDS[kind].color}">${E(KINDS[kind].name)}</span>`; const show = isHard(c) && (r.kind === 'hard' || answered); return `${show ? '<span class="dr-lv" title="Every option here is plausible. Think it through.">NCLEX level</span>' : ''}`; };
+  // Infer subtle visual clinical state for Who's First patient portraits from their triage line (applied to all 4 patients equally so no single patient is spoiled).
+  function inferRigV(pt) {
+    if (pt.v) return pt.v;
+    const s = String(pt.line || '');
+    const v = {};
+    const pm = /pain\s+(\d+)/i.exec(s); if (pm) v.pain = +pm[1];
+    const sm = /SpO₂\s*(\d+)/i.exec(s); if (sm) v.spo2 = +sm[1];
+    const tm = /(?:temp|T)\s*(\d+\.\d+)/i.exec(s); if (tm && +tm[1] >= 38) v.temp = +tm[1];
+    const hm = /HR\s*(\d+)/i.exec(s); if (hm) v.hr = +hm[1];
+    if (/sweat|diaphoret|clammy/i.test(s)) v.sweat = .6;
+    if (/pale|pallor|gray|grey|ashen/i.test(s)) v.pale = .5;
+    if (/confus|disorient|deliri|bugs on the wall|mixing up words|slurred/i.test(s)) v.confused = true;
+    if (/short of breath|stridor|wheez|retractions|noisy breathing|pulling in|gasping/i.test(s)) { v.rr = 28; v.anxious = .55; }
+    if (/shaking|tremor/i.test(s)) v.tremor = .5;
+    if (/drowsy|sleepy|hard to wake|letharg|tired/i.test(s)) v.alert = 1;
+    if (/anxious|worrying|crying|pacing|yelling|agitat|loud|panick/i.test(s)) v.anxious = Math.max(v.anxious || 0, .55);
+    if (/nausea|vomit/i.test(s)) v.nausea = true;
+    if (/calm and smiling/i.test(s)) { v.anxious = 0; v.pain = 0; }
+    return Object.keys(v).length ? v : null;
+  }
 
   function vMed(k, st) {
     const key = face('dr-' + k.id, k.p), v = st.stage !== 'done' ? k.v : k.pick[st.pick].ok ? Object.assign({}, k.v, k.good) : Object.assign({}, k.v, k.bad);
@@ -215,7 +256,7 @@
     const opts = (list, ord, act, sel, done) => `<div class="dr-opts">${ord.map((i, n) => { const o = list[i]; const cls = done ? (o.ok ? 'right' : i === sel ? 'wrong' : 'dim') : ''; return `<button class="dr-opt ${cls}" style="--n:${n}" data-act="${act}" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd><span>${E(o.t)}</span></button>`; }).join('')}</div>`;
     const done = st.stage === 'done', ok = done && !!k.pick[st.pick].ok;
     return `<main class="dr-main">
-      ${chip('med')}
+      ${chip('med', done)}
       <section class="dr-scene">
         <div class="dr-bust ${tint(k.id)}">${X.R.bust(key, v, 'dr-face')}</div>
         <div class="dr-who"><h2>${who(k.p)}</h2>
@@ -225,18 +266,19 @@
       </section>
       ${st.stage === 'check' ? `<h3 class="dr-q">Before you give it, what do you check first?</h3>${opts(k.check, st.co, 'dr-check', null, false)}` : found}
       ${st.stage !== 'check' ? `<h3 class="dr-q">${done ? 'Your call' : 'Give, hold, or call?'}</h3>${opts(k.pick, st.po, 'dr-pick', st.pick, done)}` : ''}
-    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pick[st.pick])) : ''}`;
+    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pick[st.pick]), k.sev) : ''}`;
   }
 
   function vFirst(k, st) {
     const done = st.pick !== null, ok = done && !!k.pts[st.pick].ok;
     return `<main class="dr-main">
-      ${chip('first')}
+      ${chip('first', done)}
       <p class="dr-where">${E(k.where)}</p>
       <h3 class="dr-q big">${E(k.q)}</h3>
       <div class="dr-four">${st.po.map((i, n) => { const x = k.pts[i], key = face(`dr-${k.id}-${i}`, x.p), cls = done ? (x.ok ? 'right' : i === st.pick ? 'wrong' : 'dim') : '';
-        return `<button class="dr-pt tn-${(n + k.id.length) % 5} ${cls}" style="--n:${n}" data-act="dr-pick" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd>${X.R.bust(key, done && x.ok && !ok ? { pain: 6, anxious: .6, pale: .4 } : null, 'dr-pface')}<span class="dr-pt-t"><b>${who(x.p)}</b><span>${E(x.line)}</span></span></button>`; }).join('')}</div>
-    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pts[st.pick] && { t: k.pts[st.pick].p.n, w: k.pts[st.pick].w, ok: k.pts[st.pick].ok })) : ''}`;
+        const rv = done && x.ok && !ok ? { pain: 6, anxious: .6, pale: .4 } : inferRigV(x);
+        return `<button class="dr-pt tn-${(n + k.id.length) % 5} ${cls}" style="--n:${n}" data-act="dr-pick" data-i="${i}" ${done ? 'aria-disabled="true" tabindex="-1"' : ''}><kbd>${n + 1}</kbd>${X.R.bust(key, rv, 'dr-pface')}<span class="dr-pt-t"><b>${who(x.p)}</b><span>${E(x.line)}</span></span></button>`; }).join('')}</div>
+    </main>${done ? verdict(ok, k.why, k.pearl, notOf(k.pts[st.pick] && { t: k.pts[st.pick].p.n, w: k.pts[st.pick].w, ok: k.pts[st.pick].ok }), k.sev) : ''}`;
   }
 
   function vSbar(k, st) {
@@ -250,7 +292,7 @@
     const reply = fin ? `<li class="them end ${ok ? 'ok' : 'no'}">${E(ok ? k.win : k.lose)}</li>` : '';
     const NAMES = { S: 'Situation', B: 'Background', A: 'Assessment', R: 'Recommendation', '✓': 'Close the loop' };
     return `<main class="dr-main dr-chat">
-      ${chip('sbar')}
+      ${chip('sbar', fin)}
       <section class="dr-stage">
         <div class="dr-bust sm ${tint(k.id)}">${X.R.bust(key, v, 'dr-face')}</div>
         <div><h2>${who(k.p)}</h2><p class="dr-line">${E(k.setup)}</p><p class="dr-to">Calling <b>${E(k.to)}</b> · ${E(k.at)}</p></div>
@@ -274,7 +316,7 @@
       return `<li class="them">${E(t.say)}</li><li class="me ${L.ok ? 'ok' : 'no'}">${E(o.t)}<span class="dr-delta ${dir}">${dir === 'down' ? '▼' : dir === 'up' ? '▲' : '='} ${Math.abs(L.to - L.from)}</span></li><li class="react">${E(o.r)}</li>${L.ok ? '' : `<li class="better"><span>Better</span>${E(L.better)}</li>`}`; }).join('');
     const t = !fin ? k.turns[st.turn] : null;
     return `<main class="dr-main dr-chat">
-      ${chip('calm')}
+      ${chip('calm', fin)}
       <section class="dr-stage sticky">
         <div class="dr-bust sm ${tint(k.id)}">${X.R.bust(key, vEnd, 'dr-face')}</div>
         <div><h2>${who(k.p)}</h2><p class="dr-where">${E(k.where)}</p>${meter(st.m)}</div>

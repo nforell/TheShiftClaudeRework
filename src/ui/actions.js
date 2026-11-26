@@ -738,7 +738,20 @@ export function boot() {
   { const want = new URLSearchParams(location.search).get('shift');
     if (want && CASES.includes(want) && !(G.s && !G.s.ended)) { G.caseId = want; E.useCase(G.caseId); ui.deep = want; TEL.track('deep_link', { case: want }); }
     if (want) { const q = new URLSearchParams(location.search); q.delete('shift'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } }
-  ui.view = ui.deep ? 'shifts' : 'home'; safe('boot', () => render(true));
+  // Continue straight from the landing-page teaser into Card 2 of a 5-card round (after Terms if first visit).
+  let cont = null;
+  if (/^#continue=/.test(location.hash)) {
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (p.get('continue')) cont = { id: p.get('continue'), ok: p.get('ok') === '1' ? '1' : '0', chk: p.get('chk') === '1' ? '1' : '0' };
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  ui.view = ui.deep ? 'shifts' : 'home';
+  if (cont && DR) {
+    if (termsOk()) { safe('boot-cont', () => handlers['dr-continue']({ dataset: cont })); }
+    else { ui.termsAsk = true; ui.afterTerms = { a: 'dr-continue', ds: cont }; safe('boot', () => render(true)); }
+  } else {
+    safe('boot', () => render(true));
+  }
   if (ui.deep) { const id = ui.deep; ui.deep = null; requestAnimationFrame(() => { const b = document.querySelector(`.sc-pick[data-id="${id}"]`); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' }); }); }
   // A walkthrough interrupted by a reload picks up where it stopped (finishing it from Start still starts that shift).
   const wasOr = !seen('orient') && OR && orLoad();

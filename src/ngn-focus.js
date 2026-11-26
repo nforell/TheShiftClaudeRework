@@ -821,11 +821,11 @@ window.Shift.ngnFocus = [
   },
   "actions": {
    "opts": [
-    "Notify the provider and prepare for an image-guided air or contrast enema",
-    "Keep him NPO and start IV fluids as ordered",
-    "Give oral rehydration solution in small, frequent sips",
-    "Give a glycerin suppository to clear the stool",
-    "Teach the parents soothing techniques for colic"
+    "Notify provider for air/contrast enema",
+    "Keep NPO and start IV fluids",
+    "Give oral rehydration solution in small frequent sips",
+    "Give a pediatric glycerin suppository for stool",
+    "Teach the parents soothing techniques for infant colic"
    ],
    "ans": [
     0,
@@ -834,11 +834,11 @@ window.Shift.ngnFocus = [
   },
   "params": {
    "opts": [
-    "Passage of a normal brown stool",
-    "Signs of peritonitis such as a rigid abdomen, fever or lethargy",
-    "Head circumference",
-    "Serum lipase",
-    "Developmental milestones"
+    "Passage of normal brown stool",
+    "Signs of peritonitis or lethargy",
+    "Serial occipital-frontal head circumference",
+    "Serum amylase and lipase levels",
+    "Age-appropriate developmental milestones"
    ],
    "ans": [
     0,

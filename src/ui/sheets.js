@@ -214,6 +214,7 @@ export function ovSettings() {
     <div class="setrow"><span>Graphics<small class="set-sub">${FM.lite && (st.gfx || 'auto') === 'auto' ? 'Auto switched to Lite on this device' : 'Lite keeps things smooth on older computers'}</small></span>${seg('gfx', [['auto', 'Auto'], ['full', 'Full'], ['lite', 'Lite']])}</div>
     <div class="setrow"><span>Health check<small class="set-sub">Speed, memory and the last error, for troubleshooting</small></span><button class="btn" data-act="health">Open</button></div>
     <div class="setrow"><span>Psych law<small class="set-sub">The psych shift is written to California law. General US uses plain terms that hold in most states.</small></span>${seg('law', [['ca', 'California'], ['general', 'General US']])}</div>
+    <div class="setrow"><span>Shift guidance<small class="set-sub">Floor mode hides the acuity Next card, room status chips, live score popups, and unassessed SBAR checklist hints so you prioritize independently.</small></span>${seg('shiftMode', [['orientee', 'Orientee'], ['floor', 'Floor mode']])}</div>
     <div class="setrow"><span>Decision feedback</span>${seg('feedback', [['now', 'Right away'], ['debrief', 'At the debrief']])}</div>
     <div class="setrow"><span>Routine results<small class="set-sub">Where a finding shows when nothing changed. Important ones always get a card.</small></span>${seg('results', [['inline', 'In the panel'], ['card', 'Pop-up card']])}</div>
     <div class="setrow"><span>Music</span>${seg('music', [['on', 'On'], ['off', 'Off']])}</div>

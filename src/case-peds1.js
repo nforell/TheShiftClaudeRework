@@ -268,7 +268,7 @@
     interventions: [
       { id: 'weigh', label: 'Weigh him on the unit scale', cost: 3, run(s, P, A) { P.weighed = true; A.judge('505-weigh', 'assess', 2, 'You weighed Leo before giving weight-based medications.', 'His ED weight was 31: pounds, entered as kilograms. 31 lb is 14.1 kg. Every weight-based order was 2.2 times too high. Weighing on admission to the unit is how this gets caught.', '505'); return 'Leo weighs 14.1 kg on the unit scale. The chart says 31 kg. 31 pounds is 14.1 kilograms.'; } },
       { id: 'flacc', label: 'FLACC pain score', cost: 2, run(s, P, A) { P.k.painAt = s.t; P.flacc = leoPain(s, P); return `FLACC ${P.flacc} of 10 (face, legs, activity, cry, consolability).`; } },
-      { id: 'ivrate', label: 'Turn the D5NS down to 48 mL/h (corrected order)', cost: 1, avail: (s, P) => P.fixed && !P.ivFixed && !P.icu, run(s, P, A) { P.ivFixed = true; A.judge('505-ivrate', 'meds', 1, `You corrected Leo's IV rate for his real weight.`, `Fluids were ordered for 31 kg too. At 14.1 kg, the old rate was more than twice his maintenance.`, '505'); return `Pump reprogrammed: D5NS 48 mL/h. You check the line back to the bag and initial the new label.`; } },
+      { id: 'ivrate', label: 'Turn the D5NS down to 48 mL/h (corrected order)', cost: 1, avail: (s, P) => P.fixed && !P.ivFixed && !P.icu, run(s, P, A) { P.ivFixed = true; A.judge('505-ivrate', 'meds', 1, `You corrected Leo's IV rate for his real weight.`, `Fluids were ordered for 31 kg too (70 mL/h). At 14.1 kg, Holliday-Segar maintenance is 48 mL/h—the old rate was nearly 1.5 times his maintenance.`, '505'); return `Pump reprogrammed: D5NS 48 mL/h. You check the line back to the bag and initial the new label.`; } },
       { id: 'cl', label: 'Call child life: distraction with bubbles and a tablet', cost: 1, avail: (s, P) => !P.cl, run(s, P, A) { P.cl = true; P.relief.push({ t: s.t, amt: 1.2 }); A.judge('505-cl', 'judgment', 1, 'You brought in child life for Leo.', 'For a three-year-old, distraction and a familiar person reduce pain and fear as much as a dose of medicine, and make the medicine work better.', '505'); return 'Bree from child life arrives with bubbles. Leo stops crying to pop them.'; } },
     ],
     comms: [],
@@ -319,7 +319,7 @@
       },
     },
     scene: (s, P) => ({ crib: false, iv: 'running', family: P.icu ? null : 'minji', familyLabel: 'Min-ji, his mother', tablet: P.cl, tray: 'none', dino: true, empty: P.icu, emptyText: 'Bed empty. Moved to the PICU after respiratory depression.' }),
-    clues: (s, P) => ({ dino: 'A green plush T. rex named Rexy. The tag has "LEO P." written in marker.', family: 'Min-ji, his mother, with a bag of his clothes: size 3T.', iv: 'D5NS at 70 mL/h. The pump\'s patient weight field reads 31 kg.' }),
+    clues: (s, P) => ({ dino: 'A green plush T. rex named Rexy. The tag has "LEO P." written in marker.', family: 'Min-ji, his mother, with a bag of his clothes: size 3T.', iv: P.ivFixed ? 'D5NS at 48 mL/h. The pump\'s patient weight field now reads 14.1 kg.' : 'D5NS at 70 mL/h. The pump\'s patient weight field reads 31 kg.' }),
     rig: (s, P) => { const od = P.od !== null && P.naloxAt === null; return od ? { alert: s.t - P.od > 12 ? 2 : 1 } : { pain: leoPain(s, P) }; },
     status: (s, P) => (P.icu ? 'gone' : P.od !== null && P.naloxAt === null ? 'urgent' : leoPain(s, P) >= 6 ? 'watch' : 'stable'),
     outcome(s, P) {
@@ -683,7 +683,7 @@
     id: 'peds-5s-1', title: 'Evenings on 5 South', unit: '5 South, Pediatrics', unitShort: '5 South', level: 'Specialty: Peds', start: 15 * 60, length: 300, novaCredits: 3,
     // Written to CA law; Settings → Psych law → General US swaps these phrases (rows in src/law.js).
     law: { written: 'ca', terms: ['hours-36-ca'] },
-    card: 'Five kids and their parents: RSV on high flow, a sickle cell crisis, a dosing error, bruises that don\'t fit the story, and asthma.',
+    card: 'Five kids and their parents: infant bronchiolitis on high flow, sickle cell pain, post-op toddler, a 4-month-old vomiting, and asthma.',
     hero: { head: 'Evenings, 5 South. Five kids and their parents.', lede: 'Pediatrics, 15:00 to 20:00, ages four months to fifteen years. Normal vitals depend on age and every dose depends on weight, so check both. The parent in the chair often knows first when something is off.' },
     intro: { time: '14:58', place: '5 South, Pediatrics, Evening', cta: 'Take report', beats: ['Callum is giving report by the peds station.', 'Five patients, from four months to fifteen years old.', 'Check the weight behind every dose. Some of these kids can\'t tell you what\'s wrong.'] },
     minutes: 20,

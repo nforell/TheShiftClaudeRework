@@ -667,11 +667,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Report the suspected abuse to child protective services as required by law, and notify the provider",
-    "Document the injuries objectively and record the parent's explanations in their exact words",
-    "Confront the parent and ask directly whether they hurt the infant",
-    "Wait to report until the investigation proves abuse occurred",
-    "Discharge the infant home with an orthopedic follow-up appointment"
+    "Report suspected abuse to CPS and notify provider",
+    "Document injuries and quote caregivers verbatim",
+    "Confront the parent directly to ask whether they injured the infant",
+    "Wait to notify CPS until the hospital team confirms abuse occurred",
+    "Discharge the infant home with a next-day orthopedic clinic visit"
    ],
    "ans": [
     0,
@@ -680,11 +680,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Interaction between the infant and the caregivers during visits",
-    "Pain and neurovascular status of the injured leg",
-    "Serum calcium level",
-    "Number of wet diapers per week at home",
-    "Height compared with siblings"
+    "Infant-caregiver interaction",
+    "Pain and limb neurovascular check",
+    "Serum calcium and vitamin D panel",
+    "Weekly home wet diaper counts",
+    "Height percentile compared with siblings"
    ],
    "ans": [
     0,
@@ -1889,11 +1889,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Massage the fundus until it is firm",
-    "Assist her to the bathroom to void, and catheterize as ordered if she cannot",
-    "Give methylergonovine IM before reassessing",
-    "Place her in Trendelenburg position",
-    "Encourage her to wait to void until the next scheduled assessment"
+    "Massage fundus until firm",
+    "Assist to void or straight-cath as ordered",
+    "Administer methylergonovine IM before checking bladder",
+    "Place her flat in full Trendelenburg position now",
+    "Wait to check her bladder until the next scheduled round"
    ],
    "ans": [
     0,
@@ -1902,11 +1902,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Fundal tone, height and position after she voids",
-    "Amount of lochia by pad count or weight",
-    "Deep tendon reflexes",
-    "Breast fullness",
-    "Blood glucose"
+    "Fundal tone and position",
+    "Quantitative blood loss",
+    "Patellar deep tendon reflexes",
+    "Breast fullness and tenderness",
+    "Capillary fingerstick blood glucose"
    ],
    "ans": [
     0,
@@ -3249,11 +3249,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Stop the transfusion and keep the IV open with 0.9% sodium chloride through new tubing",
-    "Notify the provider and blood bank and send the bag and tubing to the blood bank",
-    "Slow the transfusion and give acetaminophen",
-    "Give diphenhydramine and resume the unit when symptoms fade",
-    "Flush the existing blood tubing with saline to keep the vein open"
+    "Stop blood; run 0.9% NaCl via new tubing",
+    "Notify provider and blood bank; send bag",
+    "Slow the transfusion rate and give oral acetaminophen",
+    "Give IV diphenhydramine and resume the unit once chills pass",
+    "Flush the existing blood tubing with saline to keep vein open"
    ],
    "ans": [
     0,
@@ -3263,10 +3263,10 @@ window.Shift.ngnBank = [
   "params": {
    "opts": [
     "Urine output and color",
-    "Blood pressure and heart rate",
-    "Capillary blood glucose",
-    "Deep tendon reflexes",
-    "Peak expiratory flow"
+    "Blood pressure and HR",
+    "Capillary blood glucose trend",
+    "Patellar deep tendon reflexes",
+    "Peak expiratory flow rate"
    ],
    "ans": [
     0,
@@ -3694,11 +3694,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Pain with passive stretch of the toes",
-    "Capillary refill, sensation and movement of the toes",
-    "Blood glucose",
-    "Bowel sounds",
-    "Oral temperature"
+    "Pain on passive toe stretch",
+    "Toe refill, sensation, motion",
+    "Capillary blood glucose level",
+    "Abdominal bowel sounds",
+    "Hourly oral body temperature"
    ],
    "ans": [
     0,
@@ -4658,11 +4658,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Infuse 0.9% sodium chloride IV as ordered",
-    "Start a continuous IV regular insulin infusion as ordered once potassium is confirmed at 3.5 mEq/L or higher",
-    "Give sodium bicarbonate IV push",
-    "Give insulin glargine subcutaneously as the only insulin",
-    "Give 50 mL of 50% dextrose IV"
+    "Start IV 0.9% NaCl as ordered",
+    "Start IV regular insulin once K ≥ 3.5",
+    "Administer IV sodium bicarbonate push now",
+    "Give subcutaneous insulin glargine as sole therapy",
+    "Administer 50 mL of IV 50% dextrose bolus"
    ],
    "ans": [
     0,
@@ -4672,10 +4672,10 @@ window.Shift.ngnBank = [
   "params": {
    "opts": [
     "Serum potassium",
-    "Blood glucose every hour",
-    "Hemoglobin A1C",
-    "Serum lipase",
-    "Peak expiratory flow"
+    "Hourly blood glucose",
+    "Hemoglobin A1c percentage",
+    "Serum amylase and lipase",
+    "Peak expiratory flow rate"
    ],
    "ans": [
     0,
@@ -5181,11 +5181,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Give IV hydrocortisone as ordered",
-    "Infuse 0.9% sodium chloride with dextrose rapidly as ordered",
-    "Restrict fluids to 1 liter per day",
-    "Apply a cooling blanket",
-    "Give spironolactone as ordered for blood pressure"
+    "Give IV hydrocortisone",
+    "Infuse IV 0.9% NaCl with dextrose",
+    "Restrict total fluids to 1 liter per day",
+    "Apply a continuous cooling blanket now",
+    "Give oral spironolactone for blood pressure"
    ],
    "ans": [
     0,
@@ -5197,8 +5197,8 @@ window.Shift.ngnBank = [
     "Blood pressure",
     "Blood glucose",
     "Thyroid stimulating hormone",
-    "Hemoglobin A1C",
-    "Peak expiratory flow"
+    "Hemoglobin A1c percentage",
+    "Peak expiratory flow rate"
    ],
    "ans": [
     0,
@@ -5950,11 +5950,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Heart rate and blood pressure",
-    "Blood glucose",
-    "Bowel sounds",
-    "Drain output and dressing saturation",
-    "Temperature"
+    "HR and blood pressure",
+    "Fingerstick blood glucose",
+    "Abdominal bowel sounds",
+    "Drain and dressing output",
+    "Oral body temperature"
    ],
    "ans": [
     0,
@@ -6058,11 +6058,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Stay with the client, stimulate him, and call the rapid response team or provider",
-    "Let him sleep and recheck vital signs at 1400",
-    "Give his scheduled furosemide early",
-    "Give naloxone as ordered or per protocol",
-    "Complete the incident report before treating the client"
+    "Stay, stimulate, call RRT or provider",
+    "Let him sleep and recheck full vitals at 1400",
+    "Give his scheduled IV furosemide dose early",
+    "Give naloxone per protocol",
+    "Finish the safety incident report before intervening"
    ],
    "ans": [
     0,
@@ -6071,11 +6071,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Daily weight",
-    "Respiratory rate and depth",
-    "Serum potassium",
-    "Level of sedation",
-    "Urine output"
+    "Daily standing weight",
+    "RR and breathing depth",
+    "Morning serum potassium",
+    "Sedation scale score",
+    "Shift total urine output"
    ],
    "ans": [
     1,
@@ -6231,11 +6231,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Deep tendon reflexes",
+    "Patellar deep tendon reflexes",
     "Amount of vaginal bleeding",
     "Fetal heart rate pattern",
-    "Fundal height",
-    "Blood glucose"
+    "Uterine fundal height in cm",
+    "Capillary fingerstick glucose"
    ],
    "ans": [
     1,
@@ -6495,11 +6495,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Ask him directly whether he is thinking about killing himself",
-    "Tell him things will look better once he is home",
-    "Wait for the psychiatry consult in the morning before discussing suicide",
-    "Ask him to sign a no-suicide contract",
-    "Notify the provider and start continuous observation per policy"
+    "Ask directly about suicidal thoughts",
+    "Reassure him things will improve once he returns home",
+    "Wait for the morning psychiatry consult before asking about suicide",
+    "Ask him to sign a written no-suicide safety contract",
+    "Notify provider and start 1:1 observation"
    ],
    "ans": [
     0,
@@ -6508,11 +6508,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Suicidal thoughts, plan and intent on each reassessment",
-    "Incision appearance",
-    "Serum sodium",
-    "Mood and behavior, including hopeless statements",
-    "Bowel sounds"
+    "Suicidal thoughts and intent",
+    "Surgical incision appearance",
+    "Morning serum sodium level",
+    "Mood and hopeless statements",
+    "Four-quadrant bowel sounds"
    ],
    "ans": [
     0,
@@ -6870,11 +6870,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Withhold the loperamide and report the stool pattern to the provider",
-    "Give an oil-retention enema as prescribed",
-    "Give loperamide after each liquid stool",
-    "Increase the oxycodone dose for the cramping",
-    "Limit fluids to reduce the stool leakage"
+    "Hold loperamide and notify provider",
+    "Give ordered oil-retention enema",
+    "Give loperamide after each liquid stool episode",
+    "Increase his PRN oxycodone dose for the cramping",
+    "Restrict oral fluid intake to reduce stool leakage"
    ],
    "ans": [
     0,
@@ -6883,10 +6883,10 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Passage and character of stool",
-    "Abdominal distension and girth",
-    "Hemoglobin A1c",
-    "Serum calcium",
+    "Stool passage and character",
+    "Abdominal distension",
+    "Hemoglobin A1c percentage",
+    "Total serum calcium level",
     "Urine specific gravity"
    ],
    "ans": [
@@ -7154,11 +7154,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Clamp the catheter immediately",
-    "Place the client on the left side with the head lower than the feet",
-    "Flush the catheter with 10 mL normal saline",
-    "Raise the head of the bed to high Fowler's",
-    "Remove the catheter and hold pressure"
+    "Clamp catheter immediately",
+    "Place left lateral Trendelenburg",
+    "Flush the central lumen with 10 mL normal saline",
+    "Raise the head of the bed to high Fowler position",
+    "Pull the central catheter and hold firm pressure"
    ],
    "ans": [
     0,
@@ -7167,11 +7167,11 @@ window.Shift.ngnBank = [
   },
   "params": {
    "opts": [
-    "Oxygen saturation and respiratory effort",
-    "Blood pressure and heart rate",
-    "Temperature",
-    "Blood glucose",
-    "Serum magnesium"
+    "SpO₂ and breathing effort",
+    "BP and heart rate",
+    "Core body temperature",
+    "Fingerstick blood glucose",
+    "Morning serum magnesium"
    ],
    "ans": [
     0,
@@ -7477,11 +7477,11 @@ window.Shift.ngnBank = [
   },
   "actions": {
    "opts": [
-    "Begin IV 0.9% sodium chloride as prescribed",
-    "Start a continuous IV regular insulin infusion as prescribed after fluids are underway",
-    "Give insulin glargine subcutaneously now",
-    "Give sodium bicarbonate IV",
-    "Restrict fluids to prevent cerebral edema"
+    "Infuse IV 0.9% NaCl as ordered",
+    "Start IV regular insulin after fluids",
+    "Give subcutaneous insulin glargine immediately",
+    "Administer IV sodium bicarbonate bolus now",
+    "Restrict IV fluids to prevent cerebral edema"
    ],
    "ans": [
     0,
@@ -7492,9 +7492,9 @@ window.Shift.ngnBank = [
    "opts": [
     "Blood glucose",
     "Serum potassium",
-    "Hemoglobin A1c",
-    "Serum amylase",
-    "Serum calcium"
+    "Hemoglobin A1c percentage",
+    "Serum amylase and lipase",
+    "Serum ionized calcium"
    ],
    "ans": [
     0,
@@ -8335,7 +8335,7 @@ window.Shift.ngnBank = [
    "First 8 hours: 11,200 / 2 = 5,600 mL.",
    "Answer: 5,600 mL"
   ],
-  "why": "Burn injury causes a massive capillary leak in the first hours, which is why half the 24-hour volume is given in the first 8 hours. The formula is a starting point; the nurse titrates to urine output of 0.5 mL/kg/h in an adult.",
+  "why": "Burn injury causes a massive capillary leak in the first hours, which is why half the 24-hour volume is given in the first 8 hours. The formula is a starting point; the nurse titrates to urine output of 0.5 mL/kg/h in an adult. (Note: modern ABA/ABLS adult guidelines often start at 2 mL/kg/%TBSA to reduce fluid creep; on exams, calculate using the ordered formula.)",
   "tip": "Use %TBSA as a whole number (40, not 0.4) in the Parkland formula.",
   "sys": "pharm calc"
  },
@@ -8359,7 +8359,7 @@ window.Shift.ngnBank = [
    "Rate: 4,800 mL / 6 h = 800 mL/h",
    "Answer: 800 mL/h"
   ],
-  "why": "The 8-hour clock starts at the time of the burn, not at arrival, so a delay means the same volume must run over less time. The nurse monitors urine output hourly with an indwelling catheter and watches for signs of over-resuscitation such as crackles and rising airway pressures.",
+  "why": "The 8-hour clock starts at the time of the burn, not at arrival, so a delay means the same volume must run over less time. The nurse monitors urine output hourly with an indwelling catheter and watches for signs of over-resuscitation such as crackles and rising airway pressures. (Note: ABA/ABLS adult practice often uses 2 mL/kg/%TBSA, while exams still test the ordered Parkland 4 mL formula.)",
   "tip": "Subtract the time already elapsed since the injury before dividing; that is the trap in delayed-arrival burn items.",
   "sys": "pharm calc"
  },

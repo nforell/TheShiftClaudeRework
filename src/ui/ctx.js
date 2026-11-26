@@ -9,6 +9,7 @@ export const G = { caseId: CASES[0], s: null, prof: E.store.profile(), _A: null,
 /* Psych law: content is written to California law; Settings → Psych law → General US swaps each legal phrase for a
    plain one at display time. The phrases are data in src/law.js (S.law), and each case lists the ones it uses. */
 export const lawText = (x) => (S.law ? S.law.render(x, ((G.prof && G.prof.settings) || {}).law) : x);
+export const floorMode = () => ((G.prof && G.prof.settings) || {}).shiftMode === 'floor';
 export const esc = (x) => lawText(String(x == null ? '' : x)).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const $ = (sel) => document.querySelector(sel);
 export const ICON = {

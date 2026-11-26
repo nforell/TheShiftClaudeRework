@@ -116,7 +116,7 @@ export function showLapse() {
   document.querySelectorAll('.lapse').forEach((n) => n.remove());
   const n = document.createElement('div'); n.className = 'lapse'; n.setAttribute('role', 'status'); n.setAttribute('aria-live', 'polite');
   n.innerHTML = `<span class="lp-h"><b>${E.clock(L.from)}–${E.clock(L.to)}</b> while you were busy</span><ul>${L.items.map((x) => `<li class="lp-${x.k}">${esc(x.text)}</li>`).join('')}</ul>`;
-  const top = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip')].map((e) => e.getBoundingClientRect().bottom));
+  const top = Math.max(0, ...[...document.querySelectorAll('.top, .pstrip, .callbar')].map((e) => e.getBoundingClientRect().bottom));
   n.style.top = Math.round(top + 8) + 'px';
   document.body.appendChild(n);
   setTimeout(() => { n.classList.add('out'); setTimeout(() => n.remove(), 300); }, reduced() ? 5200 : 4600);
@@ -151,17 +151,21 @@ export function goalWatch() {
   const g = RW.goals(G.s, C(), A()); G.s.goalSeen = G.s.goalSeen || {};
   g.forEach((x) => { const was = G.s.goalSeen[x.id]; if (x.st !== 'open' && was !== x.st && !G.s.ended) { ui.pops.push(x.st === 'done' ? { text: 'Goal met', label: x.label, cls: 'goal' } : { text: 'Goal missed', label: x.label, cls: 'lost' }); if (x.st === 'done') ui.goalSound = true; } G.s.goalSeen[x.id] = x.st; });
 }
-/* Floating rewards, drawn outside the app so a re-render doesn't cut them off. */
+/* Floating rewards, stacked cleanly in a column below the XP pill so simultaneous Goal + XP toasts never collide. */
 export function flushPops() {
   const P = ui.pops.splice(0); if (!P.length) return;
   const pill = document.querySelector('.xp'); if (!pill || reduced()) return;
   const r = pill.getBoundingClientRect();
+  let stack = document.querySelector('.xp-stack');
+  if (!stack) { stack = document.createElement('div'); stack.className = 'xp-stack'; document.body.appendChild(stack); }
+  stack.style.left = Math.min(innerWidth - 190, Math.max(8, r.left + r.width / 2 - 80)) + 'px';
+  stack.style.top = Math.round(r.bottom + 6) + 'px';
   P.slice(-4).forEach((p, i) => setTimeout(() => {
     const n = document.createElement('div'); n.className = 'xpop ' + p.cls; n.innerHTML = `<b>${esc(p.text)}</b>${p.label ? `<small>${esc(p.label)}</small>` : ''}`;
-    n.style.left = Math.min(innerWidth - 150, Math.max(8, r.left + r.width / 2 - 60)) + 'px'; n.style.top = r.bottom + 6 + 'px';
-    document.body.appendChild(n); setTimeout(() => n.remove(), 1700);
+    stack.appendChild(n);
+    setTimeout(() => { n.remove(); if (stack && !stack.children.length) stack.remove(); }, 1850);
     const pl = document.querySelector('.xp'); if (pl) { pl.classList.remove('bump'); void pl.offsetWidth; pl.classList.add('bump'); }
-  }, i * 260));
+  }, i * 240));
   if (ui.combo) { ui.combo = false; setTimeout(() => FX.play('combo'), 200); }
   if (ui.goalSound) { ui.goalSound = false; setTimeout(() => FX.play('star'), 350); }
   if (ui.bondSound) { ui.bondSound = false; setTimeout(() => FX.play('star'), 250); }

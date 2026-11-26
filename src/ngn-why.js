@@ -199,7 +199,7 @@ window.Shift.ngnWhy = {
    "No: Glucose is checked to rule out a stroke mimic and extreme values; 142 is acceptable and does not change eligibility.",
    "No: A CT without hemorrhage is a required finding before a thrombolytic; it permits treatment rather than excluding it.",
    "No: Lisinopril and atorvastatin do not raise bleeding risk; anticoagulants would matter, but these routine medicines do not change eligibility.",
-   "No: Arrival time matters for door-to-needle goals, but the window had already closed at 14:30, so arriving at 14:52 is not what excludes him."
+   "No: A normal temperature of 36.9 °C does not affect thrombolytic eligibility."
   ],
   "tip": "For thrombolytic eligibility, anchor on last known well rather than time found or time of arrival, and check BP against 185/110; normal findings like a clean CT support treatment."
  },
@@ -297,7 +297,7 @@ window.Shift.ngnWhy = {
  "p4-sata": {
   "opts": [
    "Yes: Believing her and affirming it is not her fault is therapeutic, reduces shame and makes further disclosure and safety planning possible.",
-   "Yes: In California each mandated reporter has a personal duty to report suspected child abuse; telling a supervisor or relying on someone else does not satisfy it.",
+   "Yes: Mandated reporters have a personal duty to report suspected child abuse directly; telling a supervisor or relying on someone else does not satisfy it.",
    "Yes: The person she named is on tonight's list, so protecting her from contact before visiting hours is an immediate safety need.",
    "No: Promising secrecy may seem to build trust, but the nurse must report, so the promise would be broken and damage trust later.",
    "No: Thorough questions seem helpful, but detailed or leading questioning can contaminate a forensic interview; the nurse gathers only enough to report.",

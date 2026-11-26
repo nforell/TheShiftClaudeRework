@@ -1,7 +1,7 @@
 /* The Shift — UI: The header, the home screen and the full-shift picker. */
 import { careerHTML, starSvg } from './awards.js';
 import { helpers } from './core.js';
-import { C, CASES, CL, CM, DIFF, DR, E, G, ICON, NG, R, RV, RW, S, SPEC, TERMS, buildTag, def, diffPips, esc, fmtN, hhmm, locked, meta, shiftFacts, specOf, ui, unitS } from './ctx.js';
+import { C, CASES, CL, CM, DIFF, DR, E, G, ICON, NG, R, RV, RW, S, SPEC, TERMS, buildTag, def, diffPips, esc, floorMode, fmtN, hhmm, locked, meta, shiftFacts, specOf, ui, unitS } from './ctx.js';
 
 /* ------------ header ------------ */
 export function header() {
@@ -138,7 +138,8 @@ export function vShifts() {
     </section>
     <div>
       <div class="sched-top"><h2 class="sched-h">Choose a shift</h2><p class="diff-key" aria-label="Difficulty runs from 1, Orientation, to 5, Expert">Difficulty ${diffKey()}</p></div>
-      <p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
+      <div class="sched-mode"><p class="sched-sub">Tap a shift to see who you'll have, then start it from its card. ${CASES.length} shifts across ${new Set(CASES.map((id) => meta(id).sp)).size} units.</p>
+        <div class="mode-pill" role="group" aria-label="Shift guidance mode"><button data-act="set" data-k="shiftMode" data-v="orientee" aria-pressed="${!floorMode()}" title="Guided Next card and immediate feedback">Orientee</button><button data-act="set" data-k="shiftMode" data-v="floor" aria-pressed="${floorMode()}" title="Independent floor practice: hides acuity autopilot, status chips, and locked SBAR hints">Floor mode</button></div></div>
       <div class="ladder sc-grid" role="group" aria-label="Choose a shift">
         ${CASES.map((id, i) => rung(id, i)).join('')}
         <article class="sc sc-soon"><div class="sc-pick"><span class="sc-art" aria-hidden="true"><span class="sc-sky"></span><span class="sc-time"><b>Soon</b></span><span class="sc-floor"></span></span><span class="sc-body"><span class="sc-unit">Coming later</span><b class="sc-title">In the works</b><span class="sc-card">More shifts on every unit.</span></span></div></article>

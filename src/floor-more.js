@@ -3,53 +3,164 @@
 (function (S) {
   if (!S.floor) return;
   S.floor.POOL.push(...[
- { "id": "icu-aline", "k": ["icu"], "from": "fl-rn", "title": "A flat line", "dom": "assess", "cost": 3, "exp": 15,
+ {
+  "id": "icu-aline",
+  "k": [
+   "icu"
+  ],
+  "from": "fl-rn",
+  "title": "A flat line",
+  "dom": "assess",
+  "cost": 3,
+  "exp": 15,
   "ping": "{rn}, from bed 715: \"Can you look at this before I go up on the norepi?\"",
   "text": "Her arterial line reads 72/58, MAP 63, and the waveform looks rounded and flat, with no notch. A cuff pressure two minutes ago was 104/62. The order says titrate norepinephrine to MAP 65 or higher.",
   "q": "What do you tell her?",
   "opts": [
-   { "t": "Don't titrate yet. Check the line: flush it, look for bubbles, clots or a kink, re-level and zero at the phlebostatic axis, then compare with the cuff", "v": 2, "fb": "A damped waveform reads falsely low systolic and narrow. Fix the line first, then treat the patient, not the number." },
-   { "t": "Go up on the norepinephrine. The arterial line is more accurate than a cuff", "v": -1, "fb": "Only when the waveform is good. A damped line under-reads the pressure, and chasing it with a vasopressor gives a patient with a decent pressure too much drug." },
-   { "t": "Titrate by the cuff pressure from now on and leave the arterial line alone", "v": 0, "fb": "The cuff is a useful check, but the arterial line is there for beat-to-beat pressure in shock. Troubleshoot it rather than abandon it." },
-   { "t": "Recheck the cuff and call the provider about the difference", "v": 1, "fb": "A reasonable step, but troubleshooting the line is a nursing skill you can do in two minutes before calling." }
+   {
+    "t": "Don't titrate yet. Check the line: flush it, look for bubbles, clots or a kink, re-level and zero at the phlebostatic axis, then compare with the cuff",
+    "v": 2,
+    "fb": "A damped waveform reads falsely low systolic and narrow. Fix the line first, then treat the patient, not the number."
+   },
+   {
+    "t": "Go up on the norepinephrine. The arterial line is more accurate than a cuff",
+    "v": -1,
+    "fb": "Only when the waveform is good. A damped line under-reads the pressure, and chasing it with a vasopressor gives a patient with a decent pressure too much drug."
+   },
+   {
+    "t": "Titrate by the cuff pressure from now on and leave the arterial line alone",
+    "v": 0,
+    "fb": "The cuff is a useful check, but the arterial line is there for beat-to-beat pressure in shock. Troubleshoot it rather than abandon it."
+   },
+   {
+    "t": "Recheck the cuff and call the provider about the difference",
+    "v": 1,
+    "fb": "A reasonable step, but troubleshooting the line is a nursing skill you can do in two minutes before calling."
+   }
   ],
   "teach": "Before you act on an invasive pressure, check the waveform. Damped: flush, check for air, clots and kinks, level the transducer to the phlebostatic axis (4th intercostal space, mid-axillary line) and zero it, then compare with a cuff.",
-  "miss": { "text": "The norepinephrine went up for a damped arterial line until Nova caught it.", "why": "A flat, rounded waveform means the line is lying, not the patient." } },
- { "id": "icu-selfext", "k": ["icu"], "from": "@cna", "title": "Reaching", "dom": "safety", "cost": 3, "exp": 10, "must": true,
+  "miss": {
+   "text": "The norepinephrine went up for a damped arterial line until Nova caught it.",
+   "why": "A flat, rounded waveform means the line is lying, not the patient."
+  }
+ },
+ {
+  "id": "icu-selfext",
+  "k": [
+   "icu"
+  ],
+  "from": "@cna",
+  "title": "Reaching",
+  "dom": "safety",
+  "cost": 3,
+  "exp": 10,
+  "must": true,
   "ping": "{cna}: \"The man in 716 keeps grabbing at his breathing tube. Dee's at lunch.\"",
   "text": "He's intubated, sedation was lightened for an awakening trial an hour ago, and he has one hand on the tube. No restraint order. His RASS is +2 and he's looking around wildly.",
   "q": "What do you do?",
   "opts": [
-   { "t": "Go now: hold his hand away from the tube, reorient him calmly, check the tube's position, and call his nurse's cover and the provider about sedation and delirium", "v": 2, "fb": "Presence first: an unplanned extubation can happen in seconds. Then treat the cause (pain, delirium, fear) and get the team involved." },
-   { "t": "Tell {cna} to tie his wrists to the bed until Dee gets back", "v": -1, "fb": "Restraints need an order, a reason that less restrictive measures failed, and monitoring. A tech can't decide on them and you can't delegate that." },
-   { "t": "Restart his sedation at the old rate", "v": 0, "fb": "Maybe, eventually, by order and protocol. But he needs someone at the bedside now, and a quick look at why he's agitated." },
-   { "t": "Ask {cna} to stay with him and keep his hands down while you find Dee", "v": 1, "fb": "Better than nothing, but an RN needs to assess him now: tube position, oxygenation, pain and delirium are nursing judgments." }
+   {
+    "t": "Go in now: protect the tube, reorient him, and call his cover and provider",
+    "v": 2,
+    "fb": "Presence first: an unplanned extubation can happen in seconds. Then treat the cause (pain, delirium, fear) and get the team involved."
+   },
+   {
+    "t": "Have {cna} apply soft wrist restraints right away until Dee gets back to the unit",
+    "v": -1,
+    "fb": "Restraints need an order, a reason that less restrictive measures failed, and monitoring. A tech can't decide on them and you can't delegate that."
+   },
+   {
+    "t": "Restart his propofol infusion at the prior rate so he settles before grabbing the tube",
+    "v": 0,
+    "fb": "Maybe, eventually, by order and protocol. But he needs someone at the bedside now, and a quick look at why he's agitated."
+   },
+   {
+    "t": "Ask {cna} to sit at the bedside holding his hands down while you go find Dee",
+    "v": 1,
+    "fb": "Better than nothing, but an RN needs to assess him now: tube position, oxygenation, pain and delirium are nursing judgments."
+   }
   ],
   "teach": "Agitation on a ventilator is a safety emergency and a symptom. Be at the bedside, protect the airway, then look for the cause (pain, delirium, hypoxia, a full bladder) with the ABCDEF bundle. Restraints are a last resort and need an order.",
-  "miss": { "text": "The patient in 716 pulled out his breathing tube.", "why": "Unplanned extubation is a preventable airway emergency; a call like this needs a nurse at the bedside right away." } },
- { "id": "icu-cvc-out", "k": ["icu"], "from": "fl-rn", "title": "Line out", "dom": "safety", "cost": 3, "exp": 20,
+  "miss": {
+   "text": "The patient in 716 pulled out his breathing tube.",
+   "why": "Unplanned extubation is a preventable airway emergency; a call like this needs a nurse at the bedside right away."
+  }
+ },
+ {
+  "id": "icu-cvc-out",
+  "k": [
+   "icu"
+  ],
+  "from": "fl-rn",
+  "title": "Line out",
+  "dom": "safety",
+  "cost": 3,
+  "exp": 20,
   "ping": "{rn}: \"Quick one. I'm pulling a central line and he wants to sit up for it. Fine?\"",
   "text": "It's an internal jugular line, no longer needed. The patient is alert, breathing comfortably, and asks to sit on the edge of the bed while it comes out.",
   "q": "What do you tell her?",
   "opts": [
-   { "t": "Lie him flat or slightly head down, have him hold his breath or bear down as it comes out, then pressure and an occlusive dressing, and keep him flat for 30 minutes", "v": 2, "fb": "Positioning and a Valsalva raise the pressure in the chest so air can't be pulled into the vein. The occlusive dressing seals the tract." },
-   { "t": "Sitting is fine if he's comfortable. Just put gauze on it", "v": -1, "fb": "Sitting up lowers venous pressure in the neck; a breath in as the catheter leaves can pull air in. An air embolism can be fatal." },
-   { "t": "Have him take a deep breath in as you pull", "v": 0, "fb": "That's backward. Inhaling lowers intrathoracic pressure and invites air in. Exhale or bear down." },
-   { "t": "Lie him flat and use an occlusive dressing", "v": 1, "fb": "Good, but add a Valsalva or a held breath at the moment of removal, and keep him lying down for a while after." }
+   {
+    "t": "Lay him flat, pull during Valsalva, apply occlusive pressure, keep flat 30 min",
+    "v": 2,
+    "fb": "Positioning and a Valsalva raise the pressure in the chest so air can't be pulled into the vein. The occlusive dressing seals the tract."
+   },
+   {
+    "t": "Leaving him sitting upright is fine if he's comfortable; just apply dry sterile gauze",
+    "v": -1,
+    "fb": "Sitting up lowers venous pressure in the neck; a breath in as the catheter leaves can pull air in. An air embolism can be fatal."
+   },
+   {
+    "t": "Have him take a deep breath in and hold it as you pull the catheter straight out",
+    "v": 0,
+    "fb": "That's backward. Inhaling lowers intrathoracic pressure and invites air in. Exhale or bear down."
+   },
+   {
+    "t": "Lay him flat in bed and cover the exit site with sterile gauze and tape afterward",
+    "v": 1,
+    "fb": "Good, but add a Valsalva or a held breath at the moment of removal, and keep him lying down for a while after."
+   }
   ],
-  "teach": "Removing a central line: supine or Trendelenburg, Valsalva or exhalation at removal, firm pressure, an occlusive dressing, and a period lying flat. Watch for sudden dyspnea, chest pain or hypotension (air embolism)." },
- { "id": "icu-insulin-low", "k": ["icu", "med"], "from": "@cna", "title": "Low sugar", "dom": "meds", "cost": 2, "exp": 12,
+  "teach": "Removing a central line: supine or Trendelenburg, Valsalva or exhalation at removal, firm pressure, an occlusive dressing, and a period lying flat. Watch for sudden dyspnea, chest pain or hypotension (air embolism)."
+ },
+ {
+  "id": "icu-insulin-low",
+  "k": [
+   "icu",
+   "med"
+  ],
+  "from": "@cna",
+  "title": "Low sugar",
+  "dom": "meds",
+  "cost": 2,
+  "exp": 12,
   "ping": "{cna}: \"The man in 715 on the insulin drip just checked at 58.\"",
   "text": "He's on an IV insulin infusion by protocol, NPO, with no dextrose running. He's sweaty and a little confused. His nurse is in another room.",
   "q": "What do you do?",
   "opts": [
-   { "t": "Stop the insulin infusion, give IV dextrose per the hypoglycemia protocol, recheck in 15 minutes, and tell his nurse and the provider", "v": 2, "fb": "On an infusion, the first move is to stop the source, then treat with IV dextrose because he's NPO and confused, then recheck." },
-   { "t": "Give him orange juice", "v": -1, "fb": "He's NPO and confused: oral fluids risk aspiration. IV dextrose per protocol is the route here." },
-   { "t": "Turn the insulin rate down by half and recheck in an hour", "v": 0, "fb": "A glucose of 58 with symptoms needs the infusion stopped and treatment now, and a recheck in 15 minutes, not an hour." },
-   { "t": "Recheck the glucose to make sure it's real", "v": 1, "fb": "A quick recheck is fine if it doesn't delay treatment. With symptoms, treat first and confirm after." }
+   {
+    "t": "Stop the insulin drip, give IV dextrose per protocol, recheck in 15 min",
+    "v": 2,
+    "fb": "On an infusion, the first move is to stop the source, then treat with IV dextrose because he's NPO and confused, then recheck."
+   },
+   {
+    "t": "Give him four ounces of orange juice through a straw while he's still rousable",
+    "v": -1,
+    "fb": "He's NPO and confused: oral fluids risk aspiration. IV dextrose per protocol is the route here."
+   },
+   {
+    "t": "Cut the insulin infusion rate in half and recheck his fingerstick in one hour",
+    "v": 0,
+    "fb": "A glucose of 58 with symptoms needs the infusion stopped and treatment now, and a recheck in 15 minutes, not an hour."
+   },
+   {
+    "t": "Repeat the fingerstick on another finger to confirm the reading before changing the pump",
+    "v": 1,
+    "fb": "A quick recheck is fine if it doesn't delay treatment. With symptoms, treat first and confirm after."
+   }
   ],
-  "teach": "Hypoglycemia on an insulin infusion: stop the infusion, treat per protocol (IV dextrose if NPO or impaired), recheck in 15 minutes, notify, and find the cause (missed feeding, a stopped dextrose line, a protocol error)." },
-
+  "teach": "Hypoglycemia on an insulin infusion: stop the infusion, treat per protocol (IV dextrose if NPO or impaired), recheck in 15 minutes, notify, and find the cause (missed feeding, a stopped dextrose line, a protocol error)."
+ },
  {
   "id": "pp-unsafe-assign",
   "k": [
@@ -117,22 +228,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Stay calm, say you need to finish this patient's issue, give a brief SBAR, then report his behavior to Nova and through the safety reporting system",
+    "t": "Stay calm, finish the brief SBAR for the patient, then report his behavior",
     "v": 2,
     "fb": "The patient's problem still needs an answer, so get it. Then report the behavior: it is a safety problem, not a personality conflict."
    },
    {
-    "t": "Let him go and page the backup provider about the pressure",
+    "t": "End the call right away and page the backup hospitalist to handle the patient's blood pressure",
     "v": 1,
     "fb": "The patient gets seen, which matters most. But unreported, the behavior will repeat with the next new nurse."
    },
    {
-    "t": "Tell him off in front of everyone",
+    "t": "Call out his yelling in front of the unit so he knows nurses will not tolerate disrespect",
     "v": 0,
     "fb": "Understandable, but a shouting match in front of families makes things worse. Set a calm boundary and use the reporting process."
    },
    {
-    "t": "Don't page him again tonight, whatever happens",
+    "t": "Avoid paging him again for the rest of the shift and hold non-code updates until morning",
     "v": -1,
     "fb": "That is exactly how disruptive behavior harms patients: nurses stop calling. A low pressure needs a provider."
    }
@@ -158,22 +269,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Tell Nova or the manager now, with the specific facts, and let them follow the diversion policy",
+    "t": "Report the specific facts to Nova or the manager now per diversion policy",
     "v": 2,
     "fb": "Unrelieved pain and unwitnessed wastes are classic signs of diversion. Facts to the right people protects patients, and often gets the nurse help."
    },
    {
-    "t": "Ask pharmacy to quietly look at his cabinet pulls",
+    "t": "Ask the unit pharmacist to quietly audit his dispensing cabinet pulls before telling leadership",
     "v": 1,
     "fb": "Pharmacy runs these audits, so it's a real step. But the manager needs to know too, because his patients are in pain now."
    },
    {
-    "t": "Confront Jordan privately and ask what's going on",
+    "t": "Pull Jordan aside privately after med pass and ask directly what is happening with the waste",
     "v": 0,
     "fb": "Confronting him can tip him off, put you at risk, and delay protection for his patients. Let leadership handle it."
    },
    {
-    "t": "Stay out of it. You don't have proof",
+    "t": "Stay out of it for now",
     "v": -1,
     "fb": "You don't need proof to report a concern. His patients are hurting and he may be impaired at the bedside."
    }
@@ -252,22 +363,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Ask him to enter it himself now. Verbal orders are for emergencies or when the prescriber can't enter them",
+    "t": "Ask him to enter it himself; verbal orders are for true emergencies",
     "v": 2,
     "fb": "He's at a computer and nobody is unstable. Entered orders avoid sound-alike and dose mix-ups."
    },
    {
-    "t": "Take it as a verbal order, write it down, read it back, and enter it per policy",
+    "t": "Take it as a verbal order, write it down, read it back aloud, and enter it per hospital policy",
     "v": 1,
     "fb": "Read-back makes it safer, but this isn't a situation verbal orders are for. Most policies say to ask him to enter it."
    },
    {
-    "t": "Remember it and enter it once your patients are settled",
+    "t": "Jot it on your brain sheet and enter the verbal order once your current med pass is finished",
     "v": 0,
     "fb": "An order from memory, entered later without read-back, is how doses and drugs get swapped."
    },
    {
-    "t": "Enter it under his login since he's already signed in",
+    "t": "Enter the order under his workstation login since he is already signed in at the nurses' desk",
     "v": -1,
     "fb": "Using someone else's login is a falsified order and a policy and privacy violation."
    }
@@ -299,22 +410,22 @@
   "q": "What do you tell {rn}?",
   "opts": [
    {
-    "t": "Hold it and call the prescriber to clarify, with pharmacy looped in",
+    "t": "Hold the dose and call the prescriber with pharmacy to clarify",
     "v": 2,
     "fb": "That is about ten times the usual dose, a classic decimal or unit error. Only the prescriber can change the order."
    },
    {
-    "t": "Hold it and ask pharmacy to fix it",
+    "t": "Hold the medication and send pharmacy a message asking them to correct the order",
     "v": 1,
     "fb": "Holding is right, and pharmacy should know. But the prescriber has to clarify and change the order."
    },
    {
-    "t": "Give the usual dose. It's obviously a typo",
+    "t": "Give the standard therapeutic dose instead since the decimal is clearly a keyboard typo",
     "v": 0,
     "fb": "Probably a typo, but giving a dose that wasn't ordered is outside your scope. Clarify first."
    },
    {
-    "t": "Give it as written. Pharmacy verified it",
+    "t": "Administer the dose as written",
     "v": -1,
     "fb": "Verification doesn't mean correct. You are the last check, and a tenfold opioid or antipsychotic dose can kill."
    }
@@ -346,22 +457,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Don't witness yet. Tell Dr. Ames the patient still has questions and needs answers before signing",
+    "t": "Don't witness yet; tell Dr. Ames the patient still has questions",
     "v": 2,
     "fb": "Consent is the provider's job, and it isn't informed while questions are open. Your signature says the signer understood and signed freely."
    },
    {
-    "t": "Step out and ask Nova how to handle it",
+    "t": "Step out to the nurses' station and ask Nova whether you should witness the signature now",
     "v": 1,
     "fb": "Not signing is right, but you can say this yourself, right now, before the patient signs."
    },
    {
-    "t": "Answer the questions yourself so they can sign",
+    "t": "Answer the patient's questions about the surgical risks yourself so they can sign on time",
     "v": 0,
     "fb": "Explaining the risks and alternatives of a procedure is the provider's duty, not the witness's."
    },
    {
-    "t": "Witness it. The surgeon will answer later",
+    "t": "Witness the signature now so the OR is not delayed; the surgeon will answer questions in pre-op",
     "v": -1,
     "fb": "Witnessing while the patient openly doesn't understand makes the consent invalid, and the procedure may proceed on it."
    }
@@ -440,22 +551,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Ask Tasha to take it down now, and tell Nova or the manager so it's handled per policy",
+    "t": "Ask Tasha to delete it now and notify Nova or the manager per policy",
     "v": 2,
     "fb": "Room numbers, photos, initials and dates can identify a patient, and screenshots last forever. It needs to come down and be reported."
    },
    {
-    "t": "Ask Tasha to take it down, and leave it there",
+    "t": "Ask Tasha privately to take the post down right away and leave the matter between the two of you",
     "v": 1,
     "fb": "Getting it down fast matters most, but a privacy breach usually has to be reported for the facility to respond."
    },
    {
-    "t": "Ignore it. There's no full name",
+    "t": "Leave it alone because she did not include the patient's full name or medical record number",
     "v": 0,
     "fb": "No name doesn't mean no identification. Details, photos and timing are enough."
    },
    {
-    "t": "Comment on it with a story of your own",
+    "t": "Comment on her post with a similar shift story",
     "v": -1,
     "fb": "Now it's two breaches, one of them yours."
    }
@@ -528,22 +639,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Decline. Help {rn} write it down on paper with times, report the login problem, and {rn} enters a late entry once logged in",
+    "t": "Decline; help {rn} jot timed notes on paper for a late entry once logged in",
     "v": 2,
     "fb": "Documentation belongs to the nurse who did the care. A note with times keeps the facts until {rn} can chart it as a late entry."
    },
    {
-    "t": "Tell Nova and let her sort it out",
+    "t": "Tell Nova about the login lock and let her decide who should enter the charting tonight",
     "v": 1,
     "fb": "Nova can help with downtime options, but you can solve this now: paper notes and a late entry."
    },
    {
-    "t": "Chart it under your login, since you trust {rn}",
+    "t": "Chart the assessment under your own login with a note stating {rn} performed the exam",
     "v": 0,
     "fb": "Your name on the chart says you did the care. That's a false record."
    },
    {
-    "t": "Use {rn}'s password",
+    "t": "Ask {rn} for their temporary password so the assessment gets entered under their name",
     "v": -1,
     "fb": "Sharing logins breaks the audit trail and violates privacy rules and policy. It's grounds for discipline for both of you."
    }
@@ -569,22 +680,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Add a late entry, clearly labeled, timed now, saying you reassessed at about 1000 and what you found",
+    "t": "Write a clearly labeled late entry timed now noting the 1000 reassessment",
     "v": 2,
     "fb": "A late entry is honest about when it was written and when the care happened. That's what the record is for."
    },
    {
-    "t": "Ask Nova how your unit does late entries before you chart it",
+    "t": "Wait to chart anything until you ask Nova how your unit formats delayed pain reassessments",
     "v": 1,
     "fb": "Fine to check, but don't let it slide too long. The longer you wait, the less reliable the entry."
    },
    {
-    "t": "Leave it. It's too late to matter",
+    "t": "Leave the reassessment unrecorded",
     "v": 0,
     "fb": "Not documented looks like not done, for audits, for the next nurse, and in court."
    },
    {
-    "t": "Backtime the entry to 1000 like {rn} says",
+    "t": "Backtime the documentation to 1000 like {rn} suggested so the MAR audit stays compliant",
     "v": -1,
     "fb": "Making it look like it was charted at 1000 misrepresents the record. Audit trails show when it was really typed."
    }
@@ -616,22 +727,22 @@
   "q": "What should {rn} do?",
   "opts": [
    {
-    "t": "Don't hang it. Confirm the refusal is informed, get the provider, document it, and ask which alternatives they would accept",
+    "t": "Don't hang it; confirm informed refusal, call provider, ask alternatives",
     "v": 2,
     "fb": "A competent adult can refuse blood. Many patients accept some alternatives, like certain fractions or a cell saver. For a child, the provider and ethics or legal decide next steps, which can include a court order."
    },
    {
-    "t": "Don't hang it, and tell the provider",
+    "t": "Leave the blood off the pump and send a routine message notifying the provider of the refusal",
     "v": 1,
     "fb": "Right so far, but explore alternatives and document an informed refusal. Those are what keep her safe."
    },
    {
-    "t": "Call her family in to change her mind",
+    "t": "Invite her family members to the bedside to help persuade her to accept the transfusion",
     "v": 0,
     "fb": "Her decision is hers. Pressure from family isn't informed consent, and it may not be welcome."
    },
    {
-    "t": "Hang it once she's sedated or asleep",
+    "t": "Hold the blood for now and infuse it later once she is sedated for her evening procedure",
     "v": -1,
     "fb": "Transfusing an adult against her known refusal is battery."
    }
@@ -663,22 +774,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Thank them, and get a qualified medical interpreter by phone or video",
+    "t": "Thank them and bring in a qualified medical interpreter by phone or video",
     "v": 2,
     "fb": "Children shouldn't interpret, and family members miss and soften medical terms. Qualified interpreters are free to the patient."
    },
    {
-    "t": "Ask a bilingual coworker to help",
+    "t": "Ask a bilingual coworker from the next hallway to step in and translate the teaching",
     "v": 1,
     "fb": "Only if they're tested and approved as an interpreter per policy. Speaking a language isn't the same as interpreting medical teaching."
    },
    {
-    "t": "Use a translation app on your phone",
+    "t": "Use a translation app on your phone so you can explain the discharge instructions quickly",
     "v": 0,
     "fb": "Apps get medical terms and doses wrong, and you can't check what was understood."
    },
    {
-    "t": "Let the child translate. It's faster",
+    "t": "Let her teenager translate the teaching since they already know her home routine well",
     "v": -1,
     "fb": "Errors in anticoagulant, seizure or diabetes teaching can be deadly, and it puts the child in an unfair position."
    }
@@ -757,22 +868,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Don't override. Get the band reprinted, scan it, do any required double check, and tell {rn} why",
+    "t": "Don't override; reprint and scan the band, complete checks, tell {rn}",
     "v": 2,
     "fb": "Scanning and the double check catch the errors people are sure they won't make. A new band takes two minutes."
    },
    {
-    "t": "Ask Nova if overriding is okay here",
+    "t": "Step out to ask Nova whether bypassing the barcode scanner is acceptable for this dose",
     "v": 1,
     "fb": "Checking is better than giving it, but you already know the safe answer. Fix the band."
    },
    {
-    "t": "Check two identifiers out loud, then override",
+    "t": "Verify two patient identifiers out loud at the bedside and then override the barcode alert",
     "v": 0,
     "fb": "Better than nothing, but scanning checks the drug and dose too, and insulin still needs its second-nurse check if policy requires it."
    },
    {
-    "t": "Override and give it. {rn} has years of experience",
+    "t": "Override the scan and give the medication since {rn} has checked this patient for years",
     "v": -1,
     "fb": "Workarounds are how high-alert drugs go to the wrong patient or the wrong dose, whoever is precepting you."
    }
@@ -804,22 +915,22 @@
   "q": "What do you say?",
   "opts": [
    {
-    "t": "Thank them warmly, explain you can't share personal contact, and give them the right number to call for questions after discharge",
+    "t": "Thank them warmly, decline personal contact, give the clinic/unit number",
     "v": 2,
     "fb": "Kind and clear. They still get support, from the right place."
    },
    {
-    "t": "Say the hospital doesn't allow it",
+    "t": "Tell them plainly that hospital policy prohibits nurses from ever speaking to patients again",
     "v": 1,
     "fb": "It holds the line, but owning the boundary yourself, and giving them somewhere to call, is better."
    },
    {
-    "t": "Give your work email instead",
+    "t": "Give them your hospital work email address instead so they can message you with updates",
     "v": 0,
     "fb": "It's still a personal channel outside the care relationship."
    },
    {
-    "t": "Give your number. They're being discharged",
+    "t": "Share your personal cell number",
     "v": -1,
     "fb": "Discharge doesn't end the power difference, especially for a psychiatric or vulnerable patient."
    }
@@ -845,22 +956,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Call security now, tell Nova, write down his exact words, file a report, and get an escort to your car",
+    "t": "Call security and Nova now, quote his words, file a report, get an escort",
     "v": 2,
     "fb": "Treat a specific threat as real. Security and leadership can flag him, involve police per policy, and plan visitation."
    },
    {
-    "t": "Ask security for an escort to your car when you leave",
+    "t": "Finish your charting and ask security to walk you out to your car at the end of the shift",
     "v": 1,
     "fb": "The escort is smart, but report it now too. The threat may extend to the next nurse."
    },
    {
-    "t": "Let it go. He's upset about his mom",
+    "t": "Let the remark go for now",
     "v": 0,
     "fb": "Stress explains the threat, but doesn't make it safe. Threats are reported."
    },
    {
-    "t": "Go find him in the lobby to talk it out",
+    "t": "Walk out to the lobby yourself to talk calmly with him and de-escalate the misunderstanding",
     "v": -1,
     "fb": "Never meet someone who threatened you alone. Let security handle contact."
    }
@@ -892,22 +1003,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Call a rapid response now (in the ED, get the charge nurse and attending to the bedside) and stay with the patient",
+    "t": "Call a rapid response now (or ED charge/attending) and stay at bedside",
     "v": 2,
     "fb": "Changes in mental status, heart rate, breathing and pressure together are early warning signs. Worry alone is a reason to call."
    },
    {
-    "t": "Page the provider again and stay with the patient",
+    "t": "Page the primary provider a second time and remain in the room waiting for a callback",
     "v": 1,
     "fb": "Staying is right, but you've waited long enough. The rapid response team exists so you don't have to wait."
    },
    {
-    "t": "Wait for the callback and recheck vitals in 30 minutes",
+    "t": "Wait twenty minutes for the provider's callback and recheck a full set of vitals then",
     "v": 0,
     "fb": "Waiting is how early deterioration becomes a code."
    },
    {
-    "t": "Give a PRN for the confusion and restlessness",
+    "t": "Give a PRN dose for the acute restlessness",
     "v": -1,
     "fb": "Sedating someone who is confused from shock or low oxygen hides the problem and can stop their breathing."
    }
@@ -933,22 +1044,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Tell Nova, and give face-to-face handoff to whichever RN she assigns to cover until Jess arrives",
+    "t": "Tell Nova and give live handoff to the RN she assigns to cover",
     "v": 2,
     "fb": "Patients stay with an RN at every moment. Nova can cover or assign someone, and you can leave once a nurse has your report."
    },
    {
-    "t": "Wait for Jess and call someone about your kid",
+    "t": "Stay on the unit waiting for Jess to arrive and call someone else to pick up your child",
     "v": 1,
     "fb": "Safe, but Nova may be able to get you out on time. Tell her."
    },
    {
-    "t": "Give your report to {cna}",
+    "t": "Give a detailed bedside report to {cna} so they can watch your patients until Jess arrives",
     "v": 0,
     "fb": "A nursing assistant can't take over RN responsibility for patients."
    },
    {
-    "t": "Leave the printed report at the desk and go",
+    "t": "Leave your updated printed handoff sheets at the nurses' desk for Jess and clock out",
     "v": -1,
     "fb": "Leaving patients without an RN handoff is abandonment, even when the next nurse is late."
    }
@@ -1027,22 +1138,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Ask what's been taken and when, secure the meds or send them home per policy, and tell the provider and pharmacy",
+    "t": "Find out what was taken, secure or send home the bottles, call provider",
     "v": 2,
     "fb": "Home meds can double up with hospital doses or interact, and unlabeled pills can be anything. What's already been taken affects the plan."
    },
    {
-    "t": "Ask the family to take them home",
+    "t": "Ask the family to take all the pill bottles home during their next visit without documenting",
     "v": 1,
     "fb": "Getting them out of the room is the main safety step. But find out what was taken and tell the provider."
    },
    {
-    "t": "Let them keep the meds, but tell them not to take any",
+    "t": "Let the patient keep the bottles in the nightstand drawer after reminding them not to take any",
     "v": 0,
     "fb": "Meds at the bedside get taken. Secure them."
    },
    {
-    "t": "Let them take their own. They know their meds",
+    "t": "Let the patient continue taking their own home bottles",
     "v": -1,
     "fb": "Unverified doses on top of hospital orders cause overdoses and interactions, and no one can track them."
    }
@@ -1064,22 +1175,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Go see him now: responsiveness, pulse, full vitals, symptoms. Then call the provider and ask about a potassium, magnesium and a 12-lead",
+    "t": "Assess him now (pulse, vitals, symptoms), then call for K, Mg, and ECG",
     "v": 2,
     "fb": "Treat the patient, not the strip. Nonsustained VT in a diuresed heart failure patient points to low potassium or magnesium, and it can come back sustained."
    },
    {
-    "t": "Call a rapid response before you see him",
+    "t": "Call a rapid response from the station immediately before going in to check on the patient",
     "v": 1,
     "fb": "Never wrong to have help, but he's back in sinus and you don't yet know how he looks. A quick assessment tells the team what they're walking into."
    },
    {
-    "t": "Ask Kim to save the strip for {rn} when she's back",
+    "t": "Ask Kim to print and save the rhythm strip",
     "v": 0,
     "fb": "A new run of VT needs eyes on the patient now, not after a break."
    },
    {
-    "t": "Ask Kim to widen his alarm limits so it stops alarming",
+    "t": "Ask Kim to widen the ventricular tachycardia alarm limits so the central monitor stops ringing",
     "v": -1,
     "fb": "Silencing or loosening alarms to stop the noise is how the next, sustained run gets missed. Alarm settings change only for a clinical reason."
    }
@@ -1101,22 +1212,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Go to the room now and check him: responsive and a pulse means fix the leads; unresponsive and pulseless means call the code and start CPR",
+    "t": "Check the patient now: pulse means fix leads; no pulse means code + CPR",
     "v": 2,
     "fb": "The pulse ox tracing says it's probably a lead, but only the patient can confirm it. Thirty seconds at the bedside settles it either way."
    },
    {
-    "t": "Call a code blue from the desk, then go",
+    "t": "Call a code blue from the nurses' station right away before walking down to check the room",
     "v": 1,
     "fb": "Safe if he's really arrested, but the pulse ox tracing suggests he isn't. Going first takes seconds and keeps the code team free."
    },
    {
-    "t": "Ask Kim to check the other leads before anyone goes in",
+    "t": "Ask Kim to cycle through the other telemetry leads at the desk before anyone enters the room",
     "v": 0,
     "fb": "Looking at more leads is part of confirming asystole, but not instead of looking at the patient. If he's arrested, that's lost time."
    },
    {
-    "t": "Assume it's a loose lead and ask {cna} to fix it when free",
+    "t": "Assume a telemetry electrode popped off in his sleep and ask {cna} to reattach it when free",
     "v": -1,
     "fb": "Assuming artifact is how a real arrest goes untreated. Every flat line gets a person at the bedside now."
    }
@@ -1212,22 +1323,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Compare both feet, check pulses with a Doppler, capillary refill, sensation and movement, keep the leg at heart level, and call the surgeon now",
+    "t": "Check Doppler pulses, cap refill, neuro, keep leg level, call surgeon",
     "v": 2,
     "fb": "A cold, pale, pulseless foot with numbness and rising pain is a vascular or compartment emergency. Minutes count to save the limb."
    },
    {
-    "t": "Loosen any straps or wraps on the leg and recheck",
+    "t": "Loosen any wraps or dressings on the leg and recheck her toes in thirty minutes for improvement",
     "v": 1,
     "fb": "Removing anything constricting is a right first step, but this still needs the surgeon now, not after a recheck."
    },
    {
-    "t": "Elevate the leg on pillows above her heart",
+    "t": "Elevate the affected leg on two pillows above heart level to reduce swelling and improve flow",
     "v": 0,
     "fb": "Elevating above the heart lowers arterial flow to a limb that's already short of it. Keep it at heart level."
    },
    {
-    "t": "Give another dose of pain medication and recheck in an hour",
+    "t": "Give her next scheduled pain dose and reassess the coolness during your next hourly round",
     "v": -1,
     "fb": "Pain out of proportion is an early warning sign. Masking it and waiting an hour risks losing the limb."
    }
@@ -1286,22 +1397,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Reinforce the dressing with firm pressure, stay, recheck vitals, make sure he has IV access, and call a rapid response and the surgeon",
+    "t": "Reinforce with firm pressure, stay, check vitals & IV, call RRT & surgeon",
     "v": 2,
     "fb": "A soaked dressing with a rising heart rate and falling pressure is bleeding until proven otherwise. He needs help at the bedside now."
    },
    {
-    "t": "Reinforce the dressing, mark the edges of the drainage and call the surgeon",
+    "t": "Reinforce the dressing lightly, outline the blood border with a pen, and message the surgeon",
     "v": 1,
     "fb": "Good steps, but his vitals have already turned. That's rapid response territory, and you should stay with him."
    },
    {
-    "t": "Take off the dressing to look at the incision",
+    "t": "Remove the blood-soaked surgical dressing completely so you can inspect the incision edges",
     "v": 0,
     "fb": "The first surgical dressing usually stays on unless the surgeon says otherwise, and taking it off removes pressure from a bleeding wound."
    },
    {
-    "t": "Mark the drainage and recheck in 30 minutes",
+    "t": "Outline the saturated area with a marker and recheck the dressing again in thirty minutes",
     "v": -1,
     "fb": "His heart rate and blood pressure are already changing. Thirty minutes of bleeding can become shock."
    }
@@ -1323,22 +1434,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Stop the PCA, stimulate him, support his airway, call a rapid response, and give naloxone per protocol",
+    "t": "Stop PCA, stimulate, support airway, call rapid response, give naloxone",
     "v": 2,
     "fb": "Respirations of 7 with heavy sedation is opioid-induced respiratory depression. Stop the source, reverse it, and get help."
    },
    {
-    "t": "Stop the PCA and call the provider",
+    "t": "Pause the PCA pump at the bedside and send a page to the primary provider for instructions",
     "v": 1,
     "fb": "Stopping it is right. But with respirations of 7 and SpO₂ 86%, he needs naloxone and a rapid response, not a callback."
    },
    {
-    "t": "Turn up his oxygen and recheck in 15 minutes",
+    "t": "Increase his nasal cannula oxygen flow to keep saturation up and recheck him in fifteen minutes",
     "v": 0,
     "fb": "Oxygen can raise the number while he keeps hypoventilating. It hides the problem instead of treating it."
    },
    {
-    "t": "Let him sleep. His pain is finally controlled",
+    "t": "Let him sleep undisturbed since his surgical pain is finally controlled for the first time",
     "v": -1,
     "fb": "Sedation is the warning that comes before respiratory arrest. This is not comfortable sleep."
    }
@@ -1360,27 +1471,27 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Restrict his fluids, check vitals and neuro status, put him on seizure precautions, and call the psychiatrist for a stat sodium",
+    "t": "Restrict fluids, check vitals & neuro, seizure precautions, stat sodium",
     "v": 2,
     "fb": "Compulsive drinking, a quick weight gain, headache, vomiting and confusion point to water intoxication with low sodium. Seizures can follow."
    },
    {
-    "t": "Restrict his fluids and ask the psychiatrist to see him today",
+    "t": "Put him on a fluid restriction and leave a note asking the psychiatrist to evaluate him today",
     "v": 1,
     "fb": "Restriction is right, but new confusion makes this urgent. He needs a sodium now and seizure precautions."
    },
    {
-    "t": "Give his PRN for agitation",
+    "t": "Administer his ordered PRN medication for agitation",
     "v": 0,
     "fb": "He's confused because he's medically sick. A sedative can hide a worsening brain."
    },
    {
-    "t": "Let him keep drinking. He's thirsty",
+    "t": "Let him continue drinking water from the fountain since his mouth is dry from medications",
     "v": -1,
     "fb": "More water drives his sodium lower. This can end in seizures, coma or death."
    }
   ],
-  "teach": "Psychogenic polydipsia: watch for rapid weight gain, headache, vomiting and confusion. Restrict fluids, check sodium urgently, and correct it slowly, usually no more than 8 to 10 mEq/L in 24 hours, to avoid osmotic demyelination (US expert panel hyponatremia recommendations)."
+  "teach": "Psychogenic polydipsia: watch for rapid weight gain, headache, vomiting and confusion. Restrict fluids, check sodium urgently, and correct it slowly, usually no more than 6 to 8 mEq/L in 24 hours, to avoid osmotic demyelination (US expert panel hyponatremia recommendations)."
  },
  {
   "id": "fc-refuse",
@@ -1397,22 +1508,22 @@
   "q": "What do you tell {rn}?",
   "opts": [
    {
-    "t": "No hidden meds. Ask him what bothers him about it, document the refusal, and let the psychiatrist know so they can address side effects or seek a court order if needed",
+    "t": "No hidden meds; explore his concern, document refusal, notify psychiatry",
     "v": 2,
     "fb": "A hold allows him to be kept for evaluation, not medicated against his will. Side effects are often the real reason, and they can be fixed."
    },
    {
-    "t": "Document the refusal and offer it again in an hour",
+    "t": "Document the medication refusal in the MAR and return to offer the same pill in one hour",
     "v": 1,
     "fb": "Offering again is fine, but the psychiatrist needs to know, and asking why matters most."
    },
    {
-    "t": "Tell him he has to take it because he's on a hold",
+    "t": "Explain firmly that because he is on an involuntary hold he is required to take the dose",
     "v": 0,
     "fb": "That's not true outside an emergency or a court order, and pressure erodes trust."
    },
    {
-    "t": "Mix it into his pudding without telling him",
+    "t": "Crush the olanzapine tablet into his pudding cup",
     "v": -1,
     "fb": "Covert medication violates his rights and his trust, and it's battery. If he finds out, he may refuse everything."
    }
@@ -1471,22 +1582,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Talk with her privately and without judgment about why, search her room per policy for a stash, tell the psychiatrist, and document",
+    "t": "Talk privately without judgment, search room per policy, tell psychiatry",
     "v": 2,
     "fb": "Cheeking can mean side effects, ambivalence, or saving pills for an overdose. With her history, a stash is a real danger."
    },
    {
-    "t": "Start mouth checks at every med pass and tell the psychiatrist",
+    "t": "Start routine mouth checks at every future med pass and mention the pills to psychiatry",
     "v": 1,
     "fb": "Mouth checks help, but you also need to look for pills she's already saved and ask her why."
    },
    {
-    "t": "Confront her about it in the dayroom",
+    "t": "Confront her directly in the dayroom",
     "v": 0,
     "fb": "Public confrontation shames her and makes honesty less likely. Talk privately."
    },
    {
-    "t": "Throw the pills away and say nothing. It's only three",
+    "t": "Discard the three pills in the sharps bin without reporting it since it was a small stash",
     "v": -1,
     "fb": "Hidden pills after an overdose admission is a suicide risk signal. It has to be addressed and reported."
    }
@@ -1508,22 +1619,22 @@
   "q": "What do you advise?",
   "opts": [
    {
-    "t": "Call the provider now: a fever in a baby this young means blood, urine and spinal fluid cultures and IV antibiotics",
+    "t": "Call provider now: neonatal fever needs full septic workup & IV antibiotics",
     "v": 2,
     "fb": "At 8 to 21 days old, a fever of 38.0 °C (100.4 °F) or more needs a full sepsis workup, including a lumbar puncture, no matter how well the baby looks."
    },
    {
-    "t": "Recheck the temperature in 30 minutes, then call",
+    "t": "Unwrap his extra blanket and recheck his axillary temperature in thirty minutes before calling",
     "v": 1,
     "fb": "A rectal 38.2 is already a fever. A recheck can go alongside the call, but shouldn't delay it."
    },
    {
-    "t": "He looks well. Recheck at the next vitals",
+    "t": "Document the reading and recheck his temperature at the next routine four-hour vital signs",
     "v": 0,
     "fb": "Well-appearing newborns can still have bacteremia or meningitis. Looking well doesn't rule it out."
    },
    {
-    "t": "Give acetaminophen per the PRN order and recheck",
+    "t": "Give weight-based acetaminophen per the PRN order first and recheck the fever in an hour",
     "v": -1,
     "fb": "Treating the fever hides it before the workup and doesn't treat an infection. This baby needs a provider now."
    }
@@ -1545,22 +1656,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Call the provider now for a stat X-ray and urgent removal, and ask about honey per poison center guidance while she waits",
+    "t": "Call provider for stat X-ray & urgent removal; ask about honey protocol",
     "v": 2,
     "fb": "A button battery in the esophagus can burn through tissue in about two hours. Honey coats it and slows the damage while she waits for removal."
    },
    {
-    "t": "Call the National Battery Ingestion Hotline, then tell the provider",
+    "t": "Call the National Battery Ingestion Hotline for advice first, then update the provider later",
     "v": 1,
     "fb": "The hotline is a good resource, but the provider needs to know first. The X-ray and removal can't wait."
    },
    {
-    "t": "Watch her stools for the battery",
+    "t": "Reassure her mother and check her diapers for the next several days until the battery passes",
     "v": -1,
     "fb": "Waiting without an X-ray is how an esophageal battery burns through. Watching stools is only for a battery confirmed past the esophagus."
    },
    {
-    "t": "Give her a drink of water to wash it down",
+    "t": "Have her drink a cup of water or milk right away to wash the battery down into her stomach",
     "v": 0,
     "fb": "Water doesn't move a stuck battery or protect the tissue, and she may need anesthesia soon. Nothing by mouth except honey per guidance."
    }
@@ -1582,22 +1693,22 @@
   "q": "What do you advise?",
   "opts": [
    {
-    "t": "Tell her yes, she can consent to that herself, explain the limits of confidentiality, and get the provider to talk with her privately, including about the portal and the bill",
+    "t": "Confirm she can consent, explain privacy limits, have provider talk alone",
     "v": 2,
     "fb": "Minors can consent to STI testing and treatment in every US state, though some set a minimum age. Being honest about the limits builds trust; the portal and billing are where secrets leak."
    },
    {
-    "t": "Tell her you'll ask the provider to come by when her mom is out",
+    "t": "Tell her you will ask the provider to stop back by once her mother steps out for coffee",
     "v": 1,
     "fb": "Good instinct, but tell her now that she has the right to this care and what the limits are."
    },
    {
-    "t": "Promise her nothing will ever be shared",
+    "t": "Promise her that nothing discussed during the visit will ever appear on records or bills",
     "v": 0,
     "fb": "You can't promise that. Risk of serious harm or abuse has to be shared, and a broken promise ends trust."
    },
    {
-    "t": "Tell her mom when she comes back. She's a minor",
+    "t": "Inform her mother as soon as she returns",
     "v": -1,
     "fb": "That breaks a legal right to confidential care and teaches her not to ask for help again."
    }
@@ -1619,22 +1730,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Call a rapid response, sit him up, give oxygen, and get the provider for more albuterol and escalation",
+    "t": "Call rapid response, sit him up, give O₂, get provider for escalation",
     "v": 2,
     "fb": "A quiet chest with low oxygen and fatigue means so little air is moving that there's nothing left to wheeze. He's heading toward respiratory failure."
    },
    {
-    "t": "Put him on oxygen and recheck in 15 minutes",
+    "t": "Apply nasal cannula oxygen at two liters and recheck his breath sounds in fifteen minutes",
     "v": 1,
     "fb": "Oxygen is right, but this picture needs help at the bedside now, not a recheck."
    },
    {
-    "t": "Recheck the SpO₂ with a new probe",
+    "t": "Swap out the pulse oximeter probe on his finger to make sure the low reading is accurate",
     "v": 0,
     "fb": "Trust the patient over the probe. He's tired, quiet and not moving air."
    },
    {
-    "t": "Let him rest. The wheezing stopped",
+    "t": "Let him rest quietly in bed",
     "v": -1,
     "fb": "Wheezing that stops while he looks worse is a sign of failure, not recovery."
    }
@@ -1656,22 +1767,22 @@
   "q": "What do you advise?",
   "opts": [
    {
-    "t": "Call the provider now: severe-range pressure with a headache needs antihypertensive treatment within the hour and likely magnesium",
+    "t": "Call provider now: severe BP + headache needs meds within 1 h & likely Mg",
     "v": 2,
     "fb": "Severe-range BP lasting 15 minutes is an emergency, and headache with vision changes is a severe feature. Postpartum preeclampsia can start after a normal pregnancy."
    },
    {
-    "t": "Recheck with a properly sized cuff, then call",
+    "t": "Recheck her blood pressure with a larger cuff in fifteen minutes before paging the provider",
     "v": 1,
     "fb": "Cuff size matters, but you already have two severe readings. Call while you recheck."
    },
    {
-    "t": "Mention it at the next routine provider update",
+    "t": "Document the reading and include it during the next routine postpartum provider update",
     "v": 0,
     "fb": "Severe-range pressure is treated within 30 to 60 minutes. This can't wait for an update."
    },
    {
-    "t": "Dim the lights, give a PRN for the headache, and recheck in an hour",
+    "t": "Dim the room lights, give her PRN headache medication, and recheck her pressure in one hour",
     "v": -1,
     "fb": "This treats the symptom of a stroke and seizure risk. She needs the provider now."
    }
@@ -1730,22 +1841,22 @@
   "q": "What do you advise?",
   "opts": [
    {
-    "t": "Ask about her concerns, explain that it prevents antibodies that could harm a future pregnancy, let the provider talk with her, and if she still declines, document an informed refusal",
+    "t": "Explore concerns, explain future-pregnancy risk, involve MD, chart refusal",
     "v": 2,
     "fb": "Plans change, and the antibodies are permanent. She may refuse, but only once she understands what she's refusing."
    },
    {
-    "t": "Let the provider handle the conversation",
+    "t": "Step out of the room and let the obstetric provider handle the entire conversation alone",
     "v": 1,
     "fb": "The provider should be involved, but you can start by finding out what's behind her worry."
    },
    {
-    "t": "Document that she declined and move on",
+    "t": "Document briefly that she declined the injection and remove the order from your task list",
     "v": 0,
     "fb": "Without education, that's not an informed refusal. And the window is only 72 hours."
    },
    {
-    "t": "Tell her it's required by hospital policy",
+    "t": "Tell her clearly that receiving RhoGAM before discharge is required by hospital policy",
     "v": -1,
     "fb": "That's not true, and it's coercion. A competent adult can refuse."
    }
@@ -1767,22 +1878,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Stop the magnesium, stay with her, support her breathing, call the provider, and get calcium gluconate to the bedside",
+    "t": "Stop magnesium, stay, support breathing, call MD, get calcium gluconate",
     "v": 2,
     "fb": "Lost reflexes and slow breathing are magnesium toxicity, and low urine output means her kidneys aren't clearing it. Stop it and get the antidote ready."
    },
    {
-    "t": "Stop the infusion and draw a magnesium level, then decide",
+    "t": "Stop the magnesium infusion and wait for a stat serum magnesium level before taking further action",
     "v": 1,
     "fb": "Stopping it is right, but her breathing can't wait for a lab. Call now and have calcium gluconate ready."
    },
    {
-    "t": "Cut the rate in half",
+    "t": "Cut the magnesium infusion rate in half while continuing to monitor her respirations",
     "v": 0,
     "fb": "She's already toxic. Half the rate is still more magnesium."
    },
    {
-    "t": "Leave it running. Drowsiness is expected on magnesium",
+    "t": "Leave the magnesium running as ordered because mild drowsiness is expected during therapy",
     "v": -1,
     "fb": "Some flushing and sleepiness are expected; absent reflexes and respirations of 10 are not. Next comes respiratory arrest."
    }
@@ -1878,22 +1989,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Call a stroke alert now, confirm the last known well time, check a glucose, and take him straight to CT",
+    "t": "Call stroke alert now, confirm last known well, check glucose, straight to CT",
     "v": 2,
     "fb": "Face droop, arm weakness and speech trouble starting an hour ago: he's in the treatment window. Every minute counts."
    },
    {
-    "t": "Check his glucose first, then decide",
+    "t": "Check a bedside fingerstick glucose in triage first before activating any emergency alerts",
     "v": 1,
     "fb": "Glucose has to be checked, since low sugar mimics stroke, but it happens alongside the stroke alert, not before it."
    },
    {
-    "t": "Finish registering him, then send him to triage",
+    "t": "Finish collecting his registration and insurance details so the chart is ready for triage",
     "v": 0,
     "fb": "Registration can wait. He needs a stroke alert now."
    },
    {
-    "t": "Have them sit down. Triage will get to him",
+    "t": "Have them take a seat in the waiting area",
     "v": -1,
     "fb": "Waiting in the lobby could cost him the window for clot-busting drugs or clot retrieval."
    }
@@ -1915,22 +2026,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Give IM epinephrine per protocol (0.01 mg/kg, here 0.3 mg) in the outer thigh now, bring her to a monitored bed, and call the provider",
+    "t": "Give IM epinephrine 0.3 mg outer thigh now, move to monitored bed, call MD",
     "v": 2,
     "fb": "Skin plus breathing and gut symptoms after a known allergen is anaphylaxis. Epinephrine first; delay is what kills."
    },
    {
-    "t": "Bring her to a monitored bed and call the provider for orders",
+    "t": "Move her straight to a monitored emergency bed and call the provider for medication orders",
     "v": 1,
     "fb": "Right destination, but with a standing protocol, epinephrine shouldn't wait for orders."
    },
    {
-    "t": "Give albuterol for the cough",
+    "t": "Start a nebulized albuterol treatment right away to calm her cough and open her airways",
     "v": 0,
     "fb": "Albuterol can help wheeze, but it doesn't treat airway swelling or shock. Epinephrine does."
    },
    {
-    "t": "Give more diphenhydramine and watch her",
+    "t": "Give an additional dose of oral diphenhydramine and observe her closely in the bay",
     "v": -1,
     "fb": "Antihistamines treat hives, not airway swelling or low blood pressure. Relying on them delays epinephrine."
    }
@@ -1962,22 +2073,22 @@
   "q": "What do you tell {rn}?",
   "opts": [
    {
-    "t": "Yes: file a near-miss report, and ask Nova about a name alert or a room move",
+    "t": "File a near-miss report and ask Nova for a name alert or room move",
     "v": 2,
     "fb": "A near miss is a free lesson. The same setup will catch someone else on a day the scanner is down or overridden."
    },
    {
-    "t": "No harm, no report. The system worked",
+    "t": "Skip the safety report because no medication reached the wrong patient and the check worked",
     "v": 0,
     "fb": "The scanner was the last barrier. Near-miss reports show where the earlier barriers failed, and they are how look-alike names get flagged."
    },
    {
-    "t": "Just tell Nova so she can warn the next shift",
+    "t": "Mention the similar names to Nova at handoff",
     "v": 1,
     "fb": "Warning the team helps tonight. The report is what fixes it for good."
    },
    {
-    "t": "Write a note in the patient's chart about the near miss",
+    "t": "Write a detailed narrative note inside the patient's medical record describing the near miss",
     "v": 0,
     "fb": "Nothing happened to the patient, and the chart isn't the place for safety reporting. Use the event system."
    }
@@ -2008,22 +2119,22 @@
   "q": "What do you advise?",
   "opts": [
    {
-    "t": "Call a rapid response now, tell Nova, and go up the chain to the attending if the resident still won't come",
+    "t": "Call rapid response now, tell Nova, escalate to attending if needed",
     "v": 2,
     "fb": "Rapid response exists for exactly this: a patient meeting criteria while the team is unavailable. The chain of command is your duty, not an insult to the resident."
    },
    {
-    "t": "Page the resident again with a tight SBAR and the specific numbers",
+    "t": "Page the same resident one more time with a tighter SBAR and the exact trending vitals",
     "v": 1,
     "fb": "A sharper SBAR sometimes works, but this patient meets rapid response criteria now. Don't spend the minutes on a third try."
    },
    {
-    "t": "Do what the resident said and recheck in an hour",
+    "t": "Follow the resident's instruction to monitor closely and recheck vital signs in one hour",
     "v": 0,
     "fb": "The order doesn't match the picture. Following it while the patient worsens makes you part of the delay."
    },
    {
-    "t": "Document that you notified the resident and wait for morning rounds",
+    "t": "Document clearly that the resident was notified and wait for morning team rounds to reassess",
     "v": -1,
     "fb": "Documenting a notification doesn't treat shock. Nurses are held responsible for failure to rescue when they don't escalate."
    }
@@ -2059,22 +2170,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Thank them warmly, decline the cash, and suggest a card, a note to your manager, or a gift to the hospital foundation",
+    "t": "Thank them, decline cash, suggest a card or hospital foundation gift",
     "v": 2,
     "fb": "You honor the gratitude without blurring the relationship. A note to the manager often means more to you than cash would."
    },
    {
-    "t": "Accept it and use it to buy the whole unit lunch",
+    "t": "Accept the envelope and use the cash to buy lunch for the entire nursing unit today",
     "v": 0,
     "fb": "Generous, but the cash still went to you. Most policies prohibit accepting money in any form."
    },
    {
-    "t": "Accept it so you don't offend them",
+    "t": "Accept the cash graciously so you do not embarrass or offend a grateful grieving family",
     "v": 0,
     "fb": "A gracious no doesn't offend most people. Cash gifts create obligation and blur the line between care and payment."
    },
    {
-    "t": "Tell them to give it to Nova instead",
+    "t": "Ask the family to hand the cash envelope to Nova so leadership can decide how to use it",
     "v": 1,
     "fb": "Avoids taking it yourself, but it passes the problem on. Decline and offer a better way to say thanks."
    }
@@ -2106,22 +2217,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Stay calm, deal with the patient's need, then ask Marta to talk away from the bedside and tell her directly how it landed",
+    "t": "Handle the patient first, then address Marta privately and directly",
     "v": 2,
     "fb": "The patient first, and never a conflict in front of them. A calm, specific conversation in private is the most effective first step; report it if it continues."
    },
    {
-    "t": "Snap back at her right there",
+    "t": "Push back firmly in the room",
     "v": 0,
     "fb": "Understandable, but a fight in front of the patient frightens them and makes you look like the problem."
    },
    {
-    "t": "Say nothing, ever. It's how new nurses get toughened up",
+    "t": "Say nothing at all and move on; thick skin is just part of surviving your first year",
     "v": 0,
     "fb": "Bullying isn't a rite of passage. It drives nurses out and makes new staff afraid to ask questions, which is unsafe."
    },
    {
-    "t": "Let it go for now, and tell Nova after the shift",
+    "t": "Let the comment pass for now and send Nova a private email about Marta after the shift",
     "v": 1,
     "fb": "Reporting is reasonable, especially for a pattern. But addressing it directly, privately, is usually the first step and often enough."
    }
@@ -2149,22 +2260,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Check that she's okay, go set a clear limit with him, pair staff for his care, tell Nova, and document and report it",
+    "t": "Check on her, set a firm limit with him, pair staff, tell Nova, report",
     "v": 2,
     "fb": "Care continues, but with limits and a plan. Behavior is documented objectively and reported, whether or not it's illness-driven."
    },
    {
-    "t": "Tell her it comes with the job; just be quick in there",
+    "t": "Remind her that difficult comments come with bedside care and advise her to work quickly",
     "v": -1,
     "fb": "Sexual harassment from patients is workplace violence. Brushing it off leaves her alone with him and tells everyone it's fine."
    },
    {
-    "t": "Swap her for a male aide and say nothing to the patient",
+    "t": "Reassign him to a male aide for the rest of the shift without addressing the patient",
     "v": 1,
     "fb": "Protecting her is good, but without a limit set and a report filed, the behavior just moves to the next person."
    },
    {
-    "t": "Tell her she doesn't have to go back in, and leave his care until someone else can do it",
+    "t": "Tell her not to go back into the room and defer his care until someone else is free",
     "v": 0,
     "fb": "She shouldn't go alone, but his care can't stop. Pair staff and keep caring for him."
    }
@@ -2190,22 +2301,22 @@
   "q": "What do you say?",
   "opts": [
    {
-    "t": "Tell Nova honestly you're too tired to be safe, and offer to help call people in before you leave",
+    "t": "Decline honestly — too fatigued to be safe — and help call in staff",
     "v": 2,
     "fb": "Knowing your limit is professional, not selfish. Fatigue after 12 hours behaves like impairment, and you already had a warning this afternoon."
    },
    {
-    "t": "Stay the full 12. The unit needs you",
+    "t": "Agree to stay the full twelve hours because the unit is short and patients need coverage",
     "v": 0,
     "fb": "A nurse on hour 24 who already had a close call isn't really adding safety. Error risk climbs sharply after 12 hours."
    },
    {
-    "t": "Offer to stay two hours to bridge while she finds someone",
+    "t": "Offer to stay two extra hours as a bridge while Nova tries to locate another nurse",
     "v": 1,
     "fb": "A short bridge can be reasonable if you're truly able. Be honest with yourself: you already had a close call."
    },
    {
-    "t": "Say yes and lean on coffee",
+    "t": "Say yes to the double shift and rely on coffee and extra double-checks to stay sharp",
     "v": 0,
     "fb": "Caffeine masks sleepiness without fixing reaction time or judgment."
    }
@@ -2229,22 +2340,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Tell him you'll find out, check hospital policy, and call social work or the chaplain, who know the witness and notary rules",
+    "t": "Check policy and call social work or chaplain for witness/notary rules",
     "v": 2,
     "fb": "Many hospitals bar staff from witnessing wills, and some states don't allow employees of the treating facility to witness advance directives. Policy and social work get it done right."
    },
    {
-    "t": "Sign both. You're only witnessing his signature",
+    "t": "Sign both documents right away",
     "v": 0,
     "fb": "Witnessing can draw you into a legal dispute, and if your state excludes facility staff, an improper witness can invalidate the document."
    },
    {
-    "t": "Tell him nurses can't help with legal paperwork",
+    "t": "Tell him hospital nurses are never allowed to assist patients with any legal paperwork",
     "v": 0,
     "fb": "Advance directives matter to his care. Shutting the door means it may never get done. Help him find the right person."
    },
    {
-    "t": "Sign the advance directive but not the will",
+    "t": "Witness his advance directive at the bedside yourself, but decline to witness his will",
     "v": 1,
     "fb": "Closer: health care documents are more often within reach. But witness rules vary, so check policy before you sign anything."
    }
@@ -2270,22 +2381,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Decline kindly: you can't sign what you didn't see. Help her reach her instructor or {rn}",
+    "t": "Decline kindly — only sign what you saw — and help reach her instructor",
     "v": 2,
     "fb": "A co-signature means you verified it. The instructor and the assigned nurse are responsible for her work; your job is to point her to them."
    },
    {
-    "t": "Sign it. It's only acetaminophen",
+    "t": "Co-sign the entry quickly to help her stay on schedule",
     "v": -1,
     "fb": "Low risk doesn't make a false signature true. You'd be vouching for an assessment and a dose you never saw."
    },
    {
-    "t": "Go reassess the patient yourself and then sign the assessment, not the med",
+    "t": "Go reassess the patient yourself and co-sign the assessment note, but leave the med unsigned",
     "v": 1,
     "fb": "Your own assessment is real, but it's yours, not hers. Chart your own; leave hers for her instructor or {rn}."
    },
    {
-    "t": "Tell her to leave it unsigned until the end of the shift",
+    "t": "Tell the student to leave the documentation unsigned until the very end of the clinical day",
     "v": 0,
     "fb": "The med and assessment need verification now, not hours later. Get her to her instructor."
    }
@@ -2317,22 +2428,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Calmly ask them to stop, explain the policy protects other patients' and staff privacy, ask what worries them, and get Nova involved",
+    "t": "Ask calmly to stop, explain privacy policy, ask concerns, involve Nova",
     "v": 2,
     "fb": "The recording is often about fear or distrust. Address the worry and the policy together; security is backup if it escalates."
    },
    {
-    "t": "Take the phone and delete the video",
+    "t": "Take the phone out of their hand briefly to delete the video clip from the hallway",
     "v": -1,
     "fb": "Grabbing someone's phone can turn into assault and a scene. Set the limit, don't seize property."
    },
    {
-    "t": "Ignore it and keep working",
+    "t": "Ignore the camera completely and keep working",
     "v": 0,
     "fb": "Other patients' privacy is your responsibility too, and ignoring it leaves the concern underneath unaddressed."
    },
    {
-    "t": "Have Officer Dale come up and remove them",
+    "t": "Call Officer Dale up to the unit right away to escort the filming visitors off the floor",
     "v": 1,
     "fb": "Security may be needed, but starting there escalates fast. Try a calm conversation first."
    }
@@ -2401,22 +2512,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Contact enteric precautions now: a private room, gown and gloves, soap and water for hands, dedicated equipment, and bleach for cleaning",
+    "t": "Start enteric contact precautions: private room, gown/gloves, soap, bleach",
     "v": 2,
     "fb": "C. diff spores survive alcohol rub and most standard cleaners. Soap and water physically removes them, and a sporicidal (bleach) cleaner kills them on surfaces."
    },
    {
-    "t": "Gown and gloves for everyone going in, and keep using foam since it's faster",
+    "t": "Put gown and gloves outside the door and keep using alcohol foam",
     "v": 0,
     "fb": "Gown and gloves are right, but alcohol doesn't kill C. diff spores. Hands need soap and water after this room."
    },
    {
-    "t": "Wait for her nurse to come back and set up the precautions",
+    "t": "Wait until her primary nurse returns from lunch so they can verify the isolation order",
     "v": 0,
     "fb": "Every trip in and out without precautions spreads spores, and her roommate is sharing a bathroom with her right now."
    },
    {
-    "t": "Put up a contact sign and have housekeeping do a routine clean at discharge",
+    "t": "Hang a standard contact sign now and ask housekeeping for a regular clean at discharge",
     "v": 1,
     "fb": "The sign is a start. C. diff also needs a private room, soap and water hand hygiene, and daily and terminal cleaning with a sporicidal agent."
    }
@@ -2446,22 +2557,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Put a surgical mask on him and move him to an airborne infection isolation room now; staff wear fit-tested N95s",
+    "t": "Mask him (surgical), move to AIIR now, staff wear fit-tested N95s",
     "v": 2,
     "fb": "Two months of cough, night sweats, weight loss and hemoptysis is TB until ruled out. The mask on the patient cuts what he spreads; the negative pressure room and N95s protect everyone else."
    },
    {
-    "t": "Put an N95 on him and keep him where he is until the chest X-ray comes back",
+    "t": "Wait for the provider to review the chest X-ray and enter formal isolation orders first",
     "v": 0,
     "fb": "The patient wears a surgical mask; the N95 is for staff. And he needs a negative pressure room, not a wait in a shared space."
    },
    {
-    "t": "Droplet precautions in a private room with the door closed",
+    "t": "Start droplet precautions in a standard private room with the door kept tightly closed",
     "v": 1,
     "fb": "Better than where he is, but TB is airborne. The tiny particles stay in the air and drift, so it needs an airborne infection isolation room."
    },
    {
-    "t": "Wait for the provider to order isolation",
+    "t": "Wait for the provider to review the chest X-ray and enter formal isolation orders first",
     "v": 0,
     "fb": "Nurses can start transmission-based precautions on suspicion. Waiting means more exposed people to track down."
    }
@@ -2491,22 +2602,22 @@
   "q": "What do you tell her?",
   "opts": [
    {
-    "t": "Gown off first so the gloves protect your hands while you untie it, then gloves, then wash in the hall",
+    "t": "Take the gown off first so gloves protect your hands while untying, then gloves and wash",
     "v": 1,
     "fb": "Pulling off gown and gloves together is fine, but on their own the gloves usually come first: they're the dirtiest item. And the handle needs a clean hand, not a glove."
    },
    {
-    "t": "Gloves off first, then the gown rolled inside out, both into the bin inside the room, then hand hygiene before or right as she leaves",
+    "t": "Gloves off first, roll gown inside out into room bin, then hand hygiene",
     "v": 2,
     "fb": "The most contaminated item comes off first, everything stays in the room, and hand hygiene comes before she touches anything outside."
    },
    {
-    "t": "Keep it all on and take it off at the clean supply room so the bin in the room doesn't overflow",
+    "t": "Wear the PPE out to the clean utility room so the small bin inside the room won't overflow",
     "v": -1,
     "fb": "Walking the hall in a contaminated gown and gloves carries MRSA onto every surface she touches. PPE comes off at the doorway."
    },
    {
-    "t": "Order doesn't really matter as long as she washes her hands after",
+    "t": "Doffing order doesn't matter much as long as she washes thoroughly with soap afterward",
     "v": 0,
     "fb": "Order matters: removing PPE in the wrong sequence is when staff contaminate their own hands, wrists and scrubs."
    }
@@ -2573,22 +2684,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Reinforce the edges with tape until {rn} gets back",
+    "t": "Reinforce the peeling transparent edges with fresh silk tape until {rn} gets back",
     "v": 0,
     "fb": "Taping over a wet, lifting dressing seals moisture and bacteria against the insertion site."
    },
    {
-    "t": "Pull the line since it's probably infected",
+    "t": "Pull the central line right away since a loose dressing and fever mean it is infected",
     "v": 0,
     "fb": "Removing a central line takes an order, and it may still be needed or may be cultured first. Call the provider."
    },
    {
-    "t": "Change the dressing with sterile technique and a CHG dressing, assess the site, and call the provider about the fever and whether the line is still needed",
+    "t": "Sterile CHG dressing change, inspect site, call MD on fever & line need",
     "v": 2,
     "fb": "A damp, loose or overdue dressing gets changed now. A fever with a central line means the provider decides on blood cultures and whether the line stays."
    },
    {
-    "t": "Give acetaminophen for the fever and change the dressing at the next scheduled time",
+    "t": "Give ordered acetaminophen for his fever and replace the dressing at the scheduled change",
     "v": -1,
     "fb": "Masking a fever and leaving a wet dressing in place is how a line infection gets missed. Fever with a central line needs a provider now."
    }
@@ -2614,22 +2725,22 @@
   "q": "What do you tell {rn}?",
   "opts": [
    {
-    "t": "Leave it in until the surgeon decides, since it was a surgical order",
+    "t": "Leave the catheter in place until the surgeon decides",
     "v": 0,
     "fb": "Waiting on rounds keeps a catheter in without a reason. The protocol exists so nurses can act on this."
    },
    {
-    "t": "Check it against the protocol's indications; none apply, so remove it per protocol and monitor for voiding, with a bladder scan if he hasn't voided in about 6 hours",
+    "t": "No protocol indication: remove Foley per protocol, monitor voiding (6 h)",
     "v": 2,
     "fb": "Every catheter day raises infection risk. A nurse-driven removal protocol lets you take it out when no approved indication remains."
    },
    {
-    "t": "Keep it but switch to a new bag and catheter since it's been 5 days",
+    "t": "Keep the catheter in place but swap to a fresh sterile tubing set since it's day five",
     "v": 0,
     "fb": "Routine changes don't prevent infection. The fix is removal when there's no indication."
    },
    {
-    "t": "Page the surgeon now for a removal order",
+    "t": "Page the surgical team right now to ask for a separate written catheter removal order",
     "v": 1,
     "fb": "Reasonable if there were no protocol. With one, the nurse can remove it and let the surgeon know."
    }
@@ -2700,22 +2811,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Go to him, stay with him, and gently redirect: meet him where he is (\"Let's get your dog sorted, walk with me\"), then bring him back and tell the provider and charge nurse",
+    "t": "Stay with him, validate & redirect gently back, notify provider & charge",
     "v": 2,
     "fb": "A confused patient can't make a safe decision to leave. Calm redirection works better than arguing, and his new confusion needs a provider to look for delirium."
    },
    {
-    "t": "Ask Officer Dale to hold his arms and walk him back",
+    "t": "Ask Officer Dale to take him firmly by the elbows and escort him back to his room",
     "v": 0,
     "fb": "Physical force on a confused older adult escalates him and risks injury. Security is backup if he can't be redirected."
    },
    {
-    "t": "He's an adult; let him go and document that he left against advice",
+    "t": "Respect his autonomy as an adult, let him leave the floor, and chart an AMA departure",
     "v": -1,
     "fb": "Leaving AMA requires capacity. A confused patient doesn't have it, and a frail man in a gown on the street can die from exposure, falls or traffic."
    },
    {
-    "t": "Bring him back and put him in restraints so it doesn't happen again",
+    "t": "Bring him back to bed and apply soft restraints so he cannot wander off the unit again",
     "v": 0,
     "fb": "Restraints are a last resort and need an order. Address the confusion: a sitter, orientation, family, a bed alarm, and a check for delirium."
    }
@@ -2796,22 +2907,22 @@
   "q": "What do you tell Pat?",
   "opts": [
    {
-    "t": "Send him; MRI does its own screening at the door",
+    "t": "Send him down on schedule",
     "v": 0,
     "fb": "MRI will screen, but finding the device at the scanner wastes the slot and sometimes doesn't happen. The safety check starts with you."
    },
    {
-    "t": "Send him and just tell the tech about the device",
+    "t": "Send him down with transport and verbally remind the technologist about the implanted device",
     "v": 1,
     "fb": "Telling the tech is good, but the screening form and the device check need to be done before he leaves, so the right plan is in place."
    },
    {
-    "t": "Hold transport: complete the MRI screening form, tell radiology and the provider about the device, and get it cleared or managed before he goes",
+    "t": "Hold transport: complete MRI form, notify radiology & MD to clear device",
     "v": 2,
     "fb": "Pacemakers can be MR-conditional or not, and conditional ones need reprogramming and monitoring. Insulin pumps and sensors usually have to come off, with a glucose plan."
    },
    {
-    "t": "Cancel the MRI; nobody with a device can have one",
+    "t": "Cancel the MRI order outright since patients with implanted hardware cannot enter the scanner",
     "v": 0,
     "fb": "Many modern pacemakers are MR-conditional, and pumps can be removed. Cancel only if radiology and the provider decide it's unsafe."
    }
@@ -2837,22 +2948,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Hold transport and call the surgeon's team to mark the site with her involvement before she leaves",
+    "t": "Hold transport and call the surgical team to mark the site with her",
     "v": 2,
     "fb": "Universal Protocol: the site is marked by the person doing the procedure (or a designee per policy), with the patient awake and involved, before she goes."
    },
    {
-    "t": "Mark the right knee yourself since the consent is clear",
+    "t": "Mark the right knee yourself with a surgical pen since the consent form is clearly signed",
     "v": 0,
     "fb": "Nurses generally don't mark the surgical site; it's done by the surgeon or a designated licensed provider who will be present for the procedure."
    },
    {
-    "t": "Send her; they'll mark it in pre-op holding",
+    "t": "Send her down to pre-op holding on time",
     "v": 1,
     "fb": "Some hospitals mark in holding, and it might happen there. But a blank line on your checklist means you hand it off clearly, not assume it."
    },
    {
-    "t": "Send her; the time-out in the OR will catch it",
+    "t": "Send her to the OR as scheduled because the surgical time-out will verify the correct knee",
     "v": -1,
     "fb": "The time-out is the last check, not a backup for skipped steps. Wrong-site surgery happens when every layer assumes the next one will catch it."
    }
@@ -2882,22 +2993,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Sign it; she's careful and the pump has a drug library",
+    "t": "Go ahead and sign off since she is experienced and the smart pump uses a drug library",
     "v": -1,
     "fb": "Smart pumps miss errors like a wrong weight or wrong concentration. A signature without a check makes the record false."
    },
    {
-    "t": "Glance at the screen and sign if the rate looks reasonable",
+    "t": "Glance briefly at the pump screen rate and co-sign as long as the number looks reasonable",
     "v": 0,
     "fb": "A glance is the kind of check that confirms what you expect. An independent check means you calculate it yourself."
    },
    {
-    "t": "Stop before she presses start: independently check the order, weight, bag concentration, dose and rate, and the pump programming yourself, then both sign",
+    "t": "Stop before start: independently verify order, weight, bag, rate, then sign",
     "v": 2,
     "fb": "Independent means you work it out on your own from the order and the bag, not from her numbers. Heparin errors are among the most common high-alert drug errors."
    },
    {
-    "t": "Tell her to start it now so there's no delay, and you'll check it in a few minutes",
+    "t": "Have her start the heparin now so therapy isn't delayed, then verify the settings in five minutes",
     "v": 0,
     "fb": "The check exists to catch the error before it reaches the patient. After the bolus is in, it's too late."
    }
@@ -2927,22 +3038,22 @@
   "q": "What do you do?",
   "opts": [
    {
-    "t": "Stop. Don't feed it. Return it to the right baby's bin, find the right milk with two identifiers, and report the near miss",
+    "t": "Stop — don't feed; return bottle, verify right milk with 2 IDs, report",
     "v": 2,
     "fb": "Breast milk is a body fluid and is treated like a medication: two identifiers, the baby's band against the label, every time. A near miss gets reported so the storage problem gets fixed."
    },
    {
-    "t": "Feed it; breast milk is breast milk and he's hungry",
+    "t": "Go ahead and feed him the bottle since breast milk is safe and the baby is crying hungry",
     "v": -1,
     "fb": "Another mother's milk can carry infections and medications. Feeding the wrong milk is an exposure event that needs disclosure and follow-up."
    },
    {
-    "t": "Give formula for now and sort out the milk later",
+    "t": "Give him a bottle of ready-to-feed formula for now and sort out the milk bins afterward",
     "v": 1,
     "fb": "Safe for this feed, but the mother may not want formula. The fix is finding the right milk, and reporting the mix-up."
    },
    {
-    "t": "Ask the mother if she minds using it this one time",
+    "t": "Ask the baby's mother if she minds using the warmed bottle just for this single feeding",
     "v": 0,
     "fb": "Parents can't consent to another family's milk on the spot. It's an exposure question, not a preference."
    }

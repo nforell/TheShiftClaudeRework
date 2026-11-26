@@ -67,7 +67,7 @@
       { id: 'strip', label: 'Look at her monitor strip', cost: 1, run(s, P, A) { P.stripSeen = true; P.k.stripAt = s.t; A.judge('601-strip', 'assess', 1, `You looked at Mrs. Mendes's rhythm yourself.`, `Atrial fibrillation: irregularly irregular, no P waves. The number on the monitor is a rate; the strip tells you whether the drip is doing anything.`, '601'); return `Atrial fibrillation, irregularly irregular, no P waves, ventricular rate ${gloHR(P)}. Narrow QRS. No pauses.`; } },
       { id: 'echo', label: 'Read the echo report', cost: 2, avail: (s, P) => s.t >= 15 && !P.echoSeen, run(s, P, A) { P.echoSeen = true; A.judge('601-echo', 'assess', 2, `You read Mrs. Mendes's echo as soon as it was available.`, `A new result can change the whole plan. An ejection fraction of 25% means reduced-EF heart failure, and that changes which rate-control drug is safe.`, '601'); return `Preliminary: LVEF 25%. Severe global left ventricular hypokinesis. Moderate mitral regurgitation. Dilated left atrium. "Findings consistent with a cardiomyopathy, possibly rate-related."`; } },
       { id: 'situp', label: 'High Fowler\'s, legs down, oxygen titrated', cost: 2, avail: (s, P) => P.hf >= .6 && !P.sat, run(s, P, A) { P.sat = true; A.judge('601-position', 'safety', 1, `You positioned Mrs. Mendes to breathe.`, `Sitting up with legs down pools fluid away from the lungs. It buys time; it doesn't fix why she's wet.`, '601'); P.hf = Math.max(0, P.hf - .08); return `Head of bed straight up, legs dangling, oxygen up to keep her at 92%. She takes a slower breath.`; } },
-      { id: 'reassess', label: 'Reassess her heart rate, pressure and lungs', cost: 3, avail: (s, P) => P.amioAt !== null && !P.reassessed && s.t - P.amioAt >= 30, run(s, P, A) { P.reassessed = true; A.judge('601-reassess', 'judgment', 2, `You reassessed Mrs. Mendes after the medication change.`, `Did it work? Rate down, pressure holding, lungs drier. That's what the next call and the next nurse need to hear.`, '601'); return `Apical ${gloHR(P)}, still irregular but slower. BP ${gloSBP(P)}/62. Crackles only at the bases now. Urinal: 650 mL since the furosemide.`; } },
+      { id: 'reassess', label: 'Reassess her heart rate, pressure and lungs', cost: 3, avail: (s, P) => P.amioAt !== null && !P.reassessed && s.t - P.amioAt >= 30, run(s, P, A) { P.reassessed = true; A.judge('601-reassess', 'judgment', 2, `You reassessed Mrs. Mendes after the medication change.`, `Did it work? Rate down, pressure holding, lungs drier. That's what the next call and the next nurse need to hear.`, '601'); return `Apical ${gloHR(P)}, still irregular but slower. BP ${gloSBP(P)}/62. Crackles only at the bases now. Commode hat: 650 mL since the furosemide.`; } },
     ],
     meds: [
       {
@@ -101,7 +101,7 @@
         id: '601-lasix', name: 'Furosemide', dose: '40 mg', route: 'IV', freq: 'Once, now (new order)', prn: true, available: (s, P) => P.stopOrder,
         block: (s, P) => (P.lasixAt !== null ? 'Given at ' + clock(P.lasixAt) + '.' : null),
         checks: () => [{ label: 'Potassium', value: '4.1', ok: true }, { label: 'Lungs', value: 'Crackles', ok: true }],
-        give(s, P, A) { P.lasixAt = s.t; A.judge('601-lasix', 'meds', 1, `You gave Mrs. Mendes's IV furosemide.`, `Diuresis takes the fluid off her lungs. Strict I&O, and watch her potassium and pressure.`, '601'); return `Furosemide 40 mg IV push over 2 minutes. Urinal at the bedside. Strict I&O.`; },
+        give(s, P, A) { P.lasixAt = s.t; A.judge('601-lasix', 'meds', 1, `You gave Mrs. Mendes's IV furosemide.`, `Diuresis takes the fluid off her lungs. Strict I&O, and watch her potassium and pressure.`, '601'); return `Furosemide 40 mg IV push over 2 minutes. Commode with urine hat at the bedside. Strict I&O.`; },
       },
       { id: '601-apix', name: 'Apixaban', dose: '5 mg', route: 'PO', freq: 'Twice daily', due: 120, checks: () => [{ label: 'Bleeding signs', value: 'None', ok: true }, { label: 'Creatinine', value: '0.9', ok: true }], give: () => `Apixaban 5 mg given with a sip of water.`, hold(s, P, A) { A.judge('601-apix-hold', 'meds', -1, `You held Mrs. Mendes's anticoagulant without a reason.`, `New AF carries a stroke risk, and a possible cardioversion needs anticoagulation behind it.`, '601'); return 'Held.'; } },
     ],
@@ -209,7 +209,7 @@
       { id: 'reassess', label: 'Reassess him after the fluid bolus', cost: 3, avail: (s, P) => P.fluids && !P.reassessed && s.t - P.fluidAt >= 20, run(s, P, A) { P.reassessed = true; A.judge('603-reassess', 'judgment', 2, `You reassessed Mr. Okoro after the bolus.`, `Did the fluid hold his pressure? A bleed that's still going will out-run a bolus, and the team needs to know before the CT.`, '603'); return `HR ${rayHR(P)}, BP ${raySBP(P)}/70. Back pain ${rayPain(P)}/10. ${P.bleed < 1 ? 'Holding.' : 'Drifting down again.'}`; } },
     ],
     meds: [
-      { id: '603-asa', name: 'Aspirin', dose: '81 mg', route: 'PO', freq: 'Daily', due: 120, checks: () => [{ label: 'Stent', value: 'Drug-eluting, RCA, this morning', ok: true }], give: () => `Aspirin 81 mg chewed and swallowed.`, hold(s, P, A) { A.judge('603-asa-hold', 'meds', -2, `You held Mr. Okoro's aspirin on the morning of his stent.`, `Dual antiplatelet therapy keeps a fresh stent open. Stopping it is a cardiologist's decision, made against the risk of stent thrombosis.`, '603'); return 'Held.'; } },
+      { id: '603-asa', name: 'Aspirin', dose: '81 mg', route: 'PO', freq: 'Daily', due: 120, checks: () => [{ label: 'Stent', value: 'Drug-eluting, RCA, this morning', ok: true }], give: () => `Aspirin 81 mg swallowed with a sip of water.`, hold(s, P, A) { A.judge('603-asa-hold', 'meds', -2, `You held Mr. Okoro's aspirin on the morning of his stent.`, `Dual antiplatelet therapy keeps a fresh stent open. Stopping it is a cardiologist's decision, made against the risk of stent thrombosis.`, '603'); return 'Held.'; } },
       {
         id: '603-tica', name: 'Ticagrelor', dose: '90 mg', route: 'PO', freq: 'Twice daily', due: 120,
         checks: (s, P, A) => { const v = A.vitals('603'); return [{ label: 'Stent', value: 'Drug-eluting, RCA, this morning', ok: true }, { label: 'Bleeding concern', value: P.bleed > .3 ? 'New back pain, HR and BP trending' : 'None found', ok: P.bleed > .3 ? (P.called !== null) : true }, { label: 'Vitals', value: `HR ${v.HR}, BP ${v.SBP}/${v.DBP}`, ok: v.SBP >= 100 && v.HR <= 100 }]; },
@@ -230,14 +230,14 @@
     talk: (s, P) => (P.icu ? null : P.bleed > .25 && !P.k.talkPain ? 'ray_pain' : P.k.talked ? 'ray_after' : 'ray_talk'),
     sbar: {
       items(s, P, A) {
-        const v = A.vitals('603'), first = (P.vit.find((x) => x.t >= 0) || P.vit[0]);
+        const v = A.vitals('603'), first = (P.vit.find((x) => x.t >= 0) || P.vit[0]), hgb = (P.labs.filter((l) => l.name === 'Hemoglobin').pop() || { val: 11.4 }).val;
         return [
           { id: 'back', label: `New right low back pain, ${rayPain(P)}/10, since about ${clock(62)}`, key: true, need: P.bleed > .12 && recent(s, P.k.pain, 60), lock: 'Assess his pain' },
           { id: 'hr', label: `HR ${v.HR}, up from 78 at 07:00`, key: true, need: P.bleed > .12 },
           { id: 'bp', label: `BP ${v.SBP}/${v.DBP}, down from 134/80`, key: true, need: P.bleed > .12 },
           { id: 'groin', label: 'Groin site soft, no hematoma, pulses 2+', key: true, need: P.k.groin !== undefined, lock: 'Check his groin site' },
           { id: 'stick', label: 'High first arterial stick in the cath lab', key: true, need: true },
-          { id: 'hgb', label: P.cbcSeen ? 'Hemoglobin 11.4 at 09:00, from 13.8 at 05:00' : 'CBC due at 09:00', key: P.cbcSeen, need: true },
+          { id: 'hgb', label: P.cbcSeen ? `Hemoglobin ${hgb} at 09:00, from 13.8 at 05:00` : 'CBC due at 09:00', key: P.cbcSeen, need: true },
           { id: 'bus', label: 'Drives the 51 bus', key: false, need: true },
         ];
       },
@@ -278,14 +278,14 @@
     dx: `Pulmonary embolism, heparin day 5`, reason: `Bilateral pulmonary emboli after a long car trip to her sister's. On a heparin infusion since admission; transition to apixaban planned.`,
     hx: [`Hypertension`, `Osteoarthritis`, `Never had heparin before this admission`],
     allergies: `Sulfa (rash)`, code: `Full code`, weight: `70 kg`,
-    lines: [`PIV 20g right forearm: heparin infusion`, `PIV 22g left hand: saline lock`], mobility: `Up in the room with assist`, diet: `Regular`,
+    lines: [`PIV 20g right forearm: heparin infusion`, `Single-lumen PICC left upper arm: locked (difficult access)`], mobility: `Up in the room with assist`, diet: `Regular`,
     // Once the heparin stops or the HIT orders come in, the chart says so everywhere it's shown.
     live: (s, P) => {
       if (P.stopped === null && !P.called) return null;
       const o = {}, hep = P.stopped !== null ? `heparin stopped ${clock(P.stopped)}` : `heparin still running`;
       o.dx = P.called ? `Pulmonary embolism; suspected HIT (${hep})` : `Pulmonary embolism; ${hep}`;
       o.reason = `Bilateral pulmonary emboli after a long car trip to her sister's. Heparin infusion from admission to day 5, ${P.stopped !== null ? `stopped at ${clock(P.stopped)}` : 'now being stopped'} for suspected heparin-induced thrombocytopenia${P.argaAt !== null ? `; argatroban since ${clock(P.argaAt)}` : P.called ? '; argatroban ordered' : ''}.`;
-      o.lines = [`PIV 20g right forearm: ${P.argaAt !== null ? `argatroban infusion (heparin off since ${clock(P.stopped !== null ? P.stopped : P.argaAt)})` : P.stopped !== null ? `heparin stopped ${clock(P.stopped)}, line clamped` : 'heparin infusion'}`, `PIV 22g left hand: saline lock${P.called || P.flushFixed ? ', saline flushes only' : ''}`];
+      o.lines = [`PIV 20g right forearm: ${P.argaAt !== null ? `argatroban infusion (heparin off since ${clock(P.stopped !== null ? P.stopped : P.argaAt)})` : P.stopped !== null ? `heparin stopped ${clock(P.stopped)}, line clamped` : 'heparin infusion'}`, `Single-lumen PICC left upper arm: locked${P.called || P.flushFixed ? ', saline flushes only' : ''}`];
       if (P.called) o.allergies = `Heparin (suspected HIT), Sulfa (rash)`;
       return o;
     },
@@ -301,7 +301,7 @@
     ],
     orders: [
       { t: -5800, text: `Heparin infusion per weight-based nomogram, started at 18 units/kg/h (1,260 units/h). ${NOMO}` },
-      { t: -5800, text: `CBC every other day while on heparin. Saline lock: flush with heparin 10 units/mL, 3 mL every 8 hours.` },
+      { t: -5800, text: `CBC every other day while on heparin. PICC lumen maintenance: flush with heparin 10 units/mL, 3 mL every 8 hours per legacy protocol.` },
       { t: -1500, text: `Plan: transition to apixaban when platelets and aPTT are stable. Case management for discharge.` },
     ],
     notes: [
@@ -314,7 +314,7 @@
       { text: `The heparin's at 18 units per kilo.`, key: true },
       { text: `I haven't looked at the rest of her morning labs.`, key: true },
       { text: `She's doing the crossword in pen. Don't help her, she gets offended.`, key: false },
-      { text: `Her lock gets heparin flushes.`, key: false },
+      { text: `Her PICC lumen still has heparin flushes ordered.`, key: false },
     ],
     vitals(s, P) { return { T: 36.9, HR: 84 + Math.round(P.foot * 14) + jit(s, 5), SBP: 136 + jit(s, 6) * 2, DBP: 78, RR: 18, SpO2: 95, O2: 'Room air', pain: P.foot >= .5 ? Math.min(8, Math.round(3 + P.foot * 5)) : 0 }; },
     assess: {
@@ -352,7 +352,7 @@
         id: '605-arga', name: 'Argatroban infusion', dose: '2 mcg/kg/min (start)', route: 'IV', freq: 'Continuous, titrate to aPTT 1.5–3 × baseline (new order)', prn: true, infusion: true, available: (s, P) => P.called,
         block: (s, P) => (P.argaAt !== null ? 'Started at ' + clock(P.argaAt) + '.' : null),
         checks: (s, P) => [{ label: 'Heparin', value: P.stopped !== null ? `Stopped at ${clock(P.stopped)}` : 'Still running', ok: P.stopped !== null }, { label: 'Liver function', value: 'Normal', ok: true }, { label: 'Heparin flushes', value: P.flushFixed || P.called ? 'Changed to saline' : 'Still ordered', ok: !!(P.flushFixed || P.called) }],
-        give(s, P, A) { P.argaAt = s.t; if (P.stopped === null) { A.judge('605-arga-hep', 'meds', -2, `You started argatroban with heparin still running.`, `Two anticoagulants at once is a bleeding risk, and the heparin is the cause of her clotting. Stop the heparin first.`, '605'); } else A.judge('605-arga', 'meds', 1, `You started argatroban after stopping the heparin.`, `She still has a PE and now a clotting disorder; she needs anticoagulation that isn't heparin.`, '605'); return `Argatroban started at 1 mcg/kg/min. aPTT in 2 hours.`; },
+        give(s, P, A) { P.argaAt = s.t; if (P.stopped === null) { A.judge('605-arga-hep', 'meds', -2, `You started argatroban with heparin still running.`, `Two anticoagulants at once is a bleeding risk, and the heparin is the cause of her clotting. Stop the heparin first.`, '605'); } else A.judge('605-arga', 'meds', 1, `You started argatroban after stopping the heparin.`, `She still has a PE and now a clotting disorder; she needs anticoagulation that isn't heparin.`, '605'); return `Argatroban started at 2 mcg/kg/min. aPTT in 2 hours.`; },
       },
       { id: '605-flush', name: 'Heparin lock flush', dose: '10 units/mL, 3 mL', route: 'IV', freq: 'Every 8 h', due: 60,
         // Discontinued with the HIT orders ("all heparin, including flushes"): it leaves the MAR and the task list.
@@ -658,7 +658,7 @@
 
   S.engine.registerCase({
     id: 'stepdown-6e-1', title: 'Days on 6 East', unit: '6 East, Cardiac Step-Down', unitShort: '6 East', level: 'Specialty: Step-down', start: 7 * 60, length: 300, novaCredits: 3,
-    card: 'Cardiac step-down until noon: a diltiazem drip and a bad echo, a fresh stent, a heparin drip with falling platelets, and a long QT.',
+    card: 'Cardiac step-down until noon: atrial fibrillation on a drip, fresh femoral stent, heparin infusion, and syncope on telemetry.',
     hero: { head: 'Days, 6 East. Four patients, three drips and a fresh stent.', lede: 'Cardiac step-down, 07:00 to noon. Everyone is on a monitor and most of the orders run on numbers. Some of this morning\'s results should change those orders.' },
     intro: { time: '06:58', place: '6 East, Cardiac Step-Down', cta: 'Take report', beats: ['Lena is finishing nights and giving report at the monitor bank.', 'Four patients until noon: two drips titrated by protocol, a stent placed at 04:30, and a long QT.', 'A protocol tells you what to do with a number. It doesn\'t always know about this morning\'s results.'] },
     minutes: 20,
